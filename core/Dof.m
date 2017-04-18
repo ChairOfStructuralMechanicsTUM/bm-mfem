@@ -11,7 +11,7 @@ classdef Dof < handle
     methods
         %constructor
         function dof = Dof(node, variable, variableType)
-            if (isa(node,'node'))
+            if (isa(node,'Node'))
                 dof.node = node;
             else
                 error('invalid node')
