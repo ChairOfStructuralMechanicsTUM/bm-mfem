@@ -1,6 +1,8 @@
-classdef node < handle %handle class
+classdef Node < handle %handle class
     %NODE The node class
-    %   Detailed explanation goes here
+    %   Parameters:
+    %       id: unique identifier
+    %       x, y(, z): coordinates
     
     properties (Access = private)
         id
@@ -11,7 +13,7 @@ classdef node < handle %handle class
     
     methods
         % constructor
-        function node = node(id, x, y, z)
+        function node = Node(id, x, y, z)
             switch nargin
                 case 3
                     node.id = id;
@@ -27,7 +29,7 @@ classdef node < handle %handle class
             end
         end
         
-        % getters
+        % getter functions
         function id = getId(node)
             id = node.id;
         end
@@ -37,6 +39,10 @@ classdef node < handle %handle class
         end
         
         
+        
+    end
+    
+    methods (Access = private)
         
     end
     
