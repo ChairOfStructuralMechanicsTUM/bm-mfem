@@ -1,4 +1,4 @@
-classdef node < handle %handle class
+classdef Node < handle %handle class
     %NODE The node class
     %   Detailed explanation goes here
     
@@ -11,7 +11,7 @@ classdef node < handle %handle class
     
     methods
         % constructor
-        function node = node(id, x, y, z)
+        function node = Node(id, x, y, z)
             switch nargin
                 case 3
                     node.id = id;
