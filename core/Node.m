@@ -10,7 +10,7 @@ classdef Node < handle %handle class
         y
         z
         dofArray
-        loadArray
+%         loadMap = containers.Map;
     end
     
     methods
@@ -55,6 +55,13 @@ classdef Node < handle %handle class
             index = strfind(dofNames,dof,'ForceCellOutput',false);
             index = find(~cellfun(@isempty,index));
             node.dofArray(index).fix;
+        end
+        
+        function addLoad(node, dof, load)
+            dofNames = arrayfun(@(dof) dof.getValueType, node.dofArray);
+            index = strfind(dofNames,dof,'ForceCellOutput',false);
+            index = find(~cellfun(@isempty,index));
+            node.dofArray(index).setValue(load);
         end
         
         

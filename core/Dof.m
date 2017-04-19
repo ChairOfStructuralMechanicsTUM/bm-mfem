@@ -47,6 +47,10 @@ classdef Dof < handle
             dof.fixed = false;
         end
         
+        function setValue(dof, value)
+           dof.value = value; 
+        end
+        
     end
     
 end

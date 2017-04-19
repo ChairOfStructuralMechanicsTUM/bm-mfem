@@ -25,6 +25,10 @@ classdef Element < handle
         end
         
         % getter functions
+        function id = getId(element)
+            id = element.id;
+        end
+        
         function material = getMaterial(element)
             material = element.material;
         end
