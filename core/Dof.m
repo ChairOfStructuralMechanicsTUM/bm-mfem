@@ -4,20 +4,21 @@ classdef Dof < handle
     
     properties (Access = private)
         node
-        variable
-        variableType
+        value
+        valueType
+        fixed = false
     end
     
     methods
         %constructor
-        function dof = Dof(node, variable, variableType)
+        function dof = Dof(node, value, valueType)
             if (isa(node,'Node'))
                 dof.node = node;
             else
                 error('invalid node')
             end
-            dof.variable = variable;
-            dof.variableType = variableType;
+            dof.value = value;
+            dof.valueType = valueType;
         end
         
         % getter functions
@@ -25,12 +26,25 @@ classdef Dof < handle
            node = dof.node; 
         end
         
-        function variable = getVariable(dof)
-            variable = dof.variable;
+        function value = getValue(dof)
+            value = dof.value;
         end
         
-        function variableType = getVariableType(dof)
-            variableType = dof.variableType;
+        function valueType = getValueType(dof)
+            valueType = dof.valueType;
+        end
+        
+        function fixed = isFixed(dof)
+            fixed = dof.fixed;
+        end
+        
+        % setter functions
+        function fix(dof)
+            dof.fixed = true;
+        end
+        
+        function unfix(dof)
+            dof.fixed = false;
         end
         
     end

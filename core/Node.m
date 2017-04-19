@@ -9,6 +9,8 @@ classdef Node < handle %handle class
         x
         y
         z
+        dofArray
+        loadArray
     end
     
     methods
@@ -38,6 +40,22 @@ classdef Node < handle %handle class
            coords = [node.x node.y node.z]; 
         end
         
+        function dofs = getDofArray(node)
+            dofs = node.dofArray;
+        end
+        
+        %setter functions
+        function setDofArray(node, dofs)
+            node.dofArray = dofs;
+        end
+        
+        % member functions
+        function fixDof(node, dof)
+            dofNames = arrayfun(@(dof) dof.getValueType, node.dofArray);
+            index = strfind(dofNames,dof,'ForceCellOutput',false);
+            index = find(~cellfun(@isempty,index));
+            node.dofArray(index).fix;
+        end
         
         
     end

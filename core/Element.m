@@ -8,7 +8,7 @@ classdef Element < handle
     end
     properties (Access = protected)
         nodeArray
-        dofArray
+%         dofArray
     end
     
     methods
@@ -21,7 +21,7 @@ classdef Element < handle
                error('problem with the material in element %d', id);
            end
            element.nodeArray = {};
-           element.dofArray = {};
+%            element.dofArray = {};
         end
         
         % getter functions
@@ -33,9 +33,9 @@ classdef Element < handle
             nodeArray = element.nodeArray;
         end
         
-        function dofArray = getDofArray(element)
-            dofArray = element.dofArray;
-        end
+%         function dofArray = getDofArray(element)
+%             dofArray = element.dofArray;
+%         end
         
     end
     
@@ -43,10 +43,14 @@ classdef Element < handle
         
         function addDofs(element, dofNames)
             for itNode = 1:length(element.nodeArray)
+%                 nodalDofs = zeros(1,length(dofNames),'Dof');
+                nodalDofs = {};
                 for itDof = 1:length(dofNames)
                     newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
-                    element.dofArray = [element.dofArray, newDof];
+                    nodalDofs = [nodalDofs, newDof];
                 end
+                element.nodeArray(itNode).setDofArray(nodalDofs);
+%                 element.dofArray = [element.dofArray, nodalDofs];
             end
         end
         

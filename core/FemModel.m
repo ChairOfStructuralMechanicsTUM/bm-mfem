@@ -5,11 +5,12 @@ classdef FemModel < handle
     properties (Access = private)
         nodeArray
         elementArray
-        
+        dofArray = {}
         
     end
     
     methods
+        % constructor
         function loadFemModel(femModel, nodeArray, elementArray)
            
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
@@ -19,7 +20,10 @@ classdef FemModel < handle
                 femModel.nodeArray = nodeArray;
             end
             
-            elementIds = arrayfun(@(node) node.getId, nodeArray);
+            femModel.dofArray = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false);
+            femModel.dofArray = [femModel.dofArray{:}];
+            
+            elementIds = arrayfun(@(element) element.getId, elementArray);
             if (hasDuplicates(elementIds))
                 error('problem with element ids');
             else
@@ -27,6 +31,20 @@ classdef FemModel < handle
             end
             
         end
+        
+        % getter functions
+        function nodeArray = getNodeArray(femModel)
+           nodeArray = femModel.nodeArray; 
+        end
+        
+        function elementArray = getElementArray(femModel)
+           elementArray = femModel.elementArray; 
+        end
+        
+        function dofArray = getDofArray(femModel)
+           dofArray = femModel.dofArray; 
+        end
+        
     end
     
 end
