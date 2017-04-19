@@ -3,3 +3,4 @@
 addpath('core');
 addpath('elements');
 addpath('utilities');
+addpath('tests');

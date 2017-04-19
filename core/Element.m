@@ -20,6 +20,8 @@ classdef Element < handle
            else
                error('problem with the material in element %d', id);
            end
+           element.nodeArray = {};
+           element.dofArray = {};
         end
         
         % getter functions
@@ -29,6 +31,23 @@ classdef Element < handle
         
         function nodeArray = getNodeArray(element)
             nodeArray = element.nodeArray;
+        end
+        
+        function dofArray = getDofArray(element)
+            dofArray = element.dofArray;
+        end
+        
+    end
+    
+    methods (Access = protected)
+        
+        function addDofs(element, dofNames)
+            for itNode = 1:length(element.nodeArray)
+                for itDof = 1:length(dofNames)
+                    newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
+                    element.dofArray = [element.dofArray, newDof];
+                end
+            end
         end
         
     end

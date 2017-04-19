@@ -2,26 +2,30 @@ classdef BarElement < Element
     %BAR_ELEMENT Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (Access = private)
+    properties (Access = protected)
         crossSectionArea
+        length
     end
     
     methods
         % constructor
-        function barElement = BarElement(id, nodeArray, material, crossSectionArea)
+        function barElement = BarElement(id, material, crossSectionArea)
            barElement@Element(id, material);
-           
-           if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
-               barElement.nodeArray = nodeArray;
-           else
-               error('problem with the nodes in element %d', id);
-           end
            
            barElement.crossSectionArea = crossSectionArea;
            
         end
         
         % getter functions
+        function len = getLength(barElement)
+            len = barElement.length;
+        end
+        
+        function area = getCrossSectionArea(barElement)
+            area = barElement.crossSectionArea;
+        end
+        
+        % member functions
         
     end
     
