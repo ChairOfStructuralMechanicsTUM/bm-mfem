@@ -2,6 +2,7 @@
 
 addpath('core');
 addpath('core/assemblers');
+addpath('core/solvers');
 addpath('elements');
-addpath('utilities');
 addpath('tests');
+addpath('utilities');
