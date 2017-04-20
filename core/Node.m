@@ -57,7 +57,7 @@ classdef Node < handle %handle class
             node.dofArray(index).fix;
         end
         
-        function addLoad(node, dof, load)
+        function setDofValue(node, dof, load)
             dofNames = arrayfun(@(dof) dof.getValueType, node.dofArray);
             index = strfind(dofNames,dof,'ForceCellOutput',false);
             index = find(~cellfun(@isempty,index));

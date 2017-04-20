@@ -50,11 +50,8 @@ node01.fixDof('DISPLACEMENT_Y');
 node12.fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
-node03.addLoad('DISPLACEMENT_Y',-10);
-node05.addLoad('DISPLACEMENT_Y',-10);
-node07.addLoad('DISPLACEMENT_Y',-16);
-node09.addLoad('DISPLACEMENT_Y',-10);
-node11.addLoad('DISPLACEMENT_Y',-10);
+addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
+addPointLoad(node07,16,[0 -1 0]);
 
 model = FemModel;
 model.loadFemModel(nodeArray, elementArray);
@@ -64,4 +61,8 @@ SimpleSolvingStrategy.solve(model);
 n02d = node02.getDofArray;
 n02d(1).getValueType
 n02d(1).getValue
+
+n09d = node09.getDofArray;
+n09d(2).getValueType
+n09d(2).getValue
 
