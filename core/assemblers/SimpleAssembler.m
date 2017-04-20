@@ -23,7 +23,6 @@ classdef SimpleAssembler < Assembler
                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
                    
                     for i = (nNodalDofs - 1) : -1 : 1
-                        i
                         globalDofArray(i) = globalDofArray(i+1) - 1;
                     end
                     % das ist super hässlich, geht das auch anders?
@@ -48,8 +47,6 @@ classdef SimpleAssembler < Assembler
             for itDof = 1:length(dofs)
                if dofs(itDof).isFixed
                    fixedDofs = [fixedDofs itDof];
-%                    stiffnessMatrix(itDof,:) = [];
-%                    stiffnessMatrix(:,itDof) = [];
                end
             end
             
@@ -73,6 +70,20 @@ classdef SimpleAssembler < Assembler
             end
             
             forceVector(fixedDofs) = [];
+            
+        end
+        
+        function assignResultsToDofs(femModel, resultVector)
+            dofs = femModel.getDofArray;
+            nDofs = length(dofs);
+            itResult = 1;
+            
+            for itDof = 1:nDofs
+               if (~dofs(itDof).isFixed)
+                  dofs(itDof).setValue(resultVector(itResult));
+                  itResult = itResult + 1;
+               end
+            end
             
         end
         
