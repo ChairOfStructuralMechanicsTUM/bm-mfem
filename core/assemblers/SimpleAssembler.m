@@ -1,5 +1,5 @@
 classdef SimpleAssembler < Assembler
-    %SIMPLEASSEMBLER Summary of this class goes here
+    %SIMPLEASSEMBLER Simple elimination-based assembler
     %   Detailed explanation goes here
     
     properties
@@ -38,20 +38,8 @@ classdef SimpleAssembler < Assembler
                     + elementStiffnessMatrix;
                 
             end
-        end
-        
-        function stiffnessMatrix = applyBoundaryConditions(femModel, stiffnessMatrix)
-            dofs = femModel.getDofArray;
-            fixedDofs = [];
             
-            for itDof = 1:length(dofs)
-               if dofs(itDof).isFixed
-                   fixedDofs = [fixedDofs itDof];
-               end
-            end
-            
-            stiffnessMatrix(fixedDofs,:) = [];
-            stiffnessMatrix(:,fixedDofs) = [];
+            stiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
             
         end
         
@@ -84,6 +72,25 @@ classdef SimpleAssembler < Assembler
                   itResult = itResult + 1;
                end
             end
+            
+        end
+        
+    end
+    
+    methods (Static, Access = private)
+        
+        function stiffnessMatrix = applyBoundaryConditions(femModel, stiffnessMatrix)
+            dofs = femModel.getDofArray;
+            fixedDofs = [];
+            
+            for itDof = 1:length(dofs)
+               if dofs(itDof).isFixed
+                   fixedDofs = [fixedDofs itDof];
+               end
+            end
+            
+            stiffnessMatrix(fixedDofs,:) = [];
+            stiffnessMatrix(:,fixedDofs) = [];
             
         end
         

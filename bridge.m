@@ -59,11 +59,9 @@ node11.addLoad('DISPLACEMENT_Y',-10);
 model = FemModel;
 model.loadFemModel(nodeArray, elementArray);
 
-K = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
-Kr = SimpleAssembler.applyBoundaryConditions(model, K);
-f = SimpleAssembler.applyExternalForces(model);
+SimpleSolvingStrategy.solve(model);
 
-x= Kr \ f'
-
-
+n02d = node02.getDofArray;
+n02d(1).getValueType
+n02d(1).getValue
 
