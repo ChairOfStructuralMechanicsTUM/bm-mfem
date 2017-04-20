@@ -1,4 +1,4 @@
-classdef elementTests < matlab.unittest.TestCase
+classdef ElementTests < matlab.unittest.TestCase
     %ELEMENTTESTS Tests for all elements
     %   Detailed explanation goes here
     
