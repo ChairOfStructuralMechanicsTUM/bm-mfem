@@ -10,7 +10,9 @@ classdef Material < handle
     methods
         % constructor
         function material = Material(name)
-            material.name = name;
+            if nargin == 1
+                material.name = name;
+            end
             material.parameters = containers.Map; 
         end
         
