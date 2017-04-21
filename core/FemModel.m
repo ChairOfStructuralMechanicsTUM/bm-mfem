@@ -45,6 +45,14 @@ classdef FemModel < handle
            dofArray = femModel.dofArray; 
         end
         
+        function node = getNode(femModel, id)
+           node = femModel.nodeArray(id); 
+        end
+        
+        function element = getElement(femModel, id)
+            element = femModel.elementArray(id);
+        end
+        
     end
     
 end
