@@ -1,4 +1,4 @@
 clear;
 
-run(ElementTests)
-run(AssemblerTests)
+run(ElementTests);
+run(AssemblerTests);
