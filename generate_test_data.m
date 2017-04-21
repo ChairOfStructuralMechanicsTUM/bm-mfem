@@ -24,6 +24,5 @@ node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
 node02.fixDof('DISPLACEMENT_Y');
 
-model = FemModel;
-model.loadFemModel(nodeArray, elementArray);
+model = FemModel(nodeArray, elementArray);
 

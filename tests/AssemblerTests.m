@@ -25,8 +25,7 @@ classdef AssemblerTests <  matlab.unittest.TestCase
             ele05 = BarElement2d2n(5,[node03 node04], mat, area);
             elementArray = [ele01 ele02 ele03 ele04 ele05];
             
-            model = FemModel;
-            model.loadFemModel(nodeArray, elementArray);
+            model = FemModel(nodeArray, elementArray);
             
             actualSolution = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
             
