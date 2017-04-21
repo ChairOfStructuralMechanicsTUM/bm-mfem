@@ -12,13 +12,15 @@ classdef Dof < handle
     methods
         %constructor
         function dof = Dof(node, value, valueType)
-            if (isa(node,'Node'))
-                dof.node = node;
-            else
-                error('invalid node')
+            if nargin > 0
+                if (isa(node,'Node'))
+                    dof.node = node;
+                else
+                    error('invalid node')
+                end
+                dof.value = value;
+                dof.valueType = valueType;
             end
-            dof.value = value;
-            dof.valueType = valueType;
         end
         
         % getter functions

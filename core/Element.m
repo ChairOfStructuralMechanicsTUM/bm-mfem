@@ -43,14 +43,12 @@ classdef (Abstract) Element < handle
         
         function addDofs(element, dofNames)
             for itNode = 1:length(element.nodeArray)
-%                 nodalDofs = zeros(1,length(dofNames),'Dof');
-                nodalDofs = {};
+                nodalDofs(1, length(dofNames)) = Dof;
                 for itDof = 1:length(dofNames)
                     newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
-                    nodalDofs = [nodalDofs, newDof];
+                    nodalDofs(itDof) = newDof;
                 end
                 element.nodeArray(itNode).setDofArray(nodalDofs);
-%                 element.dofArray = [element.dofArray, nodalDofs];
             end
         end
         
