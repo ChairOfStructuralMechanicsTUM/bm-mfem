@@ -53,8 +53,7 @@ arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
 addPointLoad(node07,16,[0 -1 0]);
 
-model = FemModel;
-model.loadFemModel(nodeArray, elementArray);
+model = FemModel(nodeArray, elementArray);
 
 SimpleSolvingStrategy.solve(model);
 

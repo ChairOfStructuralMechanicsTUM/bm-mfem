@@ -11,7 +11,7 @@ classdef FemModel < handle
     
     methods
         % constructor
-        function loadFemModel(femModel, nodeArray, elementArray)
+        function femModel = FemModel(nodeArray, elementArray)
            
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             if (hasDuplicates(nodeIds))
