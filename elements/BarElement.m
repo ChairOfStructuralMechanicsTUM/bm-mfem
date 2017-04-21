@@ -10,10 +10,18 @@ classdef (Abstract) BarElement < Element
     methods
         % constructor
         function barElement = BarElement(id, material, crossSectionArea)
-           barElement@Element(id, material);
-           
-           barElement.crossSectionArea = crossSectionArea;
-           
+            if nargin == 0
+                super_args = {};
+            elseif nargin == 3
+                super_args = {id; material};
+            end
+            
+            barElement@Element(super_args{:});
+            
+            if nargin > 0
+                barElement.crossSectionArea = crossSectionArea;
+            end
+            
         end
         
         % getter functions

@@ -10,7 +10,7 @@ classdef BarElement2d2n < BarElement
     end
     
     properties (Access = private, Constant = true)
-       dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
+        dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
     end
     
     
@@ -24,18 +24,28 @@ classdef BarElement2d2n < BarElement
         % constructor
         
         function barElement2d2n = BarElement2d2n(id, nodeArray, material, crossSectionArea)
-           barElement2d2n@BarElement(id, material, crossSectionArea);
-           
-           if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
-               barElement2d2n.nodeArray = nodeArray;
-           else
-               error('problem with the nodes in element %d', id);
-           end
-           
-           barElement2d2n.addDofs(barElement2d2n.dofNames);
-           
-           barElement2d2n.length = computeLength(barElement2d2n.nodeArray(1).getCoords, ...
-               barElement2d2n.nodeArray(2).getCoords);
+            if nargin == 0
+                super_args = {};
+            elseif nargin == 4
+                super_args = {id; material; crossSectionArea};
+            end
+                
+%             barElement2d2n@BarElement(id, material, crossSectionArea);
+            barElement2d2n@BarElement(super_args{:});
+            
+            if nargin > 0
+                
+                if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
+                    barElement2d2n.nodeArray = nodeArray;
+                else
+                    error('problem with the nodes in element %d', id);
+                end
+                
+                barElement2d2n.addDofs(barElement2d2n.dofNames);
+                
+                barElement2d2n.length = computeLength(barElement2d2n.nodeArray(1).getCoords, ...
+                    barElement2d2n.nodeArray(2).getCoords);
+            end
         end
         
         
@@ -51,7 +61,7 @@ classdef BarElement2d2n < BarElement
                 
                 for itDof = 2:(-1):1
                     responseDoF(2*itNodes-(itDof-1),1) = nodalDof(3-itDof).getValue;
-                 end
+                end
             end
             
         end
@@ -59,7 +69,7 @@ classdef BarElement2d2n < BarElement
         % member functions
         
         % Computation of the Local Stiffness Matrix
-         function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
+        function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             x21 = dist(1);
             y21 = dist(2);
@@ -77,11 +87,11 @@ classdef BarElement2d2n < BarElement
         function stressValue = computeElementStress(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             cos = dist(1)/barElement.length;
-            sin = dist(2)/barElement.length; 
+            sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
             stressValue = barElement.getMaterial().getParameterValue('YOUNGS_MODULUS') ...
                 /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
-   
+            
         end
         
     end
