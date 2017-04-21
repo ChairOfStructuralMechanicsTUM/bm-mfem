@@ -10,6 +10,7 @@ classdef Node < handle %handle class
         y
         z
         dofArray
+        responseDofArray
 %         loadMap = containers.Map;
     end
     
@@ -31,6 +32,7 @@ classdef Node < handle %handle class
             end
         end
         
+        
         % getter functions
         function id = getId(node)
             id = node.id;
@@ -44,6 +46,7 @@ classdef Node < handle %handle class
             dofs = node.dofArray;
         end
         
+       
         %setter functions
         function setDofArray(node, dofs)
             node.dofArray = dofs;
@@ -64,6 +67,7 @@ classdef Node < handle %handle class
             node.dofArray(index).setValue(load);
         end
         
+         
         
     end
     

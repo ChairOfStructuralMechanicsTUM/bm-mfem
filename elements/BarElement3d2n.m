@@ -29,6 +29,23 @@ classdef BarElement3d2n < BarElement
         
         % getter functions
         
+        function responseDoF = getResponseDofArray(barElement)
+            
+            responseDoF = zeros(6,1);
+            
+            for itNodes = 1:1:2
+                nodalDof = barElement.nodeArray(itNodes).getDofArray;
+                nodalDof = nodalDof.';
+                
+                for itDof = 3:(-1):1
+                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue;
+                 end
+            end
+            
+        end
+
+        
+        
         % member functions
         function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
@@ -46,6 +63,18 @@ classdef BarElement3d2n < BarElement
                 / (barElement.length^3);
             stiffnessMatrix = factor * stiffnessMatrix;
         end
+        
+       % Computation of the Element Stresses 
+       function stressValue = computeElementStress(barElement)
+            dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
+            CX = dist(1)/barElement.length;
+            CY = dist(2)/barElement.length;
+            CZ = dist(3)/barElement.length;
+            nodalDisplacement = getResponseDofArray(barElement);
+            stressValue = barElement.getMaterial().getParameterValue('YOUNGS_MODULUS')...            
+                /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
+        end
+        
         
     end
     
