@@ -18,6 +18,9 @@ classdef Node < handle %handle class
         % constructor
         function node = Node(id, x, y, z)
             switch nargin
+                case 0
+                    % the empty constructor is needed in order to
+                    % preallocate empty arrays of Nodes
                 case 3
                     node.id = id;
                     node.x = x;

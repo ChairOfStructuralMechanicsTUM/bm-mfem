@@ -1,4 +1,4 @@
-classdef BarElement < Element
+classdef (Abstract) BarElement < Element
     %BAR_ELEMENT Summary of this class goes here
     %   Detailed explanation goes here
     
