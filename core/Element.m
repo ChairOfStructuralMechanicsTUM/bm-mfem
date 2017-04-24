@@ -1,4 +1,4 @@
-classdef (Abstract) Element < handle
+classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
     %ELEMENT The element class
     %   Abstract base class for all element implementations
     
@@ -23,10 +23,15 @@ classdef (Abstract) Element < handle
                 element.nodeArray = {};
             end
         end
-        
+    end
+    
+    methods (Sealed)
         % getter functions
         function id = getId(element)
-            id = element.id;
+            id = zeros;
+            for ii = 1:length(element)
+                id(ii) = element(ii).id;
+            end
         end
         
         function material = getMaterial(element)
