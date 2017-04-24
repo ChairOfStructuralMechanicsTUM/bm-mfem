@@ -1,17 +1,18 @@
 classdef FemModel < handle
     %FEMMODEL The class of the complete model
+    %   femModel = FemModel(nodeArray, elementArray, femModelParts)
     %   This class keeps track over all entities in the model 
     
     properties (Access = private)
         nodeArray
         elementArray
         dofArray = {}
-        
+        femModelParts = containers.Map
     end
     
     methods
         % constructor
-        function femModel = FemModel(nodeArray, elementArray)
+        function femModel = FemModel(nodeArray, elementArray, femModelParts)
            
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             if (hasDuplicates(nodeIds))
@@ -28,6 +29,10 @@ classdef FemModel < handle
                 error('problem with element ids');
             else
                 femModel.elementArray = elementArray;
+            end
+            
+            if nargin == 3
+                femModel.femModelParts = femModelParts;
             end
             
         end
@@ -52,6 +57,20 @@ classdef FemModel < handle
         function element = getElement(femModel, id)
             element = femModel.elementArray(id);
         end
+        
+        function femModelParts = getAllModelParts(femModel)
+            femModelParts = femModel.femModelParts;
+        end
+        
+        function modelPart = getModelPart(femModel, name)
+            modelPart = femModel.femModelParts(name);
+        end
+        
+        % setter functions
+        function addModelPart(femModel, name, entityArray)
+            femModel.femModelParts(name) = entityArray;
+        end
+        
         
     end
     
