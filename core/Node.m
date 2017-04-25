@@ -65,13 +65,25 @@ classdef Node < handle
             end
         end
         
-        function setDofValue(node, dof, load)
-            dofNames = arrayfun(@(dof) dof.getValueType, node.dofArray);
-            index = strfind(dofNames,dof,'ForceCellOutput',false);
-            index = find(~cellfun(@isempty,index));
-            node.dofArray(index).setValue(load);
+        function setDofValue(nodes, dof, load)
+            for ii = 1:length(nodes)
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = find(~cellfun(@isempty,index));
+                nodes(ii).dofArray(index).setValue(load);
+            end
         end
         
+        function val = getDofValue(nodes, dof)
+            val = zeros;
+            for ii = 1:length(nodes)
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = find(~cellfun(@isempty,index));
+                val(ii) = nodes(ii).dofArray(index).getValue;
+                %fprintf('node_%i: %s = %d\n',node.getId,dof,val);
+            end
+        end
          
         
     end
