@@ -1,4 +1,4 @@
-classdef Node < handle %handle class
+classdef Node < handle
     %NODE The node class
     %   Parameters:
     %       id: unique identifier
@@ -56,11 +56,13 @@ classdef Node < handle %handle class
         end
         
         % member functions
-        function fixDof(node, dof)
-            dofNames = arrayfun(@(dof) dof.getValueType, node.dofArray);
-            index = strfind(dofNames,dof,'ForceCellOutput',false);
-            index = find(~cellfun(@isempty,index));
-            node.dofArray(index).fix;
+        function fixDof(nodes, dof)
+            for ii = 1:length(nodes)
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = find(~cellfun(@isempty,index));
+                nodes(ii).dofArray(index).fix;
+            end
         end
         
         function setDofValue(node, dof, load)

@@ -8,16 +8,16 @@ classdef SimpleAssembler < Assembler
     methods (Static)
         function stiffnessMatrix = assembleGlobalStiffnessMatrix(femModel)
             nDofs = length(femModel.getDofArray);
-            nNodalDofs = nDofs / length(femModel.getNodeArray);
+            nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
             
-            for itEle = 1:length(femModel.getElementArray)
-                elements = femModel.getElementArray;
+            for itEle = 1:length(femModel.getAllElements)
+                elements = femModel.getAllElements;
                 currentElement = elements(itEle);
                 elementFreedomTable = {};
                 
-                for itNode = 1:length(currentElement.getNodeArray)
-                    nodes = currentElement.getNodeArray;
+                for itNode = 1:length(currentElement.getNodes)
+                    nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
@@ -25,8 +25,8 @@ classdef SimpleAssembler < Assembler
                     for i = (nNodalDofs - 1) : -1 : 1
                         globalDofArray(i) = globalDofArray(i+1) - 1;
                     end
-                    % das ist super hässlich, geht das auch anders?
-                    elementFreedomTable =[elementFreedomTable globalDofArray];
+                    
+                    elementFreedomTable = [elementFreedomTable globalDofArray];
                     
                 end
                 
