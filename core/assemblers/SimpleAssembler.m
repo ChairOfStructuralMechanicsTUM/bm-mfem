@@ -7,7 +7,7 @@ classdef SimpleAssembler < Assembler
         reducedStiffnessMatrix
     end
     
-    methods (Static)
+    methods (Static) %test
 
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
             nDofs = length(femModel.getDofArray);
