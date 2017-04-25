@@ -28,8 +28,11 @@ classdef Dof < handle
            node = dof.node; 
         end
         
-        function value = getValue(dof)
-            value = dof.value;
+        function value = getValue(dofs)
+            value = zeros;
+            for ii = 1:length(dofs)
+                value(ii) = dofs(ii).value;
+            end
         end
         
         function valueType = getValueType(dof)
