@@ -7,8 +7,22 @@ classdef SimpleAssembler < Assembler
         reducedStiffnessMatrix
     end
     
-    methods (Static) %test
-
+    methods %test
+        
+        function assembling = SimpleAssembler(femModel)
+            if (nargin > 0)
+                
+                [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
+            else
+                error('input model is missing');
+            end
+        end
+    
+      
+    end
+    
+    methods (Static)
+        
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
             nDofs = length(femModel.getDofArray);
             nNodalDofs = nDofs / length(femModel.getAllNodes);
