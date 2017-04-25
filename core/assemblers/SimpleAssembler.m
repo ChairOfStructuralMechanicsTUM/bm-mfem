@@ -3,10 +3,27 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
+        stiffnessMatrix
+        reducedStiffnessMatrix
+    end
+    
+    methods %test
+        
+        function assembling = SimpleAssembler(femModel)
+            if (nargin > 0)
+                
+                [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
+            else
+                error('input model is missing');
+            end
+        end
+    
+      
     end
     
     methods (Static)
-        function stiffnessMatrix = assembleGlobalStiffnessMatrix(femModel)
+        
+        function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
             nDofs = length(femModel.getDofArray);
             nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
@@ -39,27 +56,54 @@ classdef SimpleAssembler < Assembler
                 
             end
             
-            stiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
+            reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
             
         end
         
-        function forceVector = applyExternalForces(femModel)
+
+        
+        function reducedForceVector = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
-            forceVector = zeros(1,nDofs);
+            reducedForceVector = zeros(1,nDofs);
             fixedDofs = [];
             
             for itDof = 1:nDofs
                 if (dofs(itDof).isFixed)
-                    fixedDofs = [fixedDofs itDof];
+                    fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
                 else
-                    forceVector(itDof) = dofs(itDof).getValue;
+                    reducedForceVector(itDof) = dofs(itDof).getValue;
                 end
             end
             
-            forceVector(fixedDofs) = [];
+            reducedForceVector(fixedDofs) = [];
             
         end
+        
+        
+        
+        
+                 
+%         function forceVector = getExternalForcesAllDofs(femModel)
+%             dofs = femModel.getDofArray;
+%             nDofs = length(dofs);
+%             forceVector = zeros(1,nDofs);
+%             fixedDofs = [];
+%             
+%             for itDof = 1:nDofs
+%                 if (dofs(itDof).isFixed)
+%                     fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
+%                 else
+%                     forceVector(itDof) = dofs(itDof).getValue;
+%                 end
+%             end
+%             
+%             forceVector(fixedDofs) = [];
+%             
+%         end
+        
+        
+        
         
         function assignResultsToDofs(femModel, resultVector)
             dofs = femModel.getDofArray;
@@ -68,9 +112,10 @@ classdef SimpleAssembler < Assembler
             
             for itDof = 1:nDofs
                if (~dofs(itDof).isFixed)
-                  dofs(itDof).setValue(resultVector(itResult));
-                  itResult = itResult + 1;
+                 dofs(itDof).setValue(resultVector(itResult));
+                 itResult = itResult + 1;
                end
+               
             end
             
         end
