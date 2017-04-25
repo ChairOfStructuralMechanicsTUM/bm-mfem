@@ -38,11 +38,11 @@ classdef FemModel < handle
         end
         
         % getter functions
-        function nodeArray = getNodeArray(femModel)
+        function nodeArray = getAllNodes(femModel)
            nodeArray = femModel.nodeArray; 
         end
         
-        function elementArray = getElementArray(femModel)
+        function elementArray = getAllElements(femModel)
            elementArray = femModel.elementArray; 
         end
         
@@ -54,8 +54,22 @@ classdef FemModel < handle
            node = femModel.nodeArray(id); 
         end
         
+        function nodes = getNodes(femModel, ids)
+            nodes = Node.empty;
+            for ii = 1:length(ids)
+                nodes(ii) = femModel.nodeArray(ids(ii));
+            end
+        end
+        
         function element = getElement(femModel, id)
             element = femModel.elementArray(id);
+        end
+        
+        function elements = getElements(femModel, ids)
+           elements = Element.empty;
+           for ii = 1:length(ids)
+              elements(ii) = femModel.elementArray(ids(ii)); 
+           end
         end
         
         function femModelParts = getAllModelParts(femModel)

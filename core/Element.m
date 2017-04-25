@@ -38,8 +38,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
             material = element.material;
         end
         
-        function nodeArray = getNodeArray(element)
-            nodeArray = element.nodeArray;
+        function nodes = getNodes(element)
+            nodes = element.nodeArray;
         end
         
     end
