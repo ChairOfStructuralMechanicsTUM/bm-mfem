@@ -1,13 +1,18 @@
 classdef FemModel < handle
     %FEMMODEL The class of the complete model
     %   femModel = FemModel(nodeArray, elementArray, femModelParts)
-    %   This class keeps track over all entities in the model 
+    %   This class keeps track over all entities in the model
     
     properties (Access = private)
         nodeArray
         elementArray
-        dofArray = {}
+        %         dofArray = {}
         femModelParts = containers.Map
+        
+    end
+    
+    properties (Access = public)
+        dofArray = {}
     end
     
     methods
