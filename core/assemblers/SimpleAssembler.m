@@ -5,6 +5,8 @@ classdef SimpleAssembler < Assembler
     properties
         stiffnessMatrix
         reducedStiffnessMatrix
+        forceVector
+        reducedForceVector
     end
     
     methods %test
@@ -13,6 +15,8 @@ classdef SimpleAssembler < Assembler
             if (nargin > 0)
                 
                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
+                [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
+                
             else
                 error('input model is missing');
             end
@@ -61,46 +65,49 @@ classdef SimpleAssembler < Assembler
         end
         
 
-        
-        function reducedForceVector = applyExternalForces(femModel)
-            dofs = femModel.getDofArray;
-            nDofs = length(dofs);
-            reducedForceVector = zeros(1,nDofs);
-            fixedDofs = [];
-            
-            for itDof = 1:nDofs
-                if (dofs(itDof).isFixed)
-                    fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
-                else
-                    reducedForceVector(itDof) = dofs(itDof).getValue;
-                end
-            end
-            
-            reducedForceVector(fixedDofs) = [];
-            
-        end
-        
-        
-        
-        
-                 
-%         function forceVector = getExternalForcesAllDofs(femModel)
+%         BEFORE MODIFICATION --> funktioniert
+%         function reducedForceVector = applyExternalForces(femModel)
+%         
 %             dofs = femModel.getDofArray;
 %             nDofs = length(dofs);
-%             forceVector = zeros(1,nDofs);
+%             reducedForceVector = zeros(1,nDofs);
 %             fixedDofs = [];
 %             
 %             for itDof = 1:nDofs
 %                 if (dofs(itDof).isFixed)
 %                     fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
 %                 else
-%                     forceVector(itDof) = dofs(itDof).getValue;
+%                     reducedForceVector(itDof) = dofs(itDof).getValue;
 %                 end
 %             end
 %             
-%             forceVector(fixedDofs) = [];
+%             reducedForceVector(fixedDofs) = [];
+%             
 %             
 %         end
+        
+        
+    function [forceVector, reducedForceVector] = applyExternalForces(femModel)
+        dofs = femModel.getDofArray;
+        nDofs = length(dofs);
+        forceVector = zeros(1,nDofs);
+        fixedDofs = [];
+    
+        for itDof = 1:nDofs
+            if (dofs(itDof).isFixed)
+                fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
+            else
+                forceVector(itDof) = dofs(itDof).getValue;
+            end
+        end
+        
+        reducedForceVector = forceVector;
+        reducedForceVector(fixedDofs) = [];
+            
+            
+        end
+        
+
         
         
         
