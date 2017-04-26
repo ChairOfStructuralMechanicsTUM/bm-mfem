@@ -8,6 +8,9 @@ classdef ValidationTests <  matlab.unittest.TestCase
     methods (Test)
         
         function bridgeTest(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+
             io = ModelIO('validation_bridge_input.msh');
             model = io.readModel;
             
@@ -29,8 +32,10 @@ classdef ValidationTests <  matlab.unittest.TestCase
             expectedDisplacementY = [0 -1.775600 -1.792260 -2.291930 -2.316600 ...
                 -2.385940 -2.421940 -2.291930 -2.316600 -1.775600 -1.792260 0];
             
-            testCase.verifyEqual(actualDisplacementX, expectedDisplacementX)
-            testCase.verifyEqual(actualDisplacementY, expectedDisplacementY)
+            testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
+                'Within', RelativeTolerance(1e-5)))
+            testCase.assertThat(actualDisplacementY, IsEqualTo(expectedDisplacementY, ...
+                'Within', RelativeTolerance(1e-5)))
         end
         
     end
