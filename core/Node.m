@@ -45,6 +45,27 @@ classdef Node < handle
            coords = [node.x node.y node.z]; 
         end
         
+        function x = getX(nodes)
+            x = zeros;
+            for ii = 1:length(nodes)
+                x(ii) = nodes(ii).x;
+            end
+        end
+        
+        function y = getY(nodes)
+            y = zeros;
+            for ii = 1:length(nodes)
+                y(ii) = nodes(ii).y;
+            end
+        end
+        
+        function z = getZ(nodes)
+            z = zeros;
+            for ii = 1:length(nodes)
+                z(ii) = nodes(ii).z;
+            end
+        end
+        
         function dofs = getDofArray(node)
             dofs = node.dofArray;
         end
