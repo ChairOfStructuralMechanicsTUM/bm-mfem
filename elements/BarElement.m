@@ -39,6 +39,15 @@ classdef (Abstract) BarElement < Element
             c = (nodes(1).getCoords + nodes(2).getCoords) ./ 2;
         end
         
+        function pl = draw(barElement)
+            pl = line(barElement.nodeArray.getX, barElement.nodeArray.getY);
+        end
+        
+        function pl = drawDeformed(barElement)
+            pl = line(barElement.nodeArray.getX + barElement.nodeArray.getDofValue('DISPLACEMENT_X'), ...
+                barElement.nodeArray.getY + barElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
+        end
+        
     end
     
 end
