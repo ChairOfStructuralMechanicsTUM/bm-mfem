@@ -1,5 +1,5 @@
 classdef (Abstract) BarElement < Element
-    %BAR_ELEMENT Summary of this class goes here
+    %BARELEMENT Summary of this class goes here
     %   Detailed explanation goes here
     
     properties (Access = protected)
@@ -34,6 +34,10 @@ classdef (Abstract) BarElement < Element
         end
         
         % member functions
+        function c = barycenter(barElement)
+            nodes = barElement.getNodes;
+            c = (nodes(1).getCoords + nodes(2).getCoords) ./ 2;
+        end
         
     end
     

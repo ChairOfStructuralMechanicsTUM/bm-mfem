@@ -25,6 +25,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
         end
     end
     
+    methods (Abstract)
+        barycenter(element)
+    end
+    
     methods (Sealed)
         % getter functions
         function id = getId(element)
