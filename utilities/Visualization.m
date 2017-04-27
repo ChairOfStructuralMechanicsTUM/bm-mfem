@@ -5,7 +5,6 @@ classdef Visualization < handle
     properties (Access = public)
         model
         panel
-%         existPanel
     end
     
     methods
