@@ -1,5 +1,5 @@
 classdef ValidationTests <  matlab.unittest.TestCase
-    %VALIDATIONTESTS Summary of this class goes here
+    %VALIDATIONTESTS Class for larger tests
     %   Detailed explanation goes here
     
     properties
@@ -7,6 +7,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
     
     methods (Test)
         
+        % bridge test taken from IFEM ch. 21 by Felippa
         function bridgeTest(testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
