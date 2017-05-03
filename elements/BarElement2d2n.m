@@ -10,7 +10,7 @@ classdef BarElement2d2n < BarElement
     end
     
     properties (Access = private, Constant = true)
-        dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
+%         dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
     end
     
     
@@ -24,6 +24,7 @@ classdef BarElement2d2n < BarElement
         % constructor
         
         function barElement2d2n = BarElement2d2n(id, nodeArray, material, crossSectionArea)
+            
             if nargin == 0
                 super_args = {};
             elseif nargin == 4
@@ -32,6 +33,8 @@ classdef BarElement2d2n < BarElement
                 
 %             barElement2d2n@BarElement(id, material, crossSectionArea);
             barElement2d2n@BarElement(super_args{:});
+            
+            barElement2d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
             
             if nargin > 0
                 

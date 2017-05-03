@@ -33,7 +33,17 @@ classdef (Abstract) BarElement < Element
             area = barElement.crossSectionArea;
         end
         
+        % setter functions
+        function setCrossSectionArea(barElement, area)
+            barElement.crossSectionArea = area;
+        end
+        
         % member functions
+        function update(barElement)
+            barElement.length = computeLength(barElement.nodeArray(1).getCoords, ...
+                    barElement.nodeArray(2).getCoords);
+        end
+        
         function c = barycenter(barElement)
             nodes = barElement.getNodes;
             c = (nodes(1).getCoords + nodes(2).getCoords) ./ 2;
@@ -48,6 +58,14 @@ classdef (Abstract) BarElement < Element
                 barElement.nodeArray.getY + barElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
         end
         
+    end
+    
+    methods (Access = protected)
+       function cp = copyElement(obj)
+           cp = copyElement@Element(obj);
+           cp.crossSectionArea = obj.crossSectionArea;
+           cp.length = obj.length;
+        end 
     end
     
 end

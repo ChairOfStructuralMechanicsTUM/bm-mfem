@@ -1,4 +1,4 @@
-classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
+classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable
     %ELEMENT The element class
     %   Abstract base class for all element implementations
     
@@ -8,6 +8,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
     end
     properties (Access = protected)
         nodeArray
+        dofNames
     end
     
     methods
@@ -26,6 +27,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
     end
     
     methods (Abstract)
+        update(element)     % update properties after e.g. nodes changed
         barycenter(element)
     end
     
@@ -50,6 +52,11 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
     
     methods (Access = protected)
         
+        function cp = copyElement(obj)
+           cp = copyElement@matlab.mixin.Copyable(obj);
+           obj.id = obj.id + 100;
+        end
+        
         function addDofs(element, dofNames)
             for itNode = 1:length(element.nodeArray)
                 nodalDofs(1, length(dofNames)) = Dof;
@@ -58,6 +65,39 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous
                     nodalDofs(itDof) = newDof;
                 end
                 element.nodeArray(itNode).setDofArray(nodalDofs);
+            end
+        end
+        
+        function addDofsToSingleNode(element, node)
+            nodalDofs(1, length(element.dofNames)) = Dof;
+            for itDof = 1:length(element.dofNames)
+                newDof = Dof(node,0.0,element.dofNames(itDof));
+                nodalDofs(itDof) = newDof;
+            end
+            node.setDofArray(nodalDofs);
+        end
+        
+    end
+    
+    methods
+        
+        function overwriteNode(element, oldNode, newNode)
+            if ~isa(newNode,'Node')
+                error('invalid node')
+            end
+            
+            for itNode = 1:length(element.nodeArray)
+                if (element.nodeArray(itNode) == oldNode)
+                    
+                    element.nodeArray(itNode) = newNode;
+                    element.addDofsToSingleNode(newNode);
+                    element.update;
+                    
+%                  barElement3d2n.addDofs(barElement3d2n.dofNames);
+%                 
+%                 barElement3d2n.length = computeLength(barElement3d2n.nodeArray(1).getCoords, ...
+%                     barElement3d2n.nodeArray(2).getCoords);
+                end
             end
         end
         

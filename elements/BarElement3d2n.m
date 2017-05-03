@@ -6,21 +6,27 @@ classdef BarElement3d2n < BarElement
     end
     
     properties (Access = private, Constant = true)
-        dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
+%         dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
     end
     
     methods
         % constructor
         function barElement3d2n = BarElement3d2n(id, nodeArray, material, crossSectionArea)
+            
+            % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
             elseif nargin == 4
                 super_args = {id; material; crossSectionArea};
             end
             
+            % call the super class constructor
             barElement3d2n@BarElement(super_args{:});
-            %            barElement3d2n@BarElement(id, material, crossSectionArea);
             
+            barElement3d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
+            
+            
+            % the constructor
             if nargin > 0
                 if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
                     barElement3d2n.nodeArray = nodeArray;
