@@ -1,4 +1,4 @@
-classdef Node < handle
+classdef Node < handle & matlab.mixin.Copyable
     %NODE The node class
     %   Parameters:
     %       id: unique identifier
@@ -38,11 +38,16 @@ classdef Node < handle
         
         % getter functions
         function id = getId(node)
-            id = node.id;
+            % Return the id of the node
+            id = zeros;
+            for ii = 1:length(node)
+                id(ii) = node(ii).id;
+            end
         end
         
         function coords = getCoords(node)
-           coords = [node.x node.y node.z]; 
+            % Return all coordinates in the form x, y(, z)
+            coords = [node.x node.y node.z];
         end
         
         function x = getX(nodes)
@@ -87,6 +92,8 @@ classdef Node < handle
         end
         
         function setDofValue(nodes, dof, load)
+            %SETDOFVALUE set the value of a specific dof
+            % parameters: dof, load
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
@@ -109,8 +116,18 @@ classdef Node < handle
         
     end
     
-    methods (Access = private)
+    methods (Access = protected)
         
+        function cp = copyElement(obj)
+           % copy constructor
+           %cp = copyElement@matlab.mixin.Copyable(obj);
+            coords = obj.getCoords;
+            if (length(coords) == 2)
+                cp = Node(obj.getId, coords(1), coords(2));
+            else
+                cp = Node(obj.getId, coords(1), coords(2), coords(3));
+            end
+        end
     end
     
 end
