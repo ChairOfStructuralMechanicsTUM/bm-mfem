@@ -2,7 +2,7 @@ classdef ModelIO < handle
     %MODELIO Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (Access = public)
+    properties (Access = private)
         inputFile
         modelPartNames = strings
         materials = Material
@@ -19,6 +19,16 @@ classdef ModelIO < handle
         %Constructor
         function modelIO = ModelIO(file)
             modelIO.inputFile = file;
+        end
+        
+        function setElementTypeLine2n(modelIO, typeName)
+           modelIO.line2n = typeName; 
+        end
+        
+        function printElementTypes(modelIO)
+           fprintf('Currently defined element types:\n')
+           fprintf('Line2n: %s\n',modelIO.line2n)
+           fprintf('Triangle3n: %s\n',modelIO.triangle3n)
         end
         
         % member functions
@@ -103,7 +113,7 @@ classdef ModelIO < handle
                                             cProperties.getValue('crossSectionArea'));
                                         
                                     otherwise
-                                        error('2-node element type not yet implemented')
+                                        error('2-node element type %s not available',modelIO.line2n)
                                 end
                                 
                                 
