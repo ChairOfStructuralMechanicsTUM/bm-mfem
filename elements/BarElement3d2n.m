@@ -3,6 +3,7 @@ classdef BarElement3d2n < BarElement
     %   Detailed explanation goes here
     
     properties (Access = private)
+        length %TEST!
     end
     
     properties (Access = private, Constant = true)
