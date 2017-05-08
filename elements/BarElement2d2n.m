@@ -69,6 +69,12 @@ classdef BarElement2d2n < BarElement
             
         end
         
+        
+        function crossSectionArea = getCrossSectionArea(barElement)
+            crossSectionArea = barElement.crossSectionArea;
+        end
+        
+        
         % member functions
         
         % Computation of the Local Stiffness Matrix
