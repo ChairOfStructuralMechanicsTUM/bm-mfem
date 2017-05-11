@@ -44,12 +44,13 @@ SimpleSolvingStrategy.solve(modelSix);
 
 %Substructure
 n = 2; %number of substructures wanted
-ids = []; %nxn matrix with all the ids of nodes at which we want to substructure
+idsNodes = []; %nxm matrix with all the names of nodes at which we want to substructure (m=number of cut nodes)
+idsElements = []; %nxl matrix with all the names of elements which are at the interface(l=number of interface elements)
 substructure = zeros(1,n); %matrix containing all the substructures
 %ERROR bei mehrfacher Teilung müssen die Restgebiete und nicht wieder
 %modelSix ins substructuring gegeben werden.
 for subs = 1:1:n
-    substructure(1,subs) = Substructure.divide(modelSix, ids(subs,:), substructure, subs);
+    substructure(1,subs) = Substructure.divide(modelSix, idsNodes(subs,:), idsElements(subs,:), substructure, subs);
 end
 
 

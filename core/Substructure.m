@@ -21,13 +21,19 @@ classdef Substructure < FemModel
         
         %function to divide FemModel into Substructures.
         %FemModel: structure to be divided
-        %ids: array of node ids along which structure should be
+        %idsNodes: array of node ids along which structure should be
+        %idsElements: array of element ids at the interface
         %divided. Need to be in order, smallest to biggest id.
-        function substructure = divide(femModel, ids, substructure, subs)
+        %substructure: array containing all the substructures
+        %subs: index of current substructure
+        function substructure = divide(femModel, idsNodes, idsElements, substructure, subs)
+            
+            %----------------1---------------------------------
+            %not really necessary!
             
             %if there are elements containing all the nodes, division is
             %possible otherwise an error occurs
-            check = femModel.checkNodes(ids, femModel);
+            check = Substructure.checkNodes(idsNodes, femModel);
             if check == true
                 fprintf('Choice of nodes for Substructe is fine.');
             else
@@ -36,13 +42,26 @@ classdef Substructure < FemModel
                 return
             end
             
+            %-------------------2-------------------
             %copy nodes along which Model is divided. 
-            cps = femModel.copyNodes(ids)
+            cpsNodes = Substructure.copyNodes(idsNodes);
+            %copy elements which are at interface
+            cpsElements = Substructue.copyElements(idsElements);
         
+            
+            %-------------------3-------------------
             %find all nodes/elements that belong to one half or another in
             %the substructure
+            %Substructure(1)
+            nodeArray = idsNodes;
+            elementArray = idsElements;
+            
+            %Substructure(2)
+            nodeArray = cpsNodes;
+            elementArray = cpsElements;
             
             
+            %-------------------4-------------------
             %create actual substructures. call constructor for substruture
             %to create it from now gained knowledge about nodes, elements
             %and femParts included.
@@ -52,17 +71,17 @@ classdef Substructure < FemModel
         
         %function checks whether it is possible to divide geometry as
         %desired (all nodes in a row)
-        function check = checkNodes(ids, femModel)
+        function check = checkNodes(idsNodes, femModel)
           
-            for node = 1:1:size(ids,2)-1
-                nodePair = [ids(node) ids(node+1)];
+            for node = 1:1:size(idsNodes,2)-1
+                nodePair = [idsNodes(node) idsNodes(node+1)];
                 %function elementArray in FemModel that gives out the whole
                 %elementArray
                 %??? ERROR
                 check = ismember(nodePair, femModel.elementArray.barElement3d2n.nodeArray);
             end
              
-            if check == 2*size(ids,2)
+            if check == 2*size(idsNodes,2)
                 check = true;
             else
                 check = false;
@@ -70,19 +89,29 @@ classdef Substructure < FemModel
         end
         
         
-       %copy nodes along which Model is divided. dopies of nodes are
+       %copy nodes along which Model is divided. copies of nodes are
        %put in a new array called cps. this now contains all the
        %copies
        %ERROR: If there is an external force applied to the node, one needs
        %to also apply this load to the copied node (maybe only half of the
        %load?)
-        function cps = copyNodes(ids)
-            
-            cps = zeros(1,size(ids,2));
-            for node = 1:1:size(ids,2)
-                cps(node) = ids(node).copyElement(ids(node));
+        function cpsNodes = copyNodes(idsNodes)
+            cpsNodes = zeros(1,size(idsNodes,2));
+            for node = 1:1:size(idsNodes,2)
+                cpsNodes(node) = idsNodes(node).copyElement(idsNodes(node));
             end
         end
+        
+        %creates the elements at the interface from ids
+        
+        function cpsElements = copyElements(idsElements)
+            cpsElements = zeros(size(idsElements,2));
+            for element = 1:1:size(idsElements,2)
+                cpsElements(node) = idsElements(element).copyElement(idsElements(node));
+            end
+        end
+            
+            
         
             
     end
