@@ -4,7 +4,7 @@ classdef Node < handle & matlab.mixin.Copyable
     %       id: unique identifier
     %       x, y(, z): coordinates
     
-    properties (Access = private)
+    properties (Access = public) %!!! was private, to public?
         id
         x
         y
@@ -112,8 +112,38 @@ classdef Node < handle & matlab.mixin.Copyable
                 %fprintf('node_%i: %s = %d\n',node.getId,dof,val);
             end
         end
-         
         
+        %%% Start NEW
+        %function that finds elements from nodes
+        function  elements = findElements(nodeArray, allElements)
+            elements = [];
+            for jj = 1:length(nodeArray)
+                for kk = 1:length(nodeArray) 
+                    if kk == jj
+                        continue
+                    else
+                    nodePair = [nodeArray(jj), nodeArray(kk)];
+                    end
+                    for ll = 1:length(allElements)
+                        if ismember(nodePair, allElements(ll).getNodes)
+                            elements = [elements, allElements(ll)];
+                        end
+                    end
+                end
+            end
+        end   
+        
+        %function that finds all nodes along specific x-coordinate
+        function nodesX = nodesAtX(allNodes, maxX)
+            nodesX = [];
+            for mm = 1:length(allNodes)
+                if allNodes(mm).getX == maxX
+                    nodesX = [nodesX, allNodes(mm)];
+                end
+            end
+        
+        end
+        %%%END NEW
     end
     
     methods (Access = protected)

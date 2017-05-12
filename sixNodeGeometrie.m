@@ -42,16 +42,30 @@ modelSix = FemModel(nodeArray, elementArray);
 %solve
 SimpleSolvingStrategy.solve(modelSix);
 
+%Substructure NEW
+
+[substructure1, substructure2] = modelSix.divide(ele08);
+
+x = Visualization(substructure1);
+y = Visualization(substructure2);
+
+figure
+plotUndeformed(x)
+figure
+plotUndeformed(y)
+
+
+
 %Substructure
-n = 2; %number of substructures wanted
-idsNodes = []; %nxm matrix with all the names of nodes at which we want to substructure (m=number of cut nodes)
-idsElements = []; %nxl matrix with all the names of elements which are at the interface(l=number of interface elements)
-substructure = zeros(1,n); %matrix containing all the substructures
-%ERROR bei mehrfacher Teilung müssen die Restgebiete und nicht wieder
-%modelSix ins substructuring gegeben werden.
-for subs = 1:1:n
-    substructure(1,subs) = Substructure.divide(modelSix, idsNodes(subs,:), idsElements(subs,:), substructure, subs);
-end
+% n = 2; %number of substructures wanted
+% idsNodes = []; %nxm matrix with all the names of nodes at which we want to substructure (m=number of cut nodes)
+% idsElements = []; %nxl matrix with all the names of elements which are at the interface(l=number of interface elements)
+% substructure = zeros(1,n); %matrix containing all the substructures
+% %ERROR bei mehrfacher Teilung müssen die Restgebiete und nicht wieder
+% %modelSix ins substructuring gegeben werden.
+% for subs = 1:1:n
+%     substructure(1,subs) = Substructure.divide(modelSix, idsNodes(subs,:), idsElements(subs,:), substructure, subs);
+% end
 
 
 

@@ -2,7 +2,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     %ELEMENT The element class
     %   Abstract base class for all element implementations
     
-    properties (Access = private)
+    properties (Access = public) %!!! was private changed to public
         id
         material
     end
@@ -54,6 +54,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         
         function cp = copyElement(obj)
            cp = copyElement@matlab.mixin.Copyable(obj);
+           %what if more than 100 nodes?, why not increase id for nodes
+           %when copying?
            obj.id = obj.id + 100;
         end
         

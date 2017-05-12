@@ -3,7 +3,7 @@ classdef FemModel < handle
     %   femModel = FemModel(nodeArray, elementArray, femModelParts)
     %   This class keeps track over all entities in the model
     
-    properties (Access = public) %changed from private to public
+    properties (Access = private) %changed from private to public
         nodeArray
         elementArray
         %         dofArray = {}
@@ -90,8 +90,50 @@ classdef FemModel < handle
             femModel.femModelParts(name) = entityArray;
         end
         
+        %%%Start New
         
+        %function to divide FemModel into Substructures.
+        %FemModel: structure to be divided
+        
+        function [substructure1, substructure2] = divide(femModel, eleIntf)
+            %all nodes/elements of Geomtrie
+            totalNodeArray = femModel.getAllNodes;
+            totalElementArray = femModel.getAllElements;
+            %all nodes at Interface
+            nodeIntf = eleIntf.getNodes();
+            %node furthest to the right of Interface elements
+            maxX = max(nodeIntf.getX());
+            
+            nodesLeft = [];
+            nodesRight = [];
+            
+            for ii = 1:length(totalNodeArray)
+                %see whether one node is more to right than interface
+                if maxX >= totalNodeArray(ii).getX()
+                    %all nodes left or at interface
+                    nodesLeft = [nodesLeft totalNodeArray(ii)];
+                else
+                    %all nodes right of interface
+                    nodesRight = [nodesRight totalNodeArray(ii)];
+                end
+            end
+            
+            nodesRight = [nodesRight, nodesAtX(totalNodeArray, maxX)];
+            
+            %all elements left or at interface
+            elementsLeft = unique(findElements(nodesLeft, totalElementArray));
+           
+            %all elements right of interface
+            elementsRight = unique(findElements(nodesRight, totalElementArray));
+            
+            %make area of interface elements half
+            
+            %create Substructure from NodeArray and ElementArray
+            substructure1 = Substructure(nodesLeft, elementsLeft);
+            substructure2 = Substructure(nodesRight, elementsRight);
+            
+            %%%End New
+        end        
     end
-    
 end
 
