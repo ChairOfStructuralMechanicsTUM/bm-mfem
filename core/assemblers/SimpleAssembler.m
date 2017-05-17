@@ -64,28 +64,7 @@ classdef SimpleAssembler < Assembler
             
         end
         
-
-%         BEFORE MODIFICATION --> funktioniert
-%         function reducedForceVector = applyExternalForces(femModel)
-%         
-%             dofs = femModel.getDofArray;
-%             nDofs = length(dofs);
-%             reducedForceVector = zeros(1,nDofs);
-%             fixedDofs = [];
-%             
-%             for itDof = 1:nDofs
-%                 if (dofs(itDof).isFixed)
-%                     fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
-%                 else
-%                     reducedForceVector(itDof) = dofs(itDof).getValue;
-%                 end
-%             end
-%             
-%             reducedForceVector(fixedDofs) = [];
-%             
-%             
-%         end
-        
+       
         
     function [forceVector, reducedForceVector] = applyExternalForces(femModel)
         dofs = femModel.getDofArray;
@@ -107,8 +86,7 @@ classdef SimpleAssembler < Assembler
             
         end
         
-
-        
+       
         
         
         
@@ -118,11 +96,11 @@ classdef SimpleAssembler < Assembler
             itResult = 1;
             
             for itDof = 1:nDofs
-               if (~dofs(itDof).isFixed)
-                 dofs(itDof).setValue(resultVector(itResult));
-                 itResult = itResult + 1;
-               end
-               
+                if (~dofs(itDof).isFixed)
+                    dofs(itDof).setValue(resultVector(itResult));
+                    itResult = itResult + 1;
+                end
+                
             end
             
         end

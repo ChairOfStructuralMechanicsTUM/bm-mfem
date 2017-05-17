@@ -6,8 +6,8 @@ function [ outputFile ] = createOutputFile( Model )
 % Create TextFile
 fileID = fopen('femCalculations.txt','w');
 
+%% Print Node Coordinates
 
-% Print Node Coordinates
 fprintf(fileID,'Node Coordinates: \r\n \r\n');
 
 nodeArray = getAllNodes(Model);
@@ -19,7 +19,8 @@ fprintf(fileID,'%6s %12s %12s %12s\r\n','node','x-coord','y-coord','z-coord');
 fprintf(fileID,'%6.0f %12.2f %12.2f %12.2f\r\n',A);
 fprintf(fileID,'\r\n \r\n');
 
-% Print Element Data
+%% Print Element Data
+
 fprintf(fileID,'Element Data: \r\n \r\n');
 fprintf(fileID,'%6s %15s %12s %12s\r\n','elem','nodes','E-modulus','area');
 
@@ -38,29 +39,62 @@ end
 
 fprintf(fileID,'\r\n \r\n');
 
-% Print DOF Activity
+% %% Print DOF Activity
+
 fprintf(fileID,'DOF Activity (DOFs fixed, DOF load): \r\n \r\n');
 fprintf(fileID,'%6s %6s %6s %6s %10s %10s %10s  %10s \r\n',...
     'node','x-tag','y-tag','z-tag','x-load','y-load','z-load');
 fprintf(fileID,'\r\n');
 
 for ii = 1:1:size(Model.getAllNodes,2)
-    
-    
+
     dofArray = getDofArray(nodeArray(ii));
-    
+
     for jj = 1:length(dofArray)
         fixedDof(jj) = isFixed(dofArray(jj));
-        if fixedDof(jj) == 1
-            loadDof(jj) = 0;
+    end
+    
+    for jj = 1:length(dofArray)
+        loadDof(jj)=zeros;
+        if isempty(getInitialDofLoad(dofArray(jj)))
+            loadDof(jj)=0;
         else
-            loadDof(jj) = getValue(dofArray(jj));
+            
+            loadDof(jj) = getInitialDofLoad(dofArray(jj));
         end
     end
     
+       
+
     A = [getId(nodeArray(ii)); fixedDof(1); fixedDof(2); fixedDof(3);...
         loadDof(1); loadDof(2); loadDof(3)];
     fprintf(fileID,'%6.0f %6.0f %6.0f %6.0f %10.2f %10.2f %10.2f\r\n',A);
+end
+
+fprintf(fileID,'\r\n \r\n');
+
+
+%% Node Displacements
+
+fprintf(fileID,'Node Displacements: \r\n \r\n');
+fprintf(fileID,'%6s %14s %14s %14s \r\n','node','x-displ','y-displ','z-displ');
+fprintf(fileID,'\r\n');
+
+for ii = 1:1:size(Model.getAllNodes,2)
+
+    dofArray = getDofArray(nodeArray(ii));
+
+    for jj = 1:length(dofArray)
+        fixedDof(jj) = isFixed(dofArray(jj));
+        if fixedDof(jj) == 1
+            valueDof(jj) = 0;
+        else
+            valueDof(jj) = getValue(dofArray(jj));
+        end
+    end
+    
+    A = [getId(nodeArray(ii)); valueDof(1); valueDof(2); valueDof(3)];
+    fprintf(fileID,'%6.0f %14.6f %14.6f %14.6f\r\n',A);
 end
 
 fclose(fileID);

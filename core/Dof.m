@@ -6,7 +6,9 @@ classdef Dof < handle
         node
         value
         valueType
+        initialDofLoad
         fixed = false
+        
     end
     
     methods
@@ -20,6 +22,8 @@ classdef Dof < handle
                 end
                 dof.value = value;
                 dof.valueType = valueType;
+                dof.initialDofLoad = 0.0;
+%                 dof.initialDofLoad = initialDofLoad;
             end
         end
         
@@ -35,6 +39,19 @@ classdef Dof < handle
             end
         end
         
+        
+%         function initialDofLoad = getInitialDofLoad(dofs)
+%             initialDofLoad = zeros;
+%             for ii = 1:length(dofs)
+%                 initialDofLoad(ii) = dofs(ii).initialDofLoad;
+%             end
+%         end
+        
+        function initialDofLoad = getInitialDofLoad(dof)
+                          initialDofLoad = dof.initialDofLoad;
+            
+        end
+        
         function valueType = getValueType(dof)
             valueType = dof.valueType;
         end
@@ -42,20 +59,34 @@ classdef Dof < handle
         function fixed = isFixed(dof)
             fixed = dof.fixed;
         end
+
         
+
+        
+
+
+
         % setter functions
         function fix(dof)
             dof.fixed = true;
         end
-        
+
         function unfix(dof)
             dof.fixed = false;
         end
-        
+
         function setValue(dof, value)
-           dof.value = value; 
+            dof.value = value;
         end
+
         
+        
+        function setLoad(dof, initialDofLoad)
+            dof.initialDofLoad = initialDofLoad;
+        end
+
+
+       
     end
     
 end
