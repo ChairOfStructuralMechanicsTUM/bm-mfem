@@ -2,7 +2,7 @@ classdef (Abstract) BarElement < Element
     %BARELEMENT Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (Access = protected)
+    properties (Access = public)
         crossSectionArea
         length
     end

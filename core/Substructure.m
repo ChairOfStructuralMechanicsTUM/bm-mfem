@@ -3,7 +3,7 @@ classdef Substructure < FemModel
     %   Detailed explanation goes here
     
     properties (Access = public)
-    
+   
     end
     
     methods
