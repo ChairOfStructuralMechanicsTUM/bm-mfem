@@ -28,7 +28,7 @@ classdef Visualization < handle
             
             % plot the undeformed system
             for ii = 1:length(elements)
-                elPlot = elements(ii).draw;
+                elPlot = elements(ii).draw();
                 elPlot.Parent = visualization.panel;
             end
             

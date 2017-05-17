@@ -4,7 +4,7 @@ classdef Node < handle & matlab.mixin.Copyable
     %       id: unique identifier
     %       x, y(, z): coordinates
     
-    properties (Access = public) %!!! was private, to public?
+    properties (Access = private) 
         id
         x
         y
@@ -143,7 +143,86 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         
         end
+        
+        %function that finds all nodes along a specific y-coordinate
+        function nodesY = nodesAtY(allNodes, maxY)
+            nodesY = [];
+            for nn = 1:length(allNodes)
+                if allNodes(nn).getY == maxY
+                    nodesY = [nodesY, allNodes(nn)];
+                end
+            end
+        
+        end
+        
+        %function that orders nodes into left and right part relativ to the
+        %interface
+        function [nodesLeft, nodesRight] = splitNodesX(nodeIntf, totalNodeArray)
+            %interfaceNode furthest to right
+            maxX = max(nodeIntf.getX());
+            
+            nodesLeft = [];
+            nodesRight = [];
+            
+            for ii = 1:length(totalNodeArray)
+                %see whether one node is more to right than interface
+                if maxX >= totalNodeArray(ii).getX()
+                    %all nodes left or at interface
+                    nodesLeft = [nodesLeft totalNodeArray(ii)];
+                else
+                    %all nodes right of interface
+                    nodesRight = [nodesRight totalNodeArray(ii)];
+                end
+            end
+            
+          
+            nodesRight = [nodesRight, nodesAtX(totalNodeArray, maxX)];
+        end
+        
+        %function that orders the nodes in upper and lower part relative to
+        %interface
+        function [nodesUp, nodesDown] = splitNodesY(nodeIntf, totalNodeArray)
+            %interface Node furthest up
+            maxY = max(nodeIntf.getY());
+            
+            nodesUp = [];
+            nodesDown = [];
+            
+            for ii = 1:length(totalNodeArray)
+                %see whether one node is lower than interface
+                if maxY >= totalNodeArray(ii).getY()
+                    %all nodes below interface
+                    nodesDown = [nodesDown totalNodeArray(ii)];
+                else
+                    %all nodes above interface
+                    nodesUp = [nodesUp totalNodeArray(ii)];
+                end
+            end
+            
+            nodesUp = [nodesUp, nodesAtY(totalNodeArray, maxY)];
+        end
+        
+        %function that orders the elements in a right and a left half
+        %relative to the interface
+        function [elementsLeft, elementsRight] = splitElementsX(nodesLeft, nodesRight, totalElementArray)
+            %all elements left or at interface
+            elementsLeft = unique(findElements(nodesLeft, totalElementArray));
+           
+            %all elements right of interface
+            elementsRight = unique(findElements(nodesRight, totalElementArray));
+        end
+        
+        %function that orders the elements in an upper and a lower half
+        %relative to the interface
+        function [elementsUp, elementsDown] = splitElementsY(nodesUp, nodesDown, totalElementArray)
+            %all elements left or at interface
+            elementsUp = unique(findElements(nodesUp, totalElementArray));
+           
+            %all elements right of interface
+            elementsDown = unique(findElements(nodesDown, totalElementArray));
+        end
         %%%END NEW
+        
     end
     
     methods (Access = protected)

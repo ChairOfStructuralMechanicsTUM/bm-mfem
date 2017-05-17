@@ -7,8 +7,11 @@ node03 = Node(3,20,0,0);
 node04 = Node(4,20,10,0);
 node05 = Node(5,10,10,0);
 node06 = Node(6,0,10,0);
+node07 = Node(7,0,20,0);
+node08 = Node(8,10,20,0);
+node09 = Node(9,20,20,0);
 
-nodeArray = [node01 node02 node03 node04 node05 node06];
+nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09];
 
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
@@ -23,8 +26,15 @@ ele06 = BarElement3d2n(6,[node06 node01], mat, 2);
 ele07 = BarElement3d2n(7,[node01 node05], mat, 2);
 ele08 = BarElement3d2n(8,[node05 node02], mat, 2);
 ele09 = BarElement3d2n(9,[node02 node04], mat, 2);
+ele10 = BarElement3d2n(10,[node06 node07], mat, 2);
+ele11 = BarElement3d2n(11,[node05 node08], mat, 2);
+ele12 = BarElement3d2n(12,[node04 node09], mat, 2);
+ele13 = BarElement3d2n(13,[node07 node08], mat, 2);
+ele14 = BarElement3d2n(14,[node08 node09], mat, 2);
+ele15 = BarElement3d2n(15,[node06 node08], mat, 2);
+ele16 = BarElement3d2n(16,[node05 node09], mat, 2);
 
-elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09];
+elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ele10 ele11 ele12 ele13 ele14 ele15 ele16];
 
 %boundary conditions
 node01.fixDof('DISPLACEMENT_X');
@@ -37,36 +47,29 @@ addPointLoad([node02 node05],10,[0 -1 0]);
 addPointLoad(node02,16,[0 -1 0]);
 
 %create FemModel
-modelSix = FemModel(nodeArray, elementArray);
+modelNine = FemModel(nodeArray, elementArray);
 
 %solve
-SimpleSolvingStrategy.solve(modelSix);
+SimpleSolvingStrategy.solve(modelNine);
 
-%Substructure NEW
+%Substructure 
+%eleintf = elements at interface
+eleintf = [ele08 ele11];
+[substructure01, substructure02] = modelNine.divide(eleintf);
 
-[substructure1, substructure2] = modelSix.divide(ele08);
 
-x = Visualization(substructure1);
-y = Visualization(substructure2);
+%Visualize Substructures
+
+substructure01 = Visualization(substructure01);
+substructure02 = Visualization(substructure02);
+%originalSystem = Visualization(modelNine);
 
 figure
-plotUndeformed(x)
+plotUndeformed(substructure01);
 figure
-plotUndeformed(y)
-
-
-
-%Substructure
-% n = 2; %number of substructures wanted
-% idsNodes = []; %nxm matrix with all the names of nodes at which we want to substructure (m=number of cut nodes)
-% idsElements = []; %nxl matrix with all the names of elements which are at the interface(l=number of interface elements)
-% substructure = zeros(1,n); %matrix containing all the substructures
-% %ERROR bei mehrfacher Teilung müssen die Restgebiete und nicht wieder
-% %modelSix ins substructuring gegeben werden.
-% for subs = 1:1:n
-%     substructure(1,subs) = Substructure.divide(modelSix, idsNodes(subs,:), idsElements(subs,:), substructure, subs);
-% end
-
+plotUndeformed(substructure02);
+%figure
+%plotUndeformed(originalSystem);
 
 
 

@@ -38,6 +38,13 @@ classdef (Abstract) BarElement < Element
             barElement.crossSectionArea = area;
         end
         
+        %%%Start NEW
+        %function to change crosssection area
+        function changeArea(barElement, factor)
+            barElement.crossSectionArea = barElement.crossSectionArea*factor;
+        end
+        %%%End NEW
+        
         % member functions
         function update(barElement)
             barElement.length = computeLength(barElement.nodeArray(1).getCoords, ...

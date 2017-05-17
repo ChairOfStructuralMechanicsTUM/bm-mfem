@@ -2,7 +2,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     %ELEMENT The element class
     %   Abstract base class for all element implementations
     
-    properties (Access = public) %!!! was private changed to public
+    properties (Access = private)     
         id
         material
     end
@@ -25,6 +25,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
     end
+    
     
     methods (Abstract)
         update(element)     % update properties after e.g. nodes changed
