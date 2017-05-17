@@ -3,7 +3,7 @@ classdef FemModel < handle
     %   femModel = FemModel(nodeArray, elementArray, femModelParts)
     %   This class keeps track over all entities in the model
     
-    properties (Access = private)
+    properties (Access = public) % currently changed from private to public
         nodeArray
         elementArray
         %         dofArray = {}
@@ -93,5 +93,19 @@ classdef FemModel < handle
         
     end
     
+   
+    %%% START---Substructure
+    methods (Access = public)
+        function  substructure = divideModel(femModel)
+
+        [nodeArrayLeft, nodeArrayRight] = divideNodes(femModel.nodeArray,30);
+        [elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray,30);
+
+           substructure(1) = Substructure(nodeArrayLeft,elementArrayLeft);
+           substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
+        end
+    
+    end
+    %%% END--Substructure    
 end
 

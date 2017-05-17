@@ -2,11 +2,11 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     %ELEMENT The element class
     %   Abstract base class for all element implementations
     
-    properties (Access = private)
+    properties (Access = public) % currently changed from private to public
         id
         material
     end
-    properties (Access = protected)
+    properties (Access = public) % currently changed from private to public
         nodeArray
         dofNames
     end
@@ -102,6 +102,41 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         end
         
     end
+ 
+   %%% START -- Substructure_1
+    methods (Access = public)
+        function [elementArrayLeft, elementArrayRight]= divideElements(elementArray,xBoundary)
+          elementArrayRight=[];
+          elementArrayLeft=[];
+          
+        
+        for ii=1:length(elementArray)
+
+              currentNodes = elementArray(ii).getNodes;
+              currentXCoords = currentNodes.getX;
+
+              if currentXCoords(2) >= currentXCoords(1)    % get highest X-coordinat of the current 
+                  xHigh= currentXCoords(2);                % element in orde to determ wether element is
+                  xLow = currentXCoords(1);                % left or right of X-Boundary 
+                  else
+                      xHigh = currentXCoords(1);
+                      xLow  = currentXCoords(2);
+              end
+
+              if xHigh <= xBoundary             % if current element is left or on Boundary
+                  elementArrayLeft = [elementArrayLeft elementArray(ii)]; % add element to left  elementArray
+
+                  if xHigh == xBoundary && xLow == xBoundary % if element is completly on Boundary 
+                  elementArrayRight = [elementArrayRight elementArray(ii)]; 
+                  % Set CrossSectionArea to A/2
+                  % maybe copy function should be used here!
+                  end          
+              elseif xHigh > xBoundary                                      
+                  elementArrayRight = [elementArrayRight elementArray(ii)];
+              end
+        end
+    end
+%%% END---Substructure_1    
     
 end
-
+end

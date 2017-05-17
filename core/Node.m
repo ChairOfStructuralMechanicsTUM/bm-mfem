@@ -4,7 +4,7 @@ classdef Node < handle & matlab.mixin.Copyable
     %       id: unique identifier
     %       x, y(, z): coordinates
     
-    properties (Access = private)
+    properties (Access = public) % currently changed from private to public
         id
         x
         y
@@ -130,5 +130,29 @@ classdef Node < handle & matlab.mixin.Copyable
         end
     end
     
+        %%% START---Substructure
+                       %  
+       methods (Access = public)
+        function [nodeArrayLeft,nodeArrayRight] = divideNodes(nodeArray,xBoundary)
+              nodeArrayLeft=[];              % needs to be chaanged in case of several divisions
+              nodeArrayRight=[]; 
+               
+            for ii=1:length(nodeArray)
+
+                if nodeArray(ii).getX < xBoundary                      % if current X is left of x-Baoundary
+                    nodeArrayLeft  = [nodeArrayLeft nodeArray(ii)];    % add current node to left NodeArray
+
+                elseif nodeArray(ii).getX > xBoundary                  % if current X is right of x-Boundary   
+                    nodeArrayRight = [nodeArrayRight nodeArray(ii)];   % add current node to right NodeArray
+
+                elseif nodeArray(ii).getX == xBoundary                 % if current X is on Boundary
+                    nodeArrayLeft  = [nodeArrayLeft nodeArray(ii)];    % add current node to both Arrays 
+                    nodeArrayRight = [nodeArrayRight nodeArray(ii)];
+                end    
+            end
+        end
+       end
+    %%% END---Substructure
 end
+
 
