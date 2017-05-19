@@ -97,9 +97,9 @@ classdef FemModel < handle
     %%% START---Substructure
     methods (Access = public)
         function  substructure = divideModel(femModel)
-
-        [nodeArrayLeft, nodeArrayRight] = divideNodes(femModel.nodeArray,30);
-        [elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray,30);
+        
+        [nodeArrayLeft, nodeArrayRight] = divideNodes(femModel.nodeArray);
+        [elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray);
 
            substructure(1) = Substructure(nodeArrayLeft,elementArrayLeft);
            substructure(2) = Substructure(nodeArrayRight,elementArrayRight);

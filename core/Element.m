@@ -106,34 +106,39 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
  
    %%% START -- Substructure_1
     methods (Access = public)
-        function [elementArrayLeft, elementArrayRight]= divideElements(elementArray,xBoundary)
+        function [elementArrayLeft, elementArrayRight]= divideElements(elementArray)
           elementArrayRight=[];
           elementArrayLeft=[];
-          
-        
+          dim=2; % dim=1 for X; =2 for Y; =3 for Z 
+          Boundary=5;
         for ii=1:length(elementArray)
-              currentElement=elementArray(ii);
-              currentNodes = currentElement.getNodes;
-              currentXCoords = currentNodes.getX;
-
-              if currentXCoords(2) >= currentXCoords(1)    % get highest X-coordinat of the current 
-                  xHigh= currentXCoords(2);                % element in orde to determ wether element is
-                  xLow = currentXCoords(1);                % left or right of X-Boundary 
-                  else
-                      xHigh = currentXCoords(1);
-                      xLow  = currentXCoords(2);
+              
+              currentNodes = elementArray(ii).getNodes;
+              currentCoords = currentNodes.getCoords;           %[ x1 x2 y1 y2 z1 z2]
+              currentCoords = [currentCoords(2*dim-1),currentCoords(2*dim)];
+              
+              if currentCoords(2) >= currentCoords(1)    % get highest coordinat of the current element
+                 highCoord= currentCoords(2); 
+                 lowCoord  = currentCoords(1);                                                % to compare element position                %
+               else
+               highCoord = currentCoords(1);
+               lowCoord  = currentCoords(2);
               end
 
-                  if xHigh <= xBoundary       % if current element is left or on Boundary
-                    elementArrayLeft = [elementArrayLeft currentElement]; % add element to left  elementArray                 
-                  elseif xHigh == xBoundary && xLow == xBoundary
-                     % setCrossSectionArea(currentElement,0.5*getCrossSectionArea(currentElement));
-                      elmentArrayLeft   = [elementArrayLeft currentElement];
-                      
-                  elseif xHigh > xBoundary                                      
-                     elementArrayRight = [elementArrayRight currentElement];
-                  end
-                  % maybe copy function should be used here! 
+               if highCoord <= Boundary           % if current element is left or on Boundary
+                    elementArrayLeft = [elementArrayLeft copyElement(elementArray(ii))]; % add element to left  elementArray
+              
+                    if highCoord == Boundary && lowCoord == Boundary 
+                    elementArrayRight = [elementArrayRight copyElement(elementArray(ii))];
+                    % Set Cross-Section-Area
+                    setCrossSectionArea(elementArrayRight(length(elementArrayRight)),0.5*getCrossSectionArea(elementArray(ii)));
+                    setCrossSectionArea(elementArrayLeft(length(elementArrayLeft)),0.5*getCrossSectionArea(elementArray(ii)));
+                    end                                                       
+
+                 elseif highCoord > Boundary                                      
+                    elementArrayRight = [elementArrayRight copyElement(elementArray(ii))];
+
+                end
         end
         end
     end
