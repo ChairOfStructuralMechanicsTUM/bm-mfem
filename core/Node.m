@@ -133,11 +133,9 @@ classdef Node < handle & matlab.mixin.Copyable
         %%% START---Substructure
                        %  
        methods (Access = public)
-        function [nodeArrayLeft,nodeArrayRight] = divideNodes(nodeArray)
+        function [nodeArrayLeft,nodeArrayRight] = divideNodes(nodeArray,dim,Boundary)
               nodeArrayLeft=[];              % needs to be chaanged in case of several divisions
               nodeArrayRight=[]; 
-              dim=2;  % dim & Boundary could be Inputarguments of the function
-              Boundary=5; 
            
               for ii=1:length(nodeArray)
                 coords= nodeArray(ii).getCoords;

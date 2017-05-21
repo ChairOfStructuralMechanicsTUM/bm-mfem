@@ -106,11 +106,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
  
    %%% START -- Substructure_1
     methods (Access = public)
-        function [elementArrayLeft, elementArrayRight]= divideElements(elementArray)
+        function [elementArrayLeft, elementArrayRight]= divideElements(elementArray,dim,Boundary)
           elementArrayRight=[];
           elementArrayLeft=[];
-          dim=2; % dim=1 for X; =2 for Y; =3 for Z 
-          Boundary=5;
+          
         for ii=1:length(elementArray)
               
               currentNodes = elementArray(ii).getNodes;

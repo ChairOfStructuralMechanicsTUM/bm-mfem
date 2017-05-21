@@ -18,7 +18,8 @@ classdef FemModel < handle
     methods
         % constructor
         function femModel = FemModel(nodeArray, elementArray, femModelParts)
-           
+            % dim=2; % dim=1 for X; =2 for Y; =3 for Z 
+            
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             if (hasDuplicates(nodeIds))
                 error('problem with node ids');
@@ -96,10 +97,10 @@ classdef FemModel < handle
    
     %%% START---Substructure
     methods (Access = public)
-        function  substructure = divideModel(femModel)
-        
-        [nodeArrayLeft, nodeArrayRight] = divideNodes(femModel.nodeArray);
-        [elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray);
+        function  substructure = divideModel(femModel,dim,Boundary)
+           
+        [nodeArrayLeft, nodeArrayRight] = divideNodes(femModel.nodeArray,dim,Boundary);
+        [elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray,dim,Boundary);
 
            substructure(1) = Substructure(nodeArrayLeft,elementArrayLeft);
            substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
