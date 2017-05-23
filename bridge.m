@@ -55,8 +55,6 @@ addPointLoad(node07,16,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
 
-SimpleSolvingStrategy.solve(model);
-
 n02d = node02.getDofArray;
 n02d(1).getValueType;
 n02d(1).getValue;
@@ -65,25 +63,28 @@ n09d = node09.getDofArray;
 n09d(2).getValueType;
 n09d(2).getValue;
 
-%solve
-SimpleSolvingStrategy.solve(model);
-
 %Substructure 
 %eleintf = elements at interface
-eleintf = [ele15];
+eleintf = [ele14];
 [substructure01, substructure02] = model.divide(eleintf);
 
+%solve model
+SimpleSolvingStrategy.solve(model);
 
 %Visualize Substructures
+substructure01V = Visualization(substructure01);
+substructure02V = Visualization(substructure02);
+originalSystem = Visualization(model);
 
-substructure01 = Visualization(substructure01);
-substructure02 = Visualization(substructure02);
-%originalSystem = Visualization(model);
-
+%plot Substructure01
 figure
-plotUndeformed(substructure01);
+plotUndeformed(substructure01V);
+plotDeformed(substructure01V);
+%plot Substructure02
 figure
-plotUndeformed(substructure02);
-%figure
-%plotUndeformed(originalSystem);
-
+plotUndeformed(substructure02V);
+plotDeformed(substructure02V);
+%plot originalSystem 
+figure
+plotUndeformed(originalSystem);
+plotDeformed(originalSystem);

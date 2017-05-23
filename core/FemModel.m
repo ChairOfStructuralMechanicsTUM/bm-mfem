@@ -91,7 +91,6 @@ classdef FemModel < handle
         end
         
         %%%Start New
-        
         %function to divide FemModel into Substructures.
         %FemModel: structure to be divided
         %eleIntf: elements that are on the Interface
@@ -99,32 +98,47 @@ classdef FemModel < handle
             %all nodes/elements of Geomtrie
             totalNodeArray = femModel.getAllNodes;
             totalElementArray = femModel.getAllElements;
+            maxEleId = max(totalElementArray.getId)+1;
             
-            %all nodes at Interface
-            nodeIntf = [];
-            for ii = 1:length(eleIntf)
-                nodeIntf = unique([nodeIntf eleIntf(ii).getNodes()]);
-            end
+            %half the crossSectionArea 
+            halfCrossSectionArea(eleIntf);
             
+            %all nodes at Interface 
+            nodeIntf = findNodes(eleIntf);
+            %half the point loads at interface nodes before copying
+            halfPointLoads(nodeIntf);
+            
+            %see whether split is in x- or y-direction
             orientationX = unique(nodeIntf.getX());
             orientationY = unique(nodeIntf.getY());
             
-            %Make it possible to split vertically or horizontically
             if size(orientationX) == 1
                 [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray);
+                
+                %all elements that need to be copied
+                elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray);
+                %all elements that have been copied
+                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf);
+                %copied elements are added
+                totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsX(nodes01, nodes02, totalElementArray);
-            elseif size(orientationY) ==1
+               
+            elseif size(orientationY) == 1
                 [nodes01, nodes02]= splitNodesY(nodeIntf, totalNodeArray);
+                
+                %all elements that need to be copied
+                elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray);
+                %all elements that have been copied
+                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf);
+                %copied elements are added
+                totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsY(nodes01, nodes02, totalElementArray);
+            
             else
                 disp('Chosen Elements are not in a vertical or horizontal line');
                 return;
             end
             
-            %half the crosssection area of interface elements
-            for jj = 1:length(eleIntf)
-                eleIntf(jj).changeArea(0.5);
-            end
             %create Substructure from NodeArray and ElementArray
             substructure01 = Substructure(nodes01, elements01);
             substructure02 = Substructure(nodes02, elements02);

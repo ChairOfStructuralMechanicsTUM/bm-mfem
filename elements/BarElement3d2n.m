@@ -18,6 +18,10 @@ classdef BarElement3d2n < BarElement
                 super_args = {};
             elseif nargin == 4
                 super_args = {id; material; crossSectionArea};
+            %for copy function needed
+            %nodeArray stands for material
+            elseif nargin == 2
+                super_args ={id; nodeArray};
             end
             
             % call the super class constructor
@@ -27,7 +31,8 @@ classdef BarElement3d2n < BarElement
             
             
             % the constructor
-            if nargin > 0
+            %changed to > 2 for copy function
+            if nargin > 2
                 if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
                     barElement3d2n.nodeArray = nodeArray;
                 else
@@ -90,8 +95,15 @@ classdef BarElement3d2n < BarElement
                 /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
         end
         
-        
+        %%%Start NEW
+        function nodes = findNodes(elements)
+              nodes = [];
+            for ii = 1:length(elements)
+                nodes = unique([nodes elements(ii).getNodes()]);
+            end
+        end
     end
-    
+         %%%End NEW
 end
+   
 

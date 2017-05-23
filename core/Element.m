@@ -54,10 +54,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     methods (Access = protected)
         
         function cp = copyElement(obj)
-           cp = copyElement@matlab.mixin.Copyable(obj);
-           %what if more than 100 nodes?, why not increase id for nodes
-           %when copying?
-           obj.id = obj.id + 100;
+           %cp = copyElement@matlab.mixin.Copyable(obj);
+               %obj.id = obj.id + 100;
         end
         
         function addDofs(element, dofNames)

@@ -39,38 +39,38 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ele10 ele1
 %boundary conditions
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
-node03.fixDof('DISPLACEMENT_Y');
+node07.fixDof('DISPLACEMENT_X');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
 %Load
-addPointLoad([node02 node05],10,[0 -1 0]);
-addPointLoad(node02,16,[0 -1 0]);
+addPointLoad(node05,10,[0 -1 0]);
+addPointLoad(node02,16,[1 -1 0]);
 
 %create FemModel
 modelNine = FemModel(nodeArray, elementArray);
-
-%solve
-SimpleSolvingStrategy.solve(modelNine);
 
 %Substructure 
 %eleintf = elements at interface
 eleintf = [ele08 ele11];
 [substructure01, substructure02] = modelNine.divide(eleintf);
 
+%solve
+SimpleSolvingStrategy.solve(modelNine);
 
 %Visualize Substructures
-
 substructure01 = Visualization(substructure01);
 substructure02 = Visualization(substructure02);
-%originalSystem = Visualization(modelNine);
+originalSystem = Visualization(modelNine);
 
 figure
 plotUndeformed(substructure01);
+plotDeformed(substructure01);
 figure
 plotUndeformed(substructure02);
-%figure
-%plotUndeformed(originalSystem);
-
+plotDeformed(substructure02);
+figure
+plotUndeformed(originalSystem);
+plotDeformed(originalSystem);
 
 
 

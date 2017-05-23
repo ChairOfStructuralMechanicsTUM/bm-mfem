@@ -4,7 +4,7 @@ classdef Substructure < FemModel
     %   used to create substructes which are later used for FETI methods
     
     properties
-    end %123
+    end 
     
     methods
         %constructor

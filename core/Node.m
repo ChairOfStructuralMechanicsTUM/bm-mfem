@@ -114,6 +114,47 @@ classdef Node < handle & matlab.mixin.Copyable
         end
         
         %%% Start NEW
+        
+        %function to find elements which need to be copied for
+        %substructuring. nodeIntf: nodes at Interface, nodes02: all nodes
+        %in 2. substructure, totalElementArray: all elements
+        function elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray)
+                nodes = [nodeIntf, nodes02];
+                elementsToCopy = [];
+                for kk = 1:length(nodeIntf)
+                    for jj = 1:length(nodes)
+                        if kk ~= jj
+                            %all combinations of interface and other nodes
+                            %to find elements for copy
+                            nodePair = [nodeIntf(kk) nodes(jj)];
+                            elementsToCopy = unique([elementsToCopy ... 
+                                findElements(nodePair, totalElementArray)], 'stable');   
+                        end
+                    end
+                end     
+        end
+       
+        %function to half point loads at the interface. this implies that 
+        %half the point load is at substructer1 the other at substructer02.
+        function halfPointLoads(nodes)
+            for ii = 1:length(nodes)
+                dof = nodes(ii).getDofArray;
+                direction = zeros(1,length(dof));
+                value = 0;
+                for jj = 1:length(dof)
+                    val = dof(jj).getValue;
+                    %if value of a direction not zero, safe that direction
+                    if val ~= 0
+                        direction(jj) = val/abs(val);
+                        value = abs(val);
+                    end
+                end
+                %add a new point load which overrides the old one
+                addPointLoad(nodes(ii), 0.5*value, direction);
+            end
+        end
+
+
         %function that finds elements from nodes
         function  elements = findElements(nodeArray, allElements)
             elements = [];
@@ -126,33 +167,11 @@ classdef Node < handle & matlab.mixin.Copyable
                     end
                     for ll = 1:length(allElements)
                         if ismember(nodePair, allElements(ll).getNodes)
-                            elements = [elements, allElements(ll)];
+                            elements = unique([elements, allElements(ll)]);
                         end
                     end
                 end
             end
-        end   
-        
-        %function that finds all nodes along specific x-coordinate
-        function nodesX = nodesAtX(allNodes, maxX)
-            nodesX = [];
-            for mm = 1:length(allNodes)
-                if allNodes(mm).getX == maxX
-                    nodesX = [nodesX, allNodes(mm)];
-                end
-            end
-        
-        end
-        
-        %function that finds all nodes along a specific y-coordinate
-        function nodesY = nodesAtY(allNodes, maxY)
-            nodesY = [];
-            for nn = 1:length(allNodes)
-                if allNodes(nn).getY == maxY
-                    nodesY = [nodesY, allNodes(nn)];
-                end
-            end
-        
         end
         
         %function that orders nodes into left and right part relativ to the
@@ -175,13 +194,16 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
             
-          
-            nodesRight = [nodesRight, nodesAtX(totalNodeArray, maxX)];
+            %get max nodeId
+            maxId = max(totalNodeArray.getId);
+            %copy all Nodes at the Interface
+            cp = copyElement(nodeIntf, maxId);
+            nodesRight = [nodesRight, cp];
         end
         
         %function that orders the nodes in upper and lower part relative to
         %interface
-        function [nodesUp, nodesDown] = splitNodesY(nodeIntf, totalNodeArray)
+        function [nodesDown, nodesUp] = splitNodesY(nodeIntf, totalNodeArray)
             %interface Node furthest up
             maxY = max(nodeIntf.getY());
             
@@ -199,7 +221,11 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
             
-            nodesUp = [nodesUp, nodesAtY(totalNodeArray, maxY)];
+            %get max nodeId
+            maxId = max(totalNodeArray.getId);
+            %copy all Nodes at the Interface
+            cp = copyElement(nodeIntf, maxId);
+            nodesUp = [nodesUp, cp];
         end
         
         %function that orders the elements in a right and a left half
@@ -207,7 +233,6 @@ classdef Node < handle & matlab.mixin.Copyable
         function [elementsLeft, elementsRight] = splitElementsX(nodesLeft, nodesRight, totalElementArray)
             %all elements left or at interface
             elementsLeft = unique(findElements(nodesLeft, totalElementArray));
-           
             %all elements right of interface
             elementsRight = unique(findElements(nodesRight, totalElementArray));
         end
@@ -217,27 +242,73 @@ classdef Node < handle & matlab.mixin.Copyable
         function [elementsUp, elementsDown] = splitElementsY(nodesUp, nodesDown, totalElementArray)
             %all elements left or at interface
             elementsUp = unique(findElements(nodesUp, totalElementArray));
-           
             %all elements right of interface
             elementsDown = unique(findElements(nodesDown, totalElementArray));
         end
-        %%%END NEW
         
-    end
-    
-    methods (Access = protected)
+        %adds loads from boundary conditions to new nodes which are a
+        %copy of an old interface node
+        function addLoads(obj, cp)
+            dof = getDofArray(obj);
+            setDofArray(cp, dof);
+            cpDof = cp.getDofArray;
+            for ii = 1:length(cpDof)
+                val = getDofValue(obj, dof(ii).getValueType);
+                setDofValue(cp, getValueType(cpDof(ii)), val);
+            end     
+        end
         
-        function cp = copyElement(obj)
-           % copy constructor
-           %cp = copyElement@matlab.mixin.Copyable(obj);
-            coords = obj.getCoords;
-            if (length(coords) == 2)
-                cp = Node(obj.getId, coords(1), coords(2));
-            else
-                cp = Node(obj.getId, coords(1), coords(2), coords(3));
+        %function to find copy of a node (same coordinates, different Id)
+        function copy = findCopy(orig, nodes)
+            for ii = 1:length(nodes)
+                if orig.getX == nodes(ii).getX && orig.getY == nodes(ii).getY ...
+                    && orig.getId ~= nodes(ii).getId && orig.getZ == nodes(ii).getZ
+                    copy = nodes(ii);    
+                    return
+                else
+                    copy = orig;
+                end
             end
         end
     end
     
+    methods (Access = protected) 
+        %copy one/multiple nodes. also apply loads from original system to
+        %new nodes
+        function cp = copyElement(obj, maxId)
+           % copy constructor
+           % cp = copyElement@matlab.mixin.Copyable(obj);
+           maxId = maxId+1;
+           
+           %only one Node
+           if (length(obj) == 1)
+               coords = obj.getCoords;
+               if (length(coords) == 2)
+                   cp = Node(maxId, coords(1), coords(2));
+               else
+                   cp = Node(maxId, coords(1), coords(2), coords(3)); 
+               end
+               %add Loads from BC
+               addLoads(obj, cp);
+           
+           %multiple nodes
+           else
+               cp =[];
+               for jj = 1:length(obj)
+                   coords = obj(jj).getCoords;
+                   if (length(coords) == 2)
+                       cp = [cp Node(maxId, coords(1), coords(2))];
+                   else
+                       cp = [cp Node(maxId, coords(1), coords(2), coords(3))];
+                   end
+                   %add Loads from BC
+                   addLoads(obj(jj), cp(jj));
+                   %increase the Id
+                   maxId = maxId+1;
+               end
+           end
+        end
+    end 
+    %%%End NEW
 end
 

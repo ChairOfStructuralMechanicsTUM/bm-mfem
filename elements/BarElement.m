@@ -14,11 +14,15 @@ classdef (Abstract) BarElement < Element
                 super_args = {};
             elseif nargin == 3
                 super_args = {id; material};
+            %added because needed for copy function
+            elseif nargin == 2
+                super_args = {id; material};
             end
             
             barElement@Element(super_args{:});
             
-            if nargin > 0
+            %changed to 2 because of copy function
+            if nargin > 2
                 barElement.crossSectionArea = crossSectionArea;
             end
             
@@ -39,10 +43,36 @@ classdef (Abstract) BarElement < Element
         end
         
         %%%Start NEW
-        %function to change crosssection area
-        function changeArea(barElement, factor)
-            barElement.crossSectionArea = barElement.crossSectionArea*factor;
+        %function to half crosssection area at interface
+        function halfCrossSectionArea(element)
+            for ii = 1:length(element)
+                element(ii).crossSectionArea = element(ii).crossSectionArea*0.5;
+            end
         end
+        
+        %function preparing elements for copy and then sends them to copy
+        function copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf)
+            copiedElements = [];
+            for ii = 1:length(elementsToCopy)
+                nodePair = elementsToCopy(ii).getNodes;
+                %new nodes need to be found for the new element, the nodes
+                %are already copied before
+                nodePair(1) = findCopy(nodePair(1), [nodes01 nodes02]); 
+                nodePair(2) = findCopy(nodePair(2), [nodes01 nodes02]);
+
+                
+                if ismember(elementsToCopy(ii), eleIntf)    
+                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), maxEleId, nodePair)];
+                     %increase element Id, so that no element has same id
+                    maxEleId = maxEleId+1;
+                else
+                    id = elementsToCopy(ii).getId;
+                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), id, nodePair)];
+                end
+            end
+
+        end
+ 
         %%%End NEW
         
         % member functions
@@ -67,13 +97,20 @@ classdef (Abstract) BarElement < Element
         
     end
     
+    %%%Start NEW
     methods (Access = protected)
-       function cp = copyElement(obj)
-           cp = copyElement@Element(obj);
-           cp.crossSectionArea = obj.crossSectionArea;
-           cp.length = obj.length;
-        end 
-    end
-    
+        %function that copies the elements
+        function cp = copyElement(obj, maxId, cpNodes)
+            %cp = copyElement@matlab.mixin.Copyable(obj);
+            %create a basic BarElement
+            cp = BarElement3d2n(maxId, obj.getMaterial);
+            
+            %instanciate node array like this, otherwise nodes get empty
+            %degrees of freedeom. no BC is taken from original system
+            cp.nodeArray = cpNodes;
+            cp.crossSectionArea = obj.getCrossSectionArea;
+        end
+    end   
+    %%%End NEW
 end
 
