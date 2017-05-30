@@ -109,6 +109,7 @@ classdef (Abstract) BarElement < Element
             %degrees of freedeom. no BC is taken from original system
             cp.nodeArray = cpNodes;
             cp.crossSectionArea = obj.getCrossSectionArea;
+            cp.length = computeLength(cpNodes(1).getCoords, cpNodes(2).getCoords);
         end
     end   
     %%%End NEW
