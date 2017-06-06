@@ -139,6 +139,14 @@ classdef FemModel < handle
                 return;
             end
             
+            %%%NEW
+            %just needed as a a help
+            %try and change ids of second substructure to start from 1
+            for ii = 1:length(nodes02)
+                nodes02(ii).setId(ii);
+            end
+            %%%END
+            
             %create Substructure from NodeArray and ElementArray
             substructure01 = Substructure(nodes01, elements01);
             substructure02 = Substructure(nodes02, elements02);

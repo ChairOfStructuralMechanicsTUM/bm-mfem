@@ -81,6 +81,11 @@ classdef Node < handle & matlab.mixin.Copyable
             node.dofArray = dofs;
         end
         
+        %set Id Function
+        function setId(node, id)
+            node.id = id;
+        end
+        
         % member functions
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)

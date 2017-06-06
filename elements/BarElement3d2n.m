@@ -69,8 +69,10 @@ classdef BarElement3d2n < BarElement
         % member functions
         function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
-            x21 = dist(1);
-            y21 = dist(2);
+            
+            % x and y changed
+            y21 = dist(1);
+            x21 = dist(2);
             z21 = dist(3);
             stiffnessMatrix = [x21*x21 x21*y21 x21*z21 -x21*x21 -x21*y21 -x21*z21; ...
                 x21*y21 y21*y21 y21*z21 -x21*y21 -y21*y21 -y21*z21; ...

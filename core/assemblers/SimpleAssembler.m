@@ -37,6 +37,7 @@ classdef SimpleAssembler < Assembler
                 currentElement = elements(itEle);
                 elementFreedomTable = {};
                 
+                
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
@@ -53,7 +54,7 @@ classdef SimpleAssembler < Assembler
                 
                 elementFreedomTable = [elementFreedomTable{:}];
                 elementStiffnessMatrix = currentElement.computeLocalStiffnessMatrix;
-                
+                                
                 stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
                     = stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
                     + elementStiffnessMatrix;
