@@ -59,6 +59,9 @@ classdef BarElement3d2n < BarElement
             
         end
         
+        function crossSectionArea = getCrossSectionArea(barElement)
+            crossSectionArea = barElement.crossSectionArea;
+        end
         
         
         % member functions
@@ -79,7 +82,7 @@ classdef BarElement3d2n < BarElement
             stiffnessMatrix = factor * stiffnessMatrix;
         end
         
-        % Computation of the Element Stresses
+        % Computation of the Internal Element Stresses
         function stressValue = computeElementStress(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             CX = dist(1)/barElement.length;
@@ -90,7 +93,7 @@ classdef BarElement3d2n < BarElement
                 /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
         end
         
-        
+     
     end
     
 end
