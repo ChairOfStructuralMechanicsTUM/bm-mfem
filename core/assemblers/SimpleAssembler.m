@@ -76,7 +76,10 @@ classdef SimpleAssembler < Assembler
             if (dofs(itDof).isFixed)
                 fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
             else
-                forceVector(itDof) = dofs(itDof).getValue;
+%                 forceVector(itDof)
+%                 x = dofs(itDof).getDofLoad
+                
+                forceVector(itDof) = dofs(itDof).getDofLoad;
             end
         end
         
