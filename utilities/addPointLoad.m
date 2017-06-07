@@ -3,14 +3,34 @@ function addPointLoad( nodeArray, modulus, direction )
 %   nodeArray : nodes where the load is imposed
 %   modulus : load modulus
 %   direction : load direction with [x, y(, z)]
+
 for itNode = 1:length(nodeArray)
    currentNode = nodeArray(itNode);
-   currentNode.setDofValue('DISPLACEMENT_X', modulus * direction(1));
-   currentNode.setDofValue('DISPLACEMENT_Y', modulus * direction(2));
-   if length(direction) == 3
-       currentNode.setDofValue('DISPLACEMENT_Z', modulus * direction(3));
+   
+   currentDofArray = getDofArray(currentNode);
+   
+   if length(currentDofArray) ~= length(direction)
+       error('the dimensions of the dofs and the load are not the same')
    end
+   
+   for itDof = 1:length(currentDofArray)
+       currentDofArray(itDof).setLoad(modulus * direction(itDof));
+%       setLoad(currentDof(itDof), modulus * direction(1)); 
+   end
+        
+      
+      
+%    currentNode.setDofValue('DISPLACEMENT_X', modulus * direction(1));
+%    currentNode.setDofValue('DISPLACEMENT_Y', modulus * direction(2));
+%    
+%    if length(direction) == 3
+%        currentNode.setDofValue('DISPLACEMENT_Z', modulus * direction(3));
+%       
+%    end
+   
 end
 
 end
+
+
 

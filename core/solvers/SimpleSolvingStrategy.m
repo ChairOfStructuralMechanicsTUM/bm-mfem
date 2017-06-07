@@ -43,7 +43,7 @@ methods (Static)
             if (dofs(itDof).isFixed)
                 fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
             else
-                nodalForces(itDof) = dofs(itDof).getValue;
+                nodalForces(itDof) = dofs(itDof).getDofLoad;
             end
         end
         
