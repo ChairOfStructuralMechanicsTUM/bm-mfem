@@ -105,7 +105,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         
-        function setInitialDofLoad(nodes, dof, load)
+        function setDofLoad(nodes, dof, load)
             %SETINITIALDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
