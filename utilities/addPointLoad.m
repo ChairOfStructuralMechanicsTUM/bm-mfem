@@ -20,13 +20,13 @@ for itNode = 1:length(nodeArray)
         
       
       
-   currentNode.setDofValue('DISPLACEMENT_X', modulus * direction(1));
-   currentNode.setDofValue('DISPLACEMENT_Y', modulus * direction(2));
-   
-   if length(direction) == 3
-       currentNode.setDofValue('DISPLACEMENT_Z', modulus * direction(3));
-      
-   end
+%    currentNode.setDofValue('DISPLACEMENT_X', modulus * direction(1));
+%    currentNode.setDofValue('DISPLACEMENT_Y', modulus * direction(2));
+%    
+%    if length(direction) == 3
+%        currentNode.setDofValue('DISPLACEMENT_Z', modulus * direction(3));
+%       
+%    end
    
 end
 
