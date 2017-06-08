@@ -31,6 +31,7 @@ methods (Static)
 
         Kred2 = Kred*pseudoInv*Kred;
         
+        %set quasi zero elements < 10^-12 to zero
         for ii=1:length(Kred2)
             for jj = 1:length(Kred2)
                 if abs(Kred2(ii,jj)) < 10^-12
@@ -44,7 +45,7 @@ methods (Static)
         Kred;
         
         %check whether body modes form the null space
-        Kred*R
+        Kred*R;
 
         x = Kred \ f';
         

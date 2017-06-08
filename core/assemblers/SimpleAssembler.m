@@ -37,11 +37,17 @@ classdef SimpleAssembler < Assembler
                 currentElement = elements(itEle);
                 elementFreedomTable = {};
                 
-                
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
+                    
+                    %Problem here when nodes get new ids. the ids have to
+                    %start with 1 otherwise the indices of the
+                    %elementFreedomTable are not in a row which causes a
+                    %problem. maybe add a local id, which is given from 1
+                    %to n in every individual substructure to its nodes and
+                    %use it here.
                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
                    
                     for i = (nNodalDofs - 1) : -1 : 1

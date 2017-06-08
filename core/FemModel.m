@@ -140,6 +140,7 @@ classdef FemModel < handle
             end
             
             %%%NEW
+            %%%Maybe avoided by adding a local degree of freedom!
             %just needed as a a help
             %try and change ids of second substructure to start from 1
             for ii = 1:length(nodes02)
