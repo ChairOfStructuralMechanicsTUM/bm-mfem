@@ -4,7 +4,7 @@ classdef Node < handle & matlab.mixin.Copyable
     %       id: unique identifier
     %       x, y(, z): coordinates
     
-    properties (Access = public) % currently changed from private to public
+    properties (Access = public)  % changed public/private
         id
         x
         y
@@ -123,37 +123,14 @@ classdef Node < handle & matlab.mixin.Copyable
            %cp = copyElement@matlab.mixin.Copyable(obj);
             coords = obj.getCoords;
             if (length(coords) == 2)
-                cp = Node(obj.getId, coords(1), coords(2));
+                cp = Node(obj.getId +100, coords(1), coords(2));
             else
-                cp = Node(obj.getId, coords(1), coords(2), coords(3));
+                cp = Node(obj.getId +100, coords(1), coords(2), coords(3));
             end
         end
     end
     
-        %%% START---Substructure
-                       %  
-       methods (Access = public)
-        function [nodeArrayLeft,nodeArrayRight] = divideNodes(nodeArray,dim,Boundary)
-              nodeArrayLeft=[];              % needs to be chaanged in case of several divisions
-              nodeArrayRight=[]; 
-           
-              for ii=1:length(nodeArray)
-                coords= nodeArray(ii).getCoords;
-                
-                if coords(dim)< Boundary                      % if current Coordinate is left of Baoundary
-                    nodeArrayLeft  = [nodeArrayLeft copyElement(nodeArray(ii))];    % add current node to left NodeArray
 
-                elseif coords(dim) > Boundary                     
-                    nodeArrayRight = [nodeArrayRight copyElement(nodeArray(ii))];   
-
-                elseif coords(dim) == Boundary                
-                    nodeArrayLeft  = [nodeArrayLeft copyElement(nodeArray(ii))];     
-                    nodeArrayRight = [nodeArrayRight copyElement(nodeArray(ii))];
-                end    
-              end            
-        end
-       end
-    %%% END---Substructure
 end
 
 
