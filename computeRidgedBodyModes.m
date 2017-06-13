@@ -7,14 +7,15 @@ L=zeros(n);
 zeroPivots=[];  % ZeroPointPosition
 nonZeroPivots=[]; % NonZeroPointPositon
 R=[];
-
+% Cholesky factorization and Pivoting
     for j=1:n       
         sum1=0;       
         for k=1:j-1  
             sum1=sum1+(L(j,k))^2; 
         end
         diff=K(j,j)-sum1;
-        if diff < 10^-5     
+       
+        if diff < 10^-5     % In case of Zero-Pivot
             zeroPivots(end+1)=j;
             r=K(1:j-1,j);
             R=[R [r;zeros(n-j+1,1)]];
@@ -25,13 +26,12 @@ R=[];
 %             rbm(j:n)=eye(n-j+1,1);
 %             RBM(:,length(ZZP))=rbm;
 
-            % removing ZeroPivot variable
-          
+            % removing ZeroPivot variable          
             L(j,:)=0;
             L(j,j)=1;
             continue
-        
-        else
+         
+        else        % In case of Non Zero-Pivot
         L(j,j)=sqrt(K(j,j)-sum1);
         nonZeroPivots(end+1)=j;
         end
@@ -73,11 +73,3 @@ R=[];
   % Kontrolle=K*RBM ;
     
 end
-
-
-
-%      y=L(1:8,1:8)\ -R(1:8,1); % ZPP (i)-1
-%      RBM=L(1:8,1:8)'\y;
-%      RBM(9)=1;
-%      RBM(10:12)=0;     
-%      Kontrollergebnis1=K*RBM ;
