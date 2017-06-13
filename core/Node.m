@@ -123,9 +123,9 @@ classdef Node < handle & matlab.mixin.Copyable
            %cp = copyElement@matlab.mixin.Copyable(obj);
             coords = obj.getCoords;
             if (length(coords) == 2)
-                cp = Node(obj.getId +100, coords(1), coords(2));
+                cp = Node(obj.getId, coords(1), coords(2));
             else
-                cp = Node(obj.getId +100, coords(1), coords(2), coords(3));
+                cp = Node(obj.getId, coords(1), coords(2), coords(3));
             end
         end
     end

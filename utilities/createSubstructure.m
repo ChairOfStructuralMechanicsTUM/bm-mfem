@@ -73,15 +73,25 @@ substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
     function [ nodeArray] = getNodesFromElements( elementArray )
         tempNodeArray=[];
         for i=1:length(elementArray)
+           
             Nodes=elementArray(i).getNodes;
             tempNodeArray=[tempNodeArray Nodes];
-            
         end
+        
+       % tempNodeArray=[tempNodeArray InterfaceNodes];
         %[ids,index]
         [~,sortedIds]=unique(tempNodeArray.getId); %Deletion of duplicates
         nodeArray=tempNodeArray(sortedIds);     % only unique nodes are stored
+
         
+        % Overwriting Id´s for Assembler ???
+      
+%          for ii=1:length(nodeArray)      
+%               nodeArray(ii).id=ii;   
+%          end
+         
     end
+
 
 
 end
