@@ -23,6 +23,7 @@ R=[];
             
             %  compute RBM  during factorization:
 %             y=L(1:j-1,1:j-1)\-r;
+
 %             rbm=L(1:j-1,1:j-1)'\y;
 %             rbm(j:n)=eye(n-j+1,1);
 %             RBM(:,length(ZZP))=rbm;

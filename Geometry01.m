@@ -43,9 +43,9 @@ StiffnessMatrix=SimpleAssembler(model);
 
 % SUBSTRRUCTURE
 % plotUndeformed(Visualization(model))
-Substructure=createSubstructure(model,1,5); %% dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate 
-Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
-Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
+% Substructure=createSubstructure(model,1,5); %% dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate 
+% Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
+% Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
 
 %arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure02.nodeArray);
 % Assembling Substructure:
