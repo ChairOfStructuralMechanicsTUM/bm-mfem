@@ -12,6 +12,7 @@ classdef SimpleAssembler < Assembler
     methods %test
         
         function assembling = SimpleAssembler(femModel)
+            
             if (nargin > 0)
                 
                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
@@ -28,27 +29,36 @@ classdef SimpleAssembler < Assembler
     methods (Static)
         
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
+            
+            %PROBLEM: If the node Ids in a substructure are not in
+            %increasing order one can't just simply subtract the smallest
+            %Id from all Ids, there will be an inconsistency. Maybe add
+            %local Ids in a substructure?
+            
             nDofs = length(femModel.getDofArray);
             nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
+            
+            %find smallest nodeId
+            nodes = femModel.getAllNodes;
+            mini = min(nodes.getId)-1;
             
             for itEle = 1:length(femModel.getAllElements)
                 elements = femModel.getAllElements;
                 currentElement = elements(itEle);
                 elementFreedomTable = {};
                 
+                
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
                     
-                    %Problem here when nodes get new ids. the ids have to
-                    %start with 1 otherwise the indices of the
-                    %elementFreedomTable are not in a row which causes a
-                    %problem. maybe add a local id, which is given from 1
-                    %to n in every individual substructure to its nodes and
-                    %use it here.
-                    globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
+                    %%%CHANGED: currentNode.getId is changed. The minimum
+                    %nodeId is always substracted. This makes the nodeId
+                    %always start from 1.
+                    %globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
+                    globalDofArray(nNodalDofs) = nNodalDofs * (currentNode.getId-mini);
                    
                     for i = (nNodalDofs - 1) : -1 : 1
                         globalDofArray(i) = globalDofArray(i+1) - 1;
