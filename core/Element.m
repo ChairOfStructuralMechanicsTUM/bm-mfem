@@ -48,6 +48,21 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             nodes = element.nodeArray;
         end
         
+        % checks, if all required dofs are available
+        function result = check(element)
+            result = true;
+            for iNode = 1:length(element.nodeArray)
+                cNode = element.nodeArray(iNode);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
+                if ~ isempty(setdiff(element.dofNames',availableDofNames))
+                    error('%s missing in node %d\n', ...
+                        cell2mat(setdiff(element.dofNames',availableDofNames)), ...
+                        cNode.getId)
+                    result = false;
+                end
+            end
+        end
+        
     end
     
     methods (Access = protected)
