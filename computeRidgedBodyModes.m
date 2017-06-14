@@ -1,12 +1,13 @@
 
-function[RBM]=computeRidgedBodyModes(K)
+function [RidgedBodyModes]= computeRidgedBodyModes(K)
 
 K=K.reducedStiffnessMatrix;
 n=size(K,1);
 L=zeros(n);
-zeroPivots=[];  % ZeroPointPosition
-nonZeroPivots=[]; % NonZeroPointPositon
+zeroPivots=[];    %Indices of  ZeroPivot Positions
+nonZeroPivots=[]; % Indices of NonZeroPivot Positons
 R=[];
+
 % Cholesky factorization and Pivoting
     for j=1:n       
         sum1=0;       
@@ -17,8 +18,8 @@ R=[];
        
         if diff < 10^-5     % In case of Zero-Pivot
             zeroPivots(end+1)=j;
-            r=K(1:j-1,j);
-            R=[R [r;zeros(n-j+1,1)]];
+            R=[R [K(1:j-1,j);1;zeros(n-j+1,1)]];
+           
             
             %  compute RBM  during factorization:
 %             y=L(1:j-1,1:j-1)\-r;
@@ -61,13 +62,13 @@ R=[];
       
  
       % Compute RBM   
-    RBM=zeros(n,length(zeroPivots));
+    RidgedBodyModes=zeros(n,length(zeroPivots));
     
     for i=1: length (zeroPivots)
     y=L(1:zeroPivots(i)-1,1:zeroPivots(i)-1)\-R(1:zeroPivots(i)-1,i);
     rbm=L(1:zeroPivots(i)-1,1:zeroPivots(i)-1)'\y;
     rbm(zeroPivots(i))=1;
-    RBM(1:zeroPivots(i),i)= rbm;
+    RidgedBodyModes(1:zeroPivots(i),i)= rbm;
     end
     
   % Kontrolle=K*RBM ;
