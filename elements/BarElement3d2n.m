@@ -70,12 +70,8 @@ classdef BarElement3d2n < BarElement
         function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             
-            %%% x and y changed
-            %watch out changing x and y corresponds to changing the order
-            %of the degrees of freedom. now for every node the first degree
-            %of freedom is y, the second one is x.
-            y21 = dist(1);
-            x21 = dist(2);
+            x21 = dist(1);
+            y21 = dist(2);
             z21 = dist(3);
             stiffnessMatrix = [x21*x21 x21*y21 x21*z21 -x21*x21 -x21*y21 -x21*z21; ...
                 x21*y21 y21*y21 y21*z21 -x21*y21 -y21*y21 -y21*z21; ...
