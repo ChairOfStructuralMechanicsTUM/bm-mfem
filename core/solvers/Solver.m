@@ -5,7 +5,9 @@ classdef Solver < handle
     properties
     end
     
-    methods
+    methods (Abstract)
+        initialize(femModel)
+        solve(femModel)
     end
     
 end
