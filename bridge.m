@@ -73,12 +73,15 @@ eleintf = [ele15];
 
 %solve indicidual models using FETI
 %SimpleSolvingStrategy.solve(substructure01);
-SimpleSolvingStrategy.solve(substructure02);
+%testSolver.solve(substructure02);
+SimpleSolvingStrategy.solve(substructure01, substructure02);
 
 %Visualize Substructures
 substructure01V = Visualization(substructure01);
 substructure02V = Visualization(substructure02);
 originalSystem = Visualization(model);
+
+
 
 %plot Substructure01
 % figure
