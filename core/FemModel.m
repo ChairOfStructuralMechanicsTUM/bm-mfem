@@ -139,18 +139,16 @@ classdef FemModel < handle
                 return;
             end
             
-            %%%NEW
-            %%%Maybe avoided by adding a local degree of freedom!
-            %just needed as a a help
-            %try and change ids of second substructure to start from 1
-            for ii = 1:length(nodes02)
-                nodes02(ii).setId(ii);
+            %give interface nodes to substructures
+            nodeIntf01 = nodeIntf;
+            nodeIntf02 = [];
+            for ii = 1:length(nodeIntf01)
+                nodeIntf02 = [nodeIntf02, findCopy(nodeIntf01(ii), nodes02)];
             end
-            %%%END
             
             %create Substructure from NodeArray and ElementArray
-            substructure01 = Substructure(nodes01, elements01);
-            substructure02 = Substructure(nodes02, elements02);
+            substructure01 = Substructure(nodes01, elements01, nodeIntf01);
+            substructure02 = Substructure(nodes02, elements02, nodeIntf02);
         end 
         %%%End NEW
     end
