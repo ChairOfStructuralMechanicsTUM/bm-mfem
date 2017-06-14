@@ -8,10 +8,6 @@ classdef FemModel < handle
         elementArray
         %         dofArray = {}
         femModelParts = containers.Map
-        
-    end
-    
-    properties (Access = public)
         dofArray = {}
     end
     
@@ -26,8 +22,8 @@ classdef FemModel < handle
                 femModel.nodeArray = nodeArray;
             end
             
-            femModel.dofArray = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false);
-            femModel.dofArray = [femModel.dofArray{:}];
+%             femModel.dofArray = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false);
+%             femModel.dofArray = [femModel.dofArray{:}];
             
             elementIds = arrayfun(@(element) element.getId, elementArray);
             if (hasDuplicates(elementIds))
@@ -48,15 +44,17 @@ classdef FemModel < handle
         end
         
         function elementArray = getAllElements(femModel)
-           elementArray = femModel.elementArray; 
+            elementArray = femModel.elementArray;
         end
         
         function dofArray = getDofArray(femModel)
-           dofArray = femModel.dofArray; 
+            femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
+            dofArray = [femModel.dofArray{:}];
+%             dofArray = femModel.dofArray;
         end
         
         function node = getNode(femModel, id)
-           node = femModel.nodeArray(id); 
+            node = femModel.nodeArray(id);
         end
         
         function nodes = getNodes(femModel, ids)

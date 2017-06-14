@@ -44,7 +44,7 @@ classdef BarElement2d2n < BarElement
                     error('problem with the nodes in element %d', id);
                 end
                 
-                barElement2d2n.addDofs(barElement2d2n.dofNames);
+%                 barElement2d2n.addDofs(barElement2d2n.dofNames);
                 
                 barElement2d2n.length = computeLength(barElement2d2n.nodeArray(1).getCoords, ...
                     barElement2d2n.nodeArray(2).getCoords);

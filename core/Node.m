@@ -83,6 +83,24 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         % member functions
+        function addDof(nodes, dofNames)
+            for itNode = 1:length(nodes)
+                availableDofNames = arrayfun(@(dof) dof.getValueType, nodes(itNode).dofArray);
+                for itDof = 1:length(dofNames)
+%                     if any(ismember(availableDofNames,dofNames))
+%                         disp("already defined")
+%                         continue
+%                     end
+                    nodes(itNode).dofArray = [nodes(itNode).dofArray 
+                        Dof(nodes(itNode),0.0,dofNames(itDof))];
+                end
+                nodes(itNode).dofArray = nodes(itNode).dofArray';
+                test = nodes(itNode).dofArray;
+            end
+            
+%             node.setDofArray(nodalDofs);
+        end
+        
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
