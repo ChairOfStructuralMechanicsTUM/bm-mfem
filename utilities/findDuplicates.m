@@ -1,4 +1,4 @@
-function [ output_args ] = hasDuplicates( array )
+function [ output_args ] = findDuplicates( array )
 %HASDUPLICATES Checks an aray for repeated values
 %   Detailed explanation goes here
 if (length(array) == length(unique(array)))
@@ -6,6 +6,6 @@ if (length(array) == length(unique(array)))
 else
     output_args = true;
 
-
+diff
 end
 

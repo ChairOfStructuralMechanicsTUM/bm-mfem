@@ -6,7 +6,6 @@ classdef FemModel < handle
     properties (Access = private)
         nodeArray
         elementArray
-        %         dofArray = {}
         femModelParts = containers.Map
         dofArray = {}
     end
@@ -16,18 +15,17 @@ classdef FemModel < handle
         function femModel = FemModel(nodeArray, elementArray, femModelParts)
            
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
-            if (hasDuplicates(nodeIds))
-                error('problem with node ids');
+            duplicated_nodes = findDuplicates(nodeIds);
+            if ~ isempty(duplicated_nodes)
+                error('multiple nodes with id %d exist',duplicated_nodes);
             else
                 femModel.nodeArray = nodeArray;
             end
             
-%             femModel.dofArray = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false);
-%             femModel.dofArray = [femModel.dofArray{:}];
-            
             elementIds = arrayfun(@(element) element.getId, elementArray);
-            if (hasDuplicates(elementIds))
-                error('problem with element ids');
+            duplicated_elements = findDuplicates(elementIds);
+            if ~ isempty(duplicated_elements)
+                error('multiple elements with id %d exist',duplicated_elements);
             else
                 femModel.elementArray = elementArray;
             end
