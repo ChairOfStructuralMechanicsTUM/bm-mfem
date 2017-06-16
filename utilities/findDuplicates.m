@@ -1,11 +1,9 @@
-function [ output_args ] = findDuplicates( array )
-%HASDUPLICATES Checks an aray for repeated values
+function [ duplicates_array ] = findDuplicates( array )
+%HASDUPLICATES Returns repeated values in an array
 %   Detailed explanation goes here
-if (length(array) == length(unique(array)))
-    output_args = false;
-else
-    output_args = true;
+sorted_array = sort(array);
+duplicates_indices = find(diff(sorted_array) == 0);
+duplicates_array = sorted_array(duplicates_indices);
 
-diff
 end
 
