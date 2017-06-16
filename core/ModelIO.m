@@ -241,7 +241,7 @@ classdef ModelIO < handle
                     
                     while ~strcmp(tline,'$EndProperties')
                         prop = strsplit(tline);
-                        property.addValue(cell2mat(prop(1)), str2double(prop(2)));
+                        property.setValue(cell2mat(prop(1)), str2double(prop(2)));
                         tline = fgetl(fid);
                     end
                     

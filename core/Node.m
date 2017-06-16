@@ -10,8 +10,7 @@ classdef Node < handle & matlab.mixin.Copyable
         y
         z
         dofArray
-        responseDofArray
-%         loadMap = containers.Map;
+        valueMap
     end
     
     methods
@@ -21,6 +20,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 case 0
                     % the empty constructor is needed in order to
                     % preallocate empty arrays of Nodes
+                    node.valueMap = PropertyContainer;
                 case 3
                     node.id = id;
                     node.x = x;
@@ -95,7 +95,8 @@ classdef Node < handle & matlab.mixin.Copyable
                     nodes(itNode).dofArray = [nodes(itNode).dofArray 
                         Dof(nodes(itNode),0.0,dofNames(itDof))];
                 end
-                nodes(itNode).dofArray = nodes(itNode).dofArray';
+%                 nodes(itNode).dofArray = nodes(itNode).dofArray';
+%                 test = nodes(itNode).dofArray;
             end
         end
         
@@ -146,8 +147,11 @@ classdef Node < handle & matlab.mixin.Copyable
         end
          
         
-        
-        
+        function addValue(nodes, valueName)
+           for itNode = 1:length(nodes)
+              nodes(itNode).valueMap.setValue(valueName, 0.0); 
+           end
+        end
         
 %         function init = getInitialDofLoad(nodes, dof)
 %             init = zeros;
