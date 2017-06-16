@@ -21,28 +21,30 @@ classdef SimpleSolvingStrategy < Solver
     
     
 methods (Static)
-    function x = solve(femModel_01, femModel_02)
+    function [u01, u02] = solve(femModel01, femModel02)
         
         %Feti solution
         if nargin == 2
             disp('FETI');
-            K_01 = SimpleAssembler(femModel_01).reducedStiffnessMatrix;
-            f_01 = SimpleAssembler(femModel_01).reducedForceVector;
+            K_01 = SimpleAssembler(femModel01).reducedStiffnessMatrix;
+            f_01 = SimpleAssembler(femModel01).reducedForceVector;
             
-            K_02 = SimpleAssembler(femModel_02).reducedStiffnessMatrix;
-            f_02 = SimpleAssembler(femModel_02).reducedForceVector;
+            K_02 = SimpleAssembler(femModel02).reducedStiffnessMatrix;
+            f_02 = SimpleAssembler(femModel02).reducedForceVector;
             
-            x = FetiSolver.solveFeti(K_01, K_02, f_01, f_02);
+            [u01, u02] = FetiSolver.solveFeti(K_01, K_02, f_01, f_02, femModel01, femModel02);
+            
+            SimpleAssembler.assignResultsToDofs(femModel01, u01);
+            SimpleAssembler.assignResultsToDofs(femModel02, u02);
             
         %FEM solution    
         else
             disp('FEM');
-            Kred = SimpleAssembler(femModel_01).reducedStiffnessMatrix;
-            f = SimpleAssembler(femModel_01).reducedForceVector;
-            x = Kred \ f';
+            Kred = SimpleAssembler(femModel01).reducedStiffnessMatrix;
+            f = SimpleAssembler(femModel01).reducedForceVector;
+            u01 = Kred \ f';
+            SimpleAssembler.assignResultsToDofs(femModel01, u01);
         end
-        
-        SimpleAssembler.assignResultsToDofs(femModel_01, x);
     end
  
     function nodalForces = getNodalForces(femModel)
