@@ -4,8 +4,8 @@ classdef FemModel < handle
     %   This class keeps track over all entities in the model
     
     properties (Access = private)
-        nodeArray
-        elementArray
+        nodeArray = Node.empty
+        elementArray = Element.empty
         femModelParts = containers.Map
         dofArray = {}
     end
@@ -13,21 +13,23 @@ classdef FemModel < handle
     methods
         % constructor
         function femModel = FemModel(nodeArray, elementArray, femModelParts)
-           
-            nodeIds = arrayfun(@(node) node.getId, nodeArray);
-            duplicated_nodes = findDuplicates(nodeIds);
-            if ~ isempty(duplicated_nodes)
-                error('multiple nodes with id %d exist',duplicated_nodes);
-            else
-                femModel.nodeArray = nodeArray;
-            end
             
-            elementIds = arrayfun(@(element) element.getId, elementArray);
-            duplicated_elements = findDuplicates(elementIds);
-            if ~ isempty(duplicated_elements)
-                error('multiple elements with id %d exist',duplicated_elements);
-            else
-                femModel.elementArray = elementArray;
+            if nargin > 0
+                nodeIds = arrayfun(@(node) node.getId, nodeArray);
+                duplicated_nodes = findDuplicates(nodeIds);
+                if ~ isempty(duplicated_nodes)
+                    error('multiple nodes with id %d exist',duplicated_nodes);
+                else
+                    femModel.nodeArray = nodeArray;
+                end
+
+                elementIds = arrayfun(@(element) element.getId, elementArray);
+                duplicated_elements = findDuplicates(elementIds);
+                if ~ isempty(duplicated_elements)
+                    error('multiple elements with id %d exist',duplicated_elements);
+                else
+                    femModel.elementArray = elementArray;
+                end
             end
             
             if nargin == 3
@@ -86,6 +88,20 @@ classdef FemModel < handle
             femModel.femModelParts(name) = entityArray;
         end
         
+        function addNewNode(femModel, id, x, y, z)
+            nodeIds = arrayfun(@(node) node.getId, femModel.nodeArray);
+            if any(id == nodeIds)
+                error('a node with id %d already exists in the model', id)
+            end
+                
+            if nargin == 4
+                femModel.nodeArray(id) = Node(id, x, y);
+            elseif nargin == 5
+                femModel.nodeArray(id) = Node(id, x, y, z);
+            else
+                error('wrong input parameters')
+            end
+        end        
         
     end
     
