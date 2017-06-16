@@ -47,13 +47,16 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
-node03.fixDof('DISPLACEMENT_Y');
+node05.fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
 addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
 addPointLoad(node07,16,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
+
+%solve model
+SimpleSolvingStrategy.solve(model);
 
 n02d = node02.getDofArray;
 n02d(1).getValueType;
@@ -68,30 +71,27 @@ n09d(2).getValue;
 eleintf = [ele15];
 [substructure01, substructure02] = model.divide(eleintf);
 
-%solve model
-%SimpleSolvingStrategy.solve(model);
 
 %solve indicidual models using FETI
 %SimpleSolvingStrategy.solve(substructure01);
 %testSolver.solve(substructure02);
-SimpleSolvingStrategy.solve(substructure01, substructure02);
+%SimpleSolvingStrategy.solve(substructure01, substructure02);
 
 %Visualize Substructures
-substructure01V = Visualization(substructure01);
-substructure02V = Visualization(substructure02);
+ substructure01V = Visualization(substructure01);
+ substructure02V = Visualization(substructure02);
 originalSystem = Visualization(model);
-
 
 
 %plot Substructure01
 % figure
 % plotUndeformed(substructure01V);
-%plotDeformed(substructure01V);
+% plotDeformed(substructure01V);
 %plot Substructure02
 % figure
 % plotUndeformed(substructure02V);
-%plotDeformed(substructure02V);
+% plotDeformed(substructure02V);
 % %plot originalSystem 
-% figure
-% plotUndeformed(originalSystem);
-% plotDeformed(originalSystem);
+figure
+plotUndeformed(originalSystem);
+plotDeformed(originalSystem);
