@@ -107,11 +107,13 @@ fprintf(fileID,'\r\n \r\n');
 fprintf(fileID,'Node Forces (inclusive Reactions): \r\n \r\n');
 fprintf(fileID,'%6s %14s %14s %14s \r\n','node','x-force','y-force','z-force');
 fprintf(fileID,'\r\n');
+%TODO: ugly workaround
+solver = SimpleSolvingStrategy(Model);
 
 for ii = 1:1:size(Model.getAllNodes,2)
 
     dofArray = getDofArray(nodeArray(ii));
-    nodeForces = SimpleSolvingStrategy.getNodalForces(Model);
+    nodeForces = solver.getNodalForces();
      
   
     for jj = 1:length(dofArray)
