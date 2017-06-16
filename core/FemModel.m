@@ -50,7 +50,7 @@ classdef FemModel < handle
         function dofArray = getDofArray(femModel)
             femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
             dofArray = [femModel.dofArray{:}];
-%             dofArray = femModel.dofArray;
+            dofArray = reshape(dofArray,1,size(dofArray,1)*size(dofArray,2));
         end
         
         function node = getNode(femModel, id)
