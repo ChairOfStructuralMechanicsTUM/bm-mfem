@@ -22,7 +22,7 @@ classdef FemModel < handle
                 else
                     femModel.nodeArray = nodeArray;
                 end
-
+                
                 elementIds = arrayfun(@(element) element.getId, elementArray);
                 duplicated_elements = findDuplicates(elementIds);
                 if ~ isempty(duplicated_elements)
@@ -40,7 +40,7 @@ classdef FemModel < handle
         
         % getter functions
         function nodeArray = getAllNodes(femModel)
-           nodeArray = femModel.nodeArray; 
+            nodeArray = femModel.nodeArray;
         end
         
         function elementArray = getAllElements(femModel)
@@ -69,10 +69,10 @@ classdef FemModel < handle
         end
         
         function elements = getElements(femModel, ids)
-           elements = Element.empty;
-           for ii = 1:length(ids)
-              elements(ii) = femModel.elementArray(ids(ii)); 
-           end
+            elements = Element.empty;
+            for ii = 1:length(ids)
+                elements(ii) = femModel.elementArray(ids(ii));
+            end
         end
         
         function femModelParts = getAllModelParts(femModel)
@@ -88,20 +88,50 @@ classdef FemModel < handle
             femModel.femModelParts(name) = entityArray;
         end
         
-        function addNewNode(femModel, id, x, y, z)
+        function node = addNewNode(femModel, id, x, y, z)
             nodeIds = arrayfun(@(node) node.getId, femModel.nodeArray);
             if any(id == nodeIds)
                 error('a node with id %d already exists in the model', id)
             end
-                
+            
             if nargin == 4
-                femModel.nodeArray(id) = Node(id, x, y);
+                node = Node(id, x, y);
+                femModel.nodeArray(id) = node;
             elseif nargin == 5
-                femModel.nodeArray(id) = Node(id, x, y, z);
+                node = Node(id, x, y, z);
+                femModel.nodeArray(id) = node;
             else
                 error('wrong input parameters')
             end
-        end        
+        end
+        
+        function element = addNewElement(femModel, elementName, id, nodes, properties)
+            elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
+            if any(id == elementIds)
+                error('an element with id %d already exists in the model', id)
+            end
+            
+            if ~ isa(nodes,'Node')
+                nodes = femModel.getNodes(nodes);
+            end
+            
+            switch elementName
+                case 'BarElement2d2n'
+                    crossArea = properties('CROSS_SECTION');
+                    element = BarElement2d2n(id, nodes, properties, crossArea);
+                case 'BarElement3d2n'
+                    crossArea = properties('CROSS_SECTION');
+                    element = BarElement3d2n(id, nodes, properties, crossArea);
+                case 'SpringDamperElement3d2n'
+                    element = SpringDamperElement3d2n(id, nodes, properties);
+                    
+                otherwise
+                    error('unknown element %s',elementName)
+            end %switch
+            
+            femModel.elementArray(id) = element;
+            
+        end
         
     end
     

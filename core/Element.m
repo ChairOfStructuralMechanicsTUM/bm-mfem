@@ -16,7 +16,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         function element = Element(id, material)
             if (nargin > 0)
                 element.id = id;
-                if (isa(material,'Material'))
+                if (isa(material,'Material') || isa(material,'PropertyContainer'))
                     element.material = material;
                 else
                     error('problem with the material in element %d', id);
@@ -44,6 +44,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             material = element.material;
         end
         
+        function value = getPropertyValue(element, valueName)
+           value = element.material.getValue(valueName); 
+        end
+        
         function nodes = getNodes(element)
             nodes = element.nodeArray;
         end
@@ -55,10 +59,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                 cNode = element.nodeArray(iNode);
                 availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
                 if ~ isempty(setdiff(element.dofNames',availableDofNames))
+                    result = false;
                     error('%s missing in node %d\n', ...
                         cell2mat(setdiff(element.dofNames',availableDofNames)), ...
                         cNode.getId)
-                    result = false;
                 end
             end
         end
@@ -72,16 +76,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            obj.id = obj.id + 100;
         end
         
-        function addDofs(element, dofNames)
-            for itNode = 1:length(element.nodeArray)
-                nodalDofs(1, length(dofNames)) = Dof;
-                for itDof = 1:length(dofNames)
-                    newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
-                    nodalDofs(itDof) = newDof;
-                end
-                element.nodeArray(itNode).setDofArray(nodalDofs);
-            end
-        end
+%         function addDofs(element, dofNames)
+%             for itNode = 1:length(element.nodeArray)
+%                 nodalDofs(1, length(dofNames)) = Dof;
+%                 for itDof = 1:length(dofNames)
+%                     newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
+%                     nodalDofs(itDof) = newDof;
+%                 end
+%                 element.nodeArray(itNode).setDofArray(nodalDofs);
+%             end
+%         end
         
         function addDofsToSingleNode(element, node)
             nodalDofs(1, length(element.dofNames)) = Dof;
