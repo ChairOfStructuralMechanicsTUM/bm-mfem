@@ -3,12 +3,12 @@ classdef Dof < handle
     %   Detailed explanation goes here
     
     properties (Access = private)
+        id
         node
         value
         valueType
         dofLoad
         fixed = false
-        
     end
     
     methods
@@ -22,7 +22,7 @@ classdef Dof < handle
                 end
                 dof.value = value;
                 dof.valueType = valueType;
-                %               
+                dof.id = -1; %uninitialized               
             end
         end
         
@@ -47,7 +47,12 @@ classdef Dof < handle
             end
         end
  
-        
+        function id = getId(dofs)
+           id = zeros;
+           for ii = 1:length(dofs)
+               id(ii) = dofs(ii).id;
+           end
+        end
         
         function valueType = getValueType(dof)
             valueType = dof.valueType;
@@ -75,12 +80,14 @@ classdef Dof < handle
         function setValue(dof, value)
             dof.value = value;
         end
-
         
         function setLoad(dof, dofLoad)
             dof.dofLoad = dofLoad;
         end
 
+        function setId(dof, id)
+            dof.id = id;
+        end
 
        
     end

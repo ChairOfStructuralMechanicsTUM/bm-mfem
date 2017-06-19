@@ -52,6 +52,14 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             nodes = element.nodeArray;
         end
         
+        function dofs = getDofs(element)
+           dofs = Dof.empty;
+           nodes = element.nodeArray;
+           for ii = 1:length(nodes)
+              dofs = [dofs nodes(ii).getDofArray'];
+           end
+        end
+        
         % checks, if all required dofs are available
         function result = check(element)
             result = true;

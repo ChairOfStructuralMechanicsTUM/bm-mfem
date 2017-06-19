@@ -8,6 +8,7 @@ classdef FemModel < handle
         elementArray = Element.empty
         femModelParts = containers.Map
         dofArray = {}
+        initialized = false
     end
     
     methods
@@ -48,9 +49,11 @@ classdef FemModel < handle
         end
         
         function dofArray = getDofArray(femModel)
-            femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
-            dofArray = [femModel.dofArray{:}];
-            dofArray = reshape(dofArray,1,size(dofArray,1)*size(dofArray,2));
+            if ~ femModel.initialized
+                femModel.initialize;
+            end
+            
+            dofArray = femModel.dofArray;
         end
         
         function node = getNode(femModel, id)
@@ -86,6 +89,18 @@ classdef FemModel < handle
         % setter functions
         function addModelPart(femModel, name, entityArray)
             femModel.femModelParts(name) = entityArray;
+        end
+        
+        % member functions
+        function initialize(femModel)
+            femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
+            femModel.dofArray = [femModel.dofArray{:}];
+            femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
+            for ii = 1:length(femModel.dofArray)
+               femModel.dofArray(ii).setId(ii); 
+            end
+            
+            femModel.initialized = true;
         end
         
         function node = addNewNode(femModel, id, x, y, z)

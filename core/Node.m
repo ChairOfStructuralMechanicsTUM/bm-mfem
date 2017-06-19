@@ -21,6 +21,7 @@ classdef Node < handle & matlab.mixin.Copyable
                     % the empty constructor is needed in order to
                     % preallocate empty arrays of Nodes
                     node.valueMap = PropertyContainer;
+                    node.id = -1;
                 case 3
                     node.id = id;
                     node.x = x;
