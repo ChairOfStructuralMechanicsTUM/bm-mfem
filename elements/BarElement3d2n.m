@@ -24,7 +24,8 @@ classdef BarElement3d2n < BarElement
             barElement3d2n@BarElement(super_args{:});
             
             barElement3d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            
+            barElement3d2n.requiredProperties = [ ];
+            barElement3d2n.required3dProperties = [ ];
             
             % the constructor
             if nargin > 0
@@ -80,6 +81,10 @@ classdef BarElement3d2n < BarElement
                 * barElement.crossSectionArea) ...
                 / (barElement.length^3);
             stiffnessMatrix = factor * stiffnessMatrix;
+        end
+        
+        function forceVector = computeLocalForceVector(barElement)
+            forceVector = zeros(1,6);
         end
         
         % Computation of the Internal Element Stresses

@@ -9,6 +9,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     properties (Access = protected)
         nodeArray
         dofNames
+        requiredProperties
+        required3dProperties
     end
     
     methods
@@ -29,6 +31,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     methods (Abstract)
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
+        computeLocalStiffnessMatrix(element)
+        computeLocalForceVector(element)
     end
     
     methods (Sealed)
@@ -61,16 +65,39 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         end
         
         % checks, if all required dofs are available
-        function result = check(element)
-            result = true;
+        function check(element)
+            %check the dofs
             for iNode = 1:length(element.nodeArray)
                 cNode = element.nodeArray(iNode);
                 availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
                 if ~ isempty(setdiff(element.dofNames',availableDofNames))
-                    result = false;
                     error('%s missing in node %d\n', ...
                         cell2mat(setdiff(element.dofNames',availableDofNames)), ...
                         cNode.getId)
+                end
+            end
+            
+            %check the properties
+            valsToCheck = element.requiredProperties;
+            properties = element.getMaterial;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck)
+                if ~ any(ismember(valsToCheck(ii), availableValueNames))
+                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck(ii)))
+                end
+            end
+            
+            valsToCheck3d = element.required3dProperties;
+            properties = element.getMaterial;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck3d)
+                if any(ismember(valsToCheck3d(ii), availableValueNames))
+                    val = properties.getValue(cell2mat(valsToCheck3d(ii)));
+                    if ~ (length(val) == 3)
+                        error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
+                    end
+                else
+                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck3d(ii)))
                 end
             end
         end
