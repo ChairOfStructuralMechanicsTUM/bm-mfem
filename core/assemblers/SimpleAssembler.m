@@ -40,7 +40,7 @@ classdef SimpleAssembler < Assembler
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
-                    globalDofArray = zeros(1,nNodalDofs);
+                    globalDofArray = zeros(1,nNodalDofs);   %ids of the global dofs
                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
                    
                     for i = (nNodalDofs - 1) : -1 : 1
@@ -66,30 +66,36 @@ classdef SimpleAssembler < Assembler
         
        
         
-    function [forceVector, reducedForceVector] = applyExternalForces(femModel)
-        dofs = femModel.getDofArray;
-        nDofs = length(dofs);
-        forceVector = zeros(1,nDofs);
-        fixedDofs = [];
-    
-        for itDof = 1:nDofs
-            if (dofs(itDof).isFixed)
-                fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
-            else
-%                 forceVector(itDof)
-%                 x = dofs(itDof).getDofLoad
-                
-                forceVector(itDof) = dofs(itDof).getDofLoad;
+        function [forceVector, reducedForceVector] = applyExternalForces(femModel)
+            dofs = femModel.getDofArray;
+            nDofs = length(dofs);
+            forceVector = zeros(1,nDofs);
+            fixedDofs = [];
+            
+            % get the point load on the dofs
+            for itDof = 1:nDofs
+                if (dofs(itDof).isFixed)
+                    fixedDofs = [fixedDofs itDof];   % array of fixed dofs and their location
+                else
+                    forceVector(itDof) = dofs(itDof).getDofLoad;
+                end
             end
-        end
-        
-        reducedForceVector = forceVector;
-        reducedForceVector(fixedDofs) = [];
+            
+            % get the external forces from every element
+            elements = femModel.getAllElements;
+            for itEle = 1:length(elements)
+                elementalForceVector = elements(itEle).computeLocalForceVector;
+                elementalDofs = elements(itEle).getDofs;
+                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
+            end
+            
+            reducedForceVector = forceVector;
+            reducedForceVector(fixedDofs) = [];
             
             
         end
         
-       
+        
         
         
         
