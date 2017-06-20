@@ -74,7 +74,7 @@ classdef SpringDamperElement3d2n < Element
         end
         
         function update(springDamperElement)
-            springDamperElement.length = computeLength(springDamperElement.nodeArray(1).getCoords, ...
+            springDamperElement.length0 = computeLength(springDamperElement.nodeArray(1).getCoords, ...
                     springDamperElement.nodeArray(2).getCoords);
         end
         

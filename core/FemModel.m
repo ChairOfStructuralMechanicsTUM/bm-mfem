@@ -137,6 +137,8 @@ classdef FemModel < handle
                 case 'BarElement3d2n'
                     crossArea = properties('CROSS_SECTION');
                     element = BarElement3d2n(id, nodes, properties, crossArea);
+                case 'ConcentratedMassElement3d1n'
+                    element = ConcentratedMassElement3d1n(id, nodes, properties);
                 case 'SpringDamperElement3d2n'
                     element = SpringDamperElement3d2n(id, nodes, properties);
                     
