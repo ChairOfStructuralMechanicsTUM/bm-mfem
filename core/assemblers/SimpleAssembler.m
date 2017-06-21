@@ -114,6 +114,31 @@ classdef SimpleAssembler < Assembler
             
         end
         
+        function massMatrix = assembleGlobalMassMatrix(femModel)
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            massMatrix = zeros(ndofs);
+            
+            for itEle = 1:length(elements)
+               elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
+               elementalDofs = elements(itEle).getDofs;
+               massMatrix(elementalDofs.getId, elementalDofs.getId) = ...
+                   massMatrix(elementalDofs.getId, elementalDofs.getId) + elementalMassMatrix;
+            end
+        end
+        
+        function dampingMatrix = assembleGlobalDampingMatrix(femModel)
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            dampingMatrix = zeros(ndofs);
+            
+            for itEle = 1:length(elements)
+               elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
+               elementalDofs = elements(itEle).getDofs;
+               dampingMatrix(elementalDofs.getId) = dampingMatrix(elementalDofs.getId) + elementalDampingMatrix;
+            end
+        end
+        
     end
     
     methods (Static, Access = private)

@@ -46,6 +46,10 @@ classdef SpringDamperElement3d2n < Element
            end
         end
         
+        function massMatrix = computeLocalMassMatrix(element)
+            massMatrix = zeros(6);
+        end
+        
         function dampingMatrix = computeLocalDampingMatrix(springDamperElement)
            stiffness = springDamperElement.getPropertyValue('ELEMENTAL_DAMPING');
            dampingMatrix = zeros(6);

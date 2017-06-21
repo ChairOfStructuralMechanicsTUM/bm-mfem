@@ -50,6 +50,10 @@ classdef ConcentratedMassElement3d1n < Element
            massMatrix(3,3) = mass;
         end
         
+        function dampingMatrix = computeLocalDampingMatrix(element)
+            dampingMatrix = zeros(3);
+        end
+        
         
         
         function update(element)
