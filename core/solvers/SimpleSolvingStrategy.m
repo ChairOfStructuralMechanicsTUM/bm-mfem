@@ -27,7 +27,7 @@ classdef SimpleSolvingStrategy < Solver
             Kred = SimpleAssembler(simpleSolver.femModel).reducedStiffnessMatrix;
             f = SimpleAssembler(simpleSolver.femModel).reducedForceVector;
             
-            x = Kred \ f';
+            x = linsolve(Kred, f.');
             
             SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);
         end
