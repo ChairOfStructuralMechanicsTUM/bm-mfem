@@ -34,7 +34,7 @@ classdef Material < handle
             material.parameters(name) = value;
         end
         
-        function value = getParameterValue(material, name)
+        function value = getValue(material, name)
             value = material.parameters(name);
         end
         

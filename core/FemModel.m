@@ -132,10 +132,10 @@ classdef FemModel < handle
             
             switch elementName
                 case 'BarElement2d2n'
-                    crossArea = properties('CROSS_SECTION');
+                    crossArea = properties.getValue('CROSS_SECTION');
                     element = BarElement2d2n(id, nodes, properties, crossArea);
                 case 'BarElement3d2n'
-                    crossArea = properties('CROSS_SECTION');
+                    crossArea = properties.getValue('CROSS_SECTION');
                     element = BarElement3d2n(id, nodes, properties, crossArea);
                 case 'ConcentratedMassElement3d1n'
                     element = ConcentratedMassElement3d1n(id, nodes, properties);
