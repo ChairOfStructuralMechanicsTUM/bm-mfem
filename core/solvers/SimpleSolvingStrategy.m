@@ -33,10 +33,8 @@ classdef SimpleSolvingStrategy < Solver
         end
         
         function initialize(simpleSolver)
-            elements = simpleSolver.femModel.getAllElements();
-            for ii = 1:length(elements)
-                elements(ii).check();
-            end
+            simpleSolver.femModel.initialize;
+            simpleSolver.isInitialized = true;
         end
         
         function nodalForces = getNodalForces(simpleSolver)

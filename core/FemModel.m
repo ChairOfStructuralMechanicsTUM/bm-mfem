@@ -93,6 +93,11 @@ classdef FemModel < handle
         
         % member functions
         function initialize(femModel)
+            elements = femModel.getAllElements();
+            for ii = 1:length(elements)
+                elements(ii).check();
+            end
+            
             femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
             femModel.dofArray = [femModel.dofArray{:}];
             femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
