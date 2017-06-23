@@ -9,6 +9,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     properties (Access = protected)
         nodeArray
         dofNames
+        requiredProperties
+        required3dProperties
     end
     
     methods
@@ -16,7 +18,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         function element = Element(id, material)
             if (nargin > 0)
                 element.id = id;
-                if (isa(material,'Material'))
+                if (isa(material,'Material') || isa(material,'PropertyContainer'))
                     element.material = material;
                 else
                     error('problem with the material in element %d', id);
@@ -29,6 +31,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     methods (Abstract)
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
+        computeLocalStiffnessMatrix(element)
+        computeLocalForceVector(element)
     end
     
     methods (Sealed)
@@ -44,8 +48,65 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             material = element.material;
         end
         
+        function value = getPropertyValue(element, valueName)
+           value = element.material.getValue(valueName); 
+        end
+        
         function nodes = getNodes(element)
             nodes = element.nodeArray;
+        end
+        
+        function dofs = getDofs(element)
+           dofs = Dof.empty;
+           nodes = element.nodeArray;
+           for ii = 1:length(nodes)
+              dofs = [dofs nodes(ii).getDofArray'];
+           end
+        end
+        
+        % checks, if all required dofs are available
+        function check(element)
+            %check the dofs
+            for iNode = 1:length(element.nodeArray)
+                cNode = element.nodeArray(iNode);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
+                diff = setxor(element.dofNames', availableDofNames);
+                if ~ isempty(diff)
+                    missingDofs = setdiff(element.dofNames', availableDofNames);
+                    unknownDofs = setdiff(availableDofNames, element.dofNames');
+                    
+                    error('the following dofs are missing at node %d: %s\nthe following dofs at node %d are not defined for the element %s: %s\n', ...
+                        cNode.getId, ...
+                        strjoin(missingDofs,', '), ...
+                        cNode.getId, ...
+                        class(element), ...
+                        strjoin(unknownDofs,', '))
+                end
+            end
+            
+            %check the properties
+            valsToCheck = element.requiredProperties;
+            properties = element.getMaterial;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck)
+                if ~ any(ismember(valsToCheck(ii), availableValueNames))
+                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck(ii)))
+                end
+            end
+            
+            valsToCheck3d = element.required3dProperties;
+            properties = element.getMaterial;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck3d)
+                if any(ismember(valsToCheck3d(ii), availableValueNames))
+                    val = properties.getValue(cell2mat(valsToCheck3d(ii)));
+                    if ~ (length(val) == 3)
+                        error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
+                    end
+                else
+                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck3d(ii)))
+                end
+            end
         end
         
     end
@@ -57,16 +118,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            obj.id = obj.id + 100;
         end
         
-        function addDofs(element, dofNames)
-            for itNode = 1:length(element.nodeArray)
-                nodalDofs(1, length(dofNames)) = Dof;
-                for itDof = 1:length(dofNames)
-                    newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
-                    nodalDofs(itDof) = newDof;
-                end
-                element.nodeArray(itNode).setDofArray(nodalDofs);
-            end
-        end
+%         function addDofs(element, dofNames)
+%             for itNode = 1:length(element.nodeArray)
+%                 nodalDofs(1, length(dofNames)) = Dof;
+%                 for itDof = 1:length(dofNames)
+%                     newDof = Dof(element.nodeArray(itNode),0.0,dofNames(itDof));
+%                     nodalDofs(itDof) = newDof;
+%                 end
+%                 element.nodeArray(itNode).setDofArray(nodalDofs);
+%             end
+%         end
         
         function addDofsToSingleNode(element, node)
             nodalDofs(1, length(element.dofNames)) = Dof;

@@ -26,6 +26,8 @@ classdef AssemblerTests <  matlab.unittest.TestCase
             elementArray = [ele01 ele02 ele03 ele04 ele05];
             
             model = FemModel(nodeArray, elementArray);
+            model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            model.initialize;
             
             actualSolution = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
             

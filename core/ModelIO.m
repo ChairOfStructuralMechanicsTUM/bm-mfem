@@ -42,7 +42,7 @@ classdef ModelIO < handle
         end
         
         function nodeArray = readNodes(modelIO)
-            nodeArray = Node;
+            nodeArray = Node.empty;
             fid = fopen(modelIO.inputFile);
             tline = fgetl(fid);
             
@@ -58,7 +58,18 @@ classdef ModelIO < handle
                     while ~strcmp(tline,'$EndNodes')
                         nodeData = cell2mat(textscan(tline,'%f'))';
                         cNode = Node(nodeData(1),nodeData(2),nodeData(3),nodeData(4));
-                        nodeArray(nodeData(1)) = cNode;
+                        try
+                            nodeArray(nodeData(1))
+                            idExists = true;
+                        catch
+                            idExists = false;
+                            nodeArray(nodeData(1)) = cNode;
+                        end
+                        
+                        if idExists
+                            error('multiple nodes with id %d exist',nodeData(1))
+                        end
+                        
                         tline = fgetl(fid);
                     end
                     
@@ -69,7 +80,6 @@ classdef ModelIO < handle
         end
         
         function elementArray = readElements(modelIO, modelParts, nodes)
-%             elementArray;
             elementArray = Element.empty;
             fid = fopen(modelIO.inputFile);
             tline = fgetl(fid);
@@ -241,7 +251,7 @@ classdef ModelIO < handle
                     
                     while ~strcmp(tline,'$EndProperties')
                         prop = strsplit(tline);
-                        property.addValue(cell2mat(prop(1)), str2double(prop(2)));
+                        property.setValue(cell2mat(prop(1)), str2double(prop(2)));
                         tline = fgetl(fid);
                     end
                     

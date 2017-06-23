@@ -40,7 +40,7 @@ classdef SimpleAssembler < Assembler
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
-                    globalDofArray = zeros(1,nNodalDofs);
+                    globalDofArray = zeros(1,nNodalDofs);   %ids of the global dofs
                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
                    
                     for i = (nNodalDofs - 1) : -1 : 1
@@ -66,30 +66,36 @@ classdef SimpleAssembler < Assembler
         
        
         
-    function [forceVector, reducedForceVector] = applyExternalForces(femModel)
-        dofs = femModel.getDofArray;
-        nDofs = length(dofs);
-        forceVector = zeros(1,nDofs);
-        fixedDofs = [];
-    
-        for itDof = 1:nDofs
-            if (dofs(itDof).isFixed)
-                fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
-            else
-%                 forceVector(itDof)
-%                 x = dofs(itDof).getDofLoad
-                
-                forceVector(itDof) = dofs(itDof).getDofLoad;
+        function [forceVector, reducedForceVector] = applyExternalForces(femModel)
+            dofs = femModel.getDofArray;
+            nDofs = length(dofs);
+            forceVector = zeros(1,nDofs);
+            fixedDofs = [];
+            
+            % get the point load on the dofs
+            for itDof = 1:nDofs
+                if (dofs(itDof).isFixed)
+                    fixedDofs = [fixedDofs itDof];   % array of fixed dofs and their location
+                else
+                    forceVector(itDof) = dofs(itDof).getDofLoad;
+                end
             end
-        end
-        
-        reducedForceVector = forceVector;
-        reducedForceVector(fixedDofs) = [];
+            
+            % get the external forces from every element
+            elements = femModel.getAllElements;
+            for itEle = 1:length(elements)
+                elementalForceVector = elements(itEle).computeLocalForceVector;
+                elementalDofs = elements(itEle).getDofs;
+                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
+            end
+            
+            reducedForceVector = forceVector;
+            reducedForceVector(fixedDofs) = [];
             
             
         end
         
-       
+        
         
         
         
@@ -106,6 +112,31 @@ classdef SimpleAssembler < Assembler
                 
             end
             
+        end
+        
+        function massMatrix = assembleGlobalMassMatrix(femModel)
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            massMatrix = zeros(ndofs);
+            
+            for itEle = 1:length(elements)
+               elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
+               elementalDofs = elements(itEle).getDofs;
+               massMatrix(elementalDofs.getId, elementalDofs.getId) = ...
+                   massMatrix(elementalDofs.getId, elementalDofs.getId) + elementalMassMatrix;
+            end
+        end
+        
+        function dampingMatrix = assembleGlobalDampingMatrix(femModel)
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            dampingMatrix = zeros(ndofs);
+            
+            for itEle = 1:length(elements)
+               elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
+               elementalDofs = elements(itEle).getDofs;
+               dampingMatrix(elementalDofs.getId) = dampingMatrix(elementalDofs.getId) + elementalDampingMatrix;
+            end
         end
         
     end

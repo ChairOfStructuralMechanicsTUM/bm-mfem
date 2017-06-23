@@ -24,7 +24,8 @@ classdef BarElement3d2n < BarElement
             barElement3d2n@BarElement(super_args{:});
             
             barElement3d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            
+            barElement3d2n.requiredProperties = [ ];
+            barElement3d2n.required3dProperties = [ ];
             
             % the constructor
             if nargin > 0
@@ -34,7 +35,7 @@ classdef BarElement3d2n < BarElement
                     error('problem with the nodes in element %d', id);
                 end
                 
-                barElement3d2n.addDofs(barElement3d2n.dofNames);
+%                 barElement3d2n.addDofs(barElement3d2n.dofNames);
                 
                 barElement3d2n.length = computeLength(barElement3d2n.nodeArray(1).getCoords, ...
                     barElement3d2n.nodeArray(2).getCoords);
@@ -76,10 +77,14 @@ classdef BarElement3d2n < BarElement
                 -x21*x21 -x21*y21 -x21*z21 x21*x21 x21*y21 x21*z21; ...
                 -x21*y21 -y21*y21 -y21*z21 x21*y21 y21*y21 y21*z21; ...
                 -x21*z21 -y21*z21 -z21*z21 x21*z21 y21*z21 z21*z21];
-            factor = (barElement.getMaterial().getParameterValue('YOUNGS_MODULUS') ...
+            factor = (barElement.getMaterial().getValue('YOUNGS_MODULUS') ...
                 * barElement.crossSectionArea) ...
                 / (barElement.length^3);
             stiffnessMatrix = factor * stiffnessMatrix;
+        end
+        
+        function forceVector = computeLocalForceVector(barElement)
+            forceVector = zeros(1,6);
         end
         
         % Computation of the Internal Element Stresses
@@ -89,7 +94,7 @@ classdef BarElement3d2n < BarElement
             CY = dist(2)/barElement.length;
             CZ = dist(3)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
-            stressValue = barElement.getMaterial().getParameterValue('YOUNGS_MODULUS')...
+            stressValue = barElement.getMaterial().getValue('YOUNGS_MODULUS')...
                 /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
         end
         

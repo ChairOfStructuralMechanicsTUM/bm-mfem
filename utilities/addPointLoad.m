@@ -13,6 +13,8 @@ for itNode = 1:length(nodeArray)
        error('the dimensions of the dofs and the load are not the same')
    end
    
+   direction = direction ./ norm(direction);
+   
    for itDof = 1:length(currentDofArray)
        currentDofArray(itDof).setLoad(modulus * direction(itDof));
 %       setLoad(currentDof(itDof), modulus * direction(1)); 

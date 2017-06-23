@@ -19,12 +19,20 @@ classdef PropertyContainer < handle
         end
         
         % member functions
-        function addValue(propertyContainer, name, value)
+        function setValue(propertyContainer, name, value)
             propertyContainer.propertyMap(name) = value;
         end
         
         function value = getValue(propertyContainer, name)
-            value = propertyContainer.propertyMap(name);
+            try
+                value = propertyContainer.propertyMap(name);
+            catch
+                error('The value \"%s\" is not available in this container', name)
+            end
+        end
+        
+        function names = getValueNames(propertyContainer)
+            names = propertyContainer.propertyMap.keys;
         end
         
     end

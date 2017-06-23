@@ -35,6 +35,8 @@ classdef BarElement2d2n < BarElement
             barElement2d2n@BarElement(super_args{:});
             
             barElement2d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
+            barElement2d2n.requiredProperties = [ ];
+            barElement2d2n.required3dProperties = [ ];
             
             if nargin > 0
                 
@@ -44,7 +46,7 @@ classdef BarElement2d2n < BarElement
                     error('problem with the nodes in element %d', id);
                 end
                 
-                barElement2d2n.addDofs(barElement2d2n.dofNames);
+%                 barElement2d2n.addDofs(barElement2d2n.dofNames);
                 
                 barElement2d2n.length = computeLength(barElement2d2n.nodeArray(1).getCoords, ...
                     barElement2d2n.nodeArray(2).getCoords);
@@ -86,10 +88,14 @@ classdef BarElement2d2n < BarElement
                 x21*y21 y21*y21 -x21*y21 -y21*y21; ...
                 -x21*x21 -x21*y21 x21*x21 x21*y21; ...
                 -x21*y21 -y21*y21 x21*y21 y21*y21];
-            factor = (barElement.getMaterial().getParameterValue('YOUNGS_MODULUS') ...
+            factor = (barElement.getMaterial().getValue('YOUNGS_MODULUS') ...
                 * barElement.crossSectionArea) ...
                 / (barElement.length^3);
             stiffnessMatrix = factor * stiffnessMatrix;
+        end
+        
+        function forceVector = computeLocalForceVector(barElement)
+            forceVector = zeros(1,6);
         end
         
         % Computation of the Element Stress
@@ -98,7 +104,7 @@ classdef BarElement2d2n < BarElement
             cos = dist(1)/barElement.length;
             sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
-            stressValue = barElement.getMaterial().getParameterValue('YOUNGS_MODULUS') ...
+            stressValue = barElement.getMaterial().getValue('YOUNGS_MODULUS') ...
                 /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
             
         end

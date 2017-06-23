@@ -25,12 +25,16 @@ classdef Material < handle
             parameters = material.parameters;
         end
         
+        function names = getValueNames(material)
+            names = material.parameters.keys;
+        end
+        
         % member functions
         function addParameter(material, name, value)
             material.parameters(name) = value;
         end
         
-        function value = getParameterValue(material, name)
+        function value = getValue(material, name)
             value = material.parameters(name);
         end
         
