@@ -31,10 +31,10 @@ classdef Dof < handle
            node = dof.node; 
         end
         
-        function value = getValue(dofs)
+        function value = getValue(dofs, step)
             value = zeros;
             for ii = 1:length(dofs)
-                value(ii) = dofs(ii).value;
+                value(ii) = dofs(ii).value(step);
             end
         end
         
