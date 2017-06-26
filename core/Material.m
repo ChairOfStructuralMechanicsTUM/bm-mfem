@@ -38,6 +38,11 @@ classdef Material < handle
             value = material.parameters(name);
         end
         
+        function value = getParameterValue(material, name)
+            % just an alternative name for compatibility
+            value = material.getValue(name);
+        end
+        
     end
     
 end

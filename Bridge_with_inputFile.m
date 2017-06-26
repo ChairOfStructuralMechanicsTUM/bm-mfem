@@ -9,7 +9,8 @@ model.getAllNodes.fixDof('DISPLACEMENT_Z');
 addPointLoad(model.getNodes([3 5 9 11]),10,[0 -1 0]);
 addPointLoad(model.getNode(7),16,[0 -1 0]);
 
-SimpleSolvingStrategy.solve(model);
+solver = SimpleSolvingStrategy(model);
+solver.solve();
 
 actualDisplacementX = model.getAllNodes.getDofValue('DISPLACEMENT_X');
 actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
