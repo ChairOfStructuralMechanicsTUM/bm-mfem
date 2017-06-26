@@ -27,32 +27,59 @@ ele09 = BarElement3d2n(9,[node04 node05], mat, 10);
 
 elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09];
 
-%node01.fixDof('DISPLACEMENT_X');
-%node01.fixDof('DISPLACEMENT_Y');  
-%node02.fixDof('DISPLACEMENT_X');
+node01.fixDof('DISPLACEMENT_X');
+node01.fixDof('DISPLACEMENT_Y');  
+node02.fixDof('DISPLACEMENT_X');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
 addPointLoad(node03,100,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
-StiffnessMatrix=SimpleAssembler(model);
+%StiffnessMatrix=SimpleAssembler(model);
 %SimpleSolvingStrategy.solve(model);
 
 % RIDGEDBODYMODES
-[RidgedBodyModes]=computeRidgedBodyModes(StiffnessMatrix);
+%[RidgedBodyModes]=computeRidgedBodyModes(StiffnessMatrix);
 
 % SUBSTRRUCTURE
 % plotUndeformed(Visualization(model))
-% Substructure=createSubstructure(model,1,5); %% dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate 
-% Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
-% Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
+ Substructure=createSubstructure(model,1,5); %% dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate 
+ Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
+ Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
 
-%arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure02.nodeArray);
+
+
+%Solve Sub01
+% 
+%  % node01.fixDof('DISPLACEMENT_X');
+%  % node01.fixDof('DISPLACEMENT_Y');  
+% node02.fixDof('DISPLACEMENT_X');
+ arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure01.nodeArray);
+% 
+ addPointLoad(node03,100,[0 -1 0]);
+ SimpleSolvingStrategy.solve(Substructure01)
+% Ksub01=SimpleAssembler(Substructure01);
+% Ksub01=Ksub01.reducedStiffnessMatrix
+
+
+% Sub 2
 % Assembling Substructure:
-%StiffnessMatrix=SimpleAssembler(Substructure01);
-%StiffnessMatrix=SimpleAssembler(Substructure02);
 
-%[RidgedBodyModes]=computeRidgedBodyModes(StiffnessMatrix);
-
-%plotUndeformed(Visualization(Substructure01))
-%plotUndeformed(Visualization(Substructure02))
+   node05.fixDof('DISPLACEMENT_X');
+   node05.fixDof('DISPLACEMENT_Y');  
+   node06.fixDof('DISPLACEMENT_X');
+%   node06.fixDof('DISPLACEMENT_Y');
+ arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure02.nodeArray);
+% 
+% Ksub02=SimpleAssembler(Substructure02);
+% Ksub02=Ksub02.reducedStiffnessMatrix
+% 
+ addPointLoad(Substructure02.nodeArray(1),50,[0 -1 0]);
+SimpleSolvingStrategy.solve(Substructure02)
+% 
+% 
+% 
+%[RidgedBodyModes]=computeRidgedBodyModes(Ksub02);
+% 
+% %plotUndeformed(Visualization(Substructure01))
+% %plotUndeformed(Visualization(Substructure02))

@@ -26,12 +26,17 @@ classdef SimpleAssembler < Assembler
     end
     
     methods (Static)
-        
+
+
+
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
             nDofs = length(femModel.getDofArray);
             nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
             
+            nodeArray=femModel.getAllNodes;
+%            IdDiff=min(nodeArray.getId)-1;          
+           
             for itEle = 1:length(femModel.getAllElements)
                 elements = femModel.getAllElements;
                 currentElement = elements(itEle);
@@ -41,8 +46,10 @@ classdef SimpleAssembler < Assembler
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
-                    globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
-                   
+                    
+%                     globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;  || origanal        
+                        % get the Position in NodeArray instead of nodeId
+                        globalDofArray(nNodalDofs) = nNodalDofs *find(nodeArray.getId==currentNode.getId) ;  
                     for i = (nNodalDofs - 1) : -1 : 1
                         globalDofArray(i) = globalDofArray(i+1) - 1;
                     end
@@ -61,7 +68,11 @@ classdef SimpleAssembler < Assembler
             end
             
             reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
-            
+
+%              for ii=1:length(nodeArray)  
+%                nodeArray(ii).id=a(ii) ;  
+%              end
+    
         end
         
        

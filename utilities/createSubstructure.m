@@ -86,9 +86,9 @@ substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
         
         % Overwriting Id´s for Assembler ???
       
-%          for ii=1:length(nodeArray)      
-%               nodeArray(ii).id=ii;   
-%          end
+%           for ii=1:length(nodeArray)      
+%                nodeArray(ii).id=ii;   
+%           end
          
     end
 

@@ -106,10 +106,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
  
    %%% START -- Substructure_1
     methods (Access = public)
-        function [elementArrayLeft, elementArrayRight, InterfaceNodes]= divideElements(elementArray,dim,Boundary)
+        function [elementArrayLeft, elementArrayRight, interfaceNodes]= divideElements(elementArray,dim,Boundary)
           elementArrayRight=[];
           elementArrayLeft=[];
-          InterfaceNodes=[];
+          interfaceNodes=[];
           
           for ii=1:length(elementArray)
               
@@ -141,7 +141,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                           0.5*getCrossSectionArea(elementArray(ii)));
                       
                       % Store Interface Information 
-                      InterfaceNodes=[InterfaceNodes currentNodes];
+                      interfaceNodes=[interfaceNodes currentNodes.getId];
                       
                       %overwrite  both Nodes of Copied Element: old Node = current
                       %Node ; new Node = copy of current Node
@@ -161,7 +161,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                      currentNodes(lowCoordPosition),copyElement(currentNodes(lowCoordPosition)));
               
                  % Store Interface Information       
-                 InterfaceNodes=[InterfaceNodes currentNodes(lowCoordPosition)];
+                 interfaceNodes=[interfaceNodes currentNodes(lowCoordPosition).getId];
               
               else
                  elementArrayRight = [elementArrayRight elementArray(ii)]; 
