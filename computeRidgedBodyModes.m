@@ -4,8 +4,8 @@ function [RidgedBodyModes]= computeRidgedBodyModes(K)
 K=K.reducedStiffnessMatrix;
 n=size(K,1);
 L=zeros(n);
-zeroPivots=[];    %Indices of  ZeroPivot Positions
-nonZeroPivots=[]; % Indices of NonZeroPivot Positons
+zeroPivots=[];     %Indices of  ZeroPivot Positions
+nonZeroPivots=[];  % Indices of NonZeroPivot Positons
 R=[];
 
 % Cholesky factorization and Pivoting
@@ -21,12 +21,11 @@ R=[];
             R=[R [K(1:j-1,j);1;zeros(n-j+1,1)]];
            
             
-            %  compute RBM  during factorization:
-%             y=L(1:j-1,1:j-1)\-r;
-
-%             rbm=L(1:j-1,1:j-1)'\y;
-%             rbm(j:n)=eye(n-j+1,1);
-%             RBM(:,length(ZZP))=rbm;
+                        %  compute RBM  during factorization:
+            %             y=L(1:j-1,1:j-1)\-r;
+            %             rbm=L(1:j-1,1:j-1)'\y;
+            %             rbm(j:n)=eye(n-j+1,1);
+            %             RBM(:,length(ZZP))=rbm;
 
             % removing ZeroPivot variable          
             L(j,:)=0;
@@ -48,18 +47,17 @@ R=[];
          
     end 
     
-    % Reordering Stiffness 
+    % Reordering StiffnessMatrix
     Kpp=K(nonZeroPivots,nonZeroPivots);
     Kpr=K(nonZeroPivots,zeroPivots);
     Krr=K(zeroPivots,zeroPivots);
-  % Kontrolle=Krr-Kpr'*Kpp^-1*Kpr  
+   
     
-  %  Lreduced=L(NZZP,NZZP);  % L without ZeroPivot variable  
     
     % Compute Pseudo-Inverse
     KS=zeros(size(K));
     KS(1:size(Kpp,1),1:size(Kpp,2))= Kpp^-1;
-    % Kontrolle=K*KS*K - K   % Wenn K in Form [Kpp Kpr;Kpr' Krr] vorliegt!
+    !
       
  
       % Compute RBM   
@@ -72,6 +70,7 @@ R=[];
     RidgedBodyModes(1:zeroPivots(i),i)= rbm;
     end
     
-  % Kontrolle=K*RBM ;
-    
+%   Kontrolle=K*RidgedBodyModes 
+%   Kontrolle=Krr-Kpr'*Kpp^-1*Kpr  
+%   Kontrolle=K*KS*K - K   % if K = [Kpp Kpr;Kpr' Krr] 
 end

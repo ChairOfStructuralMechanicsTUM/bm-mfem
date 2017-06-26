@@ -1,4 +1,13 @@
 % Example Geometry
+
+% 1      3       5
+% °------°-------°
+% |     /|     / |
+% |   /  |   /   |
+% | /    | /     |
+% °------°-------°
+% 2      4       6
+
 clear;
 clc;
 node01 = Node(1,0,5,0);
@@ -32,54 +41,27 @@ node01.fixDof('DISPLACEMENT_Y');
 node02.fixDof('DISPLACEMENT_X');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
+
 addPointLoad(node03,100,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
-%StiffnessMatrix=SimpleAssembler(model);
-%SimpleSolvingStrategy.solve(model);
-
-% RIDGEDBODYMODES
-%[RidgedBodyModes]=computeRidgedBodyModes(StiffnessMatrix);
 
 % SUBSTRRUCTURE
-% plotUndeformed(Visualization(model))
- Substructure=createSubstructure(model,1,5); %% dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate 
- Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
- Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
 
+ % dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate
+[Substructure]=createSubstructure(model,1,5);  
+ 
+Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
+Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
 
+%Solve Substructure01
+SimpleSolvingStrategy.solve(Substructure01)
 
-%Solve Sub01
-% 
-%  % node01.fixDof('DISPLACEMENT_X');
-%  % node01.fixDof('DISPLACEMENT_Y');  
-% node02.fixDof('DISPLACEMENT_X');
- arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure01.nodeArray);
-% 
- addPointLoad(node03,100,[0 -1 0]);
- SimpleSolvingStrategy.solve(Substructure01)
-% Ksub01=SimpleAssembler(Substructure01);
-% Ksub01=Ksub01.reducedStiffnessMatrix
-
-
-% Sub 2
+% Substructure02
 % Assembling Substructure:
-
-   node05.fixDof('DISPLACEMENT_X');
-   node05.fixDof('DISPLACEMENT_Y');  
-   node06.fixDof('DISPLACEMENT_X');
-%   node06.fixDof('DISPLACEMENT_Y');
  arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure02.nodeArray);
-% 
-% Ksub02=SimpleAssembler(Substructure02);
-% Ksub02=Ksub02.reducedStiffnessMatrix
-% 
- addPointLoad(Substructure02.nodeArray(1),50,[0 -1 0]);
-SimpleSolvingStrategy.solve(Substructure02)
-% 
-% 
-% 
-%[RidgedBodyModes]=computeRidgedBodyModes(Ksub02);
-% 
-% %plotUndeformed(Visualization(Substructure01))
-% %plotUndeformed(Visualization(Substructure02))
+ StiffnessMatrix=SimpleAssembler(Substructure02);
+[RidgedBodyModes]=computeRidgedBodyModes(StiffnessMatrix);
+% furthermore: Kpp,Kpr,Krr and pseudo-inverse Ks+ are computed in
+% computeRBM 
+

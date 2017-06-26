@@ -105,72 +105,93 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     end
  
    %%% START -- Substructure_1
-    methods (Access = public)
-        function [elementArrayLeft, elementArrayRight, interfaceNodes]= divideElements(elementArray,dim,Boundary)
-          elementArrayRight=[];
-          elementArrayLeft=[];
-          interfaceNodes=[];
-          
-          for ii=1:length(elementArray)
-              
-              currentNodes = elementArray(ii).getNodes;
-              currentCoords = currentNodes.getCoords;           %[ x1 x2 y1 y2 z1 z2]
-              currentCoords = [currentCoords(2*dim-1),currentCoords(2*dim)];
-              
-              if currentCoords(2) >= currentCoords(1)    % get highest coordinat of the current element
-                  highCoord= currentCoords(2);
-                  lowCoord  = currentCoords(1);           % to compare element position                %
-                  lowCoordPosition=1;                   %lowCoordPosition is needed to overwrite the Node in Case of Boundary position
-              else
-                  highCoord = currentCoords(1);
-                  lowCoord  = currentCoords(2);
-                  lowCoordPosition=2;
-              end
-              
-              if highCoord <= Boundary  && lowCoord < Boundary         % if current element is left or on Boundary
-                  elementArrayLeft = [elementArrayLeft elementArray(ii)]; % add element to left  elementArray
-                  
-              elseif highCoord == Boundary && lowCoord == Boundary
-                                           
-                      elementArrayLeft = [elementArrayLeft copyElement(elementArray(ii))];
-                      elementArrayRight = [elementArrayRight copyElement(elementArray(ii))];
-                      % Set Cross-Section-Area
-                      setCrossSectionArea(elementArrayRight(length(elementArrayRight)),...
-                          0.5*getCrossSectionArea(elementArray(ii)));
-                      setCrossSectionArea(elementArrayLeft(length(elementArrayLeft)),...
-                          0.5*getCrossSectionArea(elementArray(ii)));
-                      
-                      % Store Interface Information 
-                      interfaceNodes=[interfaceNodes currentNodes.getId];
-                      
-                      %overwrite  both Nodes of Copied Element: old Node = current
-                      %Node ; new Node = copy of current Node
-                                         
-                      for j=1:2
-                          overwriteNode(elementArrayRight(length(elementArrayRight)),...
-                              currentNodes(j),copyElement(currentNodes(j)));
-                      end
-                      
-                  
-                  
-              elseif highCoord > Boundary && lowCoord ==Boundary
-                  elementArrayRight = [elementArrayRight elementArray(ii)];
-                    
-                % overwrite Boundary node
-                     overwriteNode(elementArrayRight(length(elementArrayRight)),...
-                     currentNodes(lowCoordPosition),copyElement(currentNodes(lowCoordPosition)));
-              
-                 % Store Interface Information       
-                 interfaceNodes=[interfaceNodes currentNodes(lowCoordPosition).getId];
-              
-              else
-                 elementArrayRight = [elementArrayRight elementArray(ii)]; 
-              end
-          end
-        end
-    end
-    
-%%% END---Substructure_1    
-    
+   methods (Access = public)
+       function [elementArrayLeft, elementArrayRight, interfaceNodes]= divideElements(elementArray,dim,Boundary)
+           elementArrayRight=[];
+           elementArrayLeft=[];
+           interfaceNodes=[];
+           
+           for ii=1:length(elementArray)
+               
+               currentNodes = elementArray(ii).getNodes;
+               currentCoords = currentNodes.getCoords;           %[ x1 x2 y1 y2 z1 z2]
+               currentCoords = [currentCoords(2*dim-1),currentCoords(2*dim)];
+               
+               % get highest coordinat of the current element
+               % to compare element position
+               if currentCoords(2) >= currentCoords(1)    
+                   highCoord= currentCoords(2);
+                   lowCoord  = currentCoords(1);          
+                   lowCoordPosition=1;                     
+               else
+                   highCoord = currentCoords(1);
+                   lowCoord  = currentCoords(2);
+                   lowCoordPosition=2;
+               end
+               % Case 1 one Node is Left or on of Boundary 
+               if highCoord <= Boundary  && lowCoord < Boundary         % if current element is left or on Boundary
+                   elementArrayLeft = [elementArrayLeft elementArray(ii)]; % add element to left  elementArray
+                
+                % Case 2 element on Boundary    
+               elseif highCoord == Boundary && lowCoord == Boundary
+                   
+                   elementArrayLeft = [elementArrayLeft elementArray(ii)];
+                   elementArrayRight = [elementArrayRight copyElement(elementArray(ii))];
+                   
+                   % Set Cross-Section-Area
+                   setCrossSectionArea(elementArrayRight(length(elementArrayRight)),...
+                       0.5*getCrossSectionArea(elementArray(ii)));
+                   setCrossSectionArea(elementArrayLeft(length(elementArrayLeft)),...
+                       0.5*getCrossSectionArea(elementArray(ii)));
+                   
+                   % Store Interface Information
+                   interfaceNodes=[interfaceNodes currentNodes.getId];
+                   
+                   %overwrite  both Nodes of copied Element                 
+                   for j=1:2
+                       oldNode=currentNodes(j);
+                       newNode=copyElement(currentNodes(j));
+                       
+                       overwriteNode(elementArrayRight(length(elementArrayRight)),...
+                           oldNode,newNode);
+                       % fix dofs that were fixed before
+%                           for jj=1:length(oldNode.dofArray)
+%                               if  isFixed(oldNode.dofArray(jj))== 1
+%                                   fix(newNode.dofArray(jj));
+%                               end
+%                           end
+                       
+                   end
+                   
+                   
+                   % Case 3 one Node is right, the other on Boundary 
+               elseif highCoord > Boundary && lowCoord ==Boundary
+                   elementArrayRight = [elementArrayRight elementArray(ii)];
+                   
+                   % overwrite Boundary node
+                   oldNode=currentNodes(lowCoordPosition);
+                   newNode=copyElement(currentNodes(lowCoordPosition));
+                   overwriteNode(elementArrayRight(length(elementArrayRight)),...
+                       oldNode,newNode);
+                   
+                   % Fix Dofs that were fixed before
+%                           for jj =1:length(currentNodes(lowCoordPosition).dofArray)
+%                               if  isFixed(currentNodes(lowCoordPosition).dofArray(jj))== 'true'
+%                                   fix(newNode.dofArray(jj));
+%                               end
+%                           end
+            
+                    % Store Interface Information
+                   interfaceNodes=[interfaceNodes currentNodes(lowCoordPosition).getId];
+               else
+                   % Case 4 both nodes right of Boundary 
+                   elementArrayRight = [elementArrayRight elementArray(ii)];
+               end
+           end
+       end
+   end
+   
+   %%% END---Substructure_1
+   
 end
 
