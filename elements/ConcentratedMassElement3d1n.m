@@ -67,14 +67,15 @@ classdef ConcentratedMassElement3d1n < Element
         
         function plot = draw(element)
             plot = line(element.nodeArray.getX, element.nodeArray.getY, ...
-                'color','r','Marker','d','MarkerFaceColor','r');
+                'color','b','Marker','d','MarkerFaceColor','b');
         end
         
         function plot = drawDeformed(element)
             plot = line(element.nodeArray.getX + ...
                 element.nodeArray.getDofValue('DISPLACEMENT_X'), ...
                 element.nodeArray.getY + ...
-                element.nodeArray.getDofValue('DISPLACEMENT_Y'));
+                element.nodeArray.getDofValue('DISPLACEMENT_Y'), ...
+                'color','r','Marker','d','MarkerFaceColor','r');
         end
         
     end
