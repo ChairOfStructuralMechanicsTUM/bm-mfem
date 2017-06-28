@@ -7,6 +7,9 @@ classdef EigensolverStrategy < Solver
         assembler
         isInitialized
         
+        stiffnessMatrix
+        massMatrix
+        
         eigenfrequencies
         modalMatrix
         spectralMatrix
@@ -27,8 +30,8 @@ classdef EigensolverStrategy < Solver
                 eigensolver.initialize();
             end
             
-            stiffnessMatrix = eigensolver.assembler.getStiffnessMatrix(eigensolver.assembler);
-            massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
+            eigensolver.stiffnessMatrix = eigensolver.assembler.getStiffnessMatrix(eigensolver.assembler);
+            eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
             
             %apply boundary conditions
             dofs = eigensolver.femModel.getDofArray();
@@ -38,13 +41,14 @@ classdef EigensolverStrategy < Solver
                    fixedDofs = [fixedDofs itDof];
                end
             end
-            stiffnessMatrix(fixedDofs,:) = [];
-            stiffnessMatrix(:,fixedDofs) = [];
-            massMatrix(fixedDofs,:) = [];
-            massMatrix(:,fixedDofs) = [];
+            eigensolver.stiffnessMatrix(fixedDofs,:) = [];
+            eigensolver.stiffnessMatrix(:,fixedDofs) = [];
+            eigensolver.massMatrix(fixedDofs,:) = [];
+            eigensolver.massMatrix(:,fixedDofs) = [];
             
             % solve
-            [eigensolver.modalMatrix, eigensolver.spectralMatrix] = eig(stiffnessMatrix, massMatrix);
+            [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
+                eig(eigensolver.stiffnessMatrix, eigensolver.massMatrix);
             
             % get eigenfrequencies
             eigensolver.eigenfrequencies = diag(eigensolver.spectralMatrix);
@@ -58,6 +62,22 @@ classdef EigensolverStrategy < Solver
             end
         end
         
+%         function modalSuperposition(eigensolver)
+%             generalizedMassMatrix = eigensolver.modalMatrix.' ...
+%                 * eigensolver.massMatrix ...
+%                 * eigensolver.modalMatrix;
+%             init_disp = [1 0];
+%             
+% %             generalizedStiffnessMatrix = eigensolver.modalMatrix.' ...
+% %                 * eigensolver.stiffnessMatrix ...
+% %                 * eigensolver.modalMatrix;
+% 
+%             xmu = eigensolver.modalMatrix * eigensolver.massMatrix * init_disp';
+%             init = 1./diag(generalizedMassMatrix) .* xmu;
+% 
+% %             init = 1/diag(generalizedMassMatrix) * eigensolver.modalMatrix * eigensolver.massMatrix * init_disp;
+%         end
+        
         function initialize(eigensolver)
             eigensolver.femModel.initialize;
             eigensolver.isInitialized = true;
@@ -65,6 +85,10 @@ classdef EigensolverStrategy < Solver
         
         function ef = getEigenfrequencies(eigensolver)
             ef = eigensolver.eigenfrequencies;
+        end
+        
+        function mm = getModalMatrix(eigensolver)
+            mm = eigensolver.modalMatrix;
         end
         
     end
