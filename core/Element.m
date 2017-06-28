@@ -64,8 +64,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            end
         end
         
-        % checks, if all required dofs are available
+        function setPropertyValue(elements, valueName, value)
+            for ii = 1:length(elements)
+                elements(ii).material.setValue(valueName, value);
+            end
+        end
+            
+        
         function check(element)
+        %CHECK checks, if all dofs and properties required by the element are available
+            
             %check the dofs
             for iNode = 1:length(element.nodeArray)
                 cNode = element.nodeArray(iNode);

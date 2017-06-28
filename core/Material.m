@@ -31,6 +31,12 @@ classdef Material < handle
         
         % member functions
         function addParameter(material, name, value)
+            % alternative name for addValue for compatibility with the
+            % PropertyContainer
+            material.addValue(name, value);
+        end
+        
+        function addValue(material, name, value)
             material.parameters(name) = value;
         end
         
@@ -39,7 +45,8 @@ classdef Material < handle
         end
         
         function value = getParameterValue(material, name)
-            % just an alternative name for compatibility
+            % alternative name for getValue for compatibility with the
+            % PropertyContainer
             value = material.getValue(name);
         end
         

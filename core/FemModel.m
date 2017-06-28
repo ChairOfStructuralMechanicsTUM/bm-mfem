@@ -126,6 +126,9 @@ classdef FemModel < handle
         end
         
         function element = addNewElement(femModel, elementName, id, nodes, properties)
+            if nargin == 4
+                properties = PropertyContainer();
+            end
             elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
             if any(id == elementIds)
                 error('an element with id %d already exists in the model', id)
