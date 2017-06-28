@@ -107,6 +107,18 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
+        function setDofLoad(nodes, dof, load)
+            %SETINITIALDOFLOAD set the load of a specific dof
+            % parameters: dof, load
+            
+            for ii = 1:length(nodes)
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = find(~cellfun(@isempty,index));
+                nodes(ii).dofArray(index).setLoad(load);
+            end
+        end
+        
         function val = getDofValue(nodes, dof)
             val = zeros;
             for ii = 1:length(nodes)
@@ -140,14 +152,15 @@ classdef Node < handle & matlab.mixin.Copyable
         end
        
         %function to half point loads at the interface. this implies that 
-        %half the point load is at substructer1 the other at substructer02.
+        %half the point load is at substructer01 the other at substructer02
         function halfPointLoads(nodes)
             for ii = 1:length(nodes)
                 dof = nodes(ii).getDofArray;
                 direction = zeros(1,length(dof));
                 value = 0;
                 for jj = 1:length(dof)
-                    val = dof(jj).getValue;
+                    %val = dof(jj).getValue;
+                    val = dof(jj).getDofLoad;
                     %if value of a direction not zero, safe that direction
                     if val ~= 0
                         direction(jj) = val/abs(val);
@@ -252,15 +265,37 @@ classdef Node < handle & matlab.mixin.Copyable
         end
         
         %adds loads from boundary conditions to new nodes which are a
-        %copy of an old interface node
-        function addLoads(obj, cp)
-            dof = getDofArray(obj);
-            setDofArray(cp, dof);
-            cpDof = cp.getDofArray;
-            for ii = 1:length(cpDof)
-                val = getDofValue(obj, dof(ii).getValueType);
-                setDofValue(cp, getValueType(cpDof(ii)), val);
-            end     
+        %copy of an old interface node, and set up dofArray
+        function setDof(obj, cp)
+            dofs = getDofArray(obj);
+            %find dofValues/Type/Load of old node which is copied
+            for ii = 1:length(dofs)
+                load(ii) = dofs(ii).getDofLoad;
+                value(ii) = dofs(ii).getValue;
+                type(ii) = dofs(ii).getValueType;
+                fixed(ii) = dofs(ii).isFixed;
+            end
+            %set dofValue/Type of new node
+            if length(dofs) == 2
+                newDofs = [Dof(cp,value(1),type(1)) Dof(cp,value(2),type(2))];
+                setDofArray(cp, newDofs);
+            else
+                newDofs = [Dof(cp,value(1),type(1)) Dof(cp,value(2),type(2)) Dof(cp,value(3),type(3))];
+                setDofArray(cp, newDofs);
+            end
+            dofs = cp.getDofArray;
+            %set dofLoad of new node
+            if load ~= 0
+                for jj = 1:length(dofs)
+                    setLoad(dofs(jj), load(jj));
+                end
+            end
+            %fix dofs if necessary
+            for kk = 1:length(dofs)
+                if fixed(kk) ~= 0
+                    fix(dofs(kk));
+                end
+            end
         end
         
         %function to find copy of a node (same coordinates, different Id)
@@ -290,11 +325,11 @@ classdef Node < handle & matlab.mixin.Copyable
                coords = obj.getCoords;
                if (length(coords) == 2)
                    cp = Node(maxId, coords(1), coords(2));
+                   setDof(obj, cp);
                else
                    cp = Node(maxId, coords(1), coords(2), coords(3)); 
+                   setDof(obj, cp);
                end
-               %add Loads from BC
-               addLoads(obj, cp);
            
            %multiple nodes
            else
@@ -303,14 +338,15 @@ classdef Node < handle & matlab.mixin.Copyable
                    coords = obj(jj).getCoords;
                    if (length(coords) == 2)
                        cp = [cp Node(maxId, coords(1), coords(2))];
+                       setDof(obj(jj), cp(jj));
                    else
                        cp = [cp Node(maxId, coords(1), coords(2), coords(3))];
+                       setDof(obj(jj), cp(jj));
                    end
-                   %add Loads from BC
-                   addLoads(obj(jj), cp(jj));
                    %increase the Id
                    maxId = maxId+1;
                end
+               
            end
         end
     end 

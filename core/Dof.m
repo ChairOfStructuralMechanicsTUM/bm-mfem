@@ -6,6 +6,7 @@ classdef Dof < handle
         node
         value
         valueType
+        dofLoad
         fixed = false
     end
     
@@ -39,6 +40,14 @@ classdef Dof < handle
             valueType = dof.valueType;
         end
         
+        function dofLoad = getDofLoad(dof)
+            if isempty(dof.dofLoad)
+                dofLoad = 0;
+            else 
+                dofLoad = dof.dofLoad;
+            end
+         end
+        
         function fixed = isFixed(dof)
             fixed = dof.fixed;
         end
@@ -54,6 +63,10 @@ classdef Dof < handle
         
         function setValue(dof, value)
            dof.value = value; 
+        end
+        
+        function setLoad(dof, dofLoad)
+            dof.dofLoad = dofLoad;
         end
         
     end
