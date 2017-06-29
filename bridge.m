@@ -14,7 +14,9 @@ node11 = Node(11,50,0,0);
 node12 = Node(12,60,0,0);
 
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
-     node10 node11 node12];
+    node10 node11 node12];
+
+nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
@@ -45,7 +47,7 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
     ele10 ele11 ele12 ele13 ele14 ele15 ele16 ele17 ele18 ele19 ...
     ele20 ele21];
 
-elementArray.id
+elementArray.getId
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
@@ -57,24 +59,22 @@ addPointLoad(node07,16,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
 
-% DispRedNodeDofs = SimpleSolvingStrategy.solve(model)
-
 assembling = SimpleAssembler(model);
 assembling.stiffnessMatrix;
 assembling.forceVector
 assembling.reducedForceVector;
 
-x = SimpleSolvingStrategy.solve(model);
+solver = SimpleSolvingStrategy(model);
+x = solver.solve();
 
 for ii=1:1:21
-    
-stressVector(ii)=computeElementStress(elementArray(ii))'  %% besser in Model? sodass für alle elemente
+    stressVector(ii)=computeElementStress(elementArray(ii))'  %% besser in Model? sodass für alle elemente
 end
 
 
-VerschiebungDofs = getValue(model.dofArray);
+VerschiebungDofs = getValue(model.getDofArray);
 
-f=SimpleSolvingStrategy.getNodalForces(model)
+f=solver.getNodalForces()
 
 
 
