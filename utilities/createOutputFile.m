@@ -6,6 +6,9 @@ function [ outputFile ] = createOutputFile( Model )
 % Create TextFile
 fileID = fopen('femCalculations.txt','w');
 
+% Specify output step
+step = 1;
+
 
 %% Print Node Coordinates
 
@@ -78,7 +81,7 @@ fprintf(fileID,'\r\n \r\n');
 
 %% Print Node Displacements
 
-fprintf(fileID,'Node Displacements: \r\n \r\n');
+fprintf(fileID,'Node Displacements in Step %d: \r\n \r\n', step);
 fprintf(fileID,'%6s %14s %14s %14s \r\n','node','x-displ','y-displ','z-displ');
 fprintf(fileID,'\r\n');
 
@@ -91,7 +94,7 @@ for ii = 1:1:size(Model.getAllNodes,2)
         if fixedDof(jj) == 1
             valueDof(jj) = 0;
         else
-            valueDof(jj) = getValue(dofArray(jj));
+            valueDof(jj) = getValue(dofArray(jj), step);
         end
     end
     
@@ -104,7 +107,7 @@ fprintf(fileID,'\r\n \r\n');
 
 %% Print Node Forces inclusive Reactions
 
-fprintf(fileID,'Node Forces (inclusive Reactions): \r\n \r\n');
+fprintf(fileID,'Node Forces (inclusive Reactions) in Step %d: \r\n \r\n', step);
 fprintf(fileID,'%6s %14s %14s %14s \r\n','node','x-force','y-force','z-force');
 fprintf(fileID,'\r\n');
 %TODO: ugly workaround
@@ -113,7 +116,7 @@ solver = SimpleSolvingStrategy(Model);
 for ii = 1:1:size(Model.getAllNodes,2)
 
     dofArray = getDofArray(nodeArray(ii));
-    nodeForces = solver.getNodalForces();
+    nodeForces = solver.getNodalForces(step);
      
   
     for jj = 1:length(dofArray)
@@ -131,7 +134,7 @@ fprintf(fileID,'\r\n \r\n');
 
 %% Print Internal Element Forces and Stresses
 
-fprintf(fileID,'Internal Element Stresses and Forces: \r\n \r\n');
+fprintf(fileID,'Internal Element Stresses and Forces in Step %d: \r\n \r\n', step);
 fprintf(fileID,'%6s %18s %18s  \r\n','elem','axial stress','axial force');
 fprintf(fileID,'\r\n');
 
@@ -139,7 +142,7 @@ elementArray = getAllElements(Model);
 
 for ii = 1:1:size(Model.getAllElements,2)
     
-    elementStress(ii) = computeElementStress(elementArray(ii));
+    elementStress(ii) = computeElementStress(elementArray(ii), step);
     elementForce(ii) = elementStress(ii) * getCrossSectionArea(elementArray(ii));
     
     

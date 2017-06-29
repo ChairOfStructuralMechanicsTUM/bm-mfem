@@ -67,26 +67,27 @@ assembling.reducedForceVector;
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
 
+step = 1;
+
 for ii=1:1:21
-    stressVector(ii)=computeElementStress(elementArray(ii))'  %% besser in Model? sodass für alle elemente
+    stressVector(ii)=computeElementStress(elementArray(ii), step)'  %% besser in Model? sodass für alle elemente
 end
 
+VerschiebungDofs = model.getDofArray.getValue(step);
 
-VerschiebungDofs = getValue(model.getDofArray);
-
-f=solver.getNodalForces()
+f=solver.getNodalForces(step)
 
 
 
 
 n02d = node02.getDofArray;
 n02d(1).getValueType
-n02d(1).getValue
+n02d(1).getValue(step)
 
 n09d = node09.getDofArray;              
 n09d(2).getValueType
-n09d(2).getValue
+n09d(2).getValue(step)
 
 n01d = node01.getDofArray;
 n01d(1).getValueType
-n01d(1).getValue
+n01d(1).getValue(step)
