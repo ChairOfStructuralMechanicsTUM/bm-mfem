@@ -45,7 +45,7 @@ classdef BarElement3d2n < BarElement
         
         % getter functions
         
-        function responseDoF = getResponseDofArray(barElement)
+        function responseDoF = getResponseDofArray(barElement, step)
             
             responseDoF = zeros(6,1);
             
@@ -54,7 +54,7 @@ classdef BarElement3d2n < BarElement
                 nodalDof = nodalDof.';
                 
                 for itDof = 3:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue;
+                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
                 end
             end
             
@@ -88,12 +88,12 @@ classdef BarElement3d2n < BarElement
         end
         
         % Computation of the Internal Element Stresses
-        function stressValue = computeElementStress(barElement)
+        function stressValue = computeElementStress(barElement, step)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             CX = dist(1)/barElement.length;
             CY = dist(2)/barElement.length;
             CZ = dist(3)/barElement.length;
-            nodalDisplacement = getResponseDofArray(barElement);
+            nodalDisplacement = getResponseDofArray(barElement, step);
             stressValue = barElement.getMaterial().getValue('YOUNGS_MODULUS')...
                 /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
         end

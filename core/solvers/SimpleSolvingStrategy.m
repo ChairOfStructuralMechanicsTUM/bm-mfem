@@ -37,7 +37,7 @@ classdef SimpleSolvingStrategy < Solver
             simpleSolver.isInitialized = true;
         end
         
-        function nodalForces = getNodalForces(simpleSolver)
+        function nodalForces = getNodalForces(simpleSolver, step)
             
             dofs = simpleSolver.femModel.getDofArray;
             nDofs = length(dofs);
@@ -53,7 +53,7 @@ classdef SimpleSolvingStrategy < Solver
             end
             
             nodalForces(fixedDofs) = SimpleAssembler(simpleSolver.femModel).stiffnessMatrix(fixedDofs, :) ...
-                * getValue(simpleSolver.femModel.getDofArray)';
+                * simpleSolver.femModel.getDofArray.getValue(step)';
             
         end
         
