@@ -6,8 +6,8 @@ classdef Solver < handle
     end
     
     methods (Abstract)
-        initialize(femModel)
-        solve(femModel)
+        initialize(solver)
+        solve(solver)
     end
     
 end

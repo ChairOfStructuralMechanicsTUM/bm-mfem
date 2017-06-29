@@ -103,10 +103,14 @@ classdef SimpleAssembler < Assembler
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
             itResult = 1;
+            nResultSteps = size(resultVector,2);
             
             for itDof = 1:nDofs
-                if (~dofs(itDof).isFixed)
-                    dofs(itDof).setValue(resultVector(itResult));
+                if dofs(itDof).isFixed
+                    values(1:nResultSteps) = dofs(itDof).getValue(1);
+                    dofs(itDof).setValue(values);
+                else
+                    dofs(itDof).setValue(resultVector(itResult,:));
                     itResult = itResult + 1;
                 end
                 
@@ -137,6 +141,22 @@ classdef SimpleAssembler < Assembler
                elementalDofs = elements(itEle).getDofs;
                dampingMatrix(elementalDofs.getId) = dampingMatrix(elementalDofs.getId) + elementalDampingMatrix;
             end
+        end
+        
+        function stiffnessMatrix = getStiffnessMatrix(assembler)
+            stiffnessMatrix = assembler.stiffnessMatrix;
+        end
+        
+        function reducedStiffnessMatrix = getReducedStiffnessMatrix(assembler)
+            reducedStiffnessMatrix = assembler.reducedStiffnessMatrix;
+        end
+        
+        function forceVector = getForceVector(assembler)
+            forceVector = assembler.forceVector;
+        end
+        
+        function reducedForceVector = getReducedForceVector(assembler)
+            reducedForceVector = assembler.reducedForceVector;
         end
         
     end

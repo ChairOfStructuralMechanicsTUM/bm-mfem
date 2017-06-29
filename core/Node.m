@@ -136,13 +136,18 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         
-        function val = getDofValue(nodes, dof)
+        function val = getDofValue(nodes, dof, varargin)
+            numvarargs = length(varargin);
+            optargs = { 1 };
+            optargs(1:numvarargs) = varargin;
+            step = optargs{:};
+            
             val = zeros;
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
-                val(ii) = nodes(ii).dofArray(index).getValue;
+                val(ii) = nodes(ii).dofArray(index).getValue(step);
                 %fprintf('node_%i: %s = %d\n',node.getId,dof,val);
             end
         end
