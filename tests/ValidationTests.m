@@ -41,6 +41,11 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-5)))
         end
         
+        function externalScriptsTest(testCase)
+           bridge;
+           Bridge_with_inputFile;
+        end
+        
     end
     
 end
