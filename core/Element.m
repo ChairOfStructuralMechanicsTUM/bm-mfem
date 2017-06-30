@@ -52,8 +52,12 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            value = element.material.getValue(valueName); 
         end
         
-        function nodes = getNodes(element)
-            nodes = element.nodeArray;
+        function nodes = getNodes(elements)
+            nodes = Node.empty;
+            for ii = 1:length(elements)
+                nodes(ii,:) = elements(ii).nodeArray;
+            end
+%             nodes = element.nodeArray;
         end
         
         function dofs = getDofs(element)

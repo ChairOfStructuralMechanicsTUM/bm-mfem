@@ -88,14 +88,18 @@ classdef BarElement3d2n < BarElement
         end
         
         % Computation of the Internal Element Stresses
-        function stressValue = computeElementStress(barElement, step)
-            dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
-            CX = dist(1)/barElement.length;
-            CY = dist(2)/barElement.length;
-            CZ = dist(3)/barElement.length;
-            nodalDisplacement = getResponseDofArray(barElement, step);
-            stressValue = barElement.getMaterial().getValue('YOUNGS_MODULUS')...
-                /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
+        function stressValue = computeElementStress(barElements, step)
+            stressValue = zeros(1,length(barElements));
+            for ii = 1:length(barElements)
+                barElement = barElements(ii);
+                dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
+                CX = dist(1)/barElement.length;
+                CY = dist(2)/barElement.length;
+                CZ = dist(3)/barElement.length;
+                nodalDisplacement = getResponseDofArray(barElement, step);
+                stressValue(ii) = barElement.getMaterial().getValue('YOUNGS_MODULUS')...
+                    /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
+            end
         end
         
      
