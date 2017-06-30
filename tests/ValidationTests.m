@@ -39,6 +39,14 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-5)))
             testCase.assertThat(actualDisplacementY, IsEqualTo(expectedDisplacementY, ...
                 'Within', RelativeTolerance(1e-5)))
+            
+            actualElementStress = model.getAllElements.computeElementStress(1);
+            expectedElementStress = [28 28 28.75 28.75 28 28 -6.2610 -6.0030 ...
+                -6.0300 -6.0300 -6.0030 -6.2610 3.3330 3.0830 4.0000 3.0830 ...
+                3.3330 1.6770 3.2020 3.2020 1.6770];
+            
+            testCase.assertThat(actualElementStress, IsEqualTo(expectedElementStress, ...
+                'Within', RelativeTolerance(1e-3)))
         end
         
         function externalScriptsTest(testCase)
