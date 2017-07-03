@@ -55,12 +55,15 @@ classdef FemModel < handle
             dofArray = femModel.dofArray;
         end
         
-        function fixedDofs = getFixedDofs(femModel)
+        function [freeDofs, fixedDofs] = getDofConstraints(femModel)
             dofs = femModel.getDofArray;
+            freeDofs = Dof.empty;
             fixedDofs = Dof.empty;
             for itDof = 1:length(dofs)
                 if dofs(itDof).isFixed
                     fixedDofs = [fixedDofs dofs(itDof)];
+                else
+                    freeDofs = [freeDofs dofs(itDof)];
                 end
             end
         end
