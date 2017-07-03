@@ -20,7 +20,6 @@ classdef Node < handle & matlab.mixin.Copyable
                 case 0
                     % the empty constructor is needed in order to
                     % preallocate empty arrays of Nodes
-                    node.valueMap = PropertyContainer;
                     node.id = -1;
                 case 3
                     node.id = id;
@@ -34,6 +33,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 otherwise
                     error('Wrong number of arguments')
             end
+            node.valueMap = PropertyContainer();
         end
         
         
@@ -94,7 +94,7 @@ classdef Node < handle & matlab.mixin.Copyable
                         end
                     end
                     nodes(itNode).dofArray = [nodes(itNode).dofArray 
-                        Dof(nodes(itNode),0.0,dofNames(itDof))];
+                        Dof(nodes(itNode),0.0,dofNames{itDof})];
                 end
 %                 nodes(itNode).dofArray = nodes(itNode).dofArray';
 %                 test = nodes(itNode).dofArray;
@@ -103,7 +103,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).fix;
@@ -153,10 +153,30 @@ classdef Node < handle & matlab.mixin.Copyable
         end
          
         
-        function addValue(nodes, valueName)
-           for itNode = 1:length(nodes)
-              nodes(itNode).valueMap.setValue(valueName, 0.0); 
+        function addNewValue(nodes, valueNames)
+            for itName = 1:length(valueNames)
+                for itNode = 1:length(nodes)
+                    nodes(itNode).valueMap.setValue(char(valueNames(itName)), 0.0);
+                end
+            end
+        end
+        
+        function setStepValue(nodes, valueName, step, value)
+           for ii = 1:length(nodes)
+              nodes(ii).valueMap.setStepValue(valueName, step, value); 
            end
+        end
+        
+        function val = getValue(nodes, valueName, step)            
+            if nargin == 2
+                for ii = 1:length(nodes)
+                    val = nodes(ii).valueMap.getValue(valueName);
+                end
+            elseif nargin == 3
+                 for ii = 1:length(nodes)
+                    val = nodes(ii).valueMap.getValue(valueName, step);
+                end
+            end
         end
         
 %         function init = getInitialDofLoad(nodes, dof)
