@@ -81,7 +81,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             %check the dofs
             for iNode = 1:length(element.nodeArray)
                 cNode = element.nodeArray(iNode);
-                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
                 diff = setxor(element.dofNames', availableDofNames);
                 if ~ isempty(diff)
                     missingDofs = setdiff(element.dofNames', availableDofNames);

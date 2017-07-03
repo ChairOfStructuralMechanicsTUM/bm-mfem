@@ -103,7 +103,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).fix;
@@ -114,7 +114,7 @@ classdef Node < handle & matlab.mixin.Copyable
             %SETDOFVALUE set the value of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setValue(load);
@@ -127,7 +127,7 @@ classdef Node < handle & matlab.mixin.Copyable
             %SETINITIALDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setLoad(load);
@@ -144,7 +144,7 @@ classdef Node < handle & matlab.mixin.Copyable
             
             val = zeros;
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 val(ii) = nodes(ii).dofArray(index).getValue(step);
