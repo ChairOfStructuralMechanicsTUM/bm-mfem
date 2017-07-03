@@ -33,8 +33,14 @@ classdef Dof < handle
         
         function value = getValue(dofs, step)
             value = zeros;
-            for ii = 1:length(dofs)
-                value(ii) = dofs(ii).value(step);
+            if nargin == 1
+                for ii = 1:length(dofs)
+                    value(ii) = dofs(ii).value;
+                end
+            elseif nargin == 2
+                for ii = 1:length(dofs)
+                    value(ii) = dofs(ii).value(step);
+                end
             end
         end
         
