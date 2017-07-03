@@ -139,7 +139,38 @@ classdef SimpleAssembler < Assembler
             for itEle = 1:length(elements)
                elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
                elementalDofs = elements(itEle).getDofs;
-               dampingMatrix(elementalDofs.getId) = dampingMatrix(elementalDofs.getId) + elementalDampingMatrix;
+               dampingMatrix(elementalDofs.getId, elementalDofs.getId) = ...
+                   dampingMatrix(elementalDofs.getId, elementalDofs.getId) + elementalDampingMatrix;
+            end
+        end
+        
+        function vals = assemble3dDofVector(femModel, dofName)
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+                dof = dofs(itDof);
+                itDofName = dof.getValueType();
+                itDofName = itDofName(1:end-2);
+                if strcmp(dofName, itDofName)
+                    val = dof.getValue();
+                    vals(dof.getId) = val(end);
+                end
+            end
+        end
+        
+        function vals = assemble3dValueVector(femModel, valueName)
+            %ASSEMBLE3DVALUEVECTOR returns a vector with all values from
+            %VALUENAME corresponding to the global dofs
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+                dof = dofs(itDof);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                val = node.getValue(strcat(valueName, dofDirection));
+                val = val(end);
+                vals(dof.getId) = val;
             end
         end
         
