@@ -52,8 +52,17 @@ classdef FemModel < handle
             if ~ femModel.initialized
                 femModel.initialize;
             end
-            
             dofArray = femModel.dofArray;
+        end
+        
+        function fixedDofs = getFixedDofs(femModel)
+            dofs = femModel.getDofArray;
+            fixedDofs = Dof.empty;
+            for itDof = 1:length(dofs)
+                if dofs(itDof).isFixed
+                    fixedDofs = [fixedDofs dofs(itDof)];
+                end
+            end
         end
         
         function node = getNode(femModel, id)
