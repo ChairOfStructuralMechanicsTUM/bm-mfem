@@ -104,7 +104,11 @@ classdef FemModel < handle
             halfCrossSectionArea(eleIntf);
             
             %all nodes at Interface 
-            nodeIntf = findNodes(eleIntf);
+            nodeIntfNoSort = findNodes(eleIntf);
+
+            %sort nodes at interface by Id
+            nodeIntf = sortNodes(nodeIntfNoSort);
+
             %half the point loads at interface nodes before copying
             halfPointLoads(nodeIntf);
             
@@ -114,7 +118,7 @@ classdef FemModel < handle
             
             if size(orientationX) == 1
                 [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray);
-                
+        
                 %all elements that need to be copied
                 elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray);
                 %all elements that have been copied

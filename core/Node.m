@@ -150,25 +150,45 @@ classdef Node < handle & matlab.mixin.Copyable
                     end
                 end     
         end
+        
+        %function sorting nodes in an array by their id
+        function nodeIntf = sortNodes(nodeIntfNoSort)
+            
+            nodeIntf = [];
+            for ii = 1:length(nodeIntfNoSort)
+                mini = min(nodeIntfNoSort.getId);
+                ll = length(nodeIntfNoSort);
+                jj = 1;
+                while jj <= ll
+                    if nodeIntfNoSort(jj).getId == mini
+                        nodeIntf = [nodeIntf nodeIntfNoSort(jj)];
+                        nodeIntfNoSort(jj) = [];
+                        ll = ll-1;
+                        jj = jj-1;
+                    end
+                    jj = jj+1;
+                end
+            end
+        end
+        
        
         %function to half point loads at the interface. this implies that 
-        %half the point load is at substructer01 the other at substructer02
+        %half the point load is at substructer01 the other at substructer02        
         function halfPointLoads(nodes)
             for ii = 1:length(nodes)
-                dof = nodes(ii).getDofArray;
-                direction = zeros(1,length(dof));
-                value = 0;
-                for jj = 1:length(dof)
-                    %val = dof(jj).getValue;
-                    val = dof(jj).getDofLoad;
-                    %if value of a direction not zero, safe that direction
-                    if val ~= 0
-                        direction(jj) = val/abs(val);
-                        value = abs(val);
-                    end
+                dofs = nodes(ii).getDofArray;
+                for kk = 1:length(dofs)
+                    loads(kk) = dofs(kk).getDofLoad;
                 end
-                %add a new point load which overrides the old one
-                addPointLoad(nodes(ii), 0.5*value, direction);
+                val = abs(min(loads));
+                direction = zeros(1,length(loads));
+                
+                if (~isempty(find(loads)))
+                    for jj = 1:length(loads)
+                        direction(jj) = loads(jj)/val;
+                    end
+                    addPointLoad(nodes(ii), 0.5*val, direction);
+                end
             end
         end
 
@@ -285,7 +305,7 @@ classdef Node < handle & matlab.mixin.Copyable
             end
             dofs = cp.getDofArray;
             %set dofLoad of new node
-            if load ~= 0
+            if (~isempty(find(load)))   
                 for jj = 1:length(dofs)
                     setLoad(dofs(jj), load(jj));
                 end
