@@ -15,7 +15,7 @@ node12 = Node(12,60,0,0);
 
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
      node10 node11 node12];
-
+ 
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
 
@@ -47,24 +47,15 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
-node05.fixDof('DISPLACEMENT_Y');
+node03.fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
-addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
-addPointLoad(node07,16,[0 -1 0]);
+addPointLoad([node03 node05],10,[1 -1 0]);
+addPointLoad([node09 node11],12,[0 -1 0]);
+addPointLoad(node06,16,[0 -1 0]);
+
 
 model = FemModel(nodeArray, elementArray);
-
-%solve model
-SimpleSolvingStrategy.solve(model);
-
-n02d = node02.getDofArray;
-n02d(1).getValueType;
-n02d(1).getValue;
-
-n09d = node09.getDofArray;
-n09d(2).getValueType;
-n09d(2).getValue;
 
 %Substructure 
 %eleintf = elements at interface
@@ -72,26 +63,36 @@ eleintf = [ele15];
 [substructure01, substructure02] = model.divide(eleintf);
 
 
-%solve indicidual models using FETI
-%SimpleSolvingStrategy.solve(substructure01);
-%testSolver.solve(substructure02);
-%SimpleSolvingStrategy.solve(substructure01, substructure02);
+
+
+
+%solve original model using FEM
+%SimpleSolvingStrategy.solve(model);
+
+%solve individual models using FETI
+SimpleSolvingStrategy.solve(substructure01, substructure02);
 
 %Visualize Substructures
- substructure01V = Visualization(substructure01);
- substructure02V = Visualization(substructure02);
-originalSystem = Visualization(model);
-
-
-%plot Substructure01
+% substructure01V = Visualization(substructure01);
 % figure
 % plotUndeformed(substructure01V);
 % plotDeformed(substructure01V);
-%plot Substructure02
+% 
+% substructure02V = Visualization(substructure02);
 % figure
 % plotUndeformed(substructure02V);
 % plotDeformed(substructure02V);
-% %plot originalSystem 
-figure
-plotUndeformed(originalSystem);
-plotDeformed(originalSystem);
+
+% originalSystem = Visualization(model);
+% figure
+% plotUndeformed(originalSystem);
+% plotDeformed(originalSystem);
+
+
+% n02d = node02.getDofArray;
+% n02d(1).getValueType;
+% n02d(1).getValue;
+% 
+% n09d = node09.getDofArray;
+% n09d(2).getValueType;
+% n09d(2).getValue;

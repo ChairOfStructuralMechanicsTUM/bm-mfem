@@ -15,21 +15,26 @@ classdef FetiSolver < SimpleSolvingStrategy
                 %non-singular
                 disp('non-singular');
                 
-                x01 = K01\f01';
-                x02 = K02\f02';
+                u01 = K01\f01';
+                u02 = K02\f02';
                 
             elseif rank01 == length(K01) && rank02 ~= length(K02)
                 %K_02 singular
                 disp('K02 singular');
+                
 
                 [R02, K02Plus] = FetiSolver.psInvRBM(K02);
                 B01 = FetiSolver.createBooleanMatrix(femModel01);
                 B02 = FetiSolver.createBooleanMatrix(femModel02);
                 
-                [lambda, alpha] = FetiSolver.projectedConjugateGradient(K01, f01, B01, K02Plus, f02, B02, R02);
+                [lambda, alpha] = FetiSolver.projectedConjugateGradient(K01, f01, B01, K02, K02Plus, f02, B02, R02);
                 
                 u01 = K01\(f01'+B01'*lambda);
                 u02 = K02Plus*(f02'-B02'*lambda)+R02*alpha;
+                
+                B01*u01;
+                B02*u02;
+                
                 
             elseif rank01 ~= length(K01) && rank02 == length(K02)
                 %K_01 singular
@@ -39,7 +44,7 @@ classdef FetiSolver < SimpleSolvingStrategy
                 B01 = FetiSolver.createBooleanMatrix(femModel01);
                 B02 = FetiSolver.createBooleanMatrix(femModel02);
                 
-                [lambda, alpha] = FetiSolver.projectedConjugateGradient(K02, f02, B02, K01Plus, f01, B01, R01);
+                [lambda, alpha] = FetiSolver.projectedConjugateGradient(K02, f02, B02, K01, K01Plus, f01, B01, R01);
                 
             else
                 %all singular
@@ -80,9 +85,9 @@ classdef FetiSolver < SimpleSolvingStrategy
             a = round(K,5);
             b = round(K*pseudoInv*K,5);
             if ismember(b,a) == 1
-                disp('Pseudo inverse is correct.');
+                disp('Pseudo inverse is fine.');
             else 
-                disp('Pseudo inverse is wrong.');
+                disp('Pseudo inverse is not correct.');
             end                    
         end
         
@@ -253,7 +258,7 @@ classdef FetiSolver < SimpleSolvingStrategy
         end
 
         
-        function [lambda, alpha] = projectedConjugateGradient(K01, f01, B01, Kplus, f02, B02, R02)
+        function [lambda, alpha] = projectedConjugateGradient(K01, f01, B01, K02, Kplus, f02, B02, R02)
             %function to perform the projected conjugate gradient method in
             %order to solve the singular system of equations. non-singular
             %system is always called 01, singular system 02.
@@ -262,89 +267,164 @@ classdef FetiSolver < SimpleSolvingStrategy
             %G02 is the restriction of the body modes on the interface
             G02 = B02*R02;
             F01 = B01*inv(K01)*B01' + B02*Kplus*B02';
+            %change this preconditioner!!!
+            F01Inv = B01*K01*B01' + B02*K02*B02';
             
+            %check definitness of F01: is positive definite
+            [~, q] = chol(F01);
+            rank(F01);
+            size(F01,1);
+            
+            %projection operator 
+            Proj = [eye(size(G02,1))-G02*inv(G02'*G02)*G02'];
+
             
             %From "A Method of FETI..."
             %arbitrary vector
             %lambda(:,1) = G02*inv(G02'*G02)*R02'*f02';
-            lambda = G02*inv(G02'*G02)*R02'*f02';
             
             %option 1
             %r(:,1) = B02*Kplus*f02'-B01*inv(K01)*f01';
-            r = B02*Kplus*f02'-B01*inv(K01)*f01';
+            
+            
             
             %option 2
             %r(:,1) = F01*lambda(:,1)+B01*inv(K01)*f01'-B02*Kplus*f02';
             
             
             %From "Theory and Implementation..."
-%             lambda(:,1) = G02*inv(G02'*G02)*(f02*R02)'
-%             r(:,1) = B01*inv(K01)*f01'+B02*Kplus*f02'-F01*lambda(:,1);
-%             w(:,1) = [eye(size(G02,1))-G02*inv(G02'*G02)*G02']*r(:,1);
-%             p(:,1) = w(:,1);
+%             lambda(:,1) = G02*inv(G02'*G02)*(f02*R02)'; %correct
+%             r(:,1) = B01*inv(K01)*f01'+B02*Kplus*f02'-F01*lambda(:,1); %correct            
+%             w(:,1) = Proj*r(:,1);
+%             %y(:,1) = P*inv(F01Pre)*w(:,1);
+%             p(:,1) = w(:,1); %correct
+
+
+
+                %%%BEST ONE
+            %From The second generation
+            lambda(:,1) = G02*inv(G02'*G02)*(f02*R02)';
+            %w is the residuum
+            w(:,1) = Proj'*((B01*inv(K01)*f01'+B02*Kplus*f02')-F01*lambda(:,1));
             
-            kk = 2;
+            %constraint check
+            G02'*lambda(:,1);
+            r02f02= R02'*f02';
             
-            %or kk instead of kk+1
+                
+            kk = 1;
             %while r(kk+1) > 10^-3
-            while kk < 3
+            
+            while kk < 4
                 
-                %disp('check');
+
+                %%%BEST ONE
+                y(:,kk) = Proj*F01Inv*w(:,kk);
                 
-                %From "A Method of FETI..."
-                if kk == 2
-                    beta(kk) = 0;
-                    s(:,kk) = r(:,kk-1);
+                
+                if kk > 1
+                    temp = 0;
+                    for mm = 1:kk-1
+                        temp = temp + ((y(:,kk)'*F01*p(:,mm))/(p(:,mm)'*F01*p(:,mm)))*p(:,mm);
+                    end
+                    p(:,kk) = y(:,kk)-temp;   
                 else
-                    beta(kk) = (r(:,kk-1)'*r(:,kk-1))/(r(:,kk-2)'*r(:,kk-2));
-                    s(:,kk) = r(:,kk-1)+beta(:,kk)*s(:,kk-1);
-                    s(:,kk) = [eye(size(G02,1))-G02*inv(G02'*G02)*G02']*s(:,kk);
+                    p(:,kk) = y(:,kk);
                 end
                 
-                gamma(kk) = (r(:,kk-1)'*r(:,kk-1))/(s(:,kk)'*F01*s(:,kk));
-                lambda(:,kk) = lambda(:,kk-1)+gamma(:,kk)*s(:,kk);
-                r(:,kk) = r(:,kk-1)-gamma(:,kk)*F01*s(:,kk);
-               
-                G02'*s(:,kk);
+                
+                n(:,kk) = (p(:,kk)'*w(:,kk))/(p(:,kk)'*F01*p(:,kk));
+                lambda(:,kk+1) = lambda(:,kk) + n(:,kk)*p(:,kk);
+                w(:,kk+1) = w(:,kk) - n(:,kk)*Proj'*F01*p(:,kk);
+
+                
+                
+%                 %constraint check
+                g02 = G02'*lambda(:,kk);
+                test = G02'*p(:,kk);
                 
                 kk = kk+1;
- 
-                    
-                  %%%From "Theory and Implementation..."
-%                 gamma(:,:) = [w(:,kk-1),w(:,kk-1)]/[p(:,kk-1), F01*p(:,kk-1)];
-%                 
-%                 %? x(:,kk) = x(:,kk-1)+gamma(:,kk-1)*P(:,kk-1);
-%                 
-%                 r(:,kk) = r(:,kk-1)-gamma*F01*p(:,kk-1);
-%                 
-%                 [eye(size(G02,1))-G02*inv(G02'*G02)*G02']
-%                 r(:,1)
-%                 r(:,2)
-%                 
-%                 w(:,kk) = [eye(size(G02,1))-G02*inv(G02'*G02)*G02']*r(:,kk);
-%                 
-%                 %[w(:,kk-1), w(:,kk-1)]
-%                 
-%                 beta(:,:) = [w(:,kk), w(:,kk)]/[w(:,kk-1), w(:,kk-1)];
-%                 
-%                 p(:,kk) = w(:,kk)+beta*p(:,kk-1);
-%                 
-%                 kk = kk+1;
+                
             end
             
-            lambda = lambda(:,kk-1);
+
             
-            sum(r);
-            r;
+            lambda;
+            w;
+            
+            lambda = lambda(:,kk);
             
             
             %lambda is improvised here
-            alpha = inv(G02'*G02)*G02'*(F01*lambda(:,1)-B02*Kplus*f02'+B01*inv(K01)*f01');
-        
+            alpha = inv(G02'*G02)*G02'*(F01*lambda-B02*Kplus*f02'+B01*inv(K01)*f01');  
         
         end
         
     end
     
 end
+
+
+
+
+                  %%%From "A Method of FETI..."
+%                 %disp('check');
+%                 
+%                 %From "A Method of FETI..."
+%                 if kk == 2
+%                     beta(kk) = 0;
+%                     s(:,kk) = r(:,kk-1);   
+%                 else
+%                     beta(kk) = (r(:,kk-1)'*r(:,kk-1))/(r(:,kk-2)'*r(:,kk-2));
+%                     s(:,kk) = r(:,kk-1)+beta(:,kk)*s(:,kk-1);
+%                     %s(:,kk) = P*s(:,kk);
+%                 end
+%                 
+%                 s(:,kk) = P*s(:,kk);
+%                 
+%                 gamma(kk) = (r(:,kk-1)'*r(:,kk-1))/(s(:,kk)'*F01*s(:,kk));
+%                 
+%                 lambda(:,kk) = lambda(:,kk-1)+gamma(kk)*s(:,kk);
+%                 r(:,kk) = r(:,kk-1)-gamma(:,kk)*F01*s(:,kk);
+%                
+%                 %constraint check
+%                 kk;
+%                 g02 = G02'*lambda(:,kk); 
+%                 G02'*s(:,kk);
+%                 
+%                 
+%                 
+%                 kk = kk+1;
+
+
+
+
+
+%                 %%%From "Theory and Implementation..."
+% 
+%                 
+%                 gamma(kk-1) = dot(w(:,kk-1),w(:,kk-1))/dot(p(:,kk-1), F01*p(:,kk-1));
+%                 
+%                 lambda(:,kk) = lambda(:,kk-1)+gamma(kk-1)*p(:,kk-1);
+%                 
+%                 r(:,kk) = r(:,kk-1)-gamma(kk-1)*F01*p(:,kk-1);
+%                 
+%                 w(:,kk) = Proj*r(:,kk);
+%                 
+%                 %y(:,kk) = P*inv(F01Pre)*w(:,kk);
+%                 
+%                 beta(kk) = dot(w(:,kk), w(:,kk))/dot(w(:,kk-1), w(:,kk-1));               
+%                 p(:,kk) = w(:,kk)+beta(kk)*p(:,kk-1);
+%                 
+%                 %term(kk) = (y(:,kk)'*F01*p(:,kk-1))/(p(:,kk-1)'*F01*p(:,kk-1));
+%                 %sum(term,2);
+%                 %p(:,kk) = y(:,kk)- sum(term,2)*p(:,kk-1);
+%                 
+%                 %constraint check
+% %                 kk
+%                 g02 = G02'*lambda(:,kk);
+%                 G02'*p(:,kk);
+%                 
+%                 kk = kk+1;
+
 

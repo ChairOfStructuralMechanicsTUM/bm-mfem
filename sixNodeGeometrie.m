@@ -13,6 +13,7 @@ node09 = Node(9,20,20,0);
 
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09];
 
+
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
 
@@ -43,8 +44,9 @@ node03.fixDof('DISPLACEMENT_X');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
 %Load
+%addPointLoad(node02,10,[0 -1 0]);
+addPointLoad(node07,16,[0 -1 0]);
 addPointLoad(node05,10,[0 -1 0]);
-addPointLoad(node02,16,[1 -1 0]);
 
 %create FemModel
 modelNine = FemModel(nodeArray, elementArray);
@@ -58,8 +60,6 @@ eleintf = [ele15 ele16];
 %SimpleSolvingStrategy.solve(modelNine);
 
 %solve indicidual models using FETI
-%testSolver.solve(substructure02);
-%SimpleSolvingStrategy.solve(substructure01);
 SimpleSolvingStrategy.solve(substructure01, substructure02);
 
 %Visualize Substructures
@@ -67,12 +67,13 @@ substructure01 = Visualization(substructure01);
 substructure02 = Visualization(substructure02);
 originalSystem = Visualization(modelNine);
 
+
 % figure
 % plotUndeformed(substructure01);
-%plotDeformed(substructure01);
+% plotDeformed(substructure01);
 % figure
 % plotUndeformed(substructure02);
-%plotDeformed(substructure02);
+% plotDeformed(substructure02);
 % figure
 % plotUndeformed(originalSystem);
 % plotDeformed(originalSystem);
