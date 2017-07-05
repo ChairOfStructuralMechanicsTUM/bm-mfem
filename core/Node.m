@@ -156,14 +156,24 @@ classdef Node < handle & matlab.mixin.Copyable
         function addNewValue(nodes, valueNames)
             for itName = 1:length(valueNames)
                 for itNode = 1:length(nodes)
-                    nodes(itNode).valueMap.setValue(char(valueNames(itName)), 0.0);
+                    try
+                        nodes(itNode).valueMap.getValue(char(valueNames(itName)),1);
+                    catch
+                        nodes(itNode).valueMap.setValue(char(valueNames(itName)), 0.0);
+                    end
                 end
             end
         end
         
-        function setStepValue(nodes, valueName, step, value)
+        function setStepValue(nodes, valueName, value, step)
            for ii = 1:length(nodes)
-              nodes(ii).valueMap.setStepValue(valueName, step, value); 
+              nodes(ii).valueMap.setStepValue(valueName, value, step); 
+           end
+        end
+        
+        function appendStepValue(nodes, valueName, value)
+           for ii = 1:length(nodes)
+              nodes(ii).valueMap.appendStepValue(valueName, value); 
            end
         end
         

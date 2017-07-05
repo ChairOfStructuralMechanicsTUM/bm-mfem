@@ -25,7 +25,7 @@ classdef PropertyContainer < handle
             propertyContainer.propertyMap(name) = value;
         end
         
-        function setStepValue(propertyContainer, name, step, value)
+        function setStepValue(propertyContainer, name, value, step)
             %ADDSTEPVALUE adds VALUE to the property container NAME at the
             %specified STEP. An already existing value at this step is
             %overwritten
@@ -35,6 +35,17 @@ classdef PropertyContainer < handle
                 error('The value \"%s\" is not available in this container', name)
             end
             vals(step) = value;
+            propertyContainer.setValue(name, vals);
+        end
+        
+        function appendStepValue(propertyContainer, name, value)
+           %APPENDSTEPVALUE appends the given VALUE to the property NAME.
+           try
+                vals = propertyContainer.propertyMap(name);
+            catch
+                error('The value \"%s\" is not available in this container', name)
+            end
+            vals(end+1) = value;
             propertyContainer.setValue(name, vals);
         end
         

@@ -32,14 +32,28 @@ classdef Dof < handle
         end
         
         function value = getValue(dofs, step)
-            value = zeros;
             if nargin == 1
+                nsteps = length(dofs(1).value);
+                value = zeros(1,nsteps);
                 for ii = 1:length(dofs)
-                    value(ii) = dofs(ii).value;
+                    values = dofs(ii).value;
+                    if length(values) ~= nsteps
+                        error('the dof value array of dof %d has a length of %d rather than the expected %d', ...
+                            dofs(ii).getId, length(values), nsteps)
+                    end
+                    value(ii,:) = dofs(ii).value;
                 end
+                
             elseif nargin == 2
+                %check, if step exists
+                try
+                    dofs(1).value(step);
+                catch
+                    error('the specified step=%d does not exist for the dof', step)
+                end
+                value = zeros;
                 for ii = 1:length(dofs)
-                    value(ii) = dofs(ii).value(step);
+                    value(ii,:) = dofs(ii).value(step);
                 end
             end
         end
@@ -83,8 +97,38 @@ classdef Dof < handle
             dof.fixed = false;
         end
 
-        function setValue(dof, value)
-            dof.value = value;
+        function setValue(dofs, values, step)
+            %SETVALUE sets the value of the specified dof. If no step is
+            %provided, the most recent step value is overwritten by value.
+            %To append a new value, you can use DOF.APPENDVALUE
+            %See also DOF.APPENDVALUE
+            
+            if length(dofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            if nargin == 2
+                for ii = 1:length(dofs)
+                    dofs(ii).value(end) = values(ii);
+                end
+            elseif nargin == 3
+                for ii = 1:length(dofs)
+                   dofs(ii).value(step) = values(ii); 
+                end
+            end
+        end
+        
+        function appendValue(dofs, values)
+            %APPENDVALUE appends the given values to the value array of the
+            %dofs. No old step values are overwritten.
+            %See also DOF.SETVALUE
+            if length(dofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            for ii = 1:length(dofs)
+               dofs(ii).value(end+1) = values(ii); 
+            end
         end
         
         function setLoad(dof, dofLoad)
