@@ -118,6 +118,66 @@ classdef SimpleAssembler < Assembler
             
         end
         
+        function appendValuesToDofs(femModel, values)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            freeDofs.appendValue(values);
+            fixedDofs.appendValue(zeros(1,length(fixedDofs)));
+        end
+        
+        function appendValuesToNodes(femModel, valueName, values)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            %append the values
+            for ii = 1:length(freeDofs)
+                dof = freeDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.appendStepValue(strcat(valueName, dofDirection), values(ii));
+            end
+            
+            %append 0 to the fixed dofs
+            for ii = 1:length(fixedDofs)
+                dof = fixedDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.appendStepValue(strcat(valueName, dofDirection), 0);
+            end
+        end
+        
+        function assignValuesToNodes(femModel, valueName, values, step)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            %append the values
+            for ii = 1:length(freeDofs)
+                dof = freeDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.setStepValue(strcat(valueName, dofDirection), values(ii), step);
+            end
+            
+            %append 0 to the fixed dofs
+            for ii = 1:length(fixedDofs)
+                dof = fixedDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.setStepValue(strcat(valueName, dofDirection), 0, step);
+            end
+        end
+        
         function massMatrix = assembleGlobalMassMatrix(femModel)
             elements = femModel.getAllElements;
             ndofs = length(femModel.getDofArray);
