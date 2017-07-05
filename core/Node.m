@@ -110,12 +110,12 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
-        function setDofValue(nodes, dof, load)  %not load initial displacement
+        function setDofValue(nodes, dofName, load)  %not load initial displacement
             %SETDOFVALUE set the value of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = strfind(dofNames,dofName,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setValue(load);
             end
@@ -123,12 +123,12 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         
-        function setDofLoad(nodes, dof, load)
+        function setDofLoad(nodes, dofName, load)
             %SETINITIALDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                index = strfind(dofNames,dofName,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setLoad(load);
             end
