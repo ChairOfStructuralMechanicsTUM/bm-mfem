@@ -39,8 +39,7 @@ classdef NewmarkSolvingStrategy < Solver
             [freeDofs, fixedDofs] = solver.femModel.getDofConstraints();
             fixedDofIds = fixedDofs.getId();
             
-            force = solver.assembler.applyExternalForces(solver.femModel);
-            force = applyVectorBoundaryConditions(force, fixedDofIds)';
+            [forceFull, force] = solver.assembler.applyExternalForces(solver.femModel);
             dispOld = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
             dispOld = applyVectorBoundaryConditions(dispOld, fixedDofIds)';
             velOld = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
@@ -52,9 +51,9 @@ classdef NewmarkSolvingStrategy < Solver
             lhs = solver.massMatrix ...
                 + (solver.gamma * solver.dt) .* solver.dampingMatrix ...
                 + (solver.beta * power(solver.dt,2)) .* solver.stiffnessMatrix;
-            rhs = force ...
-                - solver.dampingMatrix .* (velOld + ((1 - solver.gamma) * solver.dt) .* accOld) ...
-                - solver.stiffnessMatrix .* (dispOld + solver.dt .* velOld + ((0.5 - solver.beta) * power(solver.dt,2)) .* accOld);
+            rhs = force' ...
+                - solver.dampingMatrix * (velOld + ((1 - solver.gamma) .* solver.dt) * accOld) ...
+                - solver.stiffnessMatrix * (dispOld + solver.dt .* velOld + ((0.5 - solver.beta) * power(solver.dt,2)) .* accOld);
             
             accNew = linsolve(lhs, rhs);
             velNew = velOld + ((1 - solver.gamma) * solver.dt) .* accOld + (solver.gamma * solver.dt) .* accNew;
@@ -84,14 +83,13 @@ classdef NewmarkSolvingStrategy < Solver
             solver.stiffnessMatrix = applyMatrixBoundaryConditions(stiffness, fixedDofIds);
             
             % initial acceleration
-            force = solver.assembler.applyExternalForces(solver.femModel);
-            force0 = applyVectorBoundaryConditions(force, fixedDofIds)';
+            [forceFull, force0] = solver.assembler.applyExternalForces(solver.femModel);
             disp = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
             disp0 = applyVectorBoundaryConditions(disp, fixedDofIds)';
             vel = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             
-            acc0 = (solver.massMatrix) \ (force0 - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+            acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
             solver.assembler.assignValuesToNodes(solver.femModel, 'ACCELERATION', acc0, 1);
             solver.isInitialized = true;
         end
