@@ -104,8 +104,14 @@ classdef Node < handle & matlab.mixin.Copyable
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
+                if isempty(dofNames)
+                    error('no dofs defined for node %d', nodes(ii).getId)
+                end
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
+                if isempty(index)
+                    error('no dof %s found for node %d', dof, nodes(ii).getId);
+                end
                 nodes(ii).dofArray(index).fix;
             end
         end
@@ -142,14 +148,15 @@ classdef Node < handle & matlab.mixin.Copyable
             optargs(1:numvarargs) = varargin;
             step = optargs{:};
             
-            val = zeros;
+            val = cell(length(nodes),1);
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
-                val(ii) = nodes(ii).dofArray(index).getValue(step);
-                %fprintf('node_%i: %s = %d\n',node.getId,dof,val);
+                val{ii} = nodes(ii).dofArray(index).getValue(step);
             end
+            
+            val = cell2mat(val);
         end
          
         
