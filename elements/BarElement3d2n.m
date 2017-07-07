@@ -89,7 +89,7 @@ classdef BarElement3d2n < BarElement
         
         % Computation of the Internal Element Stresses
         function stressValue = computeElementStress(barElements, step)
-            stressValue = zeros(1,length(barElements));
+            stressValue = zeros(length(barElements), 1);
             for ii = 1:length(barElements)
                 barElement = barElements(ii);
                 dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
