@@ -32,7 +32,7 @@ classdef Dof < handle
         end
         
         function value = getValue(dofs, step)
-            if nargin == 1
+            if (nargin == 1) || (strcmp(step, 'all'))
                 nsteps = length(dofs(1).value);
                 value = zeros(1,nsteps);
                 for ii = 1:length(dofs)
