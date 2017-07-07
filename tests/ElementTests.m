@@ -69,9 +69,9 @@ classdef ElementTests < matlab.unittest.TestCase
             actualDisplacementX = model.getAllNodes.getDofValue('DISPLACEMENT_X');
             actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
             actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
-            expectedDisplacementX = [0 0 0];
-            expectedDisplacementY = [0 -0.1 0];
-            expectedDisplacementZ = [0 0 0];
+            expectedDisplacementX = [0 0 0]';
+            expectedDisplacementY = [0 -0.1 0]';
+            expectedDisplacementZ = [0 0 0]';
             
             testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
                 'Within', RelativeTolerance(1e-7)))

@@ -7,8 +7,9 @@ end
 
 switch tests
     case 'small'
-        run(ElementTests);
         run(AssemblerTests);
+        run(ElementTests);
+        run(SolverTests);
         
     case 'validation'
         run(ValidationTests);
@@ -16,6 +17,7 @@ switch tests
     case 'all'
         run(ElementTests);
         run(AssemblerTests);
+        run(SolverTests);
         run(ValidationTests);
         
     otherwise

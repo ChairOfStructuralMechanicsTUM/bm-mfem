@@ -31,9 +31,9 @@ classdef ValidationTests <  matlab.unittest.TestCase
             actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
             
             expectedDisplacementX = [0 0.809536 0.28 0.899001 0.56 0.8475 ...
-                0.8475 0.795999 1.135 0.885464 1.415 1.695];
+                0.8475 0.795999 1.135 0.885464 1.415 1.695]';
             expectedDisplacementY = [0 -1.775600 -1.792260 -2.291930 -2.316600 ...
-                -2.385940 -2.421940 -2.291930 -2.316600 -1.775600 -1.792260 0];
+                -2.385940 -2.421940 -2.291930 -2.316600 -1.775600 -1.792260 0]';
             
             testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
                 'Within', RelativeTolerance(1e-5)))
@@ -43,7 +43,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
             actualElementStress = model.getAllElements.computeElementStress(1);
             expectedElementStress = [28 28 28.75 28.75 28 28 -6.2610 -6.0030 ...
                 -6.0300 -6.0300 -6.0030 -6.2610 3.3330 3.0830 4.0000 3.0830 ...
-                3.3330 1.6770 3.2020 3.2020 1.6770];
+                3.3330 1.6770 3.2020 3.2020 1.6770]';
             
             testCase.assertThat(actualElementStress, IsEqualTo(expectedElementStress, ...
                 'Within', RelativeTolerance(1e-3)))
