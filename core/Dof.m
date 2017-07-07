@@ -45,11 +45,15 @@ classdef Dof < handle
                 end
                 
             elseif nargin == 2
-                %check, if step exists
-                try
-                    dofs(1).value(step);
-                catch
-                    error('the specified step=%d does not exist for the dof', step)
+                if step == 'end'
+                    step = length(dofs(1).value);
+                else
+                    %check, if step exists
+                    try
+                        dofs(1).value(step);
+                    catch
+                        error('the specified step=%d does not exist for the dof', step)
+                    end
                 end
                 value = zeros;
                 for ii = 1:length(dofs)
