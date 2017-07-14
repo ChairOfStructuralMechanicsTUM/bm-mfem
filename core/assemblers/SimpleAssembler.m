@@ -44,6 +44,9 @@ classdef SimpleAssembler < Assembler
             nodes = femModel.getAllNodes;
             mini = min(nodes.getId)-1;
             
+            femModel.getAllElements.getId;
+            femModel.getAllNodes.getId;
+            
             for itEle = 1:length(femModel.getAllElements)
                 elements = femModel.getAllElements;
                 currentElement = elements(itEle);
@@ -77,7 +80,6 @@ classdef SimpleAssembler < Assembler
                     + elementStiffnessMatrix;
                 
             end
-            
             reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
             
         end

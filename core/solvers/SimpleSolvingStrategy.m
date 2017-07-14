@@ -42,7 +42,9 @@ methods (Static)
             disp('FEM');
             Kred = SimpleAssembler(femModel01).reducedStiffnessMatrix;
             f = SimpleAssembler(femModel01).reducedForceVector;
-            u01 = Kred \ f';
+            Kred
+          
+            u01 = Kred \ f'
             SimpleAssembler.assignResultsToDofs(femModel01, u01);
         end
     end

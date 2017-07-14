@@ -4,6 +4,10 @@ function addPointLoad( nodeArray, modulus, direction )
 %   modulus : load modulus
 %   direction : load direction with [x, y(, z)]
 
+% nodeArray.getId
+% modulus
+% direction
+
 for itNode = 1:length(nodeArray)
     currentNode = nodeArray(itNode);
    
