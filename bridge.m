@@ -19,7 +19,7 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 
 mat = Material('test');
-mat.addParameter('YOUNGS_MODULUS', 1000);
+mat.setValue('YOUNGS_MODULUS', 1000);
 
 ele01 = BarElement3d2n(1,[node01 node03], mat, 2);
 ele02 = BarElement3d2n(2,[node03 node05], mat, 2);
