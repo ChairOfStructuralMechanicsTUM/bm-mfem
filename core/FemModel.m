@@ -126,6 +126,10 @@ classdef FemModel < handle
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsX(nodes01, nodes02, totalElementArray);
+                
+                %sort elements
+                elements01 = sortElements(elements01);
+                elements02 = sortElements(elements02);
                
             elseif size(orientationY) == 1
                 [nodes01, nodes02]= splitNodesY(nodeIntf, totalNodeArray);
@@ -137,6 +141,10 @@ classdef FemModel < handle
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsY(nodes01, nodes02, totalElementArray);
+                
+                %sort elements
+                elements01 = sortElements(elements01);
+                elements02 = sortElements(elements02);
             
             else
                 disp('Chosen Elements are not in a vertical or horizontal line');

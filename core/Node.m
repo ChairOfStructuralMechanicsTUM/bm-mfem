@@ -180,14 +180,18 @@ classdef Node < handle & matlab.mixin.Copyable
                 for kk = 1:length(dofs)
                     loads(kk) = dofs(kk).getDofLoad;
                 end
-                val = abs(min(loads));
+                temp = abs(loads);
+                %smallest non-zero load
+                val = min(temp(temp>0));
                 direction = zeros(1,length(loads));
                 
                 if (~isempty(find(loads)))
                     for jj = 1:length(loads)
                         direction(jj) = loads(jj)/val;
                     end
-                    addPointLoad(nodes(ii), 0.5*val, direction);
+                    %multiply with norm of direction because later in
+                    %addPointLoad it is devided by this value
+                    addPointLoad(nodes(ii), norm(direction)*0.5*val, direction);
                 end
             end
         end
@@ -295,6 +299,8 @@ classdef Node < handle & matlab.mixin.Copyable
                 type(ii) = dofs(ii).getValueType;
                 fixed(ii) = dofs(ii).isFixed;
             end
+            %obj.getId
+            %load
             %set dofValue/Type of new node
             if length(dofs) == 2
                 newDofs = [Dof(cp,value(1),type(1)) Dof(cp,value(2),type(2))];
@@ -365,8 +371,22 @@ classdef Node < handle & matlab.mixin.Copyable
                    end
                    %increase the Id
                    maxId = maxId+1;
+                   
                end
                
+%                    cp(1).getId           
+%                    dofs = cp(1).getDofArray;
+%                    for ii = 1:length(dofs)
+%                        dofs(ii).getDofLoad
+%                    end
+%                    
+%                    cp(2).getId
+%                    dofs = cp(2).getDofArray;
+%                    for ii = 1:length(dofs)
+%                        dofs(ii).getDofLoad
+%                    end
+
+
            end
         end
     end 

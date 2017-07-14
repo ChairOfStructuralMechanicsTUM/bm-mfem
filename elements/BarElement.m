@@ -95,6 +95,26 @@ classdef (Abstract) BarElement < Element
                 barElement.nodeArray.getY + barElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
         end
         
+        %function to sort elements in increasing order by their Id
+        function elements = sortElements(elementsIn)
+            elements = [];
+            
+            for ii = 1:length(elementsIn)
+                mini = min(elementsIn.getId);
+                ll = length(elementsIn);
+                jj = 1;
+                while jj <= ll
+                    if elementsIn(jj).getId == mini
+                        elements = [elements elementsIn(jj)];
+                        elementsIn(jj) = [];
+                        ll = ll-1;
+                        jj = jj-1;
+                    end
+                    jj = jj+1;
+                end
+            end
+        end
+        
     end
     
     %%%Start NEW
