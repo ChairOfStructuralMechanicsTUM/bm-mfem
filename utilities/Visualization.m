@@ -2,9 +2,13 @@ classdef Visualization < handle
     %VISUALIZATION Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (Access = public)
+    properties (Access = private)
         model
         panel
+        
+        deformedPlotLines
+        
+        scalingFactor
     end
     
     methods
@@ -14,6 +18,7 @@ classdef Visualization < handle
             v.model = femModel;
             v.panel = axes;
             close(ancestor(v.panel,'Figure'))
+            v.scalingFactor = 1;
         end
         
         function plotUndeformed(visualization)
@@ -50,26 +55,43 @@ classdef Visualization < handle
             
         end
         
-        function plotDeformed(visualization)
+        function plotDeformed(visualization, step)
+            if nargin == 1
+                step = 'end';
+            end
             
             if ~isvalid(visualization.panel)
                 visualization.panel = axes;
                 visualization.panel.DataAspectRatio = [1 1 1]; % fix aspect ratio
             end
             
+            visualization.clearDeformed;
+            
             elements = visualization.model.getAllElements;
+            nElements = length(elements);
+            visualization.deformedPlotLines = matlab.graphics.primitive.Line.empty;
             
             % plot the deformed system
-            for ii = 1:length(elements)
-                elPlot = elements(ii).drawDeformed;
+            for ii = 1:nElements
+                elPlot = elements(ii).drawDeformed(step, visualization.scalingFactor);
                 elPlot.Parent = visualization.panel;
                 elPlot.Color = 'red';
+                visualization.deformedPlotLines(ii) = elPlot;
             end
             
         end
         
         function close(visualization)
            close(ancestor(visualization.panel,'Figure'))
+        end
+        
+        function setScaling(v, scalingFactor)
+            v.scalingFactor = scalingFactor;
+        end
+        
+        function clearDeformed(v)
+           delete(v.deformedPlotLines);
+           drawnow;
         end
         
     end
