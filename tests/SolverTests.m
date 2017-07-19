@@ -7,6 +7,47 @@ classdef SolverTests <  matlab.unittest.TestCase
     
     methods (Test)
         
+        function eigensolverTest(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            %parameters
+            mass = 1.0;
+            stiffness = 10.0;
+            
+            %model
+            model = FemModel();
+            
+            n01 = model.addNewNode(1,1,0,0);
+            n02 = model.addNewNode(2,2,0,0);
+            base = model.addNewNode(3,0,0,0);
+            model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            s01 = model.addNewElement('SpringDamperElement3d2n', 1, [3 1]);
+            s01.setPropertyValue('ELEMENTAL_STIFFNESS', 2*stiffness);
+            m01 = model.addNewElement('ConcentratedMassElement3d1n', 2, 1);
+            m01.setPropertyValue('ELEMENTAL_MASS', 2*mass);
+            s02 = model.addNewElement('SpringDamperElement3d2n', 3, [1 2]);
+            s02.setPropertyValue('ELEMENTAL_STIFFNESS', stiffness);
+            m02 = model.addNewElement('ConcentratedMassElement3d1n', 4, 2);
+            m02.setPropertyValue('ELEMENTAL_MASS', mass);
+            
+            model.getAllNodes.fixDof('DISPLACEMENT_Y');
+            model.getAllNodes.fixDof('DISPLACEMENT_Z');
+            base.fixDof('DISPLACEMENT_X');
+            
+            solver = EigensolverStrategy(model);
+            solver.solve();
+            solver.assignModeShapes();
+            
+            %eigenfrequencies in Hz
+            expectedEigenfrequencies = (1 / (2*pi)) .* [sqrt(stiffness/(2*mass)) sqrt(2*stiffness/mass)]';
+            actualEigenfrequencies = solver.getEigenfrequencies;
+            
+            testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
+                    'Within', AbsoluteTolerance(1e-7)))
+        end
+        
         function newmarkTest(testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
