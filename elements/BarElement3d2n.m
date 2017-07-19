@@ -87,6 +87,17 @@ classdef BarElement3d2n < BarElement
             forceVector = zeros(1,6);
         end
         
+        function massMatrix = computeLocalMassMatrix(element)
+            %COMPUTELOCALMASSMATRIX return the mass matrix
+            %the mass is computed from density, length, and cross section
+            %area and distributed equally among both nodes
+            density = element.getMaterial.getValue('DENSITY');
+            length = element.length;
+            area = element.crossSectionArea;
+            mass = density * length * area;
+            massMatrix = mass * diag([.5 .5 .5 .5 .5 .5]);
+        end
+        
         % Computation of the Internal Element Stresses
         function stressValue = computeElementStress(barElements, step)
             stressValue = zeros(length(barElements), 1);
