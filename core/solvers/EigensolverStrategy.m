@@ -58,7 +58,7 @@ classdef EigensolverStrategy < Solver
         function assignModeShapes(eigensolver)
             nModes = size(eigensolver.modalMatrix, 1);
             for itEv = 1:nModes
-               eigensolver.assembler.assignResultsToDofs(eigensolver.femModel, eigensolver.modalMatrix.');
+                eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
             end
         end
         
