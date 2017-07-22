@@ -2,7 +2,7 @@ classdef Dof < handle
     %DOF The degree of freedom class
     %   Detailed explanation goes here
     
-    properties (Access = private)
+    properties (Access = public) %private to public
         node
         value
         valueType

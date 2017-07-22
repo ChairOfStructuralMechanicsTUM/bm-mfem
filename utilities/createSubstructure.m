@@ -1,13 +1,17 @@
 
 %%% divideModell
-function  [substructure] = createSubstructure(femModel,dim,Boundary)
+function  [substructure,interfaceNodes] = createSubstructure(femModel,dim,Boundary)
 
-[elementArrayLeft, elementArrayRight]=divideElements(femModel.elementArray,dim,Boundary);
+[elementArrayLeft, elementArrayRight,interfaceNodes]=divideElements(femModel.elementArray,dim,Boundary);
 
-nodeArrayLeft  =  getNodesFromElements(elementArrayLeft);
-nodeArrayRight =  getNodesFromElements(elementArrayRight);
+[nodeArrayLeft, Id]  =  getNodesFromElements(elementArrayLeft,interfaceNodes);
 substructure(1) = Substructure(nodeArrayLeft,elementArrayLeft);
+substructure(1).interfaceNodes=Id;
+
+[nodeArrayRight,Id] =  getNodesFromElements(elementArrayRight,interfaceNodes);
 substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
+substructure(2).interfaceNodes=Id;
+
 
 % ELEMENTS
 
@@ -16,7 +20,7 @@ substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
 
 % NODES
 
-    function [ nodeArray] = getNodesFromElements( elementArray )
+    function [ nodeArray,Id] = getNodesFromElements( elementArray,interfaceNodes )
         tempNodeArray=[];
         for i=1:length(elementArray)
             
@@ -27,6 +31,24 @@ substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
         
         [~,sortedIds]=unique(tempNodeArray.getId); %[ids,index]
         nodeArray=tempNodeArray(sortedIds);
+        % store Interface nodes at the end of nodeArray
+        for i=1:length(interfaceNodes)
+              Id(i)=find(nodeArray.getId==interfaceNodes(i));
+% %             interfaceNode=nodeArray(Id);
+% %             nodeArray(Id)=[];
+% %             nodeArray=[nodeArray interfaceNode];
+         end
+         
+        %Update location of InterfaceNodes:
         
+%         b=length(nodeArray);
+%         a=length(interfaceNodes);
+%         a=b-a+1;
+%         interfaceNodes=(a:b);
+      
     end
+    
+    
+        
+    
 end

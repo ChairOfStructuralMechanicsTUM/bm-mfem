@@ -68,11 +68,7 @@ classdef SimpleAssembler < Assembler
             end
             
             reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
-
-%              for ii=1:length(nodeArray)  
-%                nodeArray(ii).id=a(ii) ;  
-%              end
-    
+   
         end
         
        
@@ -132,6 +128,7 @@ classdef SimpleAssembler < Assembler
                    fixedDofs = [fixedDofs itDof];
                end
             end
+            
             
             stiffnessMatrix(fixedDofs,:) = [];
             stiffnessMatrix(:,fixedDofs) = [];
