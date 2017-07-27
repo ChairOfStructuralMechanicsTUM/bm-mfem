@@ -112,8 +112,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            interfaceNodes=[];
            
            for ii=1:length(elementArray)
-               
-               currentNodes = elementArray(ii).getNodes;
+               currentElement=elementArray(ii);
+               currentNodes = currentElement.getNodes;
                currentCoords = currentNodes.getCoords;           %[ x1 x2 y1 y2 z1 z2]
                currentCoords = [currentCoords(2*dim-1),currentCoords(2*dim)];
                
@@ -131,19 +131,20 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                % Case 1 one Node is Left or on of Boundary 
                if highCoord <= Boundary  && lowCoord < Boundary         % if current element is left or on Boundary
                    elementArrayLeft = [elementArrayLeft elementArray(ii)]; % add element to left  elementArray
-                
+                  
                 % Case 2 element on Boundary    
                elseif highCoord == Boundary && lowCoord == Boundary
-                   
-                   elementArrayLeft = [elementArrayLeft elementArray(ii)];
-                   elementArrayRight = [elementArrayRight copyElement(elementArray(ii))];
+                    cp=copyElement(elementArray(ii));
+                   elementArrayLeft = [elementArrayLeft cp];
+                   elementArrayRight = [elementArrayRight cp ];
+
                    
                    % Set Cross-Section-Area
                    setCrossSectionArea(elementArrayRight(length(elementArrayRight)),...
                        0.5*getCrossSectionArea(elementArray(ii)));
                    setCrossSectionArea(elementArrayLeft(length(elementArrayLeft)),...
                        0.5*getCrossSectionArea(elementArray(ii)));
-                   
+          
                    % Store Interface Information
                    interfaceNodes=[interfaceNodes currentNodes.getId];
                    
@@ -152,21 +153,24 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                        oldNode=currentNodes(j);
                        newNode=copyElement(currentNodes(j));
                        
-                       overwriteNode(elementArrayRight(length(elementArrayRight)),...
-                           oldNode,newNode);
-                       % fix dofs that were fixed before
-%                           for jj=1:length(oldNode.dofArray)
-%                               if  isFixed(oldNode.dofArray(jj))== 1
-%                                   fix(newNode.dofArray(jj));
-%                               end
-%                           end
-                       
+                      % fix dofs that were fixed before
+%                             for jj=1:length(oldNode.dofArray)
+%                                 if  isFixed(oldNode.dofArray(jj))== 1
+%                                     
+%                                    newNode.dofArray(jj)=1;
+%                                 else
+%                                     newNode.dofArray(jj)=0;
+%                                 end
+%                             end
+                            
+                           overwriteNode(elementArrayRight(length(elementArrayRight)),...
+                           oldNode,newNode);                     
                    end
                    
                    
                    % Case 3 one Node is right, the other on Boundary 
                elseif highCoord > Boundary && lowCoord ==Boundary
-                   elementArrayRight = [elementArrayRight elementArray(ii)];
+                   elementArrayRight =[elementArrayRight elementArray(ii)];
                    
                    % overwrite Boundary node
                    oldNode=currentNodes(lowCoordPosition);
@@ -188,7 +192,12 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                    elementArrayRight = [elementArrayRight elementArray(ii)];
                end
            end
+           interfaceNodes=unique(interfaceNodes);
+           % fix Dofs
+           %nodes=femM
        end
+       
+       %elementArrayLeft(find(elemenentArrayLeft==0))=[];
    end
    
    %%% END---Substructure_1

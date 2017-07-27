@@ -48,7 +48,8 @@ substructure(2).interfaceNodes=Id;
       
     end
     
-    
+    %updateDofs(model.nodeArray,Substructure01,Substructure02,interfaceNodes)
+
         
     
 end
