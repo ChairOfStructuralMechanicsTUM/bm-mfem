@@ -20,7 +20,6 @@ classdef Node < handle & matlab.mixin.Copyable
                 case 0
                     % the empty constructor is needed in order to
                     % preallocate empty arrays of Nodes
-                    node.valueMap = PropertyContainer;
                     node.id = -1;
                 case 3
                     node.id = id;
@@ -34,6 +33,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 otherwise
                     error('Wrong number of arguments')
             end
+            node.valueMap = PropertyContainer();
         end
         
         
@@ -94,7 +94,7 @@ classdef Node < handle & matlab.mixin.Copyable
                         end
                     end
                     nodes(itNode).dofArray = [nodes(itNode).dofArray 
-                        Dof(nodes(itNode),0.0,dofNames(itDof))];
+                        Dof(nodes(itNode),0.0,dofNames{itDof})];
                 end
 %                 nodes(itNode).dofArray = nodes(itNode).dofArray';
 %                 test = nodes(itNode).dofArray;
@@ -103,19 +103,25 @@ classdef Node < handle & matlab.mixin.Copyable
         
         function fixDof(nodes, dof)
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
+                if isempty(dofNames)
+                    error('no dofs defined for node %d', nodes(ii).getId)
+                end
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
+                if isempty(index)
+                    error('no dof %s found for node %d', dof, nodes(ii).getId);
+                end
                 nodes(ii).dofArray(index).fix;
             end
         end
         
-        function setDofValue(nodes, dof, load)  %not load initial displacement
+        function setDofValue(nodes, dofName, load)  %not load initial displacement
             %SETDOFVALUE set the value of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
+                index = strfind(dofNames,dofName,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setValue(load);
             end
@@ -123,12 +129,12 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         
-        function setDofLoad(nodes, dof, load)
-            %SETINITIALDOFLOAD set the load of a specific dof
+        function setDofLoad(nodes, dofName, load)
+            %SETDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
+                index = strfind(dofNames,dofName,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
                 nodes(ii).dofArray(index).setLoad(load);
             end
@@ -142,21 +148,52 @@ classdef Node < handle & matlab.mixin.Copyable
             optargs(1:numvarargs) = varargin;
             step = optargs{:};
             
-            val = zeros;
+            val = cell(length(nodes),1);
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
+                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
                 index = strfind(dofNames,dof,'ForceCellOutput',false);
                 index = find(~cellfun(@isempty,index));
-                val(ii) = nodes(ii).dofArray(index).getValue(step);
-                %fprintf('node_%i: %s = %d\n',node.getId,dof,val);
+                val{ii} = nodes(ii).dofArray(index).getValue(step);
             end
+            
+            val = cell2mat(val);
         end
          
         
-        function addValue(nodes, valueName)
-           for itNode = 1:length(nodes)
-              nodes(itNode).valueMap.setValue(valueName, 0.0); 
+        function addNewValue(nodes, valueNames)
+            for itName = 1:length(valueNames)
+                for itNode = 1:length(nodes)
+                    try
+                        nodes(itNode).valueMap.getValue(char(valueNames(itName)),1);
+                    catch
+                        nodes(itNode).valueMap.setValue(char(valueNames(itName)), 0.0);
+                    end
+                end
+            end
+        end
+        
+        function setStepValue(nodes, valueName, value, step)
+           for ii = 1:length(nodes)
+              nodes(ii).valueMap.setStepValue(valueName, value, step); 
            end
+        end
+        
+        function appendStepValue(nodes, valueName, value)
+           for ii = 1:length(nodes)
+              nodes(ii).valueMap.appendStepValue(valueName, value); 
+           end
+        end
+        
+        function val = getValue(nodes, valueName, step)            
+            if nargin == 2
+                for ii = 1:length(nodes)
+                    val = nodes(ii).valueMap.getValue(valueName);
+                end
+            elseif nargin == 3
+                 for ii = 1:length(nodes)
+                    val = nodes(ii).valueMap.getValue(valueName, step);
+                end
+            end
         end
         
 %         function init = getInitialDofLoad(nodes, dof)

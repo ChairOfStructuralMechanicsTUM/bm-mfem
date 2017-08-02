@@ -26,6 +26,10 @@ classdef (Abstract) BarElement < Element
         
         % getter functions
         function len = getLength(barElement)
+            if barElement.length == 0
+                barElement.length = computeLength(barElement.nodeArray(1).getCoords, ...
+                    barElement.nodeArray(2).getCoords);
+            end
             len = barElement.length;
         end
         
@@ -53,9 +57,9 @@ classdef (Abstract) BarElement < Element
             pl = line(barElement.nodeArray.getX, barElement.nodeArray.getY);
         end
         
-        function pl = drawDeformed(barElement)
-            pl = line(barElement.nodeArray.getX + barElement.nodeArray.getDofValue('DISPLACEMENT_X'), ...
-                barElement.nodeArray.getY + barElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
+        function pl = drawDeformed(barElement, step, scaling)
+            pl = line(barElement.nodeArray.getX' + scaling * barElement.nodeArray.getDofValue('DISPLACEMENT_X', step), ...
+                barElement.nodeArray.getY' + scaling * barElement.nodeArray.getDofValue('DISPLACEMENT_Y', step));
         end
         
     end

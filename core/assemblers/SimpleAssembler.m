@@ -72,6 +72,14 @@ classdef SimpleAssembler < Assembler
             forceVector = zeros(1,nDofs);
             fixedDofs = [];
             
+             % get the external forces from every element
+%             elements = femModel.getAllElements;
+%             for itEle = 1:length(elements)                
+%                 elementalForceVector = elements(itEle).computeLocalForceVector;
+%                 elementalDofs = elements(itEle).getDofs;
+%                 forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) - elementalForceVector;
+%             end
+            
             % get the point load on the dofs
             for itDof = 1:nDofs
                 if (dofs(itDof).isFixed)
@@ -81,17 +89,8 @@ classdef SimpleAssembler < Assembler
                 end
             end
             
-            % get the external forces from every element
-            elements = femModel.getAllElements;
-            for itEle = 1:length(elements)
-                elementalForceVector = elements(itEle).computeLocalForceVector;
-                elementalDofs = elements(itEle).getDofs;
-                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
-            end
-            
             reducedForceVector = forceVector;
             reducedForceVector(fixedDofs) = [];
-            
             
         end
         
@@ -113,9 +112,68 @@ classdef SimpleAssembler < Assembler
                     dofs(itDof).setValue(resultVector(itResult,:));
                     itResult = itResult + 1;
                 end
-                
             end
             
+        end
+        
+        function appendValuesToDofs(femModel, values)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            freeDofs.appendValue(values);
+            fixedDofs.appendValue(zeros(1,length(fixedDofs)));
+        end
+        
+        function appendValuesToNodes(femModel, valueName, values)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            %append the values
+            for ii = 1:length(freeDofs)
+                dof = freeDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.appendStepValue(strcat(valueName, dofDirection), values(ii));
+            end
+            
+            %append 0 to the fixed dofs
+            for ii = 1:length(fixedDofs)
+                dof = fixedDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.appendStepValue(strcat(valueName, dofDirection), 0);
+            end
+        end
+        
+        function assignValuesToNodes(femModel, valueName, values, step)
+            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            if length(freeDofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            %append the values
+            for ii = 1:length(freeDofs)
+                dof = freeDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.setStepValue(strcat(valueName, dofDirection), values(ii), step);
+            end
+            
+            %append 0 to the fixed dofs
+            for ii = 1:length(fixedDofs)
+                dof = fixedDofs(ii);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                node.setStepValue(strcat(valueName, dofDirection), 0, step);
+            end
         end
         
         function massMatrix = assembleGlobalMassMatrix(femModel)
@@ -125,9 +183,9 @@ classdef SimpleAssembler < Assembler
             
             for itEle = 1:length(elements)
                elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
-               elementalDofs = elements(itEle).getDofs;
-               massMatrix(elementalDofs.getId, elementalDofs.getId) = ...
-                   massMatrix(elementalDofs.getId, elementalDofs.getId) + elementalMassMatrix;
+               elementalDofIds = elements(itEle).getDofs().getId;
+               massMatrix(elementalDofIds, elementalDofIds) = ...
+                   massMatrix(elementalDofIds, elementalDofIds) + elementalMassMatrix;
             end
         end
         
@@ -138,8 +196,39 @@ classdef SimpleAssembler < Assembler
             
             for itEle = 1:length(elements)
                elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
-               elementalDofs = elements(itEle).getDofs;
-               dampingMatrix(elementalDofs.getId) = dampingMatrix(elementalDofs.getId) + elementalDampingMatrix;
+               elementalDofIds = elements(itEle).getDofs().getId;
+               dampingMatrix(elementalDofIds, elementalDofIds) = ...
+                   dampingMatrix(elementalDofIds, elementalDofIds) + elementalDampingMatrix;
+            end
+        end
+        
+        function vals = assemble3dDofVector(femModel, dofName)
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+                dof = dofs(itDof);
+                itDofName = dof.getValueType();
+                itDofName = itDofName(1:end-2);
+                if strcmp(dofName, itDofName)
+                    val = dof.getValue();
+                    vals(dof.getId) = val(end);
+                end
+            end
+        end
+        
+        function vals = assemble3dValueVector(femModel, valueName)
+            %ASSEMBLE3DVALUEVECTOR returns a vector with all values from
+            %VALUENAME corresponding to the global dofs
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+                dof = dofs(itDof);
+                dofName = dof.getValueType;
+                dofDirection = dofName(end-1:end);
+                node = dof.getNode;
+                val = node.getValue(strcat(valueName, dofDirection));
+                val = val(end);
+                vals(dof.getId) = val;
             end
         end
         

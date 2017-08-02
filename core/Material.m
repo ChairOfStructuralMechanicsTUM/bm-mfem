@@ -30,9 +30,15 @@ classdef Material < handle
         end
         
         % member functions
-        function addParameter(material, name, value)
-            % alternative name for addValue for compatibility with the
-            % PropertyContainer
+        %         function setParameter(material, name, value)
+        %             %alternative name for addValue for compatibility with the
+        %             %PropertyContainer
+        %             material.addValue(name, value);
+        %         end
+        
+        function setValue(material, name, value)
+            %alternative name for addValue for compatibility with the
+            %PropertyContainer
             material.addValue(name, value);
         end
         
@@ -48,6 +54,17 @@ classdef Material < handle
             % alternative name for getValue for compatibility with the
             % PropertyContainer
             value = material.getValue(name);
+        end
+        
+        function returnVal = hasValue(material, name)
+            %HASVALUE returns true, if a value with NAME is specified in
+            %the container. Returns false, if not
+            returnVal = true;
+            try
+                material.parameters(name);
+            catch
+                returnVal = false;
+            end
         end
         
     end

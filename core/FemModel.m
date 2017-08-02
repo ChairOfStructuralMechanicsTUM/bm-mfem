@@ -9,6 +9,8 @@ classdef FemModel < handle
         femModelParts = containers.Map
         dofArray = {}
         initialized = false
+        fixedDofs
+        freeDofs
     end
     
     methods
@@ -52,8 +54,15 @@ classdef FemModel < handle
             if ~ femModel.initialized
                 femModel.initialize;
             end
-            
             dofArray = femModel.dofArray;
+        end
+        
+        function [freeDofs, fixedDofs] = getDofConstraints(femModel)
+            if ~femModel.initialized
+                femModel.initialize;
+            end
+            freeDofs = femModel.freeDofs;
+            fixedDofs = femModel.fixedDofs;
         end
         
         function node = getNode(femModel, id)
@@ -103,6 +112,17 @@ classdef FemModel < handle
             femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
             for ii = 1:length(femModel.dofArray)
                femModel.dofArray(ii).setId(ii); 
+            end
+            
+            dofs = femModel.dofArray;
+            femModel.freeDofs = Dof.empty;
+            femModel.fixedDofs = Dof.empty;
+            for itDof = 1:length(dofs)
+                if dofs(itDof).isFixed
+                    femModel.fixedDofs = [femModel.fixedDofs dofs(itDof)];
+                else
+                    femModel.freeDofs = [femModel.freeDofs dofs(itDof)];
+                end
             end
             
             femModel.initialized = true;

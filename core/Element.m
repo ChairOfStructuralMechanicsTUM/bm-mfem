@@ -76,12 +76,14 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             
         
         function check(element)
-        %CHECK checks, if all dofs and properties required by the element are available
+        %CHECK checks, if all dofs and properties required by the element
+        %are available. If a property is missing, it will be initialized
+        %with 0.
             
             %check the dofs
             for iNode = 1:length(element.nodeArray)
                 cNode = element.nodeArray(iNode);
-                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
                 diff = setxor(element.dofNames', availableDofNames);
                 if ~ isempty(diff)
                     missingDofs = setdiff(element.dofNames', availableDofNames);
@@ -102,7 +104,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             availableValueNames = properties.getValueNames;
             for ii = 1:length(valsToCheck)
                 if ~ any(ismember(valsToCheck(ii), availableValueNames))
-                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck(ii)))
+%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
+                    properties.setValue(cell2mat(valsToCheck(ii)), 0);
                 end
             end
             
@@ -116,7 +119,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                         error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
                     end
                 else
-                    error('error in element %d: property %s is missing', element.id, cell2mat(valsToCheck3d(ii)))
+%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
+                    properties.setValue(cell2mat(valsToCheck3d(ii)), [0, 0, 0]);
                 end
             end
         end

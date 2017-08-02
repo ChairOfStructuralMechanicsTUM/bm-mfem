@@ -76,21 +76,22 @@ classdef SpringDamperElement3d2n < Element
         
         function forceVector = computeLocalForceVector(element)
            forceVector = zeros(1,6);
-           stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
-           nodes = element.getNodes;
-           
-           disp = zeros(1,3);
-           disp(1) = nodes(2).getDofValue('DISPLACEMENT_X') - nodes(1).getDofValue('DISPLACEMENT_X');
-           disp(2) = nodes(2).getDofValue('DISPLACEMENT_Y') - nodes(1).getDofValue('DISPLACEMENT_Y');
-           disp(3) = nodes(2).getDofValue('DISPLACEMENT_Z') - nodes(1).getDofValue('DISPLACEMENT_Z');
-           disp = norm(disp);
-           
-           forceVector(1) = stiffness * disp;
-           forceVector(4) =  - stiffness * disp;
-           
-           tMat = element.getTransformationMatrix;
-           forceVector = tMat' * forceVector';
-           forceVector = forceVector';
+%            stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
+%            nodes = element.getNodes;
+%            
+%            tMat = element.getTransformationMatrix;
+%            
+%            disp = zeros(1,3);
+%            disp(1) = nodes(2).getDofValue('DISPLACEMENT_X','end') - nodes(1).getDofValue('DISPLACEMENT_X','end');
+%            disp(2) = nodes(2).getDofValue('DISPLACEMENT_Y','end') - nodes(1).getDofValue('DISPLACEMENT_Y','end');
+%            disp(3) = nodes(2).getDofValue('DISPLACEMENT_Z','end') - nodes(1).getDofValue('DISPLACEMENT_Z','end');
+%            localDisp = tMat(1:3,1:3)' * disp';
+%            
+%            forceVector(1) = - stiffness * localDisp(1);
+%            forceVector(4) = stiffness * localDisp(1);
+%            
+%            forceVector = tMat' * forceVector';
+%            forceVector = forceVector';
         end        
         
         function update(springDamperElement)

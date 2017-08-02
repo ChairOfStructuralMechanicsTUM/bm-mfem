@@ -11,6 +11,7 @@ $EndPhysicalNames
 
 $Material 1
 YOUNGS_MODULUS 1000
+DENSITY 7300
 $EndMaterial
 
 $Properties 1

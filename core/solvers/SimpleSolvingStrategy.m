@@ -24,10 +24,10 @@ classdef SimpleSolvingStrategy < Solver
                 simpleSolver.initialize();
             end
             
-            Kred = SimpleAssembler(simpleSolver.femModel).reducedStiffnessMatrix;
-            f = SimpleAssembler(simpleSolver.femModel).reducedForceVector;
+            [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
+            [~, fred] = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
             
-            x = linsolve(Kred, f.');
+            x = linsolve(Kred, fred.');
             
             SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);
         end
@@ -53,7 +53,7 @@ classdef SimpleSolvingStrategy < Solver
             end
             
             nodalForces(fixedDofs) = SimpleAssembler(simpleSolver.femModel).stiffnessMatrix(fixedDofs, :) ...
-                * simpleSolver.femModel.getDofArray.getValue(step)';
+                * simpleSolver.femModel.getDofArray.getValue(step);
             
         end
         

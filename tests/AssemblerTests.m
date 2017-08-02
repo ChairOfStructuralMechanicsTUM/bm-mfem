@@ -14,7 +14,7 @@ classdef AssemblerTests <  matlab.unittest.TestCase
             nodeArray = [node01 node02 node03 node04];
             
             mat = Material('test');
-            mat.addParameter('YOUNGS_MODULUS', 3000);
+            mat.setValue('YOUNGS_MODULUS', 3000);
             
             area = 2;
             

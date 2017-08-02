@@ -220,7 +220,7 @@ classdef ModelIO < handle
                     
                     while ~strcmp(tline,'$EndMaterial')
                         param = strsplit(tline);
-                        material.addParameter(cell2mat(param(1)),str2double(param(2)));
+                        material.setValue(cell2mat(param(1)),str2double(param(2)));
                         tline = fgetl(fid);
                     end
                     
