@@ -67,6 +67,17 @@ classdef PropertyContainer < handle
             end
         end
         
+        function returnVal = hasValue(propertyContainer, name)
+            %HASVALUE returns true, if a value with NAME is specified in
+            %the container. Returns false, if not
+            returnVal = true;
+            try
+                propertyContainer.propertyMap(name);
+            catch
+                returnVal = false;
+            end
+        end
+        
         function names = getValueNames(propertyContainer)
             names = propertyContainer.propertyMap.keys;
         end

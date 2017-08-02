@@ -86,12 +86,6 @@ classdef Dof < handle
             fixed = dof.fixed;
         end
 
-        
-
-        
-
-
-
         % setter functions
         function fix(dof)
             dof.fixed = true;
@@ -107,7 +101,7 @@ classdef Dof < handle
             %To append a new value, you can use DOF.APPENDVALUE
             %See also DOF.APPENDVALUE
             
-            if length(dofs) ~= length(values)
+            if length(dofs) ~= size(values,1)
                 error('the arrays of dofs and values are not of the same size')
             end
             

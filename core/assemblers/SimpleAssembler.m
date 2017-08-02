@@ -72,6 +72,14 @@ classdef SimpleAssembler < Assembler
             forceVector = zeros(1,nDofs);
             fixedDofs = [];
             
+             % get the external forces from every element
+%             elements = femModel.getAllElements;
+%             for itEle = 1:length(elements)                
+%                 elementalForceVector = elements(itEle).computeLocalForceVector;
+%                 elementalDofs = elements(itEle).getDofs;
+%                 forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) - elementalForceVector;
+%             end
+            
             % get the point load on the dofs
             for itDof = 1:nDofs
                 if (dofs(itDof).isFixed)
@@ -81,17 +89,8 @@ classdef SimpleAssembler < Assembler
                 end
             end
             
-            % get the external forces from every element
-            elements = femModel.getAllElements;
-            for itEle = 1:length(elements)
-                elementalForceVector = elements(itEle).computeLocalForceVector;
-                elementalDofs = elements(itEle).getDofs;
-                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
-            end
-            
             reducedForceVector = forceVector;
             reducedForceVector(fixedDofs) = [];
-            
             
         end
         
@@ -113,7 +112,6 @@ classdef SimpleAssembler < Assembler
                     dofs(itDof).setValue(resultVector(itResult,:));
                     itResult = itResult + 1;
                 end
-                
             end
             
         end
@@ -185,9 +183,9 @@ classdef SimpleAssembler < Assembler
             
             for itEle = 1:length(elements)
                elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
-               elementalDofs = elements(itEle).getDofs;
-               massMatrix(elementalDofs.getId, elementalDofs.getId) = ...
-                   massMatrix(elementalDofs.getId, elementalDofs.getId) + elementalMassMatrix;
+               elementalDofIds = elements(itEle).getDofs().getId;
+               massMatrix(elementalDofIds, elementalDofIds) = ...
+                   massMatrix(elementalDofIds, elementalDofIds) + elementalMassMatrix;
             end
         end
         
@@ -198,9 +196,9 @@ classdef SimpleAssembler < Assembler
             
             for itEle = 1:length(elements)
                elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
-               elementalDofs = elements(itEle).getDofs;
-               dampingMatrix(elementalDofs.getId, elementalDofs.getId) = ...
-                   dampingMatrix(elementalDofs.getId, elementalDofs.getId) + elementalDampingMatrix;
+               elementalDofIds = elements(itEle).getDofs().getId;
+               dampingMatrix(elementalDofIds, elementalDofIds) = ...
+                   dampingMatrix(elementalDofIds, elementalDofIds) + elementalDampingMatrix;
             end
         end
         

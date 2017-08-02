@@ -130,7 +130,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         
         function setDofLoad(nodes, dofName, load)
-            %SETINITIALDOFLOAD set the load of a specific dof
+            %SETDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);

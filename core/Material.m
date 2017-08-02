@@ -56,6 +56,17 @@ classdef Material < handle
             value = material.getValue(name);
         end
         
+        function returnVal = hasValue(material, name)
+            %HASVALUE returns true, if a value with NAME is specified in
+            %the container. Returns false, if not
+            returnVal = true;
+            try
+                material.parameters(name);
+            catch
+                returnVal = false;
+            end
+        end
+        
     end
     
 end
