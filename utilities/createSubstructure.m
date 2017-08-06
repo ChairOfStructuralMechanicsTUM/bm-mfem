@@ -1,16 +1,16 @@
 
 %%% divideModell
-function  [substructure,interfaceNodes] = createSubstructure(femModel,dim,Boundary)
+function  [substructure] = createSubstructure(femModel,dim,Boundary)
 
 [elementArrayLeft, elementArrayRight,interfaceNodes]=divideElements(femModel.elementArray,dim,Boundary);
 
-[nodeArrayLeft, Id]  =  getNodesFromElements(elementArrayLeft,interfaceNodes);
+[nodeArrayLeft,interfaceNodeIds]  =  getNodesFromElements(elementArrayLeft,interfaceNodes);
 substructure(1) = Substructure(nodeArrayLeft,elementArrayLeft);
-substructure(1).interfaceNodes=Id;
+substructure(1).interfaceNodes=interfaceNodeIds;
 
-[nodeArrayRight,Id] =  getNodesFromElements(elementArrayRight,interfaceNodes);
+[nodeArrayRight,interfaceNodeIds] =  getNodesFromElements(elementArrayRight,interfaceNodes);
 substructure(2) = Substructure(nodeArrayRight,elementArrayRight);
-substructure(2).interfaceNodes=Id;
+substructure(2).interfaceNodes=interfaceNodeIds;
 
 
 % ELEMENTS
@@ -20,10 +20,10 @@ substructure(2).interfaceNodes=Id;
 
 % NODES
 
-    function [ nodeArray,Id] = getNodesFromElements( elementArray,interfaceNodes )
+    function [ nodeArray,interfaceNodes] = getNodesFromElements( elementArray,interfaceNodes )
         tempNodeArray=[];
-        for i=1:length(elementArray)
-            
+        
+        for i=1:length(elementArray)           
             Nodes=elementArray(i).getNodes;
             tempNodeArray=[tempNodeArray Nodes];
         end
@@ -31,21 +31,17 @@ substructure(2).interfaceNodes=Id;
         
         [~,sortedIds]=unique(tempNodeArray.getId); %[ids,index]
         nodeArray=tempNodeArray(sortedIds);
-        % store Interface nodes at the end of nodeArray
+        
+  %      find Indices of interfaceNodes in nodeArray
+                
         for i=1:length(interfaceNodes)
-              Id(i)=find(nodeArray.getId==interfaceNodes(i));
-% %             interfaceNode=nodeArray(Id);
-% %             nodeArray(Id)=[];
-% %             nodeArray=[nodeArray interfaceNode];
-         end
-         
+             interfaceNodes(i)=find(nodeArray.getId==interfaceNodes(i));
+        end
         %Update location of InterfaceNodes:
         
-%         b=length(nodeArray);
-%         a=length(interfaceNodes);
-%         a=b-a+1;
-%         interfaceNodes=(a:b);
-      
+        nodeArray=[nodeArray nodeArray(interfaceNodes)];
+        nodeArray(interfaceNodes)=[];
+        interfaceNodes=length(nodeArray)-length(interfaceNodes)+1:length(nodeArray);
     end
     
     %updateDofs(model.nodeArray,Substructure01,Substructure02,interfaceNodes)

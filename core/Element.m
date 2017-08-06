@@ -120,7 +120,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                % get highest coordinat of the current element
                % to compare element position
                if currentCoords(2) >= currentCoords(1)    
-                   highCoord= currentCoords(2);
+                   highCoord = currentCoords(2);
                    lowCoord  = currentCoords(1);          
                    lowCoordPosition=1;                     
                else

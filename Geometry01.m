@@ -44,25 +44,14 @@ arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 addPointLoad(node03,100,[0 -1 0]);
 
 model = FemModel(nodeArray, elementArray);
-femDisplacements=SimpleSolvingStrategy.solve(model);
+x=SimpleSolvingStrategy.solve(model);
 % SUBSTRRUCTURE
 
  % dim:{1=X;2=Y;3=Z}, Boundary= InterfaceCoordinate
-[Substructure,interfaceNodes]=createSubstructure(model,1,5);  
+ Substructure=createSubstructure(model,1,5);  
  Substructure01=Substructure(1);
  Substructure02=Substructure(2);
-%Substructure01=FemModel(Substructure(1).nodeArray,Substructure(1).elementArray);
-%Substructure02=FemModel(Substructure(2).nodeArray,Substructure(2).elementArray);
-updateDofs(model.nodeArray,Substructure01,Substructure02,interfaceNodes)
-%Solve Substructure01
-%SimpleSolvingStrategy.solve(Substructure01)
 
-% Substructure02
-% Assembling Substructure:
- %arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), Substructure02.nodeArray);
-%  StiffnessMatrix=SimpleAssembler(Substructure02);
-%  StiffnessMatrix.reducedStiffnessMatrix
-%[RidgedBodyModes]=computeRidgedBodyModes(Substructure02);
-% furthermore: Kpp,Kpr,Krr and pseudo-inverse Ks+ are computed in
-% computeRBM 
+updateDofs(model.nodeArray,Substructure01,Substructure02)
+u=CallPCG(Substructure01,Substructure02);
 

@@ -51,7 +51,7 @@ KS(zeroPivots,zeroPivots)= 0;
 % Compute RBM
 RidgedBodyModes=KS*StiffnessMatrix(:,zeroPivots);
 for i=1:size(RidgedBodyModes,2)
-    RidgedBodyModes(zeroPivots(i),i)=1;
+    RidgedBodyModes(zeroPivots(i),i)=-1;
 end
 
 % clean up "almost-zero" values in RBM: 

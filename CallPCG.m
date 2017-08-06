@@ -1,6 +1,6 @@
 % Solve Substructure:
 
-function [u1,u2]=CallPCG(Substructure01,Substructure02,interfaceNodes)
+function [u]=CallPCG(Substructure01,Substructure02)
 StiffnessMatrixSub1=SimpleAssembler(Substructure01);
 StiffnessMatrixSub2=SimpleAssembler(Substructure02);
 
@@ -13,32 +13,36 @@ f2=StiffnessMatrixSub2.reducedForceVector';
 
 [R2,KS]=computeRidgedBodyModes(Substructure02);
 
-
-B1=computeB(Substructure01,interfaceNodes);% Substructure.IntrefaceNodes
-interfaceNodes=[1 2];
-B2=computeB(Substructure02,interfaceNodes);  
+[B1]=computeB(Substructure01);% Substructure.IntrefaceNodes
+[B2]=computeB(Substructure02);  
 
 %Gleichungssystem Aufstellen:
 F1=B1*K1^-1*B1'+B2*KS*B2';
 Gi2=B2*R2;
-d=B2*KS*f2-B1*K1^-1*f1 ;  
+d=B2*KS*f2-B1*K1^-1*f1; 
 e=R2'*f2;
-Pi=[B1 B2]*[K1, zeros(size(K1,1),size(K2,2));...
-    zeros(size(K2,2),size(K1,1)) K2]*[B1';B2'];
+%c=B1*K1^-1*f1-B2*KS*f2;
+%Pi=[B1 B2]*[K1, zeros(size(K1,1),size(K2,2));...
+   % zeros(size(K2,2),size(K1,1)) K2]*[B1';B2'];
 
-[lambda,alpha]= PCG(F1,Pi,Gi2,d,e);
- 
-%[lambda,alpha]=CG2(F1,Gi2,d,e);
+    % matlab optimazition function
+%[lambda,alpha]=minimize(F1,Gi2,c,d,e)
+%alpha=(Gi2*((Gi2'*Gi2)^-1))'*(d-F1*x);
+
+%[lambda,alpha]= PCG2(F1,Gi2,d,e);
+[lambda,alpha]=CG2(F1,Gi2,d,e);
+
 
 u1=K1\(f1+B1'*lambda);
-u2=KS*(f2-B2'*lambda)+R2*alpha;  % KS statt "\" daa KS schon berechnet!!
+u2=KS*(f2-B2'*lambda)+R2*alpha;  % KS statt "\" da KS schon berechnet!!
+% löschen der doppelten interfaceDofs in u2 :
+
 GG=abs(B1*u1)-abs(B2*u2);
-if GG'*GG >10e-10
+if norm(GG) >10e-4
    disp('Gleichgewicht: B1*u1=B2*u2 nicht eingehalten')
 end
- 
-%    U1=K1^-1*(f1+B1'*x(1:4));
-%    U2=KS*(f2-B2'*x(1:4))+R2*x(5:7);
-%    % GG=B1*U1-B2*U2;
+[k,~]=find(B2'==1);
+u2(k)=[];
+u=[u1;u2];
 
 end

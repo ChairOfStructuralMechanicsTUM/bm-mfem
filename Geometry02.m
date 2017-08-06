@@ -61,7 +61,7 @@ Sub2 = FemModel(nodeArray, elementArray);
 %Sub2interfaceNodes=[3 4];
 %[RidgedBodyModes]=computeRidgedBodyModes(Sub2,interfaceNodes);
 
-[u1, u2]=CallPCG(Sub1,Sub2,[3 4]);
+[u]=CallPCG(Sub1,Sub2);
 
 
 % Kontroll Ergebnisse aus femModel:
