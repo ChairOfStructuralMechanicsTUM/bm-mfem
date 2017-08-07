@@ -1,5 +1,5 @@
 clear;
-tic
+tic;
 node01 = Node(1,0,0,0);
 node02 = Node(2,10,5,0);
 node03 = Node(3,10,0,0);
@@ -58,12 +58,15 @@ addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
 model = FemModel(nodeArray, elementArray);
 
 x = SimpleSolvingStrategy.solve(model);
-toc
+toc;
+
 %Substructurierung:
-tic
+tic;
 [Substructure]=createSubstructure(model,1,30);  
  Substructure01=Substructure(1);
  Substructure02=Substructure(2);
  updateDofs(nodeArray,Substructure01,Substructure02);
  [u]=CallPCG(Substructure01,Substructure02);
 toc
+diff=norm(x-u);
+fprintf('norm ( FemDisplacement-FetiDisplacement)=%d\n',diff)

@@ -1,49 +1,52 @@
-function [lambda, alpha]=CG2(F1,Gi2,d,e)
 
-P=eye(size(Gi2,1))-Gi2*(Gi2'*Gi2)^-1*Gi2';
-%a=;
-x=(Gi2*((Gi2'*Gi2)^-1))*e;
-r=d-F1*x;
-w0=P*r;
-p=w0;
-%phi=0.5*x'*F1*x-d'*x;
+% PCG nach FETI_Level_1
+
+function [l,alpha]=CG2(Fi,Pi,Gi2,d,e)
+P=eye(4)-Gi2*(Gi2'*Gi2)^-1*Gi2';
+% k=0;
+l=(Gi2*((Gi2'*Gi2)^-1))*e;
+r0=d-Fi*l;
+z0=Pi*r0;
+
+% k=1;
+
 b=0;
+p=z0;  % p=s
+p=P*p;
 k=1;
-n=(length(e)+length(d))+1; % usually convergence is reached in n steps
 eps=1;
-while  k < n  || eps > 10e-15
+
+while  k<10 && eps>10e-5
     
-    g=dot(w0,w0)/dot(p,F1*p);
-            
-    x=x+g*p;
+    gamma=(r0'*z0)/(p'*Fi*p);
     
-    r=r-g*F1*p;
     
-    w=P*r;
+    l=l+gamma*p;
     
-    if norm(w)==0
-        break
-    end
-    
-     b=dot(w,w)/dot(w0,w0);
+    r=r0-gamma*Fi*p;
      
-    w0=w;
-     
-    p=w+b*p;
+    z=Pi*r;
     
-      %  diff=abs(phi)-abs(0.5*x'*F1*x-d'*x)
-      %  phi= 0.5*x'*F1*x-d'*x;
-      % step(k)= g;
- 
-    eps=norm(g*p) ;   % => 
+    b=dot(z,r)/dot(z0,r0);
+       
+    p=z+b*p;
+    p=P*p;
+    
+        r0=r;
+        z0=z;
+        
     k=k+1;
-     
-
-     % eps1=norm(d-[F1, -Gi2]*[x;alpha])  % => ||b-A*x||
+    eps=norm(r);
+    
 end
- alpha=(Gi2*((Gi2'*Gi2)^-1))'*-r;
-lambda=x;
+
+alpha=(Gi2*(Gi2'*Gi2)^-1)'*(Fi*l-d);
 
 
-%loglog(step)
 end
+
+
+
+
+
+
