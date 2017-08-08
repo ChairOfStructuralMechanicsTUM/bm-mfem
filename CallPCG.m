@@ -21,21 +21,24 @@ F1=B1*K1^-1*B1'+B2*KS*B2';
 Gi2=B2*R2;
 d=B2*KS*f2-B1*K1^-1*f1; 
 e=R2'*f2;
-
-%Pi=[B1 B2]*[K1, zeros(size(K1,1),size(K2,2));...
-% zeros(size(K2,2),size(K1,1)) K2]*[B1';B2'];
+%(preconditioner)
+Pi=[B1 B2]*[K1, zeros(size(K1,1),size(K2,2));...
+zeros(size(K2,2),size(K1,1)) K2]*[B1';B2'];
 
     % matlab optimazition function
 %[lambda,alpha]=minimize(F1,Gi2,d,e)
 %alpha=(Gi2*((Gi2'*Gi2)^-1))'*(d-F1*x);
-a=1;
+
+a=3;
 switch a
     case 1
 [lambda,alpha]=CG(F1,Gi2,d,e);
     case 2
-[lambda,alpha]= CG2(F1,Gi2,d,e); %CG - reorthogonalization
+[lambda,alpha]= CG3(F1,Gi2,d,e); %CG - reorthogonalization
     case 3
+[lambda,alpha]=PCG3(F1,Pi,Gi2,d,e); % Precond. CG -reotrhog.
 end
+
 
 
 u1=K1\(f1+B1'*lambda);

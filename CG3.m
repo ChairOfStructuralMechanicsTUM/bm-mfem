@@ -1,6 +1,6 @@
-% PCG2 nach Feti_Level_1 Preconditioning with reorthogonalisation:
+% Conjugate Project Gradient with reorthogonalisation:
 
-function [lambda,alpha]=PCG(F1,Gi2,d,e)
+function [lambda,alpha]=CG3(F1,Gi2,d,e)
 
 % F1=B1*K1^-1*B1'+B2*KS*B2';
 % Gi2=B2*R2;
@@ -17,15 +17,13 @@ n=(length(e)+length(d));
 summe=0;
 eps=1;
 
-while   eps>= 10e-15 && k < 2*n
+while   eps>= 10e-15 && k < n
     
     g=dot(w,w)/dot(p,F1*p);
     
     x=x+g*p;
     
-    a=g*F1*p;
-    
-    r=r-a;
+    r=r-g*F1*p;
     
     w=P*r;
     
