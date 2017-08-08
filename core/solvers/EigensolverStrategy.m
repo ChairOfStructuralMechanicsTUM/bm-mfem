@@ -148,6 +148,9 @@ classdef EigensolverStrategy < Solver
                 solver.solve();
             end
             
+%             solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
+%                 "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
+            
             [~, force] = solver.assembler.applyExternalForces(solver.femModel);
             nModes = length(solver.eigenfrequencies);
             
@@ -168,8 +171,11 @@ classdef EigensolverStrategy < Solver
                     result = result + 1/factor .* ((solver.modalMatrix(:,n) * solver.modalMatrix(:,n)') * force');
                 end
                 solver.assembler.appendValuesToDofs(solver.femModel, result);
+%                 solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', (1i * excitation) .* result)
+%                 solver.assembler.appendValuesToNodes(solver.femModel, 'ACCELERATION', (- power(excitation, 2)) .* result)
             end    
             solver.femModel.getDofArray.removeValue(1);
+            
         end
         
         function normalizeModalMatrix(solver)
