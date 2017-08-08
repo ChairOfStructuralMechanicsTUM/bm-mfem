@@ -38,22 +38,6 @@ classdef EigensolverStrategy < Solver
                 eigensolver.initialize();
             end
             
-%             eigensolver.stiffnessMatrix = eigensolver.assembler.getStiffnessMatrix(eigensolver.assembler);
-%             eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
-%             
-%             %apply boundary conditions
-%             dofs = eigensolver.femModel.getDofArray();
-%             fixedDofs = [];
-%             for itDof = 1:length(dofs)
-%                if dofs(itDof).isFixed
-%                    fixedDofs = [fixedDofs itDof];
-%                end
-%             end
-%             eigensolver.stiffnessMatrix(fixedDofs,:) = [];
-%             eigensolver.stiffnessMatrix(:,fixedDofs) = [];
-%             eigensolver.massMatrix(fixedDofs,:) = [];
-%             eigensolver.massMatrix(:,fixedDofs) = [];
-            
             % solve
             [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
                 eig(eigensolver.stiffnessMatrix, eigensolver.massMatrix);
@@ -184,8 +168,8 @@ classdef EigensolverStrategy < Solver
                     result = result + 1/factor .* ((solver.modalMatrix(:,n) * solver.modalMatrix(:,n)') * force');
                 end
                 solver.assembler.appendValuesToDofs(solver.femModel, result);
-            end           
-            
+            end    
+            solver.femModel.getDofArray.removeValue(1);
         end
         
         function normalizeModalMatrix(solver)
