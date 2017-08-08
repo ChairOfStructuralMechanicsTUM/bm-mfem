@@ -59,8 +59,8 @@ node05.fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray01);
 
 addPointLoad([node03 node05 ],10,[0 -1 0]);
-Substructure01 = FemModel(nodeArray01, elementArray01);
-
+Substructure01 = Substructure(nodeArray01, elementArray01);
+Substructure01.interfaceNodes=[6 7];
 % Sub2:
 
 
@@ -76,6 +76,6 @@ addPointLoad([node09 node11],10,[0 -1 0]);
 %addPointLoad(node14,8,[0 -1 0]);
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray02);
 
-Substructure02 = FemModel(nodeArray02, elementArray02);
-
-[u1, u2]=CallPCG(Substructure01,Substructure02,[6 7]);
+Substructure02 = Substructure(nodeArray02, elementArray02);
+Substructure02.interfaceNodes=[6 7];
+[u]=CallPCG(Substructure01,Substructure02);

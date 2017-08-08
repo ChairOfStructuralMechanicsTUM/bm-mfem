@@ -1,47 +1,44 @@
 
-% PCG nach FETI_Level_1
+% Preconditioned Conjugate Project Gradtient
+% (FETI_Level_1)
+% Pi = ~ F1^-1  ( Preconditioner)
+function [lambda,alpha]=PCG(Fi,Pi,Gi2,d,e)
 
-function [l,alpha]=PCG(Fi,Pi,Gi2,d,e)
-P=eye(4)-Gi2*(Gi2'*Gi2)^-1*Gi2';
-% k=0;
-l=(Gi2*((Gi2'*Gi2)^-1))*e;
-r0=d-Fi*l;
-z0=Pi*r0;
+P=eye(size(Gi2,1))-Gi2*(Gi2'*Gi2)^-1*Gi2';
+x=(Gi2*((Gi2'*Gi2)^-1))*e;
+r=d-Fi*x;
+w=P*r;
+%y=P*Pi*w;
+p=w;
 
-% k=1;
-
-b=0;
-p=z0;  % p=s
-p=P*p;
+n=length(d)+length(e);
+summe=0;
 k=1;
 eps=1;
 
-while  k<10 && eps>10e-5
+while  eps >= 10e-15 && k < n
     
-    gamma=(r0'*z0)/(p'*Fi*p);
-    
-    
-    l=l+gamma*p;
-    
-    r=r0-gamma*Fi*p;
-     
-    z=Pi*r;
-    
-    b=dot(z,r)/dot(z0,r0);
-       
-    p=z+b*p;
-    p=P*p;
-    
-        r0=r;
-        z0=z;
+    g=(p'*w)/(p'*Fi*p);
         
+    x=x+g*p;
+    
+    r=r-g*Fi*p;
+     
+    w=P*r;
+    
+    y=P*Pi*w;
+    
+    summe=summe+((y'*Fi*p)/(p'*Fi*p))*p;
+    
+    p=y-summe;
+              
     k=k+1;
-    eps=norm(r);
+    eps=norm(p*g);
     
 end
 
-alpha=(Gi2*(Gi2'*Gi2)^-1)'*(Fi*l-d);
-
+alpha=(Gi2*(Gi2'*Gi2)^-1)'*(Fi*x-d);
+lambda=x;
 
 end
 
