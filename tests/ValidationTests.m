@@ -159,9 +159,57 @@ classdef ValidationTests <  matlab.unittest.TestCase
             end
         end
         
+        function harmonicAnalysis(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            model = FemModel();
+            support = model.addNewNode(3,0,0,0);
+            n01 = model.addNewNode(1,10,0,0);
+            n02 = model.addNewNode(2,20,0,0);
+            model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            stiffness = 20.0;
+            mass = 0.2;
+            
+            s01 = model.addNewElement('SpringDamperElement3d2n',1,[1 3]);
+            s01.setPropertyValue('ELEMENTAL_STIFFNESS', stiffness);
+            s02 = model.addNewElement('SpringDamperElement3d2n',2,[1 2]);
+            s02.setPropertyValue('ELEMENTAL_STIFFNESS', stiffness/2);
+            m01 = model.addNewElement('ConcentratedMassElement3d1n',3,1);
+            m01.setPropertyValue('ELEMENTAL_MASS', mass);
+            m02 = model.addNewElement('ConcentratedMassElement3d1n',4,2);
+            m02.setPropertyValue('ELEMENTAL_MASS', mass/2);
+            
+            model.getAllNodes.fixDof('DISPLACEMENT_Y');
+            model.getAllNodes.fixDof('DISPLACEMENT_Z');
+            support.fixDof('DISPLACEMENT_X');
+            
+            addPointLoad(n01,1,[-1 0 0]);
+            
+            exfreq = linspace(.1*sqrt(5),10*sqrt(5),1000);
+            
+            solver = EigensolverStrategy(model);
+            solver.harmonicAnalysis(exfreq);
+            
+            Rd11_actual = abs(model.getNode(1).getDofValue('DISPLACEMENT_X','all'));
+            Rd12_actual = abs(model.getNode(2).getDofValue('DISPLACEMENT_X','all'));
+            
+            Rd11_expected = (1/3 * stiffness) ./ (0.5 - (exfreq ./ sqrt(stiffness/mass)).^2) ...
+                + (1/1.5 * stiffness) ./ (2 - (exfreq ./ sqrt(stiffness/mass)).^2);
+            Rd12_expected = (2/3 * stiffness) ./ (0.5 - (exfreq ./ sqrt(stiffness/mass)).^2) ...
+                - (2/3 * stiffness) ./ (2 - (exfreq ./ sqrt(stiffness/mass)).^2);
+            
+            testCase.assertThat(Rd11_actual, IsEqualTo(abs(Rd11_expected) / stiffness^2, ...
+                'Within', AbsoluteTolerance(1e-7)))
+            testCase.assertThat(Rd12_actual, IsEqualTo(abs(Rd12_expected) / stiffness^2, ...
+                'Within', AbsoluteTolerance(1e-7)))
+            
+        end
+        
         function externalScriptsTest(testCase)
-           bridge;
-           Bridge_with_inputFile;
+            bridge;
+            Bridge_with_inputFile;
         end
         
     end
