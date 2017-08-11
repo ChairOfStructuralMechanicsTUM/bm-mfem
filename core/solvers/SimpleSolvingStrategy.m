@@ -21,31 +21,32 @@ classdef SimpleSolvingStrategy < Solver
     
     
 methods (Static)
-    function [u01, u02] = solve(femModel01, femModel02)
+    function [u] = solve(substructures)
         
-        %Feti solution
-        if nargin == 2
-            disp('FETI');
-            K_01 = SimpleAssembler(femModel01).reducedStiffnessMatrix;
-            f_01 = SimpleAssembler(femModel01).reducedForceVector;
-            
-            K_02 = SimpleAssembler(femModel02).reducedStiffnessMatrix;
-            f_02 = SimpleAssembler(femModel02).reducedForceVector;
-            
-            [u01, u02] = FetiSolver.solveFeti(K_01, K_02, f_01, f_02, femModel01, femModel02);
-            
-            SimpleAssembler.assignResultsToDofs(femModel01, u01);
-            SimpleAssembler.assignResultsToDofs(femModel02, u02);
-            
-        %FEM solution    
-        else
+        %distinguish between FETI and FEM by number of subdomains
+        if length(substructures) == 1
+            %FEM
             disp('FEM');
-            Kred = SimpleAssembler(femModel01).reducedStiffnessMatrix;
-            f = SimpleAssembler(femModel01).reducedForceVector;
-            Kred
+            Kred = SimpleAssembler(substructures).reducedStiffnessMatrix;
+            f = SimpleAssembler(substructures).reducedForceVector;
           
-            u01 = Kred \ f'
-            SimpleAssembler.assignResultsToDofs(femModel01, u01);
+            u = Kred \ f';
+            SimpleAssembler.assignResultsToDofs(substructures, u);
+        else
+            %FETI
+            disp('FETI');
+            K = cell(1,length(substructures));
+            f = cell(1,length(substructures));
+            %calculate stiffness Matrix and Force Vector for all
+            %substructues and save them in a cell array
+            for ii = 1:length(substructures)
+                K{1,ii} = [SimpleAssembler(substructures(ii)).reducedStiffnessMatrix];
+                f{1,ii} = [SimpleAssembler(substructures(ii)).reducedForceVector];
+            end
+
+            u = FetiPreparer.solveFeti(K, f, substructures);
+            
+            %SimpleAssembler.assignResultsToDofs(substructures, u);
         end
     end
  
