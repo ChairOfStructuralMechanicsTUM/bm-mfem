@@ -51,7 +51,7 @@ classdef (Abstract) BarElement < Element
         end
         
         %function preparing elements for copy and then sends them to copy
-        function copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf)
+        function copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, eleIntf, idt)
             copiedElements = [];
             for ii = 1:length(elementsToCopy)
                 nodePair = elementsToCopy(ii).getNodes;
@@ -59,15 +59,19 @@ classdef (Abstract) BarElement < Element
                 %are already copied before
                 nodePair(1) = findCopy(nodePair(1), [nodes01 nodes02]); 
                 nodePair(2) = findCopy(nodePair(2), [nodes01 nodes02]);
-
-                
+         
                 if ismember(elementsToCopy(ii), eleIntf)    
-                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), maxEleId, nodePair)];
-                     %increase element Id, so that no element has same id
-                    maxEleId = maxEleId+1;
+                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), nodePair, idt.getElementId+1)];
+                    %update IdTracker
+                    idt.setElementId(idt.getElementId+1);
+                    
+                %some elements that need to be copied are not a part of the
+                %interface directly (only one of their two nodes).
+                %Therefore they can keep their Id, but a new created node
+                %needs to be added.
                 else
                     id = elementsToCopy(ii).getId;
-                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), id, nodePair)];
+                    copiedElements = [copiedElements copyElement(elementsToCopy(ii), nodePair, id)];
                 end
             end
 
@@ -120,9 +124,10 @@ classdef (Abstract) BarElement < Element
     %%%Start NEW
     methods (Access = protected)
         %function that copies the elements
-        function cp = copyElement(obj, maxId, cpNodes)
+        function cp = copyElement(obj, cpNodes, idt)
             %cp = copyElement@matlab.mixin.Copyable(obj);
             %create a basic BarElement
+            maxId = idt;
             cp = BarElement3d2n(maxId, obj.getMaterial);
             
             %instanciate node array like this, otherwise nodes get empty

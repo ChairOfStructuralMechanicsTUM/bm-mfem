@@ -19,7 +19,7 @@ classdef BarElement3d2n < BarElement
             elseif nargin == 4
                 super_args = {id; material; crossSectionArea};
             %for copy function needed
-            %nodeArray stands for material
+            %nodeArray stands for material, can this be changed???
             elseif nargin == 2
                 super_args ={id; nodeArray};
             end
