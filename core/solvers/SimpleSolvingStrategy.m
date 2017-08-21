@@ -45,8 +45,9 @@ methods (Static)
             end
 
             u = FetiPreparer.solveFeti(K, f, substructures);
-            
-            %SimpleAssembler.assignResultsToDofs(substructures, u);
+            for jj = 1:length(substructures)
+                SimpleAssembler.assignResultsToDofs(substructures(jj), u{1,jj});
+            end
         end
     end
  
