@@ -49,6 +49,11 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             nodes = element.nodeArray;
         end
         
+        % setter functions
+        function setNodes(element, nodes)
+            element.nodeArray = nodes;
+        end
+        
     end
     
     methods (Access = protected)
