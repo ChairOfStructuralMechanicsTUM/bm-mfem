@@ -31,21 +31,21 @@ classdef SimpleAssembler < Assembler
         
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
             
-            %PROBLEM: If the node Ids in a substructure are not in
-            %increasing order one can't just simply subtract the smallest
-            %Id from all Ids, there will be an inconsistency. Maybe add
-            %local Ids in a substructure?
-            
             nDofs = length(femModel.getDofArray);
             nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
             
-            %find smallest nodeId
+            %nodes in substructures should always be in increasing order,
+            %there is a test implemented to check
             nodes = femModel.getAllNodes;
-            mini = min(nodes.getId)-1;
+            for ii = 1:(length(nodes)-1)
+                if nodes(ii+1).getId - nodes(ii).getId ~= 1
+                    disp('Error with the node order in SimpleAssembler')
+                end
+            end
             
-            femModel.getAllElements.getId;
-            femModel.getAllNodes.getId;
+            %find smallest nodeId
+            mini = min(nodes.getId)-1;
             
             for itEle = 1:length(femModel.getAllElements)
                 elements = femModel.getAllElements;
@@ -61,7 +61,6 @@ classdef SimpleAssembler < Assembler
                     %%%CHANGED: currentNode.getId is changed. The minimum
                     %nodeId is always substracted. This makes the nodeId
                     %always start from 1.
-                    %globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
                     globalDofArray(nNodalDofs) = nNodalDofs * (currentNode.getId-mini);
                    
                     for i = (nNodalDofs - 1) : -1 : 1
