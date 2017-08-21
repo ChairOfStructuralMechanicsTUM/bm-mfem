@@ -1,4 +1,4 @@
-classdef Node < handle & matlab.mixin.Copyable
+classdef Node < handle & matlab.mixin.Copyable 
     %NODE The node class
     %   Parameters:
     %       id: unique identifier
@@ -218,7 +218,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         %function that orders nodes into left and right part relativ to the
         %interface
-        function [nodesLeft, nodesRight] = splitNodesX(nodeIntf, totalNodeArray)
+        function [nodesLeft, nodesRight] = splitNodesX(nodeIntf, totalNodeArray, idt)
             %interfaceNode furthest to right
             maxX = max(nodeIntf.getX());
             
@@ -235,17 +235,14 @@ classdef Node < handle & matlab.mixin.Copyable
                     nodesRight = [nodesRight totalNodeArray(ii)];
                 end
             end
-            
-            %get max nodeId
-            maxId = max(totalNodeArray.getId);
-            %copy all Nodes at the Interface
-            cp = copyElement(nodeIntf, maxId);
+
+            cp = copyElement(nodeIntf, idt);
             nodesRight = [nodesRight, cp];
         end
         
         %function that orders the nodes in upper and lower part relative to
         %interface
-        function [nodesDown, nodesUp] = splitNodesY(nodeIntf, totalNodeArray)
+        function [nodesDown, nodesUp] = splitNodesY(nodeIntf, totalNodeArray, idt)
             %interface Node furthest up
             maxY = max(nodeIntf.getY());
             
@@ -263,10 +260,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
             
-            %get max nodeId
-            maxId = max(totalNodeArray.getId);
-            %copy all Nodes at the Interface
-            cp = copyElement(nodeIntf, maxId);
+            cp = copyElement(nodeIntf, idt);
             nodesUp = [nodesUp, cp];
         end
         
@@ -336,15 +330,28 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
         end
+        
+        %
+        function  nodeIntf = findIntfNode(orig, nodes)
+            for ii = 1:length(nodes)
+                if orig.getX == nodes(ii).getX && orig.getY == nodes(ii).getY ...
+                    && orig.getZ == nodes(ii).getZ
+                    nodeIntf = orig;
+                    return;
+                else
+                    nodeIntf = Node(0,0,0,0);
+                end
+            end
+        end
     end
     
     methods (Access = protected) 
         %copy one/multiple nodes. also apply loads from original system to
         %new nodes
-        function cp = copyElement(obj, maxId)
+        function cp = copyElement(obj, idt)
            % copy constructor
            % cp = copyElement@matlab.mixin.Copyable(obj);
-           maxId = maxId+1;
+           maxId = idt.getNodeId+1;
            
            %only one Node
            if (length(obj) == 1)
@@ -361,6 +368,11 @@ classdef Node < handle & matlab.mixin.Copyable
            else
                cp =[];
                for jj = 1:length(obj)
+                   %increase maxId, done here because otherwise we have one
+                   %Id too many in the tracker later
+                   if jj > 1
+                       maxId = maxId+1;
+                   end
                    coords = obj(jj).getCoords;
                    if (length(coords) == 2)
                        cp = [cp Node(maxId, coords(1), coords(2))];
@@ -369,25 +381,10 @@ classdef Node < handle & matlab.mixin.Copyable
                        cp = [cp Node(maxId, coords(1), coords(2), coords(3))];
                        setDof(obj(jj), cp(jj));
                    end
-                   %increase the Id
-                   maxId = maxId+1;
-                   
                end
-               
-%                    cp(1).getId           
-%                    dofs = cp(1).getDofArray;
-%                    for ii = 1:length(dofs)
-%                        dofs(ii).getDofLoad
-%                    end
-%                    
-%                    cp(2).getId
-%                    dofs = cp(2).getDofArray;
-%                    for ii = 1:length(dofs)
-%                        dofs(ii).getDofLoad
-%                    end
-
-
            end
+           %update IdTracker
+           idt.setNodeId(maxId);
         end
     end 
     %%%End NEW
