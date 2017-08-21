@@ -8,11 +8,8 @@ classdef FemModel < handle
         elementArray
         %         dofArray = {}
         femModelParts = containers.Map
-        
-    end
-    
-    properties (Access = public)
         dofArray = {}
+        
     end
     
     methods
@@ -39,7 +36,6 @@ classdef FemModel < handle
             if nargin == 3
                 femModel.femModelParts = femModelParts;
             end
-            
         end
         
         % getter functions
@@ -94,11 +90,10 @@ classdef FemModel < handle
         %function to divide FemModel into Substructures.
         %FemModel: structure to be divided
         %eleIntf: elements that are on the Interface
-        function [substructure01, substructure02] = divide(femModel, eleIntf)
+        function [substructure01, substructure02] = divide(femModel, eleIntf, idt)
             %all nodes/elements of Geomtrie
             totalNodeArray = femModel.getAllNodes;
             totalElementArray = femModel.getAllElements;
-            maxEleId = max(totalElementArray.getId)+1;
             
             %half the crossSectionArea 
             halfCrossSectionArea(eleIntf);
@@ -117,12 +112,12 @@ classdef FemModel < handle
             orientationY = unique(nodeIntf.getY());
             
             if size(orientationX) == 1
-                [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray);
+                [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray, idt);
         
                 %all elements that need to be copied
                 elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray);
                 %all elements that have been copied
-                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf);
+                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, eleIntf, idt);
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsX(nodes01, nodes02, totalElementArray);
@@ -132,12 +127,13 @@ classdef FemModel < handle
                 elements02 = sortElements(elements02);
                
             elseif size(orientationY) == 1
-                [nodes01, nodes02]= splitNodesY(nodeIntf, totalNodeArray);
+                [nodes01, nodes02]= splitNodesY(nodeIntf, totalNodeArray, idt);
                 
                 %all elements that need to be copied
                 elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray);
+
                 %all elements that have been copied
-                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, maxEleId, eleIntf);
+                copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, eleIntf, idt);
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
                 [elements01, elements02] = splitElementsY(nodes01, nodes02, totalElementArray);
@@ -159,8 +155,8 @@ classdef FemModel < handle
             end
             
             %create Substructure from NodeArray and ElementArray
-            substructure01 = Substructure(nodes01, elements01, nodeIntf01);
-            substructure02 = Substructure(nodes02, elements02, nodeIntf02);
+            substructure01 = Substructure(nodes01, elements01, nodeIntf01, idt);
+            substructure02 = Substructure(nodes02, elements02, nodeIntf02, idt);            
         end 
         %%%End NEW
     end
