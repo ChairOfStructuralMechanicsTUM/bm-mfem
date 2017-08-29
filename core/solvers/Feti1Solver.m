@@ -8,18 +8,6 @@ classdef Feti1Solver < FetiPreparer
         
         function [lambda, alpha] = pCG(K,f,B,R,Kinv)
             
-            B{1,1} = [0 0 0 0 0 0 0 1 0 0 0
-                      0 0 0 0 0 0 0 0 1 0 0
-                      0 0 0 0 0 0 0 0 0 1 0
-                      0 0 0 0 0 0 0 0 0 0 1];
-                  
-            B{1,2} = [0 0 0 0 0 0 0 0 0 0 -1 0 0 0
-                      0 0 0 0 0 0 0 0 0 0 0 -1 0 0
-                      0 0 0 0 0 0 0 0 0 0 0 0 -1 0
-                      0 0 0 0 0 0 0 0 0 0 0 0 0 -1];
-       
-            
-            
             %%%Set matrices
             %ns = number of subdomains
             ns = length(K);
@@ -86,6 +74,8 @@ classdef Feti1Solver < FetiPreparer
                 pre = pre + B{1,numSubs}*K{1,numSubs}*B{1,numSubs}';
             end
             lumpedF = pre;
+            %Preconditioner Check
+            %F*lumpedF;
             
             %%%Initializing
             %lambda
@@ -94,10 +84,10 @@ classdef Feti1Solver < FetiPreparer
             w(:,1) = P'*(d-F*lambda(:,1));
             
             %%%Tests
-            test1 = G'*lambda(:,1);
-            for ii = 1:ns
-                test2 = R{1,ns}'*f{1,ns}';
-            end
+%             test1 = G'*lambda(:,1);
+%             for ii = 1:ns
+%                 test2 = R{1,ns}'*f{1,ns}';
+%             end
             
             
             %%%Iterate
@@ -124,38 +114,34 @@ classdef Feti1Solver < FetiPreparer
                 w(:,kk+1) = w(:,kk)-eta(:,kk)*P'*F*p(:,kk);
                 
                 for numEntries = 1:size(w,1)
-                    if abs(w(numEntries,kk)) > 10^-3
+                    if abs(w(numEntries,kk)) > 10^-13
                         var = 0;
                         kk = kk+1;
                         break;
                     else
                         var = 1;
                     end
-                end        
+                end 
             end
             lambda = lambda(:,kk);
-            w = w(:,kk);
-            kk;
             
-            %Tests
-            test3 = R{1,2}'*(f{1,2}'-B{1,2}'*lambda);
-            
-            %is alpha general quantity or does one have to calculate it for
-            %every subdomain individually?
-%             for numSubs = 1:ns
-%                 if Kinv{1,numSubs} == 0
-%                     
-%                 else
-%                     g = B{1,numSubs}*R{1,numSubs};
-%                     fi = B{1,numSubs}*Kinv{1,numSubs}*B{1,numSubs}';
-%                     di = B{1,numSubs}*Kinv{1,numSubs}*f{1,numSubs}';
-%                     alpha{1,numSubs} = (inv(g'*g)*g')*(fi*lambda-di);
-%                 end
-%             end
-                g = B{1,2}*R{1,2};
-                %fi = B{1,1}*inv(K{1,1})*B{1,1}'+B{1,2}*Kinv{1,2}*B{1,2}';
-                di = B{1,1}*inv(K{1,1})*f{1,1}'+B{1,2}*Kinv{1,2}*f{1,2}';
-                alpha{1,2} = (inv(g'*g)*g')*(F*lambda-di);
+%             %Tests
+%             test3 = R{1,2}'*(f{1,2}'-B{1,2}'*lambda);
+
+            %calculate alpha
+            alphA = inv(G'*G)*G'*(F*lambda-d);
+            row = 1;
+            %this should be valid for all cases. n is used to assign the
+            %correct values of alpha to the corresponding subdomain
+            for numSubs = 1:ns
+                n = size(R{1,numSubs},2);
+                if Kinv{1,numSubs} == 0
+                    alpha{1,numSubs} = 0;
+                else
+                    alpha{1,numSubs} = alphA(row:row+n-1,1);
+                    row = row+n;
+                end
+            end
         end
     end
 end
