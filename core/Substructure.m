@@ -23,8 +23,7 @@ classdef Substructure < FemModel
             substructure@FemModel(super_args{:});
             substructure.nodesIntf = [nodesIntf];
             substructure.nodesIntf.getId;
-            
-            nodeArray.getId;
+
             Substructure.checkNodeIds(nodeArray, idt);
         end    
         
@@ -35,6 +34,31 @@ classdef Substructure < FemModel
     end
     
     methods (Static)
+        function dim = findDim(substructures)
+            %find dimension of the problem: 1D, 2D, 3D
+            nodes = substructures(1,1).getAllNodes;
+            count = 0;
+            for numNodes = 1:length(nodes)
+                dofs = nodes(numNodes).getDofArray;
+                for dof = 1:length(dofs)
+                    if ~dofs(dof).isFixed
+                        count = count+1;
+                    end
+                end
+            end
+            
+            n = count/numel(nodes);
+            %assign dimension
+            switch (1)
+                case n > 2
+                    dim = 3;
+                case n > 1
+                    dim = 2;
+                case n > 0
+                    dim = 1;
+            end
+        end
+        
         function checkNodeIds(nodeArray, idt)
             %functions which checks whether the node Ids in a substructure
             %are all directly increasing (just one higher than previous
@@ -44,7 +68,6 @@ classdef Substructure < FemModel
                     Substructure.changeNodeIds(nodeArray,idt);
                 end
             end
-            %nodeArray.getId
         end
         
         function changeNodeIds(nodeArray, idt)

@@ -114,7 +114,7 @@ classdef Feti1Solver < FetiPreparer
                 w(:,kk+1) = w(:,kk)-eta(:,kk)*P'*F*p(:,kk);
                 
                 for numEntries = 1:size(w,1)
-                    if abs(w(numEntries,kk)) > 10^-13
+                    if abs(w(numEntries,kk)) > 10^-5
                         var = 0;
                         kk = kk+1;
                         break;
@@ -123,6 +123,7 @@ classdef Feti1Solver < FetiPreparer
                     end
                 end 
             end
+            kk
             lambda = lambda(:,kk);
             
 %             %Tests

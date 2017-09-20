@@ -91,7 +91,8 @@ classdef (Abstract) BarElement < Element
         end
         
         function pl = draw(barElement)
-            pl = line(barElement.nodeArray.getX, barElement.nodeArray.getY);
+            %barElement.nodeArray.getZ for 3D display
+            pl = line(barElement.nodeArray.getX, barElement.nodeArray.getY, barElement.nodeArray.getZ);
         end
         
         function pl = drawDeformed(barElement)

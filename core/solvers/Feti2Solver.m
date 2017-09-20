@@ -119,7 +119,7 @@ classdef Feti2Solver < FetiPreparer
                 
                 %check whether convergence criterion is fulfilled
                 for numEntries = 1:size(w,1)
-                    if abs(w(numEntries,kk)) > 10^-10
+                    if abs(w(numEntries,kk)) > 10^-5
                         var = 0;
                         kk = kk+1;
                         break;
@@ -130,6 +130,8 @@ classdef Feti2Solver < FetiPreparer
                     end
                 end
             end
+            
+            kk
             
              %calculate alpha
             alphA = inv(G'*G)*G'*(F*lambda-d);
