@@ -16,7 +16,7 @@ classdef EigensolverStrategy < Solver
         spectralMatrix
         
         normalizedModalMatrix
-        modalSuperpositionIsInitialized
+%         modalSuperpositionIsInitialized
         rayleighAlpha
         rayleighBeta
         modalDampingRatio
@@ -29,7 +29,7 @@ classdef EigensolverStrategy < Solver
                 eigensolver.femModel = femModel;
                 eigensolver.assembler = SimpleAssembler(femModel);
                 eigensolver.isInitialized = false;
-                eigensolver.modalSuperpositionIsInitialized = false;
+%                 eigensolver.modalSuperpositionIsInitialized = false;
             end
         end
         
@@ -54,29 +54,32 @@ classdef EigensolverStrategy < Solver
             end
         end
         
-        function solveModalSuperposition(solver)
-            if isempty(solver.eigenfrequencies)
-                solver.solve();
-            end
-            
-            if ~solver.modalSuperpositionIsInitialized
-                solver.initializeModalSuperposition();
-            end
-            
-            
-            %modalMassMatrix = eye(nEigenvectors); %= normModalMatrix.' * solver.massMatrix * normModalMatrix
-            %omega^2: diag(solver.spectralMatrix)
-            
-            %(y_n같) + (2*zeta_n*omega_n*y_n�) + (omega_n^2*y_n) = p_n/M_n
-            %zeta_n = alpha/2/omega_n + beta/2*omega_n
-            %M_n is identity -> M_n = 1
-            %->(y_n같) + ((alpha+beta*omega_n^2)*y_n�) + (omega_n^2*y_n) = p_n
-            
-            
-            
-        end
+%         function solveModalSuperposition(solver)
+%             if isempty(solver.eigenfrequencies)
+%                 solver.solve();
+%             end
+%             
+%             if ~solver.modalSuperpositionIsInitialized
+%                 solver.initializeModalSuperposition();
+%             end
+%             
+%             
+%             modalMassMatrix = eye(nEigenvectors); %= normModalMatrix.' * solver.massMatrix * normModalMatrix
+%             omega^2: diag(solver.spectralMatrix)
+%             
+%             (y_n같) + (2*zeta_n*omega_n*y_n�) + (omega_n^2*y_n) = p_n/M_n
+%             zeta_n = alpha/2/omega_n + beta/2*omega_n
+%             M_n is identity -> M_n = 1
+%             ->(y_n같) + ((alpha+beta*omega_n^2)*y_n�) + (omega_n^2*y_n) = p_n
+%             
+%             
+%             
+%         end
         
         function solveUndampedModalSuperposition(solver)
+            %SOLVEUNDAMPEDMODALSUPERPOSITION using a time integration
+            %scheme for arbitrary excitations
+            
             if isempty(solver.eigenfrequencies)
                 solver.solve();
             end
@@ -84,14 +87,17 @@ classdef EigensolverStrategy < Solver
             
             solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
                 "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
-            [~, fixedDofs] = solver.femModel.getDofConstraints();
-            fixedDofIds = fixedDofs.getId();
             
             disp = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
-            disp0 = applyVectorBoundaryConditions(disp, fixedDofIds)';
             vel = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
-            vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             [~, force0] = solver.assembler.applyExternalForces(solver.femModel);
+            
+            [~, fixedDofs] = solver.femModel.getDofConstraints();
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
+                disp0 = applyVectorBoundaryConditions(disp, fixedDofIds)';
+            end
             
             t = 0;
             endTime = 2000;
@@ -144,6 +150,8 @@ classdef EigensolverStrategy < Solver
         end
         
         function harmonicAnalysis(solver, excitations)
+            %HARMONIC ANALYSIS performs an analysis in the frequency domain
+            %using a harmonic excitation
             if isempty(solver.eigenfrequencies)
                 solver.solve();
             end
@@ -178,6 +186,38 @@ classdef EigensolverStrategy < Solver
             
         end
         
+%         function harmonicAnalysis2(solver, excitations)
+%             if isempty(solver.eigenfrequencies)
+%                 solver.solve();
+%             end
+%             
+%             [~, force] = solver.assembler.applyExternalForces(solver.femModel);
+%             nModes = length(solver.eigenfrequencies);
+%             
+%             eigenvalues = diag(solver.spectralMatrix);
+%             
+%             for e=1:length(excitations)
+%                 excitation = excitations(e);
+%                 result = zeros;
+%                 dampingRatio = 0.0;
+%                 
+%                 for n=1:nModes
+%                     factor = (eigenvalues(n) - excitation^2) + 2i * dampingRatio * sqrt(eigenvalues(n)) * excitation;
+%                     result(n) = 1/factor * (solver.modalMatrix(:,n)' * force');
+%                 end
+%                 
+%                 la = zeros;
+%                 for n=1:nModes
+%                     la = la + result(n)' * solver.modalMatrix(:,n);
+%                     
+%                 end
+%                 solver.assembler.appendValuesToDofs(solver.femModel, la);
+%                 
+%             end    
+%             solver.femModel.getDofArray.removeValue(1);
+%             
+%         end
+        
         function normalizeModalMatrix(solver)
             nEigenvectors = size(solver.modalMatrix,1);
             solver.normalizedModalMatrix = zeros(nEigenvectors);
@@ -188,35 +228,21 @@ classdef EigensolverStrategy < Solver
             end
         end
         
-%         function modalSuperposition(eigensolver)
-%             generalizedMassMatrix = eigensolver.modalMatrix.' ...
-%                 * eigensolver.massMatrix ...
-%                 * eigensolver.modalMatrix;
-%             init_disp = [1 0];
-%             
-% %             generalizedStiffnessMatrix = eigensolver.modalMatrix.' ...
-% %                 * eigensolver.stiffnessMatrix ...
-% %                 * eigensolver.modalMatrix;
-% 
-%             xmu = eigensolver.modalMatrix * eigensolver.massMatrix * init_disp';
-%             init = 1./diag(generalizedMassMatrix) .* xmu;
-% 
-% %             init = 1/diag(generalizedMassMatrix) * eigensolver.modalMatrix * eigensolver.massMatrix * init_disp;
-%         end
-        
         function initialize(eigensolver)
             eigensolver.femModel.initialize;
             
             % assemble and reduce matrices
-            [~, fixedDofs] = eigensolver.femModel.getDofConstraints();
-            fixedDofIds = fixedDofs.getId();
+            eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
+            eigensolver.dampingMatrix = eigensolver.assembler.assembleGlobalDampingMatrix(eigensolver.femModel);
+            eigensolver.stiffnessMatrix = eigensolver.assembler.assembleGlobalStiffnessMatrix(eigensolver.femModel);
             
-            mass = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
-            eigensolver.massMatrix = applyMatrixBoundaryConditions(mass, fixedDofIds);
-            damping = eigensolver.assembler.assembleGlobalDampingMatrix(eigensolver.femModel);
-            eigensolver.dampingMatrix = applyMatrixBoundaryConditions(damping, fixedDofIds);
-            stiffness = eigensolver.assembler.assembleGlobalStiffnessMatrix(eigensolver.femModel);
-            eigensolver.stiffnessMatrix = applyMatrixBoundaryConditions(stiffness, fixedDofIds);
+            [~, fixedDofs] = eigensolver.femModel.getDofConstraints();
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                eigensolver.massMatrix = applyMatrixBoundaryConditions(eigensolver.massMatrix, fixedDofIds);
+                eigensolver.dampingMatrix = applyMatrixBoundaryConditions(eigensolver.dampingMatrix, fixedDofIds);
+                eigensolver.stiffnessMatrix = applyMatrixBoundaryConditions(eigensolver.stiffnessMatrix, fixedDofIds);                
+            end
             
             %get the damping coefficients
             if (eigensolver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_ALPHA')) ...
@@ -237,37 +263,24 @@ classdef EigensolverStrategy < Solver
             eigensolver.isInitialized = true;
         end
         
-        function initializeModalSuperposition(solver)
-            % normalize eigenvectors
-            solver.normalizeModalMatrix();
-            
-            % initial acceleration FALSCH
-%             solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
-%                 "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
+%         function initializeModalSuperposition(solver)
+%             % normalize eigenvectors
+%             solver.normalizeModalMatrix();
+%                         
+%             % get rayleigh alpha and beta
+%             %this assumes, that all elements have the same alpha and beta!
+%             if (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_ALPHA')) ...
+%                     && (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_BETA'))
+%                 solver.rayleighAlpha = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_ALPHA');
+%                 solver.rayleighBeta = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_BETA');
+%             else
+%                 solver.rayleighAlpha = 0.0;
+%                 solver.rayleighBeta = 0.0;
+%             end
 %             
-%             [~, force0] = solver.assembler.applyExternalForces(solver.femModel);
-%             disp = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
-%             disp0 = applyVectorBoundaryConditions(disp, fixedDofIds)';
-%             vel = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
-%             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
-%             
-%             acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
-%             solver.assembler.assignValuesToNodes(solver.femModel, 'ACCELERATION', acc0, 1);
-            
-            % get rayleigh alpha and beta
-            %this assumes, that all elements have the same alpha and beta!
-            if (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_ALPHA')) ...
-                    && (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_BETA'))
-                solver.rayleighAlpha = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_ALPHA');
-                solver.rayleighBeta = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_BETA');
-            else
-                solver.rayleighAlpha = 0.0;
-                solver.rayleighBeta = 0.0;
-            end
-            
-            % set flag to true
-            solver.modalSuperpositionIsInitialized = true;
-        end
+%             % set flag to true
+%             solver.modalSuperpositionIsInitialized = true;
+%         end
         
         function ef = getEigenfrequencies(eigensolver)
             ef = eigensolver.eigenfrequencies;

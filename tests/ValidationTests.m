@@ -159,7 +159,9 @@ classdef ValidationTests <  matlab.unittest.TestCase
             end
         end
         
-        function harmonicAnalysis(testCase)
+        function twoDofHarmonicAnalysis(testCase)
+            %TWODOFHARMONICANALYSIS 2-dof-system with springs and masses;
+            %taken from HUMAR: Dynamics for Structures (p. 675)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             
