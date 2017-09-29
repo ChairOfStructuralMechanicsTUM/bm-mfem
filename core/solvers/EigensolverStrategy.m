@@ -1,6 +1,6 @@
 classdef EigensolverStrategy < Solver
-    %EIGENSOLVERSTRATEGY Summary of this class goes here
-    %   Detailed explanation goes here
+    %EIGENSOLVERSTRATEGY Solving strategy to obtain an eigenvalue analysis
+    %   Contains also modal superposition and harmonic analysis
     
     properties (Access = private)
         femModel
@@ -16,7 +16,6 @@ classdef EigensolverStrategy < Solver
         spectralMatrix
         
         normalizedModalMatrix
-%         modalSuperpositionIsInitialized
         rayleighAlpha
         rayleighBeta
         modalDampingRatio
@@ -29,7 +28,6 @@ classdef EigensolverStrategy < Solver
                 eigensolver.femModel = femModel;
                 eigensolver.assembler = SimpleAssembler(femModel);
                 eigensolver.isInitialized = false;
-%                 eigensolver.modalSuperpositionIsInitialized = false;
             end
         end
         
@@ -53,28 +51,6 @@ classdef EigensolverStrategy < Solver
                 eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
             end
         end
-        
-%         function solveModalSuperposition(solver)
-%             if isempty(solver.eigenfrequencies)
-%                 solver.solve();
-%             end
-%             
-%             if ~solver.modalSuperpositionIsInitialized
-%                 solver.initializeModalSuperposition();
-%             end
-%             
-%             
-%             modalMassMatrix = eye(nEigenvectors); %= normModalMatrix.' * solver.massMatrix * normModalMatrix
-%             omega^2: diag(solver.spectralMatrix)
-%             
-%             (y_n°°) + (2*zeta_n*omega_n*y_n°) + (omega_n^2*y_n) = p_n/M_n
-%             zeta_n = alpha/2/omega_n + beta/2*omega_n
-%             M_n is identity -> M_n = 1
-%             ->(y_n°°) + ((alpha+beta*omega_n^2)*y_n°) + (omega_n^2*y_n) = p_n
-%             
-%             
-%             
-%         end
         
         function solveUndampedModalSuperposition(solver)
             %SOLVEUNDAMPEDMODALSUPERPOSITION using a time integration
@@ -152,6 +128,7 @@ classdef EigensolverStrategy < Solver
         function harmonicAnalysis(solver, excitations)
             %HARMONIC ANALYSIS performs an analysis in the frequency domain
             %using a harmonic excitation
+            %EXCITATIONS: vector of all excitation frequencies in rad/s
             if isempty(solver.eigenfrequencies)
                 solver.solve();
             end
@@ -185,38 +162,6 @@ classdef EigensolverStrategy < Solver
             solver.femModel.getDofArray.removeValue(1);
             
         end
-        
-%         function harmonicAnalysis2(solver, excitations)
-%             if isempty(solver.eigenfrequencies)
-%                 solver.solve();
-%             end
-%             
-%             [~, force] = solver.assembler.applyExternalForces(solver.femModel);
-%             nModes = length(solver.eigenfrequencies);
-%             
-%             eigenvalues = diag(solver.spectralMatrix);
-%             
-%             for e=1:length(excitations)
-%                 excitation = excitations(e);
-%                 result = zeros;
-%                 dampingRatio = 0.0;
-%                 
-%                 for n=1:nModes
-%                     factor = (eigenvalues(n) - excitation^2) + 2i * dampingRatio * sqrt(eigenvalues(n)) * excitation;
-%                     result(n) = 1/factor * (solver.modalMatrix(:,n)' * force');
-%                 end
-%                 
-%                 la = zeros;
-%                 for n=1:nModes
-%                     la = la + result(n)' * solver.modalMatrix(:,n);
-%                     
-%                 end
-%                 solver.assembler.appendValuesToDofs(solver.femModel, la);
-%                 
-%             end    
-%             solver.femModel.getDofArray.removeValue(1);
-%             
-%         end
         
         function normalizeModalMatrix(solver)
             nEigenvectors = size(solver.modalMatrix,1);
@@ -262,25 +207,6 @@ classdef EigensolverStrategy < Solver
             
             eigensolver.isInitialized = true;
         end
-        
-%         function initializeModalSuperposition(solver)
-%             % normalize eigenvectors
-%             solver.normalizeModalMatrix();
-%                         
-%             % get rayleigh alpha and beta
-%             %this assumes, that all elements have the same alpha and beta!
-%             if (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_ALPHA')) ...
-%                     && (solver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_BETA'))
-%                 solver.rayleighAlpha = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_ALPHA');
-%                 solver.rayleighBeta = solver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_BETA');
-%             else
-%                 solver.rayleighAlpha = 0.0;
-%                 solver.rayleighBeta = 0.0;
-%             end
-%             
-%             % set flag to true
-%             solver.modalSuperpositionIsInitialized = true;
-%         end
         
         function ef = getEigenfrequencies(eigensolver)
             ef = eigensolver.eigenfrequencies;
