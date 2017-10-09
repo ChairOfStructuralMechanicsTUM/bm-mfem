@@ -161,8 +161,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 cp = Node(obj.getId, coords(1), coords(2), coords(3));
             end
         end
-    end
-    
+    end   
 
 end
 
