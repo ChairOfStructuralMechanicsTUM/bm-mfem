@@ -51,7 +51,7 @@ node01.fixDof('DISPLACEMENT_Y');
 node05.fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
-addPointLoad([node03 node05 node09 node11],10,[0 -1 0]);
+addPointLoad([nodeArray],1000,[-1 -1 0]);
 %addPointLoad([node03 node05 ],10,[0 -1 0]);
 %addPointLoad(node07,16,[0 -1 0]);
 

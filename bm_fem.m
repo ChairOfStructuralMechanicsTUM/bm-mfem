@@ -16,6 +16,6 @@ if (exist('external_libs','dir') == 7)
 end
 addpath('tests');
 addpath('utilities');
-
+addpath('fetiLevelOne')
 % switch off unnecessary warnings
 warning off MATLAB:handle_graphics:exceptions:SceneNode
