@@ -31,14 +31,20 @@ classdef EigensolverStrategy < Solver
             end
         end
         
-        function solve(eigensolver)
+        function solve(eigensolver, nModes)
             if ~ eigensolver.isInitialized
                 eigensolver.initialize();
             end
             
+            if size(eigensolver.stiffnessMatrix,1) < nModes
+                nModes = size(eigensolver.stiffnessMatrix,1);
+                fprintf("Warning (EigensolverStrategy): setting number of modes to %d\n",nModes);
+            end
+            
             % solve
             [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
-                eig(eigensolver.stiffnessMatrix, eigensolver.massMatrix);
+                eigs(eigensolver.stiffnessMatrix, eigensolver.massMatrix, ...
+                nModes);
             
             % get eigenfrequencies
             eigensolver.eigenfrequencies = diag(eigensolver.spectralMatrix);
@@ -125,12 +131,13 @@ classdef EigensolverStrategy < Solver
             
         end
         
-        function harmonicAnalysis(solver, excitations)
+        function harmonicAnalysis(solver, excitations, nModes)
             %HARMONIC ANALYSIS performs an analysis in the frequency domain
             %using a harmonic excitation
             %EXCITATIONS: vector of all excitation frequencies in rad/s
+            %NMODES: number of modes
             if isempty(solver.eigenfrequencies)
-                solver.solve();
+                solver.solve(nModes);
             end
             
 %             solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...

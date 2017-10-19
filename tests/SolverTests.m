@@ -37,7 +37,7 @@ classdef SolverTests <  matlab.unittest.TestCase
             base.fixDof('DISPLACEMENT_X');
             
             solver = EigensolverStrategy(model);
-            solver.solve();
+            solver.solve(2);
             solver.assignModeShapes();
             
             %eigenfrequencies in Hz

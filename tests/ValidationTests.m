@@ -192,7 +192,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
             exfreq = linspace(.1*sqrt(5),10*sqrt(5),1000);
             
             solver = EigensolverStrategy(model);
-            solver.harmonicAnalysis(exfreq);
+            solver.harmonicAnalysis(exfreq,2);
             
             Rd11_actual = abs(model.getNode(1).getDofValue('DISPLACEMENT_X','all'));
             Rd12_actual = abs(model.getNode(2).getDofValue('DISPLACEMENT_X','all'));
