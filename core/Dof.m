@@ -129,6 +129,13 @@ classdef Dof < handle
             end
         end
         
+        function removeValue(dofs, step)
+           %REMOVEVALUE removes the value from the given step
+           for ii = 1:length(dofs)
+               dofs(ii).value(step) = [];
+           end
+        end
+        
         function setLoad(dof, dofLoad)
             dof.dofLoad = dofLoad;
         end
