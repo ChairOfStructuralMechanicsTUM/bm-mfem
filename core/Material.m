@@ -14,6 +14,7 @@ classdef Material < handle
                 material.name = name;
             end
             material.parameters = containers.Map; 
+            warning('The class Material is deprecated and will be removed shortly. Please use PropertyContainer instead.')
         end
         
         % getter functions
