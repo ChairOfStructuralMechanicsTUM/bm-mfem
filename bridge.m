@@ -18,34 +18,42 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
 
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 
-mat = Material('test');
-mat.setValue('YOUNGS_MODULUS', 1000);
-
-ele01 = BarElement3d2n(1,[node01 node03], mat, 2);
-ele02 = BarElement3d2n(2,[node03 node05], mat, 2);
-ele03 = BarElement3d2n(3,[node05 node07], mat, 2);
-ele04 = BarElement3d2n(4,[node07 node09], mat, 2);
-ele05 = BarElement3d2n(5,[node09 node11], mat, 2);
-ele06 = BarElement3d2n(6,[node11 node12], mat, 2);
-ele07 = BarElement3d2n(7,[node01 node02], mat, 10);
-ele08 = BarElement3d2n(8,[node02 node04], mat, 10);
-ele09 = BarElement3d2n(9,[node04 node06], mat, 10);
-ele10 = BarElement3d2n(10,[node06 node08], mat, 10);
-ele11 = BarElement3d2n(11,[node08 node10], mat, 10);
-ele12 = BarElement3d2n(12,[node10 node12], mat, 10);
-ele13 = BarElement3d2n(13,[node02 node03], mat, 3);
-ele14 = BarElement3d2n(14,[node04 node05], mat, 3);
-ele15 = BarElement3d2n(15,[node06 node07], mat, 3);
-ele16 = BarElement3d2n(16,[node08 node09], mat, 3);
-ele17 = BarElement3d2n(17,[node10 node11], mat, 3);
-ele18 = BarElement3d2n(18,[node02 node05], mat, 1);
-ele19 = BarElement3d2n(19,[node04 node07], mat, 1);
-ele20 = BarElement3d2n(20,[node07 node08], mat, 1);
-ele21 = BarElement3d2n(21,[node09 node10], mat, 1);
+ele01 = BarElement3d2n(1,[node01 node03]);
+ele02 = BarElement3d2n(2,[node03 node05]);
+ele03 = BarElement3d2n(3,[node05 node07]);
+ele04 = BarElement3d2n(4,[node07 node09]);
+ele05 = BarElement3d2n(5,[node09 node11]);
+ele06 = BarElement3d2n(6,[node11 node12]);
+ele07 = BarElement3d2n(7,[node01 node02]);
+ele08 = BarElement3d2n(8,[node02 node04]);
+ele09 = BarElement3d2n(9,[node04 node06]);
+ele10 = BarElement3d2n(10,[node06 node08]);
+ele11 = BarElement3d2n(11,[node08 node10]);
+ele12 = BarElement3d2n(12,[node10 node12]);
+ele13 = BarElement3d2n(13,[node02 node03]);
+ele14 = BarElement3d2n(14,[node04 node05]);
+ele15 = BarElement3d2n(15,[node06 node07]);
+ele16 = BarElement3d2n(16,[node08 node09]);
+ele17 = BarElement3d2n(17,[node10 node11]);
+ele18 = BarElement3d2n(18,[node02 node05]);
+ele19 = BarElement3d2n(19,[node04 node07]);
+ele20 = BarElement3d2n(20,[node07 node08]);
+ele21 = BarElement3d2n(21,[node09 node10]);
 
 elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
     ele10 ele11 ele12 ele13 ele14 ele15 ele16 ele17 ele18 ele19 ...
     ele20 ele21];
+tmp = [ele18 ele19 ele20 ele21];
+tmp.setPropertyValue('CROSS_SECTION',1);
+tmp = [ele01 ele02 ele03 ele04 ele05 ele06];
+tmp.setPropertyValue('CROSS_SECTION',2);
+tmp = [ele07 ele08 ele09 ele10 ele11 ele12];
+tmp.setPropertyValue('CROSS_SECTION',10);
+tmp = [ele13 ele14 ele15 ele16 ele17];
+tmp.setPropertyValue('CROSS_SECTION',3);
+
+elementArray.setPropertyValue('YOUNGS_MODULUS',1000);
+
 
 elementIds = elementArray.getId;
 

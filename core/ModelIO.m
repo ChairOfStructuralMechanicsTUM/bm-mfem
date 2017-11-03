@@ -34,7 +34,7 @@ classdef ModelIO < handle
         % member functions
         function model = readModel(modelIO)
             modelIO.readProperties;
-            modelIO.readMaterials;
+%             modelIO.readMaterials;
             modelParts = modelIO.readModelParts();
             nodes = modelIO.readNodes();
             elements = modelIO.readElements(modelParts, nodes);
@@ -104,23 +104,25 @@ classdef ModelIO < handle
                                 switch modelIO.line2n
                                     case 'BarElement2d2n' %id, nodeArray, material, crossSectionArea)
                                         cProperties = modelIO.props(elementData(4));
-                                        nMaterial = cProperties.getValue('material');
+%                                         nMaterial = cProperties.getValue('material');
                                         
                                         cElement = BarElement2d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
-                                            nodes(elementData(end))], ...
-                                            modelIO.materials(nMaterial), ...
-                                            cProperties.getValue('crossSectionArea'));
+                                            nodes(elementData(end))]);
+                                        cElement.setProperties(cProperties);
+%                                             modelIO.materials(nMaterial), ...
+%                                             cProperties.getValue('crossSectionArea'));
                                         
                                     case 'BarElement3d2n'
                                         cProperties = modelIO.props(elementData(4));
-                                        nMaterial = cProperties.getValue('material');
+%                                         nMaterial = cProperties.getValue('material');
                                         
                                         cElement = BarElement3d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
-                                            nodes(elementData(end))], ...
-                                            modelIO.materials(nMaterial), ...
-                                            cProperties.getValue('crossSectionArea'));
+                                            nodes(elementData(end))]);
+                                        cElement.setProperties(cProperties);
+%                                             modelIO.materials(nMaterial), ...
+%                                             cProperties.getValue('crossSectionArea'));
                                         
                                     otherwise
                                         error('2-node element type %s not available',modelIO.line2n)
@@ -205,6 +207,7 @@ classdef ModelIO < handle
         end
         
         function readMaterials(modelIO)
+            warning('deprecated!!!')
             fid = fopen(modelIO.inputFile);
             tline = fgetl(fid);
             

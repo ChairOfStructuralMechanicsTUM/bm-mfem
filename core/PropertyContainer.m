@@ -1,4 +1,4 @@
-classdef PropertyContainer < handle
+classdef PropertyContainer < handle & matlab.mixin.Copyable
     %PROPERTYCONTAINER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -80,6 +80,18 @@ classdef PropertyContainer < handle
         
         function names = getValueNames(propertyContainer)
             names = propertyContainer.propertyMap.keys;
+        end
+        
+        function print(pc)
+            names = pc.propertyMap.keys;
+            fprintf('property container with %d values:\n', length(names));
+            fprintf('name \t\t value\n');
+            fprintf('----------------------\n');
+            for ii = 1:length(names)
+                name = cell2mat(names(ii));
+                fprintf('%s \t\t %d\n', name, pc.propertyMap(name));
+            end
+            fprintf('\n\n');
         end
         
     end
