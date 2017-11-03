@@ -8,11 +8,11 @@ classdef SpringDamperElement3d2n < Element
     
     methods
         % constructor
-        function springDamperElement = SpringDamperElement3d2n(id, nodeArray, properties)
+        function springDamperElement = SpringDamperElement3d2n(id, nodeArray)
             if nargin == 0
                 super_args = {};
-            elseif nargin == 3
-                super_args = {id; properties};
+            elseif nargin == 2
+                super_args = {id};
             end
             
             % call the super class constructor

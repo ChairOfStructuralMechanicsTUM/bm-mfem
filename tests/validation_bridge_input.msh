@@ -15,23 +15,27 @@ DENSITY 7300
 $EndMaterial
 
 $Properties 1
-material 1
-crossSectionArea 2
+YOUNGS_MODULUS 1000
+DENSITY 7300
+CROSS_SECTION 2
 $EndProperties
 
 $Properties 2
-material 1
-crossSectionArea 10
+YOUNGS_MODULUS 1000
+DENSITY 7300
+CROSS_SECTION 10
 $EndProperties
 
 $Properties 3
-material 1
-crossSectionArea 3
+YOUNGS_MODULUS 1000
+DENSITY 7300
+CROSS_SECTION 3
 $EndProperties
 
 $Properties 4
-material 1
-crossSectionArea 1
+YOUNGS_MODULUS 1000
+DENSITY 7300
+CROSS_SECTION 1
 $EndProperties
 
 $Nodes

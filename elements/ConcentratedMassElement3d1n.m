@@ -7,11 +7,11 @@ classdef ConcentratedMassElement3d1n < Element
     
     methods
         % constructor
-        function element = ConcentratedMassElement3d1n(id, nodeArray, properties)
+        function element = ConcentratedMassElement3d1n(id, nodeArray)
             if nargin == 0
                 super_args = {};
-            elseif nargin == 3
-                super_args = {id; properties};
+            elseif nargin == 2
+                super_args = {id};
             end
             
             % call the super class constructor

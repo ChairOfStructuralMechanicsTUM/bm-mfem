@@ -10,9 +10,11 @@ classdef ElementTests < matlab.unittest.TestCase
         function testBarElement2d2n(testCase)
             node01 = Node(1,0,0);
             node02 = Node(2,30,40);
-            mat = Material('test');
-            mat.setValue('YOUNGS_MODULUS', 1000);
-            ele01 = BarElement2d2n(1,[node01 node02], mat, 5);
+%             mat = Material('test');
+%             mat.setValue('YOUNGS_MODULUS', 1000);
+            ele01 = BarElement2d2n(1,[node01 node02]);
+            ele01.setPropertyValue('CROSS_SECTION',5);
+            ele01.setPropertyValue('YOUNGS_MODULUS',1000);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
             expectedSolution = [36 48 -36 -48; ...
@@ -25,9 +27,11 @@ classdef ElementTests < matlab.unittest.TestCase
         function testBarElement3d2n(testCase)
             node01 = Node(1,0,0,0);
             node02 = Node(2,2,3,6);
-            mat = Material('test');
-            mat.setValue('YOUNGS_MODULUS', 343);
-            ele01 = BarElement3d2n(1,[node01 node02], mat, 10);
+%             mat = Material('test');
+%             mat.setValue('YOUNGS_MODULUS', 343);
+            ele01 = BarElement3d2n(1,[node01 node02]);
+            ele01.setPropertyValue('CROSS_SECTION',10);
+            ele01.setPropertyValue('YOUNGS_MODULUS',343);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
             expectedSolution = [40 60 120 -40 -60 -120; ...
@@ -49,11 +53,13 @@ classdef ElementTests < matlab.unittest.TestCase
             model.addNewNode(3,2,0,0);
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
             
-            props = PropertyContainer();
-            props.setValue('ELEMENTAL_STIFFNESS',100);
-            props.setValue('ELEMENTAL_DAMPING',[1,20,1]);
-            model.addNewElement('SpringDamperElement3d2n',1,[1 2],props);
-            model.addNewElement('SpringDamperElement3d2n',2,[2 3],props);
+%             props = PropertyContainer();
+%             props.setValue('ELEMENTAL_STIFFNESS',100);
+%             props.setValue('ELEMENTAL_DAMPING',[1,20,1]);
+            model.addNewElement('SpringDamperElement3d2n',1,[1 2]);
+            model.addNewElement('SpringDamperElement3d2n',2,[2 3]);
+            model.getAllElements().setPropertyValue('ELEMENTAL_STIFFNESS',100);
+            model.getAllElements().setPropertyValue('ELEMENTAL_DAMPING',[1,20,1]);
             
             addPointLoad(model.getNode(2),10,[0 -1 0]);
             
