@@ -211,7 +211,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
         
         function externalScriptsTest(testCase)
             bridge;
-%             Bridge_with_inputFile;
+            Bridge_with_inputFile;
         end
         
     end
