@@ -54,11 +54,6 @@ classdef BarElement3d2n < LinearElement
             
         end
         
-%         function crossSectionArea = getCrossSectionArea(barElement)
-%             crossSectionArea = barElement.crossSectionArea;
-%         end
-        
-        
         % member functions
         function stiffnessMatrix = computeLocalStiffnessMatrix(barElement)
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
@@ -79,33 +74,6 @@ classdef BarElement3d2n < LinearElement
         
         function forceVector = computeLocalForceVector(element)
             forceVector = zeros(1,6);
-%             stiffness = element.getMaterial().getValue('YOUNGS_MODULUS') * element.crossSectionArea;
-%             nodes = element.getNodes;
-%             
-%             tMat = element.getTransformationMatrix;
-%             
-%             disp = zeros(1,3);
-%             disp(1) = nodes(2).getDofValue('DISPLACEMENT_X','end') - nodes(1).getDofValue('DISPLACEMENT_X','end');
-%             disp(2) = nodes(2).getDofValue('DISPLACEMENT_Y','end') - nodes(1).getDofValue('DISPLACEMENT_Y','end');
-%             disp(3) = nodes(2).getDofValue('DISPLACEMENT_Z','end') - nodes(1).getDofValue('DISPLACEMENT_Z','end');
-%             localDisp = tMat(1:3,1:3)' * disp';
-%             
-%             forceVector(1) = - stiffness * localDisp(1);
-%             forceVector(4) = stiffness * localDisp(1);
-%             
-%             forceVector = tMat' * forceVector';
-%             forceVector = forceVector';
-
-%             stiffnessMat = element.computeLocalStiffnessMatrix();
-%             disp = zeros(6,1);
-%             nodes = element.getNodes;
-%             for iNode = 1:length(nodes)
-%                 index = (iNode - 1) * 3;
-%                 disp(index+1) = nodes(iNode).getDofValue('DISPLACEMENT_X','end');
-%                 disp(index+2) = nodes(iNode).getDofValue('DISPLACEMENT_Y','end');
-%                 disp(index+3) = nodes(iNode).getDofValue('DISPLACEMENT_Z','end');
-%             end
-%             forceVector = (stiffnessMat * disp)';
         end
         
         function massMatrix = computeLocalMassMatrix(element)

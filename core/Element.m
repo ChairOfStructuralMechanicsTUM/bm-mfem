@@ -21,17 +21,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                 element.eProperties = PropertyContainer();
                 element.nodeArray = {};
             end
-            
-            
-%             if (nargin > 0)
-%                 element.id = id;
-%                 if isa(properties,'PropertyContainer')
-%                     element.eProperties = properties;
-%                 else
-%                     error('problem with the properties in element %d', id);
-%                 end
-%                 element.nodeArray = {};
-%             end
         end
     end
     
@@ -51,8 +40,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
-        function material = getProperties(element)
-            material = element.eProperties;
+        function prop = getProperties(element)
+            prop = element.eProperties;
         end
         
         function value = getPropertyValue(element, valueName)
@@ -64,7 +53,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             for ii = 1:length(elements)
                 nodes(ii,:) = elements(ii).nodeArray;
             end
-%             nodes = element.nodeArray;
         end
         
         function dofs = getDofs(element)
@@ -180,11 +168,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                     element.nodeArray(itNode) = newNode;
                     element.addDofsToSingleNode(newNode);
                     element.update;
-                    
-%                  barElement3d2n.addDofs(barElement3d2n.dofNames);
-%                 
-%                 barElement3d2n.length = computeLength(barElement3d2n.nodeArray(1).getCoords, ...
-%                     barElement3d2n.nodeArray(2).getCoords);
                 end
             end
         end

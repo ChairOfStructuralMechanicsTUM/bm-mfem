@@ -154,10 +154,7 @@ classdef FemModel < handle
         
         function element = addNewElement(femModel, elementName, id, nodes)
         %ADDNEWELEMENT inserts a new element in the fem model with
-        %elementName, id, an array of nodes, and the properties
-%             if nargin == 4
-%                 properties = PropertyContainer();
-%             end
+        %elementName, id, and an array of nodes
             elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
             if any(id == elementIds)
                 error('an element with id %d already exists in the model', id)

@@ -16,12 +16,7 @@ classdef (Abstract) LinearElement < Element
                 super_args = {id};
             end
             
-            e@Element(super_args{:});
-            
-%             if nargin > 0
-%                 barElement.crossSectionArea = crossSectionArea;
-%             end
-            
+            e@Element(super_args{:});            
         end
         
         % getter functions
@@ -32,15 +27,6 @@ classdef (Abstract) LinearElement < Element
             end
             len = element.length;
         end
-        
-%         function area = getCrossSectionArea(element)
-%             area = element.crossSectionArea;
-%         end
-%         
-%         % setter functions
-%         function setCrossSectionArea(barElement, area)
-%             barElement.crossSectionArea = area;
-%         end
         
         % member functions
         function update(barElement)
