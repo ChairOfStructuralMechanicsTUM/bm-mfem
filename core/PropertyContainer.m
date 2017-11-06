@@ -1,4 +1,4 @@
-classdef PropertyContainer < handle & matlab.mixin.Copyable
+classdef PropertyContainer < handle
     %PROPERTYCONTAINER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -83,6 +83,7 @@ classdef PropertyContainer < handle & matlab.mixin.Copyable
         end
         
         function print(pc)
+            %PRINT shows the keys and values of the property container
             names = pc.propertyMap.keys;
             fprintf('property container with %d values:\n', length(names));
             fprintf('name \t\t value\n');
@@ -92,6 +93,17 @@ classdef PropertyContainer < handle & matlab.mixin.Copyable
                 fprintf('%s \t\t %d\n', name, pc.propertyMap(name));
             end
             fprintf('\n\n');
+        end
+        
+        function cp = copy(obj)
+            %COPY performs a deep copy of a property container
+            cp = PropertyContainer();
+            map = obj.getPropertyMap();
+            k = keys(map);
+            v = values(map);
+            for ii = 1:length(map)
+               cp.setValue(k{ii},v{ii}); 
+            end
         end
         
     end
