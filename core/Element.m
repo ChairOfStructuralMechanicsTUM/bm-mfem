@@ -4,7 +4,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     properties (Access = private)
         id
-        material
+        eProperties
     end
     properties (Access = protected)
         nodeArray
@@ -15,14 +15,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     methods
         % constructor
-        function element = Element(id, material)
-            if (nargin > 0)
+        function element = Element(id)
+            if nargin == 1
                 element.id = id;
-                if (isa(material,'Material') || isa(material,'PropertyContainer'))
-                    element.material = material;
-                else
-                    error('problem with the material in element %d', id);
-                end
+                element.eProperties = PropertyContainer();
                 element.nodeArray = {};
             end
         end
@@ -44,12 +40,12 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
-        function material = getMaterial(element)
-            material = element.material;
+        function prop = getProperties(element)
+            prop = element.eProperties;
         end
         
         function value = getPropertyValue(element, valueName)
-           value = element.material.getValue(valueName); 
+           value = element.eProperties.getValue(valueName); 
         end
         
         function nodes = getNodes(elements)
@@ -57,7 +53,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             for ii = 1:length(elements)
                 nodes(ii,:) = elements(ii).nodeArray;
             end
-%             nodes = element.nodeArray;
         end
         
         function dofs = getDofs(element)
@@ -68,9 +63,15 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            end
         end
         
+        function setProperties(elements, props)
+            for ii = 1:length(elements)
+                elements(ii).eProperties = copy(props);
+            end
+        end
+        
         function setPropertyValue(elements, valueName, value)
             for ii = 1:length(elements)
-                elements(ii).material.setValue(valueName, value);
+                elements(ii).eProperties.setValue(valueName, value);
             end
         end
             
@@ -100,7 +101,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             
             %check the properties
             valsToCheck = element.requiredProperties;
-            properties = element.getMaterial;
+            properties = element.getProperties;
             availableValueNames = properties.getValueNames;
             for ii = 1:length(valsToCheck)
                 if ~ any(ismember(valsToCheck(ii), availableValueNames))
@@ -110,12 +111,10 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
             
             valsToCheck3d = element.required3dProperties;
-            properties = element.getMaterial;
-            availableValueNames = properties.getValueNames;
             for ii = 1:length(valsToCheck3d)
                 if any(ismember(valsToCheck3d(ii), availableValueNames))
                     val = properties.getValue(cell2mat(valsToCheck3d(ii)));
-                    if ~ (length(val) == 3)
+                    if length(val) ~= 3
                         error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
                     end
                 else
@@ -169,11 +168,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                     element.nodeArray(itNode) = newNode;
                     element.addDofsToSingleNode(newNode);
                     element.update;
-                    
-%                  barElement3d2n.addDofs(barElement3d2n.dofNames);
-%                 
-%                 barElement3d2n.length = computeLength(barElement3d2n.nodeArray(1).getCoords, ...
-%                     barElement3d2n.nodeArray(2).getCoords);
                 end
             end
         end

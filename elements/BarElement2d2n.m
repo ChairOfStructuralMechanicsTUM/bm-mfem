@@ -1,4 +1,4 @@
-classdef BarElement2d2n < BarElement
+classdef BarElement2d2n < LinearElement
     %BARELEMENT2D2N: 2D Truss Element with only Normal Forces
     
     
@@ -23,19 +23,19 @@ classdef BarElement2d2n < BarElement
         
         % constructor
         
-        function barElement2d2n = BarElement2d2n(id, nodeArray, material, crossSectionArea)
+        function barElement2d2n = BarElement2d2n(id, nodeArray)
             
             if nargin == 0
                 super_args = {};
-            elseif nargin == 4
-                super_args = {id; material; crossSectionArea};
+            elseif nargin == 2
+                super_args = {id};
             end
                 
 %             barElement2d2n@BarElement(id, material, crossSectionArea);
-            barElement2d2n@BarElement(super_args{:});
+            barElement2d2n@LinearElement(super_args{:});
             
             barElement2d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
-            barElement2d2n.requiredProperties = [ ];
+            barElement2d2n.requiredProperties = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
             barElement2d2n.required3dProperties = [ ];
             
             if nargin > 0
@@ -88,8 +88,8 @@ classdef BarElement2d2n < BarElement
                 x21*y21 y21*y21 -x21*y21 -y21*y21; ...
                 -x21*x21 -x21*y21 x21*x21 x21*y21; ...
                 -x21*y21 -y21*y21 x21*y21 y21*y21];
-            factor = (barElement.getMaterial().getValue('YOUNGS_MODULUS') ...
-                * barElement.crossSectionArea) ...
+            factor = (barElement.getProperties().getValue('YOUNGS_MODULUS') ...
+                * barElement.getProperties().getValue('CROSS_SECTION')) ...
                 / (barElement.length^3);
             stiffnessMatrix = factor * stiffnessMatrix;
         end
@@ -102,9 +102,9 @@ classdef BarElement2d2n < BarElement
             %COMPUTELOCALMASSMATRIX return the mass matrix
             %the mass is computed from density, length, and cross section
             %area and distributed equally among both nodes
-            density = element.getMaterial.getValue('DENSITY');
+            density = element.getProperties().getValue('DENSITY');
             length = element.length;
-            area = element.crossSectionArea;
+            area = element.getProperties().getValue('CROSS_SECTION');
             mass = density * length * area;
             massMatrix = mass * diag([.5 .5 .5 .5]);
         end
@@ -115,7 +115,7 @@ classdef BarElement2d2n < BarElement
             cos = dist(1)/barElement.length;
             sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
-            stressValue = barElement.getMaterial().getValue('YOUNGS_MODULUS') ...
+            stressValue = barElement.getProperties().getValue('YOUNGS_MODULUS') ...
                 /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
             
         end

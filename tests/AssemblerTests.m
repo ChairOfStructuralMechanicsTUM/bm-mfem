@@ -13,20 +13,19 @@ classdef AssemblerTests <  matlab.unittest.TestCase
             node04 = Node(4,0,0);
             nodeArray = [node01 node02 node03 node04];
             
-            mat = Material('test');
-            mat.setValue('YOUNGS_MODULUS', 3000);
-            
-            area = 2;
-            
-            ele01 = BarElement2d2n(1,[node01 node02], mat, area);
-            ele02 = BarElement2d2n(2,[node02 node03], mat, area);
-            ele03 = BarElement2d2n(3,[node01 node04], mat, area);
-            ele04 = BarElement2d2n(4,[node04 node02], mat, area);
-            ele05 = BarElement2d2n(5,[node03 node04], mat, area);
+            ele01 = BarElement2d2n(1,[node01 node02]);
+            ele02 = BarElement2d2n(2,[node02 node03]);
+            ele03 = BarElement2d2n(3,[node01 node04]);
+            ele04 = BarElement2d2n(4,[node04 node02]);
+            ele05 = BarElement2d2n(5,[node03 node04]);
             elementArray = [ele01 ele02 ele03 ele04 ele05];
             
             model = FemModel(nodeArray, elementArray);
+            
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            model.getAllElements.setPropertyValue('CROSS_SECTION',2);
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS',3000);
+            
             model.initialize;
             
             actualSolution = SimpleAssembler.assembleGlobalStiffnessMatrix(model);

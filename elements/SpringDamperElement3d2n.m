@@ -1,4 +1,4 @@
-classdef SpringDamperElement3d2n < Element
+classdef SpringDamperElement3d2n < LinearElement
     %SPRINGDAMPERELEMENT3D2N Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -8,15 +8,15 @@ classdef SpringDamperElement3d2n < Element
     
     methods
         % constructor
-        function springDamperElement = SpringDamperElement3d2n(id, nodeArray, properties)
+        function springDamperElement = SpringDamperElement3d2n(id, nodeArray)
             if nargin == 0
                 super_args = {};
-            elseif nargin == 3
-                super_args = {id; properties};
+            elseif nargin == 2
+                super_args = {id};
             end
             
             % call the super class constructor
-            springDamperElement@Element(super_args{:});
+            springDamperElement@LinearElement(super_args{:});
             springDamperElement.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
             springDamperElement.requiredProperties = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
             springDamperElement.required3dProperties = [ ];
@@ -99,21 +99,6 @@ classdef SpringDamperElement3d2n < Element
                     springDamperElement.nodeArray(2).getCoords);
         end
         
-        function c = barycenter(springDamperElement)
-            nodes = springDamperElement.getNodes;
-            c = (nodes(1).getCoords + nodes(2).getCoords) ./ 2;
-        end
-        
-        function plot = draw(springDamperElement)
-            plot = line(springDamperElement.nodeArray.getX, springDamperElement.nodeArray.getY);
-        end
-        
-        function plot = drawDeformed(springDamperElement)
-            plot = line(springDamperElement.nodeArray.getX + ...
-                springDamperElement.nodeArray.getDofValue('DISPLACEMENT_X'), ...
-                springDamperElement.nodeArray.getY + ...
-                springDamperElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
-        end
     end
     
     methods (Access = private)

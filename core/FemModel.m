@@ -102,6 +102,11 @@ classdef FemModel < handle
         
         % member functions
         function initialize(femModel)
+        %INITIALIZE makes the model ready for computation by performing the
+        %following tasks:
+        %(1) check if all elements are initialized correctly
+        %(2) assign unique ids to the dofs
+        %(3) determine free and fixed dofs
             elements = femModel.getAllElements();
             for ii = 1:length(elements)
                 elements(ii).check();
@@ -129,6 +134,8 @@ classdef FemModel < handle
         end
         
         function node = addNewNode(femModel, id, x, y, z)
+        %ADDNEWNODE inserts a new node in the fem model with id and x,y,z
+        %coordinates
             nodeIds = arrayfun(@(node) node.getId, femModel.nodeArray);
             if any(id == nodeIds)
                 error('a node with id %d already exists in the model', id)
@@ -145,10 +152,9 @@ classdef FemModel < handle
             end
         end
         
-        function element = addNewElement(femModel, elementName, id, nodes, properties)
-            if nargin == 4
-                properties = PropertyContainer();
-            end
+        function element = addNewElement(femModel, elementName, id, nodes)
+        %ADDNEWELEMENT inserts a new element in the fem model with
+        %elementName, id, and an array of nodes
             elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
             if any(id == elementIds)
                 error('an element with id %d already exists in the model', id)
@@ -160,15 +166,13 @@ classdef FemModel < handle
             
             switch elementName
                 case 'BarElement2d2n'
-                    crossArea = properties.getValue('CROSS_SECTION');
-                    element = BarElement2d2n(id, nodes, properties, crossArea);
+                    element = BarElement2d2n(id, nodes);
                 case 'BarElement3d2n'
-                    crossArea = properties.getValue('CROSS_SECTION');
-                    element = BarElement3d2n(id, nodes, properties, crossArea);
+                    element = BarElement3d2n(id, nodes);
                 case 'ConcentratedMassElement3d1n'
-                    element = ConcentratedMassElement3d1n(id, nodes, properties);
+                    element = ConcentratedMassElement3d1n(id, nodes);
                 case 'SpringDamperElement3d2n'
-                    element = SpringDamperElement3d2n(id, nodes, properties);
+                    element = SpringDamperElement3d2n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
