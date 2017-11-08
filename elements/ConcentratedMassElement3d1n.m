@@ -8,17 +8,16 @@ classdef ConcentratedMassElement3d1n < Element
     methods
         % constructor
         function element = ConcentratedMassElement3d1n(id, nodeArray)
+            requiredPropertyNames = cellstr(["ELEMENTAL_MASS", "VOLUME_ACCELERATION"]);
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                super_args = {id, requiredPropertyNames};
             end
             
             % call the super class constructor
             element@Element(super_args{:});
             element.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            element.requiredProperties = cellstr("ELEMENTAL_MASS");
-            element.required3dProperties = cellstr("VOLUME_ACCELERATION");
             
             % the constructor
             if nargin > 0

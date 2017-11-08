@@ -18,18 +18,18 @@ classdef VariousTests <  matlab.unittest.TestCase
             ele02 = model.addNewElement('BarElement3d2n',2,[3 2]);
             
             prop = PropertyContainer();
-            prop.setValue('test',1);
-            prop.setValue('test_copy',1);
+            prop.addValue('CROSS_SECTION',1);
+            prop.addValue('YOUNGS_MODULUS',1);
             
             ele01.setProperties(prop);
             ele02.setProperties(prop);
             
-            ele02.setPropertyValue('test_copy',2);
+            ele02.setPropertyValue('YOUNGS_MODULUS',2);
             
-            testCase.verifyEqual(ele01.getPropertyValue('test'), 1)
-            testCase.verifyEqual(ele01.getPropertyValue('test_copy'), 1)
-            testCase.verifyEqual(ele02.getPropertyValue('test'), 1)
-            testCase.verifyEqual(ele02.getPropertyValue('test_copy'), 2)
+            testCase.verifyEqual(ele01.getPropertyValue('CROSS_SECTION'), 1)
+            testCase.verifyEqual(ele01.getPropertyValue('YOUNGS_MODULUS'), 1)
+            testCase.verifyEqual(ele02.getPropertyValue('CROSS_SECTION'), 1)
+            testCase.verifyEqual(ele02.getPropertyValue('YOUNGS_MODULUS'), 2)
         end
     end
     

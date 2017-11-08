@@ -9,19 +9,18 @@ classdef BarElement3d2n < LinearElement
         % constructor
         function barElement3d2n = BarElement3d2n(id, nodeArray)
             
+            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
+            
             % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                super_args = {id, requiredPropertyNames};
             end
             
             % call the super class constructor
             barElement3d2n@LinearElement(super_args{:});
-            
             barElement3d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            barElement3d2n.requiredProperties = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
-            barElement3d2n.required3dProperties = [ ];
             
             % the constructor
             if nargin > 0

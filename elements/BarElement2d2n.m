@@ -25,18 +25,20 @@ classdef BarElement2d2n < LinearElement
         
         function barElement2d2n = BarElement2d2n(id, nodeArray)
             
+            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
+            
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                super_args = {id, requiredPropertyNames};
             end
                 
 %             barElement2d2n@BarElement(id, material, crossSectionArea);
             barElement2d2n@LinearElement(super_args{:});
             
             barElement2d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y']);
-            barElement2d2n.requiredProperties = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
-            barElement2d2n.required3dProperties = [ ];
+%             barElement2d2n.requiredProperties = cellstr(["YOUNGS_MODULUS", "CROSS_SECTION", "DENSITY"]);
+%             barElement2d2n.required3dProperties = [ ];
             
             if nargin > 0
                 

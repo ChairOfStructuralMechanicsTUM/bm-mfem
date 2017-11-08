@@ -19,9 +19,50 @@ classdef PropertyContainer < handle
         end
         
         % member functions
+        function addValue(propertyContainer, name, value)
+           %ADDVALUE adds a value NAME and initializes it with the given
+           %VALUE, if specified. Otherwise it is initialized with 0 for 1d
+           %variables or [0,0,0] for 3d variables.           
+           try 
+               propertyContainer.propertyMap(name)
+               error('A property with name \"%s\" already exists in the container!')
+           catch
+           end
+           
+           type = checkPropertyName(name);
+           
+           if strcmp(type,'variable1d')
+               if nargin == 2
+                   value = 0;
+               end
+               if length(value) ~= 1
+                   error('The value for property \"%s\" must be a single number.', name)
+               end
+               propertyContainer.propertyMap(name) = value;
+               
+           elseif strcmp(type,'variable3d')
+               if nargin == 2
+                   value = [0 0 0];
+               end
+               if length(value) ~= 3
+                   error('The value for property \"%s\" must be a vector of length 3.', name)
+               end
+               propertyContainer.propertyMap(name) = value;
+               
+           else
+               error('A property with name \"%s\" is not defined in mfem!', name)
+           end
+           
+        end
+        
         function setValue(propertyContainer, name, value)
             %SETVALUE sets the value NAME in the property container. An
             %already existing property is overwritten.
+            try
+                propertyContainer.propertyMap(name);
+            catch
+                error('The value \"%s\" is not available in this container', name)
+            end
             propertyContainer.propertyMap(name) = value;
         end
         
@@ -29,23 +70,56 @@ classdef PropertyContainer < handle
             %ADDSTEPVALUE adds VALUE to the property container NAME at the
             %specified STEP. An already existing value at this step is
             %overwritten
+            direction = 0;
+            if strcmp(name(end-1:end),'_X')
+                direction = 1;
+                name = name(1:end-2);
+            elseif strcmp(name(end-1:end),'_Y')
+                direction = 2;
+                name = name(1:end-2);
+            elseif strcmp(name(end-1:end),'_Z')
+                direction = 3;
+                name = name(1:end-2);
+            end
+            
+            type = checkPropertyName(name);
+            
             try
                 vals = propertyContainer.propertyMap(name);
             catch
                 error('The value \"%s\" is not available in this container', name)
             end
-            vals(step) = value;
+            
+            if (direction == 0) && (strcmp(type,'variable1d'))
+                vals(step) = value;
+            elseif (direction == 0) && (strcmp(type,'variable3d'))
+                vals(step,:) = value;
+            elseif direction ~= 0
+                tempVals = vals(step,:);
+                tempVals(direction) = value;
+                vals(step,:) = tempVals;
+            end
             propertyContainer.setValue(name, vals);
         end
         
         function appendStepValue(propertyContainer, name, value)
-           %APPENDSTEPVALUE appends the given VALUE to the property NAME.
-           try
+            %APPENDSTEPVALUE appends the given VALUE to the property NAME.
+            %If the property is 3d, VALUE has to be a vector of length 3.
+            try
                 vals = propertyContainer.propertyMap(name);
             catch
                 error('The value \"%s\" is not available in this container', name)
             end
-            vals(end+1) = value;
+            
+            type = checkPropertyName(name);
+            if (strcmp(type,'variable1d'))
+                vals(end+1) = value;
+            elseif (strcmp(type,'variable3d'))
+                if length(value) ~= 3
+                    error('Values for property \"%s\" must be of length 3.', name)
+                end
+                vals(end+1,:) = value;
+            end
             propertyContainer.setValue(name, vals);
         end
         
@@ -63,7 +137,7 @@ classdef PropertyContainer < handle
                 if mod(step,1) ~= 0
                     error('Please specify a valid step')
                 end
-                value = value(step);
+                value = value(step,:);
             end
         end
         
@@ -102,7 +176,7 @@ classdef PropertyContainer < handle
             k = keys(map);
             v = values(map);
             for ii = 1:length(map)
-               cp.setValue(k{ii},v{ii}); 
+               cp.addValue(k{ii},v{ii}); 
             end
         end
         

@@ -9,17 +9,18 @@ classdef SpringDamperElement3d2n < LinearElement
     methods
         % constructor
         function springDamperElement = SpringDamperElement3d2n(id, nodeArray)
+            
+            requiredPropertyNames = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
+            
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                super_args = {id, requiredPropertyNames};
             end
             
             % call the super class constructor
             springDamperElement@LinearElement(super_args{:});
             springDamperElement.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            springDamperElement.requiredProperties = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
-            springDamperElement.required3dProperties = [ ];
             
             % the constructor
             if nargin > 0

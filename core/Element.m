@@ -4,23 +4,32 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     properties (Access = private)
         id
-        eProperties
     end
     properties (Access = protected)
         nodeArray
         dofNames
-        requiredProperties
-        required3dProperties
+        eProperties
+        requiredPropertyNames
+%         requiredProperties
+%         required3dProperties
     end
     
     methods
         % constructor
-        function element = Element(id)
-            if nargin == 1
+        function element = Element(id, requiredPropertyNames)
+            if nargin > 0
                 element.id = id;
                 element.eProperties = PropertyContainer();
                 element.nodeArray = {};
             end
+            
+            if nargin == 2
+                for ii = 1:length(requiredPropertyNames)
+                    element.eProperties.addValue(requiredPropertyNames{ii});
+                end
+                element.requiredPropertyNames = requiredPropertyNames;
+            end
+            
         end
     end
     
@@ -100,26 +109,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
             
             %check the properties
-            valsToCheck = element.requiredProperties;
+            valsToCheck = element.requiredPropertyNames;
             properties = element.getProperties;
             availableValueNames = properties.getValueNames;
             for ii = 1:length(valsToCheck)
                 if ~ any(ismember(valsToCheck(ii), availableValueNames))
 %                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.setValue(cell2mat(valsToCheck(ii)), 0);
-                end
-            end
-            
-            valsToCheck3d = element.required3dProperties;
-            for ii = 1:length(valsToCheck3d)
-                if any(ismember(valsToCheck3d(ii), availableValueNames))
-                    val = properties.getValue(cell2mat(valsToCheck3d(ii)));
-                    if length(val) ~= 3
-                        error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
-                    end
-                else
-%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.setValue(cell2mat(valsToCheck3d(ii)), [0, 0, 0]);
+                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
                 end
             end
         end

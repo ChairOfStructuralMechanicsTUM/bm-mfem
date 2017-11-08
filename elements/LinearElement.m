@@ -9,11 +9,11 @@ classdef (Abstract) LinearElement < Element
     
     methods
         % constructor
-        function e = LinearElement(id)
+        function e = LinearElement(id, requiredProperties)
             if nargin == 0
                 super_args = {};
-            elseif nargin == 1
-                super_args = {id};
+            elseif nargin == 2
+                super_args = {id, requiredProperties};
             end
             
             e@Element(super_args{:});            

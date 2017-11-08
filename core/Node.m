@@ -10,7 +10,7 @@ classdef Node < handle & matlab.mixin.Copyable
         y
         z
         dofArray
-        valueMap
+        nProperties
     end
     
     methods
@@ -33,7 +33,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 otherwise
                     error('Wrong number of arguments')
             end
-            node.valueMap = PropertyContainer();
+            node.nProperties = PropertyContainer();
         end
         
         
@@ -163,35 +163,31 @@ classdef Node < handle & matlab.mixin.Copyable
         function addNewValue(nodes, valueNames)
             for itName = 1:length(valueNames)
                 for itNode = 1:length(nodes)
-                    try
-                        nodes(itNode).valueMap.getValue(char(valueNames(itName)),1);
-                    catch
-                        nodes(itNode).valueMap.setValue(char(valueNames(itName)), 0.0);
-                    end
+                    nodes(itNode).nProperties.addValue(char(valueNames(itName)));
                 end
             end
         end
         
         function setStepValue(nodes, valueName, value, step)
            for ii = 1:length(nodes)
-              nodes(ii).valueMap.setStepValue(valueName, value, step); 
+              nodes(ii).nProperties.setStepValue(valueName, value, step); 
            end
         end
         
         function appendStepValue(nodes, valueName, value)
            for ii = 1:length(nodes)
-              nodes(ii).valueMap.appendStepValue(valueName, value); 
+              nodes(ii).nProperties.appendStepValue(valueName, value); 
            end
         end
         
         function val = getValue(nodes, valueName, step)            
             if nargin == 2
                 for ii = 1:length(nodes)
-                    val = nodes(ii).valueMap.getValue(valueName);
+                    val = nodes(ii).nProperties.getValue(valueName);
                 end
             elseif nargin == 3
                  for ii = 1:length(nodes)
-                    val = nodes(ii).valueMap.getValue(valueName, step);
+                    val = nodes(ii).nProperties.getValue(valueName, step);
                 end
             end
         end
