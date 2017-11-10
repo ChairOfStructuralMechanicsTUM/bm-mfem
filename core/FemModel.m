@@ -107,6 +107,7 @@ classdef FemModel < handle
         %(1) check if all elements are initialized correctly
         %(2) assign unique ids to the dofs
         %(3) determine free and fixed dofs
+        
             elements = femModel.getAllElements();
             for ii = 1:length(elements)
                 elements(ii).check();
@@ -169,6 +170,8 @@ classdef FemModel < handle
                     element = BarElement2d2n(id, nodes);
                 case 'BarElement3d2n'
                     element = BarElement3d2n(id, nodes);
+                case 'BeamElement3d2n'
+                    element = BeamElement3d2n(id, nodes);
                 case 'ConcentratedMassElement3d1n'
                     element = ConcentratedMassElement3d1n(id, nodes);
                 case 'SpringDamperElement3d2n'

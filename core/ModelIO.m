@@ -116,6 +116,14 @@ classdef ModelIO < handle
                                             nodes(elementData(end))]);
                                         cElement.setProperties(cProperties);
                                         
+                                    case 'BeamElement3d2n'
+                                        cProperties = modelIO.props(elementData(4));
+                                        
+                                        cElement = BeamElement3d2n(elementData(1), ...
+                                            [nodes(elementData(end-1)) ...
+                                            nodes(elementData(end))]);
+                                        cElement.setProperties(cProperties);
+                                        
                                     otherwise
                                         error('2-node element type %s not available',modelIO.line2n)
                                 end
