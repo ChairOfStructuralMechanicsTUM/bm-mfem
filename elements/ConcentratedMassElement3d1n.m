@@ -12,24 +12,21 @@ classdef ConcentratedMassElement3d1n < Element
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id, requiredPropertyNames};
+                if ~(length(nodeArray) == 1 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
             
             % call the super class constructor
             element@Element(super_args{:});
             element.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            
-            % the constructor
-            if nargin > 0
-                if (length(nodeArray) == 1 && isa(nodeArray,'Node'))
-                    element.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
-            end
-            
+                        
         end
         
+        function initialize(element)
+            
+        end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(element)
             stiffnessMatrix = zeros(3);

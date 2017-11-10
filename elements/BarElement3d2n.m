@@ -15,25 +15,22 @@ classdef BarElement3d2n < LinearElement
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id, requiredPropertyNames};
+                if ~(length(nodeArray) == 2 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
             
             % call the super class constructor
             barElement3d2n@LinearElement(super_args{:});
             barElement3d2n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            
-            % the constructor
-            if nargin > 0
-                if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
-                    barElement3d2n.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
-                
-                barElement3d2n.length = computeLength(barElement3d2n.nodeArray(1).getCoords, ...
-                    barElement3d2n.nodeArray(2).getCoords);
-            end
-            
+                        
+        end
+        
+        function initialize(element)
+            element.localSystem = element.computeLocalSystem();
+            element.length = computeLength(element.nodeArray(1).getCoords, ...
+                    element.nodeArray(2).getCoords);
         end
         
         % getter functions

@@ -30,7 +30,10 @@ classdef BarElement2d2n < LinearElement
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id, requiredPropertyNames};
+                if ~(length(nodeArray) == 2 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
                 
 %             barElement2d2n@BarElement(id, material, crossSectionArea);
@@ -42,17 +45,20 @@ classdef BarElement2d2n < LinearElement
             
             if nargin > 0
                 
-                if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
-                    barElement2d2n.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
+%                 if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
+%                     barElement2d2n.nodeArray = nodeArray;
+%                 else
+%                     error('problem with the nodes in element %d', id);
+%                 end
                 
 %                 barElement2d2n.addDofs(barElement2d2n.dofNames);
                 
                 barElement2d2n.length = computeLength(barElement2d2n.nodeArray(1).getCoords, ...
                     barElement2d2n.nodeArray(2).getCoords);
             end
+        end
+        
+        function initialize(element) 
         end
         
         

@@ -16,24 +16,29 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     methods
         % constructor
-        function element = Element(id, requiredPropertyNames)
+        function element = Element(id, nodeArray, requiredPropertyNames)
             if nargin > 0
                 element.id = id;
                 element.eProperties = PropertyContainer();
                 element.nodeArray = {};
             end
             
-            if nargin == 2
+            if nargin == 3
+                element.nodeArray = nodeArray;
+                
                 for ii = 1:length(requiredPropertyNames)
                     element.eProperties.addValue(requiredPropertyNames{ii});
                 end
                 element.requiredPropertyNames = requiredPropertyNames;
+                
+                element.initialize();
             end
             
         end
     end
     
     methods (Abstract)
+        initialize(element)
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
         computeLocalStiffnessMatrix(element)
