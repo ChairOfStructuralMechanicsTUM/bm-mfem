@@ -9,7 +9,7 @@ elseif number == 2
     g=[(-1/sqrt(3)), (1/sqrt(3))];
     w=[1,1];
 elseif number == 3
-    g=[-sqrt(3/5), sqrt(3/5)];
+    g=[-sqrt(3/5), 0, sqrt(3/5)];
     w=[5/9, 8/9, 5/9];
 elseif number == 4
     g=[-sqrt((3/7)+((2/7)*sqrt(6/5))),-sqrt((3/7)-((2/7)*sqrt(6/5))),sqrt((3/7)-((2/7)*sqrt(6/5))),sqrt((3/7)+((2/7)*sqrt(6/5)))];
