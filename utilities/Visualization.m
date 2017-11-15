@@ -36,14 +36,16 @@ classdef Visualization < handle
             for ii = 1:length(elements)
                 c = elements(ii).barycenter;
                 elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                text(c(1), c(2), elemStr,'Interpreter','latex', ...
+                %c(3) for 3D display
+                text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
                     'HorizontalAlignment','center','FontSize',10)
             end
             
             % show node numbers
             for ii = 1:length(nodes)
                 nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
-                text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
+                %nodes(ii).getZ for 3D display
+                text(nodes(ii).getX, nodes(ii).getY, nodes(ii).getZ, nodeStr,'Interpreter','latex', ...
                     'HorizontalAlignment','left','FontSize',10,'Color','blue')
             end
             

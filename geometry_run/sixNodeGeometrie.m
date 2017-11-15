@@ -109,20 +109,24 @@ node02.fixDof('DISPLACEMENT_X');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
 %Point Loads
-addPointLoad([node07 node09 node17 node19],10,[0 -1 0]);
-addPointLoad([node10 node16 node25 node04 node23],12,[0 -1 0]);
-addPointLoad([node03 node15 node21 node06],13,[0 1 0]);
+addPointLoad([node03, node07, node12, node13],10,[1 -1 0]);
+addPointLoad([node04],10,[1 -1 0]);
+addPointLoad([node20, node22, node23],10,[1 -1 0]);
 
 %set IdTracker
 idt = IdTracker(max(nodeArray.getId), max(elementArray.getId));
 
 %create FemModel
 modelNine = FemModel(nodeArray, elementArray);
-%solve
-u = SimpleSolvingStrategy.solve(modelNine)
+%solve FEM
+u = SimpleSolvingStrategy.solve(modelNine);
+%Order displacements
+[displacements1, displacementsIntf1] = orderDisplacements(modelNine);
+%Output of displacements
+displacements1
 
 %Substructure 
-%eleIntf = elements at interface
+%eleIntf = elements at interface 
 eleIntf = [ele30, ele33, ele36, ele39]; 
 [substructure01, substructure02] = modelNine.divide(eleIntf,idt);
 
@@ -150,14 +154,14 @@ end
 [substructure05, substructure06] = substructure02.divide(eleIntf, idt);
 
 substructures = [substructure03 substructure04 substructure05 substructure06];
-% %solve indicidual models using FETI
-% %SimpleSolvingStrategy.solve(substructure01, substructure02);
+%solve individual models using FETI
 u = SimpleSolvingStrategy.solve(substructures);
 
-for sub = 1:length(substructures)
-    u{1,sub}
-end
-% 
+% Order displacements
+[displacements, displacementsIntf] = orderDisplacements(substructures);
+displacements
+displacementsIntf;
+
 % %Visualize Substructures
 % substructure01 = Visualization(substructure01);
 % substructure02 = Visualization(substructure02);
@@ -167,21 +171,25 @@ end
 % substructure06 = Visualization(substructure06);
 % originalSystem = Visualization(modelNine);
 % 
-% 
 % figure
 % plotUndeformed(substructure01);
 % figure
 % plotUndeformed(substructure02);
 % figure
 % plotUndeformed(substructure03);
+% plotDeformed(substructure03);
 % figure
 % plotUndeformed(substructure04);
+% plotDeformed(substructure04);
 % figure
 % plotUndeformed(substructure05);
+% plotDeformed(substructure05);
 % figure
 % plotUndeformed(substructure06);
+% plotDeformed(substructure06);
 % figure
 % plotUndeformed(originalSystem);
+% plotDeformed(originalSystem);
 
 
 
