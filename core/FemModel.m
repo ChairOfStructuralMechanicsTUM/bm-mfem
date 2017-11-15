@@ -6,10 +6,9 @@ classdef FemModel < handle
     properties (Access = private) 
         nodeArray
         elementArray
-        %         dofArray = {}
+        %dofArray = {}
         femModelParts = containers.Map
-        dofArray = {}
-        
+        dofArray = {}     
     end
     
     methods
@@ -86,7 +85,6 @@ classdef FemModel < handle
             femModel.femModelParts(name) = entityArray;
         end
         
-        %%%Start New
         %function to divide FemModel into Substructures.
         %FemModel: structure to be divided
         %eleIntf: elements that are on the Interface
@@ -108,8 +106,8 @@ classdef FemModel < handle
             halfPointLoads(nodeIntf);
             
             %see whether split is in x- or y-direction
-            orientationX = unique(nodeIntf.getX());
-            orientationY = unique(nodeIntf.getY());
+            orientationX = unique(nodeIntf.getX);
+            orientationY = unique(nodeIntf.getY);
             
             if size(orientationX) == 1
                 [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray, idt);
@@ -158,7 +156,6 @@ classdef FemModel < handle
             substructure01 = Substructure(nodes01, elements01, nodeIntf01, idt);
             substructure02 = Substructure(nodes02, elements02, nodeIntf02, idt);            
         end 
-        %%%End NEW
     end
 end
 
