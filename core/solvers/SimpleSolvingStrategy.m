@@ -22,14 +22,12 @@ classdef SimpleSolvingStrategy < Solver
     
 methods (Static)
     function [u] = solve(substructures)
-        
         %distinguish between FETI and FEM by number of subdomains
         if length(substructures) == 1
             %FEM
             disp('FEM');
             Kred = SimpleAssembler(substructures).reducedStiffnessMatrix;
             f = SimpleAssembler(substructures).reducedForceVector;
-          
             u = Kred \ f';
             SimpleAssembler.assignResultsToDofs(substructures, u);
         else
