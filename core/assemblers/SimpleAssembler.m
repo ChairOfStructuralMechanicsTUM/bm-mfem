@@ -45,42 +45,42 @@ classdef SimpleAssembler < Assembler
             end
             
             %find smallest nodeId
-            mini = min(nodes.getId)-1;
+            mini = min(nodes.getId) - 1;
             
             for itEle = 1:length(femModel.getAllElements)
                 elements = femModel.getAllElements;
                 currentElement = elements(itEle);
                 elementFreedomTable = {};
-                
-                
+                      
                 for itNode = 1:length(currentElement.getNodes)
                     nodes = currentElement.getNodes;
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
                     
-                    %%%CHANGED: currentNode.getId is changed. The minimum
-                    %nodeId is always substracted. This makes the nodeId
-                    %always start from 1.
-                    globalDofArray(nNodalDofs) = nNodalDofs * (currentNode.getId-mini);
+                    %%%CHANGED: The minimum nodeId in each structure is
+                    %always substracted from the current nodeId. This is
+                    %necessary to let the nodeIds start from 1 in
+                    %structure, which has a smallest nodeId of e.g. 20 due
+                    %to substructuring.
+                    globalDofArray(nNodalDofs) = nNodalDofs * ...
+                        (currentNode.getId-mini);
                    
                     for i = (nNodalDofs - 1) : -1 : 1
                         globalDofArray(i) = globalDofArray(i+1) - 1;
                     end
                     
-                    elementFreedomTable = [elementFreedomTable globalDofArray];
-                    
+                    elementFreedomTable = [elementFreedomTable globalDofArray];         
                 end
                 
                 elementFreedomTable = [elementFreedomTable{:}];
-                elementStiffnessMatrix = currentElement.computeLocalStiffnessMatrix;
+                elementStiffnessMatrix = currentElement. ...
+                                               computeLocalStiffnessMatrix;
                                 
                 stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    = stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    + elementStiffnessMatrix;
-                
+                    = stiffnessMatrix(elementFreedomTable, ...
+                             elementFreedomTable) + elementStiffnessMatrix;     
             end
-            reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
-            
+            reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);         
         end
         
 
