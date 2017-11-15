@@ -7,7 +7,6 @@ classdef Feti2Solver < FetiPreparer
     
     methods (Static)
         function [lambda, alpha] = pCG(K,f,B,R,Kinv,C,W)
-
             %%%Set matrices
             %ns = number of subdomains
             ns = length(K);
@@ -85,9 +84,6 @@ classdef Feti2Solver < FetiPreparer
             %residuum-w
             w(:,1) = P'*(d-F*lambda(:,1));
             
-            %Preconditioner Check
-            %F*lumpedF;
-            
             %%%Iterate
             var = 0;
             kk = 1;
@@ -119,7 +115,7 @@ classdef Feti2Solver < FetiPreparer
                 
                 %check whether convergence criterion is fulfilled
                 for numEntries = 1:size(w,1)
-                    if abs(w(numEntries,kk)) > 10^-5
+                    if abs(w(numEntries,kk)) > 10^-10
                         var = 0;
                         kk = kk+1;
                         break;
@@ -131,7 +127,7 @@ classdef Feti2Solver < FetiPreparer
                 end
             end
             
-            kk
+            kk;
             
              %calculate alpha
             alphA = inv(G'*G)*G'*(F*lambda-d);

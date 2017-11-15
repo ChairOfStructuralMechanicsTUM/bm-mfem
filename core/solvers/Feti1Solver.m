@@ -7,7 +7,6 @@ classdef Feti1Solver < FetiPreparer
     methods (Static)
         
         function [lambda, alpha] = pCG(K,f,B,R,Kinv)
-            
             %%%Set matrices
             %ns = number of subdomains
             ns = length(K);
@@ -114,7 +113,7 @@ classdef Feti1Solver < FetiPreparer
                 w(:,kk+1) = w(:,kk)-eta(:,kk)*P'*F*p(:,kk);
                 
                 for numEntries = 1:size(w,1)
-                    if abs(w(numEntries,kk)) > 10^-5
+                    if abs(w(numEntries,kk)) > 10^-10
                         var = 0;
                         kk = kk+1;
                         break;
@@ -123,7 +122,7 @@ classdef Feti1Solver < FetiPreparer
                     end
                 end 
             end
-            kk
+            kk;
             lambda = lambda(:,kk);
             
 %             %Tests
