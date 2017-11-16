@@ -21,13 +21,16 @@ elementArray = [ele01];
 elementArray.setPropertyValue('YOUNGS_MODULUS',32);
 elementArray.setPropertyValue('POISSON_RATIO',1/3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+elementArray.setPropertyValue('DENSITY',7860);
 
 elementIds = elementArray.getId;
 
 model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.stiffnessMatrix;
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+
+massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 a=[16,6,6,-8,2,2,-6,-6,1,4,-2,3,4,3,-2,-6,1,-6,-4,-3,-3,0,-1,-1;
     6,16,6,-2,4,3,-6,-6,1,2,-8,2,3,4,-2,-1,0,-1,-3,-4,-3,1,-6,-6;

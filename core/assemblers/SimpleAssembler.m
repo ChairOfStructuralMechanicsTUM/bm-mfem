@@ -2,7 +2,7 @@ classdef SimpleAssembler < Assembler
     %SIMPLEASSEMBLER Simple elimination-based assembler
     %   Detailed explanation goes here
     
-    properties
+    properties (Access = private)
         stiffnessMatrix
         reducedStiffnessMatrix
         forceVector

@@ -25,7 +25,7 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
             hexahedron3d8n@Element(super_args{:});
             
             hexahedron3d8n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            hexahedron3d8n.requiredProperties = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO","NUMBER_GAUSS_POINT"]);
+            hexahedron3d8n.requiredProperties = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO","NUMBER_GAUSS_POINT", "DENSITY"]);
             hexahedron3d8n.required3dProperties = [ ];
             
             % the constructor
@@ -59,13 +59,20 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
         
         % member functions
         
-        function [Bx, By, Bz, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue)
+        function [N, Bx, By, Bz, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue)
+            
+            % member functions
             
             % Calculation of shape functions
             
-            %Nf = 1/8 * [(1-zeta)*(1-eta)*(1-mue);(1+zeta)*(1-eta)*(1-mue);(1+ zeta)*(1+eta)*(1-mue);(1-zeta)*(1+eta)*(1-mue);(1- zeta)*(1-eta)*(1+mue);(1+zeta)*(1-eta)*(1+mue);(1+ zeta)*(1+eta)*(1+mue);(1-zeta)*(1+eta)*(1+mue)];
+            Nf = 1/8 * [(1-zeta)*(1-eta)*(1-mue);(1+zeta)*(1-eta)*(1-mue);(1+ zeta)*(1+eta)*(1-mue);(1-zeta)*(1+eta)*(1-mue);(1- zeta)*(1-eta)*(1+mue);(1+zeta)*(1-eta)*(1+mue);(1+ zeta)*(1+eta)*(1+mue);(1-zeta)*(1+eta)*(1+mue)];
+            N=zeros(3,3*8);
             
-            % member functions
+            for l=1:8
+                N(1,3*(l-1)+1)=Nf(l);
+                N(2,3*(l-1)+2)=Nf(l);
+                N(3,3*(l-1)+3)=Nf(l);
+            end
             
             % Calculation of shape function derivatives
             
@@ -97,7 +104,6 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
             J=[J11, J12, J13; J21, J22, J23; J31, J32, J33];
             
             Jdet=det(J);
-            % J11.*J22.*J33+J21.*J32.*J31+J31.*J12.*J23-J31.*J22.*J13-J11.*J32.*J23-J21.*J12.*J33;
             
             Jinv=[J22*J33-J32*J23, J32*J13-J12*J33, J12*J23-J22*J13;
                 J31*J23-J21*J33, J11*J33-J31*J13, J21*J13-J11*J23;
@@ -135,8 +141,8 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
                     for k=1:p
                         mue=g(k);
                         
-                        [Bx, By, Bz, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
-                        %Be=[Bx, zeros(1,16); zeros(1,8), By, zeros(1,8); zeros(1,16), Bz; By, Bx, zeros(1,8); zeros(1,8), Bz, By; Bz, zeros(1,8), Bx];
+                        [~, Bx, By, Bz, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
+                        
                         Be=[Bx(1),0,0,Bx(2),0,0,Bx(3),0,0,Bx(4),0,0,Bx(5),0,0,Bx(6),0,0,Bx(7),0,0,Bx(8),0,0;
                             0,By(1),0,0,By(2),0,0,By(3),0,0,By(4),0,0,By(5),0,0,By(6),0,0,By(7),0,0,By(8),0;
                             0,0,Bz(1),0,0,Bz(2),0,0,Bz(3),0,0,Bz(4),0,0,Bz(5),0,0,Bz(6),0,0,Bz(7),0,0,Bz(8);
@@ -152,17 +158,43 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
         end
         
         
-    function computeLocalForceVector(e)
         
-    end
-    
-    function barycenter(e)
+        function massMatrix = computeLocalMassMatrix(hexahedron3d8n)
+            roh = hexahedron3d8n.getPropertyValue('DENSITY');
+            p = hexahedron3d8n.getPropertyValue('NUMBER_GAUSS_POINT');
+            
+            massMatrix=zeros(24,24);
+            
+            [w,g]=returnGaussPoint(p);
+            
+            for i=1:p
+                zeta=g(i);
+                for j=1:p
+                    eta=g(j);
+                    for k=1:p
+                        mue=g(k);
+                        
+                        [N, ~, ~, ~, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
+                        
+                        massMatrix=massMatrix+(w(i)*w(j)*w(k)*roh*transpose(N)*N*Jdet);
+                        
+                    end
+                end
+            end
+            
+        end
         
-    end
-    
-    function update(e)
+        function computeLocalForceVector(e)
+            
+        end
         
-    end
+        function barycenter(e)
+            
+        end
+        
+        function update(e)
+            
+        end
         
         
     end
