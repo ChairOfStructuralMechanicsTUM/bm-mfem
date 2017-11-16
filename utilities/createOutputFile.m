@@ -38,8 +38,8 @@ for ii = 1:1:size(Model.getAllElements,2)
     endNode=elementNodes(1,2);
     % id = getId(elementArray(ii));
     A = [getId(elementArray(ii)); beginNode; endNode; ...
-        getParameterValue(getMaterial(elementArray(ii)), 'YOUNGS_MODULUS'); ...
-        getCrossSectionArea(elementArray(ii))];
+        getPropertyValue(elementArray(ii), 'YOUNGS_MODULUS'); ...
+        getPropertyValue(elementArray(ii), 'CROSS_SECTION')];
     fprintf(fileID,'%6.0f \t [%5.0f,%5.0f] %12.2f %12.2f\r\n',A);
 end
 
@@ -143,7 +143,7 @@ elementArray = getAllElements(Model);
 for ii = 1:1:size(Model.getAllElements,2)
     
     elementStress(ii) = computeElementStress(elementArray(ii), step);
-    elementForce(ii) = elementStress(ii) * getCrossSectionArea(elementArray(ii));
+    elementForce(ii) = elementStress(ii) * getPropertyValue(elementArray(ii), 'CROSS_SECTION');
     
     
     A = [getId(elementArray(ii)); elementStress(ii); elementForce(ii)];

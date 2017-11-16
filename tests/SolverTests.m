@@ -79,7 +79,6 @@ classdef SolverTests <  matlab.unittest.TestCase
             springEle.setPropertyValue('ELEMENTAL_DAMPING', damping);
             massEle = model.addNewElement('ConcentratedMassElement3d1n', 2, 1);
             massEle.setPropertyValue('ELEMENTAL_MASS', mass);
-            massEle.setPropertyValue('VOLUME_ACCELERATION', [0 0 0]);
             
             model.getAllNodes.fixDof('DISPLACEMENT_X');
             model.getAllNodes.fixDof('DISPLACEMENT_Z');

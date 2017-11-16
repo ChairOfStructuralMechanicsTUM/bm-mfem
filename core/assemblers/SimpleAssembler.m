@@ -73,12 +73,12 @@ classdef SimpleAssembler < Assembler
             fixedDofs = [];
             
              % get the external forces from every element
-%             elements = femModel.getAllElements;
-%             for itEle = 1:length(elements)                
-%                 elementalForceVector = elements(itEle).computeLocalForceVector;
-%                 elementalDofs = elements(itEle).getDofs;
-%                 forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) - elementalForceVector;
-%             end
+            elements = femModel.getAllElements;
+            for itEle = 1:length(elements)                
+                elementalForceVector = elements(itEle).computeLocalForceVector;
+                elementalDofs = elements(itEle).getDofs;
+                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) - elementalForceVector;
+            end
             
             % get the point load on the dofs
             for itDof = 1:nDofs
@@ -127,27 +127,22 @@ classdef SimpleAssembler < Assembler
         end
         
         function appendValuesToNodes(femModel, valueName, values)
-            [freeDofs, fixedDofs] = femModel.getDofConstraints();
+            [freeDofs, ~] = femModel.getDofConstraints();
             if length(freeDofs) ~= length(values)
                 error('the arrays of dofs and values are not of the same size')
             end
             
-            %append the values
-            for ii = 1:length(freeDofs)
-                dof = freeDofs(ii);
-                dofName = dof.getValueType;
-                dofDirection = dofName(end-1:end);
-                node = dof.getNode;
-                node.appendStepValue(strcat(valueName, dofDirection), values(ii));
-            end
+            %expand the given values to a full vector with length of all
+            %system dofs
+            valuesFull = zeros(length(femModel.getDofArray),1);
+            valuesFull(freeDofs.getId()) = values;
             
-            %append 0 to the fixed dofs
-            for ii = 1:length(fixedDofs)
-                dof = fixedDofs(ii);
-                dofName = dof.getValueType;
-                dofDirection = dofName(end-1:end);
-                node = dof.getNode;
-                node.appendStepValue(strcat(valueName, dofDirection), 0);
+            nodes = femModel.getAllNodes();
+            for itNode = 1:length(nodes)
+                node = nodes(itNode);
+                nodeDofIds = node.getDofArray().getId();
+                nodeValues = valuesFull(nodeDofIds);
+                node.appendStepValue(valueName, nodeValues);
             end
         end
         
@@ -221,14 +216,13 @@ classdef SimpleAssembler < Assembler
             %VALUENAME corresponding to the global dofs
             dofs = femModel.getDofArray;
             vals = zeros(1,length(dofs));
-            for itDof = 1:length(dofs)
-                dof = dofs(itDof);
-                dofName = dof.getValueType;
-                dofDirection = dofName(end-1:end);
-                node = dof.getNode;
-                val = node.getValue(strcat(valueName, dofDirection));
-                val = val(end);
-                vals(dof.getId) = val;
+            nodes = femModel.getAllNodes;
+            for itNode = 1:length(nodes)
+                node = nodes(itNode);
+                nodeDofIds = node.getDofArray().getId();
+                val = node.getValue(valueName);
+                val = val(end,:);
+                vals(nodeDofIds) = val;
             end
         end
         

@@ -10,6 +10,7 @@ switch tests
         run(AssemblerTests);
         run(ElementTests);
         run(SolverTests);
+        run(VariousTests);
         
     case 'validation'
         run(ValidationTests);
@@ -19,6 +20,7 @@ switch tests
         run(AssemblerTests);
         run(SolverTests);
         run(ValidationTests);
+        run(VariousTests);
         
     otherwise
         disp('possible input parameters are SMALL, VALIDATION, or ALL')

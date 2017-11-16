@@ -5,7 +5,6 @@ classdef ModelIO < handle
     properties (Access = private)
         inputFile
         modelPartNames = strings
-        materials = Material
         props = PropertyContainer
         
         % default element types
@@ -34,7 +33,6 @@ classdef ModelIO < handle
         % member functions
         function model = readModel(modelIO)
             modelIO.readProperties;
-            modelIO.readMaterials;
             modelParts = modelIO.readModelParts();
             nodes = modelIO.readNodes();
             elements = modelIO.readElements(modelParts, nodes);
@@ -104,23 +102,19 @@ classdef ModelIO < handle
                                 switch modelIO.line2n
                                     case 'BarElement2d2n' %id, nodeArray, material, crossSectionArea)
                                         cProperties = modelIO.props(elementData(4));
-                                        nMaterial = cProperties.getValue('material');
                                         
                                         cElement = BarElement2d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
-                                            nodes(elementData(end))], ...
-                                            modelIO.materials(nMaterial), ...
-                                            cProperties.getValue('crossSectionArea'));
+                                            nodes(elementData(end))]);
+                                        cElement.setProperties(cProperties);
                                         
                                     case 'BarElement3d2n'
                                         cProperties = modelIO.props(elementData(4));
-                                        nMaterial = cProperties.getValue('material');
                                         
                                         cElement = BarElement3d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
-                                            nodes(elementData(end))], ...
-                                            modelIO.materials(nMaterial), ...
-                                            cProperties.getValue('crossSectionArea'));
+                                            nodes(elementData(end))]);
+                                        cElement.setProperties(cProperties);
                                         
                                     otherwise
                                         error('2-node element type %s not available',modelIO.line2n)
@@ -204,36 +198,6 @@ classdef ModelIO < handle
             end
         end
         
-        function readMaterials(modelIO)
-            fid = fopen(modelIO.inputFile);
-            tline = fgetl(fid);
-            
-            while ischar(tline)
-                if regexp(tline,'Material') == 2
-                    % generates the materials with the provided parameters; the place
-                    % in the materialData array is determined by the material id
-                    nMaterial = str2double(strsplit(tline));
-                    nMaterial = nMaterial(2);
-                    material = Material;
-                    
-                    tline = fgetl(fid);
-                    
-                    while ~strcmp(tline,'$EndMaterial')
-                        param = strsplit(tline);
-                        material.setValue(cell2mat(param(1)),str2double(param(2)));
-                        tline = fgetl(fid);
-                    end
-                    
-                    modelIO.materials(nMaterial) = material;
-                    
-                end
-                
-                
-                tline = fgetl(fid);
-            end
-            
-        end
-        
         function readProperties(modelIO)
             fid = fopen(modelIO.inputFile);
             tline = fgetl(fid);
@@ -251,7 +215,7 @@ classdef ModelIO < handle
                     
                     while ~strcmp(tline,'$EndProperties')
                         prop = strsplit(tline);
-                        property.setValue(cell2mat(prop(1)), str2double(prop(2)));
+                        property.addValue(cell2mat(prop(1)), str2double(prop(2)));
                         tline = fgetl(fid);
                     end
                     

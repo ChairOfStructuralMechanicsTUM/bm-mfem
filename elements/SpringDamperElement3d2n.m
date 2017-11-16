@@ -1,4 +1,4 @@
-classdef SpringDamperElement3d2n < Element
+classdef SpringDamperElement3d2n < LinearElement
     %SPRINGDAMPERELEMENT3D2N Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -8,31 +8,29 @@ classdef SpringDamperElement3d2n < Element
     
     methods
         % constructor
-        function springDamperElement = SpringDamperElement3d2n(id, nodeArray, properties)
+        function springDamperElement = SpringDamperElement3d2n(id, nodeArray)
+            
+            requiredPropertyNames = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
+            
             if nargin == 0
                 super_args = {};
-            elseif nargin == 3
-                super_args = {id; properties};
+            elseif nargin == 2
+                if ~(length(nodeArray) == 2 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
             
             % call the super class constructor
-            springDamperElement@Element(super_args{:});
+            springDamperElement@LinearElement(super_args{:});
             springDamperElement.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            springDamperElement.requiredProperties = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
-            springDamperElement.required3dProperties = [ ];
-            
-            % the constructor
-            if nargin > 0
-                if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
-                    springDamperElement.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
-                
-                springDamperElement.length0 = computeLength(springDamperElement.nodeArray(1).getCoords, ...
-                    springDamperElement.nodeArray(2).getCoords);
-            end
-            
+                        
+        end
+        
+        function initialize(element)
+            element.localSystem = element.computeLocalSystem();
+            element.length0 = computeLength(element.nodeArray(1).getCoords, ...
+                    element.nodeArray(2).getCoords);
         end
         
         function stiffnessMatrix = OLDcomputeLocalStiffnessMatrix(springDamperElement)
@@ -99,43 +97,28 @@ classdef SpringDamperElement3d2n < Element
                     springDamperElement.nodeArray(2).getCoords);
         end
         
-        function c = barycenter(springDamperElement)
-            nodes = springDamperElement.getNodes;
-            c = (nodes(1).getCoords + nodes(2).getCoords) ./ 2;
-        end
-        
-        function plot = draw(springDamperElement)
-            plot = line(springDamperElement.nodeArray.getX, springDamperElement.nodeArray.getY);
-        end
-        
-        function plot = drawDeformed(springDamperElement)
-            plot = line(springDamperElement.nodeArray.getX + ...
-                springDamperElement.nodeArray.getDofValue('DISPLACEMENT_X'), ...
-                springDamperElement.nodeArray.getY + ...
-                springDamperElement.nodeArray.getDofValue('DISPLACEMENT_Y'));
-        end
     end
     
     methods (Access = private)
        
-        function tMat = getTransformationMatrix(ele)
-            dirX = ele.nodeArray(2).getCoords - ele.nodeArray(1).getCoords;
-            dirX = dirX ./ norm(dirX);
-            
-            dirY = cross([0 0 1], dirX);
-            dirY = dirY ./ norm(dirY);
-            dirZ = cross(dirX, dirY);
-            dirZ = dirZ ./ norm(dirZ);
-            
-            T=zeros(3);         % the scalar product is applied implicitly here
-            T(1,:) = dirX;
-            T(2,:) = dirY;
-            T(3,:) = dirZ;
-           
-            tMat = zeros(6);
-            tMat(1:3,1:3) = T;
-            tMat(4:6,4:6) = T;
-        end
+%         function tMat = getTransformationMatrix(ele)
+%             dirX = ele.nodeArray(2).getCoords - ele.nodeArray(1).getCoords;
+%             dirX = dirX ./ norm(dirX);
+%             
+%             dirY = cross([0 0 1], dirX);
+%             dirY = dirY ./ norm(dirY);
+%             dirZ = cross(dirX, dirY);
+%             dirZ = dirZ ./ norm(dirZ);
+%             
+%             T=zeros(3);         % the scalar product is applied implicitly here
+%             T(1,:) = dirX;
+%             T(2,:) = dirY;
+%             T(3,:) = dirZ;
+%            
+%             tMat = zeros(6);
+%             tMat(1:3,1:3) = T;
+%             tMat(4:6,4:6) = T;
+%         end
         
     end
     

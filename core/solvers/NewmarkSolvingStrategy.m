@@ -83,8 +83,7 @@ classdef NewmarkSolvingStrategy < Solver
         
         function initialize(solver)
             solver.femModel.initialize;
-            solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
-                "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
+            solver.femModel.getAllNodes.addNewValue(["VELOCITY", "ACCELERATION"]);
             
             % assemble and reduce matrices
             [~, fixedDofs] = solver.femModel.getDofConstraints();

@@ -197,17 +197,17 @@ classdef EigensolverStrategy < Solver
             end
             
             %get the damping coefficients
-            if (eigensolver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_ALPHA')) ...
-                    && (eigensolver.femModel.getElement(1).getMaterial.hasValue('RAYLEIGH_BETA'))
-                eigensolver.rayleighAlpha = eigensolver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_ALPHA');
-                eigensolver.rayleighBeta = eigensolver.femModel.getElement(1).getMaterial.getValue('RAYLEIGH_BETA');
+            if (eigensolver.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_ALPHA')) ...
+                    && (eigensolver.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_BETA'))
+                eigensolver.rayleighAlpha = eigensolver.femModel.getElement(1).getProperties.getValue('RAYLEIGH_ALPHA');
+                eigensolver.rayleighBeta = eigensolver.femModel.getElement(1).getProperties.getValue('RAYLEIGH_BETA');
             else
                 eigensolver.rayleighAlpha = 0.0;
                 eigensolver.rayleighBeta = 0.0;
             end
             
-            if (eigensolver.femModel.getElement(1).getMaterial.hasValue('MODAL_DAMPING_RATIO'))
-                eigensolver.modalDampingRatio = eigensolver.femModel.getElement(1).getMaterial.getValue('MODAL_DAMPING_RATIO');
+            if (eigensolver.femModel.getElement(1).getProperties.hasValue('MODAL_DAMPING_RATIO'))
+                eigensolver.modalDampingRatio = eigensolver.femModel.getElement(1).getProperties.getValue('MODAL_DAMPING_RATIO');
             else
                 eigensolver.modalDampingRatio = 0.0;
             end
