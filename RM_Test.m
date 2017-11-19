@@ -15,9 +15,9 @@ nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
 
 ele = ReissnerMindlinElement3d4n(1,[node01 node02 node03 node04]);
 
-ele.setPropertyValue('THICKNESS', 1);
-ele.setPropertyValue('YOUNGS_MODULUS', 8000);
-ele.setPropertyValue('SHEAR_MODULUS', 4000);
-ele.setPropertyValue('POISSON_RATIO', 0.3);
+% ele.setPropertyValue('THICKNESS', 1);
+% ele.setPropertyValue('YOUNGS_MODULUS', 8000);
+% ele.setPropertyValue('SHEAR_MODULUS', 4000);
+% ele.setPropertyValue('POISSON_RATIO', 0.3);
 
 

@@ -9,42 +9,37 @@ classdef ReissnerMindlinElement3d4n < PlateElement
     methods
         % Constructor
         function reissnerMindlinElement3d4n = ReissnerMindlinElement3d4n(id,nodeArray)
+            
+            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "SHEAR_MODULUS", ...
+                                            "POISSON_RATIO", "THICKNESS"]); 
             % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
-            end
-            % call the super class contructor
-            
-            reissnerMindlinElement3d4n@PlateElement(super_args{:});
-
-            reissnerMindlinElement3d4n.dofNames = cellstr(['DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y']);
-            reissnerMindlinElement3d4n.requiredProperties = cellstr(["YOUNGS_MODULUS",...
-                            "SHEAR_MODULUS", "POISSON_RATIO", "THICKNESS", ...
-                            "NUM_ELEMENTS_X", "NUM_ELEMENTS_Y"]);
-            reissnerMindlinElement3d4n.required3dProperties = [ ];
-            
-            
-        
-            % the constructor
-            if nargin > 0
-           
-                if (length(nodeArray) == 4 && isa(nodeArray,'Node'))
-                    reissnerMindlinElement3d4n.nodeArray = nodeArray;
-                else
+                if ~(length(nodeArray) == 4 && isa(nodeArray,'Node'))
                     error('problem with the nodes in element %d', id);
                 end
-                % Initialize LengthX and LengthY
-                reissnerMindlinElement3d4n.lengthX = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                    reissnerMindlinElement3d4n.nodeArray(2).getCoords);
-                reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                    reissnerMindlinElement3d4n.nodeArray(4).getCoords);
-
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
+            
+            % call the super class contructor
+            reissnerMindlinElement3d4n@PlateElement(super_args{:});
+            reissnerMindlinElement3d4n.dofNames = cellstr(['DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y']);
         end
+        function initialize(element)
+            element.lengthX = computeLength(element.nodeArray(1).getCoords, ...
+                element.nodeArray(2).getCoords);
+            element.lengthY = computeLength(element.nodeArray(1).getCoords, ...
+                element.nodeArray(4).getCoords);
+            fprintf("element.lengthX", element.lengthX);
+            fprintf("element.lengthX", element.lengthY);
+        end
+                
+
+        
         
         % getter functions
+        
 %         function thickness = getThickness(reissnerMindlinElement3d4n)
 %             reissnerMindlinElement3d4n.thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
 %             
