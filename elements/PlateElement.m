@@ -10,11 +10,11 @@ classdef (Abstract) PlateElement < Element
     
     methods
         % Constructor
-        function plateElement = PlateElement(id)
+        function plateElement = PlateElement(id, nodeArray, requiredProperties)
             if nargin == 0
                 super_args = {};
-            elseif nargin == 1
-                super_args = {id};
+            elseif nargin == 3
+                super_args = {id, nodeArray, requiredProperties};
             end
             
             plateElement@Element(super_args{:});
@@ -49,7 +49,7 @@ classdef (Abstract) PlateElement < Element
             if  ~isempty(intersection)
                 disp("Geometry is convex!");
             else
-                disp("Geometry is not convex!");
+                error('problem with the element');
             end
         end
 
@@ -63,10 +63,5 @@ classdef (Abstract) PlateElement < Element
         end
 
     end
-    
-        
-        
-        
-    
-    
+
 end
