@@ -65,6 +65,22 @@ classdef ReissnerMindlinElement3d4n < PlateElement
 %             
 %            
 %         end
+
+        function responseDoF = getResponseDofArray(plateElement, step)
+            
+            responseDoF = zeros(12,1);
+            
+            for itNodes = 1:1:4
+                nodalDof = plateElement.nodeArray(itNodes).getDofArray;
+                nodalDof = nodalDof.';
+                
+                for itDof = 3:(-1):1
+                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
+                end
+            end
+            
+        end
+
         
         function computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
             syms xi eta;
