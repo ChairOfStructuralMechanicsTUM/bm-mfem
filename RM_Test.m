@@ -27,9 +27,10 @@ elementIds = elementArray.getId;
 
 model = FemModel(nodeArray,elementArray);
 
-assembling = SimpleAssembler(model);
-
-stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+% assembling = SimpleAssembler(model)
+[K, ~]=SimpleAssembler.assembleGlobalStiffnessMatrix(model);
+% 
+% stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 
 
 

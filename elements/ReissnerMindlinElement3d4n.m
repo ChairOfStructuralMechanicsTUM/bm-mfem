@@ -25,7 +25,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             % call the super class contructor
             reissnerMindlinElement3d4n@PlateElement(super_args{:});
-            reissnerMindlinElement3d4n.dofNames = cellstr(['DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y']);
+            reissnerMindlinElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
         end
         function initialize(element)
             element.lengthX = computeLength(element.nodeArray(1).getCoords, ...
@@ -36,35 +36,10 @@ classdef ReissnerMindlinElement3d4n < PlateElement
 
 %         getter functions
         
-        function getThickness(reissnerMindlinElement3d4n)
-            reissnerMindlinElement3d4n.thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-        end
-        
-%         function [N,dNdx, dNdy] = computeShapeFunction(reissnerMindlinElement3d4n, xi,eta)
-%             %Shape Functions and derivatives
-%             
-%             N = {@(xi,eta) (1-xi)*(1-eta)/4, @(xi,eta) (1+xi)*(1-eta)/4, @(xi,eta) (1+xi)*(1+eta)/4, @(xi,eta) (1-xi)*(1+eta)/4};
-%             dNdxi = {@(xi,eta) -(1-eta)/4,  @(xi,eta) (1-eta)/4, @(xi,eta) (1+eta)/4, @(xi,eta) -(1+eta)/4};
-%             dNdeta = {@(xi,eta) -(1-xi)/4, @(xi,eta) -(1+xi)/4, @(xi,eta) (1+xi)/4, @(xi,eta) (1-xi)/4 };
-%             
-%             coords = zeros(2,4);
-%             for i=1:4 
-%                 coords(1,i) = reissnerMindlinElement3d4n.nodeArray(i).getX;
-%                 coords(2,i) = reissnerMindlinElement3d4n.nodeArray(i).getY;
-%             end
-%             
-%             for i=1:4
-%             J{1,1} = @(xi,eta) dNdxi{i}*coords(1,i);
-%             J{1,2} = @(xi,eta) dNdxi{i}*coords(2,i);
-%             J{2,1} = @(xi,eta) dNdeta{i}*coords(1,i);
-%             J{2,2} = @(xi,eta) dNdeta{i}*coords(2,i);
-%             end
-%             
-%             dNdx = inv(J)*dNdxi;
-%             dNdy = inv(J)*dNdeta; 
-%             
-%            
+%         function getThickness(reissnerMindlinElement3d4n)
+%             reissnerMindlinElement3d4n.thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
 %         end
+
 
         function responseDoF = getResponseDofArray(plateElement, step)
             
@@ -82,7 +57,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
         end
 
         
-        function computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
+        function Ke = computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
             syms xi eta;
             N(1) = 1/4 * (1-xi) * (1-eta);
             N(2) = 1/4 * (1+xi) * (1-eta);
@@ -135,15 +110,18 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(2,2) = 1;
             D_b(3,3) = (1-poisson_ratio)/2;
             
-            K = (reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS') * ... 
-                 reissnerMindlinElement3d4n.thickness^3)/...
-                 (12*(1-poisson_ratio^2));
-             
-             
+            
+%             
 %             K = (reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS') * ... 
 %                  reissnerMindlinElement3d4n.getPropertyValue('THICKNESS')^3)/...
-%                  (1-reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO')^2);
-            D_b = D_b* K;
+%                  (12*(1-poisson_ratio^2));
+             
+             % K Matrix from Fellipa
+            K = (reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS') * ... 
+                 reissnerMindlinElement3d4n.getPropertyValue('THICKNESS')^3)/...
+                 (1-reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO')^2);
+             
+            D_b = D_b* K
 
             % constructing the bending B matrix: B_b
             
@@ -159,7 +137,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             alpha = 5/6;     % shear correction factor
             D_s = sym(eye(2));
             D_s = D_s * alpha*reissnerMindlinElement3d4n.getPropertyValue('SHEAR_MODULUS')*...
-                    reissnerMindlinElement3d4n.thickness;             
+                    reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');             
           
             % constructing the shear B matrix: B_s
            
@@ -177,11 +155,11 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                 for j=1:p
                     
                     Ke = Ke + eval(subs(BbT_Db_Bb,[xi,eta],[g(i),g(j)]) *w(i)*w(j));
-                    Ke = Ke + eval(subs(BsT_Ds_Bs,[xi,eta],[g(i),g(j)]) *w(i)*w(j));
+%                     Ke = Ke + eval(subs(BsT_Ds_Bs,[xi,eta],[g(i),g(j)]) *w(i)*w(j));
             
                 end
             end
-           
+           disp(Ke);
         end
         
 
