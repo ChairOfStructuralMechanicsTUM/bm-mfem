@@ -50,7 +50,7 @@ classdef Dof < handle
                 end
                 
             elseif nargin == 2
-                if step == 'end'
+                if strcmp(step, 'end')
                     step = length(dofs(1).value);
                 else
                     %check, if step exists

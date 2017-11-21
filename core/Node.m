@@ -9,7 +9,8 @@ classdef Node < handle & matlab.mixin.Copyable
         x
         y
         z
-        dofArray
+%         dofArray
+        dofMap
         nProperties
     end
     
@@ -33,13 +34,14 @@ classdef Node < handle & matlab.mixin.Copyable
                 otherwise
                     error('Wrong number of arguments')
             end
+            node.dofMap = containers.Map;
             node.nProperties = PropertyContainer();
         end
         
         
         % getter functions
         function id = getId(node)
-            % Return the id of the node
+            %GETID Return the id of the node
             id = zeros;
             for ii = 1:length(node)
                 id(ii) = node(ii).id;
@@ -47,7 +49,7 @@ classdef Node < handle & matlab.mixin.Copyable
         end
         
         function coords = getCoords(node)
-            % Return all coordinates in the form x, y(, z)
+            %GETCOORDS Return all coordinates in the form x, y(, z)
             coords = [node.x node.y node.z];
         end
         
@@ -73,46 +75,43 @@ classdef Node < handle & matlab.mixin.Copyable
         end
         
         function dofs = getDofArray(node)
-            dofs = node.dofArray;
+            dofs = node.dofMap.values;
+            dofs = [dofs{:}];
         end
         
-       
-        %setter functions
-        function setDofArray(node, dofs)
-            node.dofArray = dofs;
+        function dofs = getDofMap(node)
+            dofs = node.dofMap;
         end
-        
+
+        function dof = getDof(nodes, dofName)
+        %GETDOF get the dof with the specified name
+        % parameters: node, dofName
+            nNodes = length(nodes);
+            dof = Dof.empty;
+            for ii = 1:nNodes
+                dof(ii) = nodes(ii).dofMap(dofName);
+            end
+        end        
         
         % member functions
         function addDof(nodes, dofNames)
             for itNode = 1:length(nodes)
-                availableDofNames = arrayfun(@(dof) dof.getValueType, nodes(itNode).dofArray);
+                node = nodes(itNode);
+                availableDofNames = node.dofMap.keys;
                 for itDof = 1:length(dofNames)
-                    if ~ isempty(availableDofNames)
-                        if any(ismember(availableDofNames,dofNames))
-                            continue
-                        end
-                    end
-                    nodes(itNode).dofArray = [nodes(itNode).dofArray 
-                        Dof(nodes(itNode),0.0,dofNames{itDof})];
+                    name = dofNames{itDof};
+                   if ~ any(ismember(availableDofNames,name))
+                      newDof = Dof(node, 0.0, name);
+                      node.dofMap(name) = newDof;
+                   end
                 end
-%                 nodes(itNode).dofArray = nodes(itNode).dofArray';
-%                 test = nodes(itNode).dofArray;
             end
         end
         
-        function fixDof(nodes, dof)
+        function fixDof(nodes, dofName)
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(ndof) ndof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                if isempty(dofNames)
-                    error('no dofs defined for node %d', nodes(ii).getId)
-                end
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
-                index = find(~cellfun(@isempty,index));
-                if isempty(index)
-                    error('no dof %s found for node %d', dof, nodes(ii).getId);
-                end
-                nodes(ii).dofArray(index).fix;
+                dof = nodes(ii).dofMap(dofName);
+                dof.fix();
             end
         end
         
@@ -120,10 +119,8 @@ classdef Node < handle & matlab.mixin.Copyable
             %SETDOFVALUE set the value of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                index = strfind(dofNames,dofName,'ForceCellOutput',false);
-                index = find(~cellfun(@isempty,index));
-                nodes(ii).dofArray(index).setValue(load);
+                dof = nodes(ii).dofMap(dofName);
+                dof.setValue(load);
             end
         end
         
@@ -133,30 +130,37 @@ classdef Node < handle & matlab.mixin.Copyable
             %SETDOFLOAD set the load of a specific dof
             % parameters: dof, load
             for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                index = strfind(dofNames,dofName,'ForceCellOutput',false);
-                index = find(~cellfun(@isempty,index));
-                nodes(ii).dofArray(index).setLoad(load);
+                dof = nodes(ii).dofMap(dofName);
+                dof.setLoad(load);
             end
         end
         
         
         
-        function val = getDofValue(nodes, dof, varargin)
+        function val = getDofValue(nodes, dofName, varargin)
             numvarargs = length(varargin);
             optargs = { 1 };
             optargs(1:numvarargs) = varargin;
             step = optargs{:};
             
-            val = cell(length(nodes),1);
-            for ii = 1:length(nodes)
-                dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray,'UniformOutput',false);
-                index = strfind(dofNames,dof,'ForceCellOutput',false);
-                index = find(~cellfun(@isempty,index));
-                val{ii} = nodes(ii).dofArray(index).getValue(step);
-            end
+            nNodes = length(nodes);
             
-            val = cell2mat(val);
+            if strcmp(step,'all')
+                dof = nodes(1).dofMap(dofName);
+                tmp = dof.getValue(step);
+                val = zeros(nNodes, length(tmp));
+                val(1,:) = tmp;
+                for ii = 2:nNodes
+                    dof = nodes(ii).dofMap(dofName);
+                    val(ii,:) = dof.getValue(step);
+                end
+            else
+                val = zeros(nNodes,1);
+                for ii = 1:nNodes
+                    dof = nodes(ii).dofMap(dofName);
+                    val(ii) = dof.getValue(step);
+                end
+            end
         end
          
         
@@ -180,31 +184,25 @@ classdef Node < handle & matlab.mixin.Copyable
            end
         end
         
-        function val = getValue(nodes, valueName, step)            
+        function val = getValue(nodes, valueName, step)
+            nNodes = length(nodes);
+            type = checkPropertyName(valueName);
             if nargin == 2
-                for ii = 1:length(nodes)
-                    val = nodes(ii).nProperties.getValue(valueName);
+                if (strcmp(type,'variable3d'))
+                    error('Error: please specify a step to retrieve 3d values')
+                end
+%                 val = zeros(1,nNodes);
+                for ii = 1:nNodes
+                    val(ii,:) = nodes(ii).nProperties.getValue(valueName);
                 end
             elseif nargin == 3
-                 for ii = 1:length(nodes)
-                    val = nodes(ii).nProperties.getValue(valueName, step);
+%                 if (strcmp(type,'variable3d'))
+%                     val = zeros
+                 for ii = 1:nNodes
+                    val(ii,:) = nodes(ii).nProperties.getValue(valueName, step);
                 end
             end
-        end
-        
-%         function init = getInitialDofLoad(nodes, dof)
-%             init = zeros;
-%             for ii = 1:length(nodes)
-%                 dofNames = arrayfun(@(dof) dof.getValueType, nodes(ii).dofArray);
-%                 index = strfind(dofNames,dof,'ForceCellOutput',false);
-%                 index = find(~cellfun(@isempty,index));
-%                 val(ii) = nodes(ii).dofArray(index).getLoad;
-%             end
-%         end
-        
-        
-        
-        
+        end        
         
     end
     

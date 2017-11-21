@@ -73,7 +73,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
            dofs = Dof.empty;
            nodes = element.nodeArray;
            for ii = 1:length(nodes)
-              dofs = [dofs nodes(ii).getDofArray'];
+              dofs = [dofs nodes(ii).getDofArray];
            end
         end
         
