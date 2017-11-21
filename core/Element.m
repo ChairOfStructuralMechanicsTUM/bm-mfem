@@ -10,8 +10,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         dofNames
         eProperties
         requiredPropertyNames
-%         requiredProperties
-%         required3dProperties
     end
     
     methods
@@ -43,6 +41,8 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         barycenter(element)
         computeLocalStiffnessMatrix(element)
         computeLocalForceVector(element)
+        getDofList(element)
+        getValuesVector(element, step)
     end
     
     methods (Sealed)

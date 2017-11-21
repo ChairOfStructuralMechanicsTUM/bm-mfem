@@ -9,6 +9,9 @@ classdef Dof < handle
         valueType
         dofLoad
         fixed = false
+        
+        firstDerivativeValue
+        secondDerivativeValue
     end
     
     methods
@@ -21,6 +24,8 @@ classdef Dof < handle
                     error('invalid node')
                 end
                 dof.value = value;
+                dof.firstDerivativeValue = 0;
+                dof.secondDerivativeValue = 0;
                 dof.valueType = valueType;
                 dof.id = -1; %uninitialized               
             end
@@ -62,6 +67,48 @@ classdef Dof < handle
             end
         end
         
+        function [value, firstDerivativeValue, secondDerivativeValue] = getAllValues(dofs, step)
+            if (nargin == 1) || (strcmp(step, 'all'))
+                nsteps = length(dofs(1).value);
+                value = zeros(1,nsteps);
+                firstDerivativeValue = zeros(1,nsteps);
+                secondDerivativeValue = zeros(1,nsteps);
+                
+                for ii = 1:length(dofs)
+                    values = dofs(ii).value;
+                    if length(values) ~= nsteps
+                        error('the dof value array of dof %d has a length of %d rather than the expected %d', ...
+                            dofs(ii).getId, length(values), nsteps)
+                    end
+                    value(ii,:) = dofs(ii).value;
+                    firstDerivativeValue(ii,:) = dofs(ii).firstDerivativeValue;
+                    secondDerivativeValue(ii,:) = dofs(ii).secondDerivativeValue;
+                end
+                
+            elseif nargin == 2
+                if step == 'end'
+                    step = length(dofs(1).value);
+                else
+                    %check, if step exists
+                    try
+                        dofs(1).value(step);
+                    catch
+                        error('the specified step=%d does not exist for the dof', step)
+                    end
+                end
+                
+                value = zeros;
+                firstDerivativeValue = zeros;
+                secondDerivativeValue = zeros;
+                
+                for ii = 1:length(dofs)
+                    value(ii,:) = dofs(ii).value(step); 
+                    firstDerivativeValue(ii,:) = dofs(ii).firstDerivativeValue(step);
+                    secondDerivativeValue(ii,:) = dofs(ii).secondDerivativeValue(step);
+                end
+            end
+        end
+        
         
         function dofLoad = getDofLoad(dof)
             if isempty(dof.dofLoad)
@@ -96,10 +143,10 @@ classdef Dof < handle
         end
 
         function setValue(dofs, values, step)
-            %SETVALUE sets the value of the specified dof. If no step is
-            %provided, the most recent step value is overwritten by value.
-            %To append a new value, you can use DOF.APPENDVALUE
-            %See also DOF.APPENDVALUE
+        %SETVALUE sets the value of the specified dof. If no step is
+        %provided, the most recent step value is overwritten by value.
+        %To append a new value, you can use DOF.APPENDVALUE
+        %See also DOF.APPENDVALUE
             
             if length(dofs) ~= size(values,1)
                 error('the arrays of dofs and values are not of the same size')
@@ -116,16 +163,84 @@ classdef Dof < handle
             end
         end
         
+        function setFirstDerivativeValue(dofs, values, step)
+        %SETFIRSTDERIVATIVEVALUE sets the value of the first derivative of
+        %the specified dof.
+        %See also DOF.SETVALUE
+            
+            if length(dofs) ~= size(values,1)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            if nargin == 2
+                for ii = 1:length(dofs)
+                    dofs(ii).firstDerivativeValue(end) = values(ii);
+                end
+            elseif nargin == 3
+                for ii = 1:length(dofs)
+                   dofs(ii).firstDerivativeValue(step) = values(ii); 
+                end
+            end
+        end
+        
+        function setSecondDerivativeValue(dofs, values, step)
+        %SETSECONDDERIVATIVEVALUE sets the value of the second derivative of
+        %the specified dof.
+        %See also DOF.SETVALUE
+            
+            if length(dofs) ~= size(values,1)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            if nargin == 2
+                for ii = 1:length(dofs)
+                    dofs(ii).secondDerivativeValue(end) = values(ii);
+                end
+            elseif nargin == 3
+                for ii = 1:length(dofs)
+                   dofs(ii).secondDerivativeValue(step) = values(ii); 
+                end
+            end
+        end
+        
         function appendValue(dofs, values)
-            %APPENDVALUE appends the given values to the value array of the
-            %dofs. No old step values are overwritten.
-            %See also DOF.SETVALUE
+        %APPENDVALUE appends the given values to the value array of the
+        %dofs. No old step values are overwritten.
+        %See also DOF.SETVALUE
             if length(dofs) ~= length(values)
                 error('the arrays of dofs and values are not of the same size')
             end
             
             for ii = 1:length(dofs)
                dofs(ii).value(end+1) = values(ii); 
+            end
+        end
+        
+        function appendFirstDerivativeValue(dofs, values)
+        %APPENDFIRSTDERIVATIVEVALUE appends the given values to the array 
+        %of the first derivative values of the dofs. No old step values are 
+        %overwritten.
+        %See also DOF.SETVALUE
+            if length(dofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            for ii = 1:length(dofs)
+               dofs(ii).firstDerivativeValue(end+1) = values(ii); 
+            end
+        end
+        
+        function appendSecondDerivativeValue(dofs, values)
+        %APPENDSECONDDERIVATIVEVALUE appends the given values to the array 
+        %of the second derivative values of the dofs. No old step values are 
+        %overwritten.
+        %See also DOF.SETVALUE
+            if length(dofs) ~= length(values)
+                error('the arrays of dofs and values are not of the same size')
+            end
+            
+            for ii = 1:length(dofs)
+               dofs(ii).secondDerivativeValue(end+1) = values(ii); 
             end
         end
         
