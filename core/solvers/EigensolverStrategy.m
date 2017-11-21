@@ -28,7 +28,10 @@ classdef EigensolverStrategy < Solver
                 eigensolver.femModel = femModel;
                 eigensolver.assembler = SimpleAssembler(femModel);
                 eigensolver.isInitialized = false;
+            else
+                error("Error (EigensolverStratey): no fem model defined!")
             end
+            
         end
         
         function solve(eigensolver, nModes)
@@ -181,6 +184,9 @@ classdef EigensolverStrategy < Solver
         end
         
         function initialize(eigensolver)
+            if ~ eigensolver.femModel.isInitialized()
+                eigensolver.femModel.initialize;
+            end
             eigensolver.femModel.initialize;
             
             % assemble and reduce matrices
