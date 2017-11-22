@@ -25,20 +25,17 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             % call the super class contructor
             reissnerMindlinElement3d4n@PlateElement(super_args{:});
-            reissnerMindlinElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
+            reissnerMindlinElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", ...
+                                                "ROTATION_X", "ROTATION_Y"]);
         end
         function initialize(element)
             element.lengthX = computeLength(element.nodeArray(1).getCoords, ...
                 element.nodeArray(2).getCoords);
             element.lengthY = computeLength(element.nodeArray(1).getCoords, ...
                 element.nodeArray(4).getCoords);
+            element.thickness = element.getPropertyValue('THICKNESS');
         end
 
-%         getter functions
-        
-%         function getThickness(reissnerMindlinElement3d4n)
-%             reissnerMindlinElement3d4n.thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-%         end
 
 
         function responseDoF = getResponseDofArray(plateElement, step)
@@ -69,6 +66,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                 coords(1,i) = reissnerMindlinElement3d4n.nodeArray(i).getX;
                 coords(2,i) = reissnerMindlinElement3d4n.nodeArray(i).getY;
             end
+            
+            fprintf("THICKNESS: %f", reissnerMindlinElement3d4n.thickness);
             
             x = 0; y = 0;
             for i=1:4
