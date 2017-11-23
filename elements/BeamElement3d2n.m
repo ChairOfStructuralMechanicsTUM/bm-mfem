@@ -11,7 +11,8 @@ classdef BeamElement3d2n < LinearElement
         function beamElement = BeamElement3d2n(id, nodeArray)
             
             requiredPropertyNames = cellstr(["IY", "IZ", "IT", ...
-                "YOUNGS_MODULUS", "SHEAR_MODULUS", "CROSS_SECTION"]);
+                "YOUNGS_MODULUS", "SHEAR_MODULUS", "CROSS_SECTION", ...
+                "DENSITY"]);
             
             if nargin == 0
                 super_args = {};
@@ -99,11 +100,81 @@ classdef BeamElement3d2n < LinearElement
         end
         
         function massMatrix = computeLocalMassMatrix(element)
-            massMatrix = zeros(12);
+            A = element.getPropertyValue('CROSS_SECTION');
+            L = element.length0;
+            L2 = L*L;
+            rho = element.getPropertyValue('DENSITY');
+            m = A * L * rho;
+            Iy = element.getPropertyValue('IY');
+            Iz = element.getPropertyValue('IZ');
+            It = element.getPropertyValue('IT');
+            
+            massMatrix = sparse(12,12);
+            massMatrix(1,1) = m/3;
+            massMatrix(7,7) = massMatrix(1,1);
+            massMatrix(1,7) = m/6;
+            massMatrix(7,1) = massMatrix(1,7);
+            massMatrix(2,2) = m * (13/35 + 6*Iz/(5*A*L2));
+            massMatrix(2,6) = m * (11*L/210 + Iz/(10*A*L));
+            massMatrix(6,2) = massMatrix(2,6);
+            massMatrix(2,8) = m * (9/70 - 6*Iz/(5*A*L2));
+            massMatrix(8,2) = massMatrix(2,8);
+            massMatrix(2,12) = m * (-13*L/420 + Iz/(10*A*L));
+            massMatrix(12,2) = massMatrix(2,12);
+            massMatrix(3,3) = m * (13/35 + 6*Iy/(5*A*L2));
+            massMatrix(3,5) = m * (- 11*L/210 - Iy/(10*A*L));
+            massMatrix(5,3) = massMatrix(3,5);
+            massMatrix(3,9) = m * (9/70 - 6*Iy/(5*A*L2));
+            massMatrix(9,3) = massMatrix(3,9);
+            massMatrix(3,11) = m * (13*L/420 - Iy/(10*A*L));
+            massMatrix(11,3) = massMatrix(3,11);
+            massMatrix(4,4) = m * (It/(3*A));
+            massMatrix(10,10) = massMatrix(4,4);
+            massMatrix(4,10) = massMatrix(4,4) / 2;
+            massMatrix(10,4) = massMatrix(4,10);
+            massMatrix(5,5) = m * (L2/105 + 2*Iy/(15*A));
+            massMatrix(5,9) = m * (-13*L/420 + Iy/(10*A*L));
+            massMatrix(9,5) = massMatrix(5,9);
+            massMatrix(5,11) = m * (-L2/140 - Iy/(30*A));
+            massMatrix(11,5) = massMatrix(5,11);
+            massMatrix(6,6) = m * (L2/105 + 2*Iz/(15*A));
+            massMatrix(6,8) = m * (13*L/420 - Iz/(10*A*L));
+            massMatrix(8,6) = massMatrix(6,8);
+            massMatrix(6,12) = m * (-L2/140 - Iz/(30*A));
+            massMatrix(12,6) = massMatrix(6,12);
+            massMatrix(8,8) = massMatrix(2,2);
+            massMatrix(8,12) = - massMatrix(2,6);
+            massMatrix(12,8) = massMatrix(8,12);
+            massMatrix(9,9) = massMatrix(3,3);
+            massMatrix(9,11) = - massMatrix(3,5);
+            massMatrix(11,9) = massMatrix(9,11);
+            massMatrix(11,11) = massMatrix(5,5);
+            massMatrix(12,12) = massMatrix(6,6);
+            
+            tMat = element.getTransformationMatrix;
+            massMatrix = tMat' * massMatrix * tMat;
+            
+            %simple lumping
+%             lMass = 0.5 * A * L * rho;
+%             massMatrix = sparse(12,12);
+%             
+%             massMatrix(1,1) = lMass;
+%             massMatrix(2,2) = lMass;
+%             massMatrix(3,3) = lMass;
+%             massMatrix(7,7) = lMass;
+%             massMatrix(8,8) = lMass;
+%             massMatrix(9,9) = lMass;
         end
         
         function dampingMatrix = computeLocalDampingMatrix(element)
-            dampingMatrix = zeros(12);
+            eProperties = element.getProperties;
+            if (eProperties.hasValue('RAYLEIGH_ALPHA')) ...
+                    && (eProperties.hasValue('RAYLEIGH_BETA'))
+                dampingMatrix = ePropertes.getValue('RAYLEIGH_ALPHA') * element.computeMassMatrix ...
+                    + ePropertes.getValue('RAYLEIGH_BETA') * element.computeStiffnessMatrix;
+            else
+                dampingMatrix = sparse(12,12);
+            end
 %            damping = element.getPropertyValue('ELEMENTAL_DAMPING');
 %            dampingMatrix = zeros(6);
 %            dampingMatrix(1,1) = damping;
@@ -116,24 +187,55 @@ classdef BeamElement3d2n < LinearElement
         end
         
         function forceVector = computeLocalForceVector(element)
-           forceVector = zeros(1,12);
-%            stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
-%            nodes = element.getNodes;
-%            
-%            tMat = element.getTransformationMatrix;
-%            
-%            disp = zeros(1,3);
-%            disp(1) = nodes(2).getDofValue('DISPLACEMENT_X','end') - nodes(1).getDofValue('DISPLACEMENT_X','end');
-%            disp(2) = nodes(2).getDofValue('DISPLACEMENT_Y','end') - nodes(1).getDofValue('DISPLACEMENT_Y','end');
-%            disp(3) = nodes(2).getDofValue('DISPLACEMENT_Z','end') - nodes(1).getDofValue('DISPLACEMENT_Z','end');
-%            localDisp = tMat(1:3,1:3)' * disp';
-%            
-%            forceVector(1) = - stiffness * localDisp(1);
-%            forceVector(4) = stiffness * localDisp(1);
-%            
-%            forceVector = tMat' * forceVector';
-%            forceVector = forceVector';
-        end   
+           forceVector = sparse(1,12);
+           
+        end
+        
+        function dofs = getDofList(element)
+            dofs([1 7]) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 8]) = element.nodeArray.getDof('DISPLACEMENT_Y'); 
+            dofs([3 9]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+            
+            dofs([4 10]) = element.nodeArray.getDof('ROTATION_X');
+            dofs([5 11]) = element.nodeArray.getDof('ROTATION_Y'); 
+            dofs([6 12]) = element.nodeArray.getDof('ROTATION_Z');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,12);
+            
+            vals([1 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 9]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            
+            vals([4 10]) = element.nodeArray.getDofValue('ROTATION_X',step);
+            vals([5 11]) = element.nodeArray.getDofValue('ROTATION_Y',step);
+            vals([6 12]) = element.nodeArray.getDofValue('ROTATION_Z',step);
+        end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,12);
+            
+            [~, vals([1 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 8]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3 9]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            
+            [~, vals([4 10]), ~] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, vals([5 11]), ~] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, vals([6 12]), ~] = element.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,12);            
+            
+            [~, ~, vals([1 7])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 8])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3 9])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            
+            [~, ~, vals([4 10])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, ~, vals([5 11])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, ~, vals([6 12])] = element.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+        end
         
         function update(springDamperElement)
             springDamperElement.length0 = computeLength(springDamperElement.nodeArray(1).getCoords, ...
