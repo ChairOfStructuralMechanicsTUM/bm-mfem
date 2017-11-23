@@ -1,6 +1,7 @@
 clear;
 clc;
 
+%create Nodes
 node01 = Node(1,0,0,0);
 node02 = Node(2,0,10,0);
 node03 = Node(3,0,20,0);
@@ -36,6 +37,7 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08...
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
 
+%create Elements
 ele01 = BarElement3d2n(1,[node01 node02], mat, 2);
 ele02 = BarElement3d2n(2,[node01 node06], mat, 2);
 ele03 = BarElement3d2n(3,[node01 node07], mat, 2);
@@ -113,25 +115,33 @@ addPointLoad([node03, node07, node12, node13],10,[1 -1 0]);
 addPointLoad([node04],10,[1 -1 0]);
 addPointLoad([node20, node22, node23],10,[1 -1 0]);
 
-%set IdTracker
+%set IdTracker with current max NodeId and ElementId
 idt = IdTracker(max(nodeArray.getId), max(elementArray.getId));
 
 %create FemModel
 modelNine = FemModel(nodeArray, elementArray);
+
 %solve FEM
 u = SimpleSolvingStrategy.solve(modelNine);
-%Order displacements
-[displacements1, displacementsIntf1] = orderDisplacements(modelNine);
-%Output of displacements
-displacements1
 
-%Substructure 
-%eleIntf = elements at interface 
+%Order displacements
+[displacements1, displacementsIntf1] = orderDisplacements(model);
+%Output of displacements
+displacements1;
+
+%Substructure: divide structure into multiple substructures by iteratively
+%diving the given structure into two parts
+%Function divide performs substructuring. It needs elements along which one
+%wants to substructure (eleIntf) and the current IdTracker (idt).
+
+%first elements along which one wants to substructure are collected by Id
 eleIntf = [ele30, ele33, ele36, ele39]; 
+
+%call to substructure
 [substructure01, substructure02] = modelNine.divide(eleIntf,idt);
 
 
-%find new bar element with id 7 and 21
+%find other bar elements with certain Ids
 elements = substructure01.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -142,7 +152,7 @@ end
 
 [substructure03, substructure04] = substructure01.divide(eleIntf, idt);
 
-%find new bar element with id 34 and 47
+%find other bar elements with certain Ids
 elements = substructure02.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -153,45 +163,13 @@ end
 
 [substructure05, substructure06] = substructure02.divide(eleIntf, idt);
 
+%gather all final substructures in a matrix (substructures)
 substructures = [substructure03 substructure04 substructure05 substructure06];
-%solve individual models using FETI
+
+%solve FETI
 u = SimpleSolvingStrategy.solve(substructures);
 
-% Order displacements
+%Order displacements
 [displacements, displacementsIntf] = orderDisplacements(substructures);
-displacements
-displacementsIntf;
-
-% %Visualize Substructures
-% substructure01 = Visualization(substructure01);
-% substructure02 = Visualization(substructure02);
-% substructure03 = Visualization(substructure03);
-% substructure04 = Visualization(substructure04);
-% substructure05 = Visualization(substructure05);
-% substructure06 = Visualization(substructure06);
-% originalSystem = Visualization(modelNine);
-% 
-% figure
-% plotUndeformed(substructure01);
-% figure
-% plotUndeformed(substructure02);
-% figure
-% plotUndeformed(substructure03);
-% plotDeformed(substructure03);
-% figure
-% plotUndeformed(substructure04);
-% plotDeformed(substructure04);
-% figure
-% plotUndeformed(substructure05);
-% plotDeformed(substructure05);
-% figure
-% plotUndeformed(substructure06);
-% plotDeformed(substructure06);
-% figure
-% plotUndeformed(originalSystem);
-% plotDeformed(originalSystem);
-
-
-
-
-
+%Output of displacements
+displacements;

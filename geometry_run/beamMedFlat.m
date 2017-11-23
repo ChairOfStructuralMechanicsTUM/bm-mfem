@@ -1,6 +1,8 @@
 clear;
 clc;
-io = ModelIO('geometry_msh_files/beamMedWide.msh');
+
+%import gmsh model from directory
+io = ModelIO('C:\users\Frederik Schaal\Desktop\Bachelorarbeit\Matlab Code\geometry_msh_files\beamMedWide.msh');
 model = io.readModel;
 
 %boundary conditions
@@ -11,7 +13,7 @@ nodeArray(1).fixDof('DISPLACEMENT_Y');
 nodeArray(14).fixDof('DISPLACEMENT_Y');
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
-%Point Loads
+%Point Loads, select points with loads by Id
 %vertical loads
 pointsVer = [7 15 29 43 57 71 85];
 %horizontal loads
@@ -24,17 +26,23 @@ for ii = 1:length(pointsHor)
     addPointLoad(nodeArray(pointsHor(ii)),1,[1 0 0]);
 end
 
-%set IdTracker
+%set IdTracker with current max NodeId and ElementId
 idt = IdTracker(max(nodeArray.getId), max(elementArray.getId));
 
 %solve FEM
 u = SimpleSolvingStrategy.solve(model);
+
+%Order displacements
 [displacements1, displacementsIntf1] = orderDisplacements(model);
-displacements1
+%Output of displacements
+displacements1;
 
+%Substructure: divide structure into multiple substructures by iteratively
+%diving the given structure into two parts
+%Function divide performs substructuring. It needs elements along which one
+%wants to substructure (eleIntf) and the current IdTracker (idt).
 
-%Substructure 
-% eleIntf = elements at interface 
+%first elements along which one wants to substructure are collected by Id
 elements = model.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -44,10 +52,12 @@ for ii = 1:length(elements)
         eleIntf = [eleIntf elements(ii)];
     end
 end
+
+%call to substructure
 [substructure01, substructure02] = model.divide(eleIntf,idt);
 
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure02.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -60,7 +70,7 @@ end
 
 [substructure03, substructure04] = substructure02.divide(eleIntf,idt);
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure01.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -71,8 +81,8 @@ for ii = 1:length(elements)
 end
 
 [substructure05, substructure06] = substructure01.divide(eleIntf, idt);
-% 
-%find new bar element with certain Ids
+
+%find other bar elements with certain Ids
 elements = substructure06.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -84,7 +94,7 @@ end
 
 [substructure07, substructure08] = substructure06.divide(eleIntf, idt);
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure03.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -96,7 +106,7 @@ end
 
 [substructure09, substructure10] = substructure03.divide(eleIntf, idt);
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure10.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -108,7 +118,7 @@ end
 
 [substructure11, substructure12] = substructure10.divide(eleIntf, idt);
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure04.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -120,7 +130,7 @@ end
 
 [substructure13, substructure14] = substructure04.divide(eleIntf, idt);
 
-%find new bar element with certain Ids
+%find other bar elements with certain Ids
 elements = substructure14.getAllElements;
 eleIntf = [];
 for ii = 1:length(elements)
@@ -132,53 +142,15 @@ end
 
 [substructure15, substructure16] = substructure14.divide(eleIntf, idt);
 
+%gather all final substructures in a matrix (substructures)
 substructures = [substructure05 substructure07 substructure08 ...
                     substructure09 substructure11 substructure12 ...
                     substructure13 substructure15 substructure16];
-% %solve individual models using FETI
-%substructures = [substructure01 substructure02];
+
+%solve FETI                
 u = SimpleSolvingStrategy.solve(substructures);
 
 %Order displacements
 [displacements, displacementsIntf] = orderDisplacements(substructures);
-displacements
-
-%Plots
-% v = Visualization(model);
-% substructure01 = Visualization(substructure01);
-% substructure02 = Visualization(substructure02);
-% substructure03 = Visualization(substructure03);
-% substructure04 = Visualization(substructure04);
-% substructure05 = Visualization(substructure05);
-% substructure06 = Visualization(substructure06);
-% substructure07 = Visualization(substructure07);
-% substructure08 = Visualization(substructure08);
-% substructure09 = Visualization(substructure09);
-% substructure10 = Visualization(substructure10);
-
-% figure
-% plotUndeformed(v);
-% figure
-% plotUndeformed(substructure01);
-% figure
-% plotUndeformed(substructure02);
-% figure
-% plotUndeformed(substructure03);
-% % plotDeformed(substructure03);
-% figure
-% plotUndeformed(substructure04);
-% % plotDeformed(substructure04);
-% figure
-% plotUndeformed(substructure05);
-% % plotDeformed(substructure05);
-% figure
-% plotUndeformed(substructure06);
-% % plotDeformed(substructure06);
-% figure
-% plotUndeformed(substructure07);
-% figure
-% plotUndeformed(substructure08);
-% figure
-% plotUndeformed(substructure09);
-% figure
-% plotUndeformed(substructure10);
+%Output of displacements
+displacements;

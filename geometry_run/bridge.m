@@ -1,6 +1,7 @@
 clear;
 clc;
 
+%create Nodes
 node01 = Node(1,0,0,0);
 node02 = Node(2,10,5,0);
 node03 = Node(3,10,0,0);
@@ -20,6 +21,7 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
 mat = Material('test');
 mat.addParameter('YOUNGS_MODULUS', 1000);
 
+%create Elements
 ele01 = BarElement3d2n(1,[node01 node03], mat, 2);
 ele02 = BarElement3d2n(2,[node03 node05], mat, 2);
 ele03 = BarElement3d2n(3,[node05 node07], mat, 2);
@@ -46,58 +48,49 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
     ele10 ele11 ele12 ele13 ele14 ele15 ele16 ele17 ele18 ele19 ...
     ele20 ele21];
 
+%boundary conditions
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');
 node03.fixDof('DISPLACEMENT_Y');
-
 arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), nodeArray);
 
+%Point Loads
 addPointLoad([node05 node02],10,[1 -1 0]);
 addPointLoad([node09 node11],12,[1 -1 0]);
 addPointLoad([node06],10,[1 -1 0]);
 
-%set IdTracker
+%set IdTracker with current max NodeId and ElementId
 idt = IdTracker(max(nodeArray.getId), max(elementArray.getId));
 
+%create FemModel
 model = FemModel(nodeArray, elementArray);
 
-%solve original model using FEM
+%solve FEM
 u = SimpleSolvingStrategy.solve(model);
+
 %Order displacements
 [displacements1, displacementsIntf1] = orderDisplacements(model);
 %Output of displacements
-displacements1
+displacements1;
 
-%Substructure 
-%eleintf = elements at interface
+%Substructure: divide structure into multiple substructures by iteratively
+%diving the given structure into two parts
+%Function divide performs substructuring. It needs elements along which one
+%wants to substructure (eleIntf) and the current IdTracker (idt).
+
+%first elements along which one wants to substructure are collected by Id
 eleintf = [ele15];
+
+%call to substructure
 [substructure01, substructure02] = model.divide(eleintf,idt);
 
-%solve individual models using FETI
+%gather all final substructures in a matrix (substructures)
 substructures = [substructure01, substructure02];
+
+%solve FETI
 u = SimpleSolvingStrategy.solve(substructures);
 
 %Order displacements
 [displacements, displacementsIntf] = orderDisplacements(substructures);
 %Output of displacements
-displacements
-
-
-%Visualize Substructures
-% substructure01V = Visualization(substructure01);
-% substructure02V = Visualization(substructure02);
-
-
-% figure
-% plotUndeformed(substructure01V);
-% plotDeformed(substructure01V);
-% 
-% figure
-% plotUndeformed(substructure02V);
-% plotDeformed(substructure02V);
-
-originalSystem = Visualization(model);
-figure
-plotUndeformed(originalSystem);
-% plotDeformed(originalSystem);
-
+displacements;
