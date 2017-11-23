@@ -69,13 +69,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
-        function dofs = getDofs(element)
-           dofs = Dof.empty;
-           nodes = element.nodeArray;
-           for ii = 1:length(nodes)
-              dofs = [dofs nodes(ii).getDofArray];
-           end
-        end
+%         function dofs = getDofs(element)
+%            dofs = Dof.empty;
+%            nodes = element.nodeArray;
+%            for ii = 1:length(nodes)
+%               dofs = [dofs nodes(ii).getDofArray];
+%            end
+%         end
         
         function setProperties(elements, props)
             for ii = 1:length(elements)
