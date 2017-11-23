@@ -35,16 +35,18 @@ classdef SimpleAssembler < Assembler
             nNodalDofs = nDofs / length(femModel.getAllNodes);
             stiffnessMatrix = zeros(nDofs);
             
-            %nodes in substructures should always be in increasing order,
-            %there is a test implemented to check
+            %nodes in substructures always need to be in increasing order,
+            %here is a test implemented to check
             nodes = femModel.getAllNodes;
             for ii = 1:(length(nodes)-1)
                 if nodes(ii+1).getId - nodes(ii).getId ~= 1
-                    disp('Error with the node order in SimpleAssembler')
+                    disp('Error with the node order in SimpleAssembler,' ...
+                            'not correctly increasing.');
                 end
             end
             
-            %find smallest nodeId
+            %find smallest nodeId and subtract 1: this helps to number the
+            %dofs in each substructure beginning from one. 
             mini = min(nodes.getId) - 1;
             
             for itEle = 1:length(femModel.getAllElements)
@@ -57,11 +59,9 @@ classdef SimpleAssembler < Assembler
                     currentNode = nodes(itNode);
                     globalDofArray = zeros(1,nNodalDofs);
                     
-                    %%%CHANGED: The minimum nodeId in each structure is
-                    %always substracted from the current nodeId. This is
-                    %necessary to let the nodeIds start from 1 in
-                    %structure, which has a smallest nodeId of e.g. 20 due
-                    %to substructuring.
+                    %The value of "mini" is always subtracted from the
+                    %current nodeId. This is needed to let the dofs
+                    %start from 1 in each substructure. 
                     globalDofArray(nNodalDofs) = nNodalDofs * ...
                         (currentNode.getId-mini);
                    
