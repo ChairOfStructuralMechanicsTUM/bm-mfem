@@ -130,20 +130,25 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
-        %%% Start NEW
-        
-        %function to find elements which need to be copied for
-        %substructuring. nodeIntf: nodes at Interface, nodes02: all nodes
-        %in 2. substructure, totalElementArray: all elements
+        %find elements to copy from nodes
         function elementsToCopy = elementsForCopy(nodeIntf, nodes02, totalElementArray)
+            %function to find elements which need to be copied for
+            %substructuring. nodeIntf: nodes at Interface, nodes02: all nodes
+            %in 2. substructure, totalElementArray: all elements
+            
                 nodes = [nodeIntf, nodes02];
                 elementsToCopy = [];
+                
+                %iterate over all nodes at interface
                 for kk = 1:length(nodeIntf)
+                    %iterate over all nodes (2. substructure + interface)
                     for jj = 1:length(nodes)
                         if kk ~= jj
                             %all combinations of interface and other nodes
                             %to find elements for copy
                             nodePair = [nodeIntf(kk) nodes(jj)];
+                            %Find elements that are at the interface and
+                            %need to be copied. Filter out duplicates.
                             elementsToCopy = unique([elementsToCopy ... 
                                 findElements(nodePair, totalElementArray)], 'stable');   
                         end
@@ -151,17 +156,23 @@ classdef Node < handle & matlab.mixin.Copyable
                 end     
         end
         
-        %function sorting nodes in an array by their id
+        %sort nodes
         function nodeIntf = sortNodes(nodeIntfNoSort)
+            %function sorting nodes in an array by their id
             
             nodeIntf = [];
+            %iterate over unsorted nodes
             for ii = 1:length(nodeIntfNoSort)
+                %find smallest node of "old" unsorted array
                 mini = min(nodeIntfNoSort.getId);
                 ll = length(nodeIntfNoSort);
                 jj = 1;
                 while jj <= ll
                     if nodeIntfNoSort(jj).getId == mini
+                        %add smallest node to sorted array
                         nodeIntf = [nodeIntf nodeIntfNoSort(jj)];
+                        %delete smallest node, now the smallest node in the
+                        %unsorted array is the second smallest from before
                         nodeIntfNoSort(jj) = [];
                         ll = ll-1;
                         jj = jj-1;
@@ -170,25 +181,30 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
         end
-        
-       
-        %function to half point loads at the interface. this implies that 
-        %half the point load is at substructer01 the other at substructer02        
+               
         function halfPointLoads(nodes)
+            %Function to half point loads at the interface. This implies that 
+            %half the point load is at substructer01 the other at substructer02
+            
+            %find loads for each node
             for ii = 1:length(nodes)
                 dofs = nodes(ii).getDofArray;
                 for kk = 1:length(dofs)
                     loads(kk) = dofs(kk).getDofLoad;
                 end
                 temp = abs(loads);
-                %smallest non-zero load
+                
+                %smallest non-zero load at a node
                 val = min(temp(temp>0));
                 direction = zeros(1,length(loads));
                 
                 if (~isempty(find(loads)))
+                    %Set new directions for loads. The directions imply the
+                    %magnitude of each loads as well.
                     for jj = 1:length(loads)
                         direction(jj) = loads(jj)/val;
                     end
+                    
                     %multiply with norm of direction because later in
                     %addPointLoad it is devided by this value
                     addPointLoad(nodes(ii), norm(direction)*0.5*val, direction);
@@ -196,10 +212,13 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
 
-
-        %function that finds elements from nodes
+        %find element from node
         function  elements = findElements(nodeArray, allElements)
+            %function that finds elements from nodes. nodeArray: are the
+            %nodes for which the elements needs to be found
+            
             elements = [];
+            %iterate over nodes twice and try to find node Pairs
             for jj = 1:length(nodeArray)
                 for kk = 1:length(nodeArray) 
                     if kk == jj
@@ -216,15 +235,18 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
-        %function that orders nodes into left and right part relativ to the
-        %interface
+        %split nodes in x-direction
         function [nodesLeft, nodesRight] = splitNodesX(nodeIntf, totalNodeArray, idt)
-            %interfaceNode furthest to right
+            %function that orders nodes into left and right part relativ to the
+            %interface. interfaceNode is node furthest to right
+            
+            %node furthest to the right
             maxX = max(nodeIntf.getX());
             
             nodesLeft = [];
             nodesRight = [];
             
+            %iterate over all nodes
             for ii = 1:length(totalNodeArray)
                 %see whether one node is more to right than interface
                 if maxX >= totalNodeArray(ii).getX()
@@ -236,14 +258,18 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
 
+            %copy the nodes on the interface
             cp = copyElement(nodeIntf, idt);
+            %add the copied interface nodes to the right half
             nodesRight = [nodesRight, cp];
         end
         
-        %function that orders the nodes in upper and lower part relative to
-        %interface
+        %split nodes in y-direction
         function [nodesDown, nodesUp] = splitNodesY(nodeIntf, totalNodeArray, idt)
-            %interface Node furthest up
+            %function that orders the nodes in upper and lower part relative to
+            %interface. Interface Node is node furthest up.
+            
+            %node furthest up
             maxY = max(nodeIntf.getY());
             
             nodesUp = [];
@@ -260,31 +286,39 @@ classdef Node < handle & matlab.mixin.Copyable
                 end
             end
             
+            %copy the nodes on the interface
             cp = copyElement(nodeIntf, idt);
+            %add the copied interface nodes to the right half
             nodesUp = [nodesUp, cp];
         end
         
-        %function that orders the elements in a right and a left half
-        %relative to the interface
+        %split elements in x-direction
         function [elementsLeft, elementsRight] = splitElementsX(nodesLeft, nodesRight, totalElementArray)
+            %function that orders the elements in a right and a left half
+            %relative to the interface
+            
             %all elements left or at interface
             elementsLeft = unique(findElements(nodesLeft, totalElementArray));
             %all elements right of interface
             elementsRight = unique(findElements(nodesRight, totalElementArray));
         end
         
-        %function that orders the elements in an upper and a lower half
-        %relative to the interface
+        %split elements in y-direction
         function [elementsUp, elementsDown] = splitElementsY(nodesUp, nodesDown, totalElementArray)
+            %function that orders the elements in an upper and a lower half
+            %relative to the interface
+            
             %all elements left or at interface
             elementsUp = unique(findElements(nodesUp, totalElementArray));
             %all elements right of interface
             elementsDown = unique(findElements(nodesDown, totalElementArray));
         end
         
-        %adds loads from boundary conditions to new nodes which are a
-        %copy of an old interface node, and set up dofArray
+        %update loads in copied nodes
         function setDof(obj, cp)
+            %adds loads from boundary conditions to new nodes which are a
+            %copy of an old interface node, and set up dofArray
+            
             dofs = getDofArray(obj);
             %find dofValues/Type/Load of old node which is copied
             for ii = 1:length(dofs)
@@ -293,9 +327,8 @@ classdef Node < handle & matlab.mixin.Copyable
                 type(ii) = dofs(ii).getValueType;
                 fixed(ii) = dofs(ii).isFixed;
             end
-            %obj.getId
-            %load
-            %set dofValue/Type of new node
+
+            %set dofValue/Type of new node and distinguish 2D, 3D case
             if length(dofs) == 2
                 newDofs = [Dof(cp,value(1),type(1)) Dof(cp,value(2),type(2))];
                 setDofArray(cp, newDofs);
@@ -304,6 +337,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 setDofArray(cp, newDofs);
             end
             dofs = cp.getDofArray;
+            
             %set dofLoad of new node
             if (~isempty(find(load)))   
                 for jj = 1:length(dofs)
@@ -318,8 +352,9 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
-        %function to find copy of a node (same coordinates, different Id)
+        %find copies
         function copy = findCopy(orig, nodes)
+            %function to find copy of a node (same coordinates, different Id)
             for ii = 1:length(nodes)
                 if orig.getX == nodes(ii).getX && orig.getY == nodes(ii).getY ...
                     && orig.getId ~= nodes(ii).getId && orig.getZ == nodes(ii).getZ
@@ -331,7 +366,7 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
-        %
+        %find interface nodes
         function  nodeIntf = findIntfNode(orig, nodes)
             for ii = 1:length(nodes)
                 if orig.getX == nodes(ii).getX && orig.getY == nodes(ii).getY ...
@@ -346,6 +381,7 @@ classdef Node < handle & matlab.mixin.Copyable
     end
     
     methods (Access = protected) 
+        
         %copy one/multiple nodes. also apply loads from original system to
         %new nodes
         function cp = copyElement(obj, idt)
@@ -387,6 +423,4 @@ classdef Node < handle & matlab.mixin.Copyable
            idt.setNodeId(maxId);
         end
     end 
-    %%%End NEW
 end
-

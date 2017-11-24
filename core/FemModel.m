@@ -85,15 +85,17 @@ classdef FemModel < handle
             femModel.femModelParts(name) = entityArray;
         end
         
-        %function to divide FemModel into Substructures.
-        %FemModel: structure to be divided
-        %eleIntf: elements that are on the Interface
+        %divide substructure
         function [substructure01, substructure02] = divide(femModel, eleIntf, idt)
+            %function to divide FemModel into Substructures.
+            %FemModel: structure to be divided
+            %eleIntf: elements that are on the Interface
+            
             %all nodes/elements of Geomtrie
             totalNodeArray = femModel.getAllNodes;
             totalElementArray = femModel.getAllElements;
             
-            %half the crossSectionArea 
+            %half the crossSectionArea of interface elements
             halfCrossSectionArea(eleIntf);
             
             %all nodes at Interface 
@@ -105,11 +107,12 @@ classdef FemModel < handle
             %half the point loads at interface nodes before copying
             halfPointLoads(nodeIntf);
             
-            %see whether split is in x- or y-direction
+            %see whether substructuring is in x- or y-direction
             orientationX = unique(nodeIntf.getX);
             orientationY = unique(nodeIntf.getY);
             
             if size(orientationX) == 1
+                %divide all nodes into two halves
                 [nodes01, nodes02] = splitNodesX(nodeIntf, totalNodeArray, idt);
         
                 %all elements that need to be copied
@@ -118,6 +121,7 @@ classdef FemModel < handle
                 copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, eleIntf, idt);
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
+                %divide all elements into two halves
                 [elements01, elements02] = splitElementsX(nodes01, nodes02, totalElementArray);
                 
                 %sort elements
@@ -125,6 +129,7 @@ classdef FemModel < handle
                 elements02 = sortElements(elements02);
                
             elseif size(orientationY) == 1
+                %divide all nodes into two halves
                 [nodes01, nodes02]= splitNodesY(nodeIntf, totalNodeArray, idt);
                 
                 %all elements that need to be copied
@@ -134,6 +139,7 @@ classdef FemModel < handle
                 copiedElements = callToCopy(elementsToCopy, nodes01, nodes02, eleIntf, idt);
                 %copied elements are added
                 totalElementArray = [totalElementArray, copiedElements];
+                %divide all elements into two halves
                 [elements01, elements02] = splitElementsY(nodes01, nodes02, totalElementArray);
                 
                 %sort elements
@@ -141,13 +147,16 @@ classdef FemModel < handle
                 elements02 = sortElements(elements02);
             
             else
+                %error if one wants to split elements in a different manner
                 disp('Chosen Elements are not in a vertical or horizontal line');
                 return;
             end
             
-            %give interface nodes to substructures
+            %find nodes which are at the interface
             nodeIntf01 = nodeIntf;
             nodeIntf02 = [];
+            %search for copies of interface node which are in the second
+            %half of the nodes
             for ii = 1:length(nodeIntf01)
                 nodeIntf02 = [nodeIntf02, findCopy(nodeIntf01(ii), nodes02)];
             end
