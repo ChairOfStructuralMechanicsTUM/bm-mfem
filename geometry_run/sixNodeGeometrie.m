@@ -125,7 +125,7 @@ modelNine = FemModel(nodeArray, elementArray);
 u = SimpleSolvingStrategy.solve(modelNine);
 
 %Order displacements
-[displacements1, displacementsIntf1] = orderDisplacements(model);
+[displacements1, displacementsIntf1] = orderDisplacements(modelNine);
 %Output of displacements
 displacements1;
 
