@@ -7,7 +7,9 @@ classdef Feti1Solver < FetiPreparer
     methods (Static)
         
         function [lambda, alpha] = pCG(K,f,B,R,Kinv)
-            %%%Set matrices
+
+            %%%Set Matrices:
+            
             %ns = number of subdomains
             ns = length(K);
             %nf = number of floating subdomains
@@ -28,11 +30,6 @@ classdef Feti1Solver < FetiPreparer
                     F = F + B{1,numSubs}*Kinv{1,numSubs}*B{1,numSubs}';
                 end
             end
-            F;
-            %definitness check
-            rank(F);
-            size(F,1);
-          
             
             %d-Matrix: sum(B*K^-1*f') from 1 to ns
             d = 0;
@@ -73,27 +70,20 @@ classdef Feti1Solver < FetiPreparer
                 pre = pre + B{1,numSubs}*K{1,numSubs}*B{1,numSubs}';
             end
             lumpedF = pre;
-            %Preconditioner Check
-            %F*lumpedF;
             
-            %%%Initializing
+            %%%Initializing:
+            
             %lambda
             lambda(:,1) = G*inv(G'*G)*e;
             %residuum-w
             w(:,1) = P'*(d-F*lambda(:,1));
+                  
+            %%%Iterate:
             
-            %%%Tests
-%             test1 = G'*lambda(:,1);
-%             for ii = 1:ns
-%                 test2 = R{1,ns}'*f{1,ns}';
-%             end
-            
-            
-            %%%Iterate
             var = 0;
             kk = 1;
             while var < 1
-            %for kk = 1:4
+
                 y(:,kk) = P*lumpedF*w(:,kk);
                 
                 if kk > 1
@@ -101,7 +91,9 @@ classdef Feti1Solver < FetiPreparer
                     for mm = 1:kk-1
                         temp = temp + ((y(:,kk)'*F*p(:,mm))/(p(:,mm)'*F*p(:,mm)))*p(:,mm);
                     end
-                    p(:,kk) = y(:,kk)-temp;   
+                    p(:,kk) = y(:,kk)-temp;
+                    
+                %for first iteration    
                 else
                     p(:,kk) = y(:,kk);
                 end
@@ -112,27 +104,27 @@ classdef Feti1Solver < FetiPreparer
                 
                 w(:,kk+1) = w(:,kk)-eta(:,kk)*P'*F*p(:,kk);
                 
+                %check convergence criterion (min. 10^-10)
                 for numEntries = 1:size(w,1)
                     if abs(w(numEntries,kk)) > 10^-10
                         var = 0;
                         kk = kk+1;
                         break;
                     else
+                        %set final vector lambda
+                        lambda = lambda(:,kk);
                         var = 1;
                     end
                 end 
             end
-            kk;
-            lambda = lambda(:,kk);
-            
-%             %Tests
-%             test3 = R{1,2}'*(f{1,2}'-B{1,2}'*lambda);
 
-            %calculate alpha
+            %%%Calculate alpha:
+            
             alphA = inv(G'*G)*G'*(F*lambda-d);
             row = 1;
-            %this should be valid for all cases. n is used to assign the
-            %correct values of alpha to the corresponding subdomain
+            
+            %n is used to assign correct values of alpha to the 
+            %corresponding subdomain
             for numSubs = 1:ns
                 n = size(R{1,numSubs},2);
                 if Kinv{1,numSubs} == 0

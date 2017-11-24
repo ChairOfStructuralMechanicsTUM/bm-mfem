@@ -1,14 +1,15 @@
 classdef FetiPreparer < SimpleSolvingStrategy
     %class that prepares problem for the PCPG Algorithm of Feti Level 1 and
-    %2 Methods. E.g. find pseudo Inverse, Body Modes,... 
+    %2 Methods. E.g. find pseudo Inverse, Body Modes, Boolean Matrix, ... 
     
     properties
     end
     
     methods (Static)
+        %called from SimpleSolvingStrategy
         function [u] = solveFeti(K,f,substructures)
             
-            %see whether the subdomains are singular or not
+            %see which subdomains are singular
             singulars = [];
             for ii = 1:length(K)
                 if length(K{1,ii}) ~= rank(K{1,ii})
@@ -17,22 +18,28 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 end
             end
             
-            %find dimensions of the problem
+            %find dimensions of the problem (2D, 3D)
             dim = Substructure.findDim(substructures(1,1));
 
             %intfNodes = Cell array showing the interface configurations 
-            %between the substructures. Each row corresponds to a
-            %substructur, each column to another substructure, the entries
-            %show the interface nodes between those two substructures
+            %between the substructures: Each row corresponds to a
+            %substructur, each column to another substructure. The entries
+            %show the interface nodes between those two substructures.
+            
             %allIntfNodes = Array containing all the interface nodes found
-            %in the system. here some nodes are doubled because they are
+            %in the system. Some nodes are doubled because they are
             %taken from both sides of the interface
+            
             [intfNodes, allIntfNodes] = FetiPreparer.findInterfaceNode(substructures);
+            
+            
             %allNodesIntf = All interface nodes found for the whole system.
-            %this time duplicates are removed
+            %This time duplicates are removed.(In contrast to allIntfNodes)
             allNodesIntf = FetiPreparer.findSystemInterfaceNodes(allIntfNodes);
             
-            if strcmp(method, 'singular')    
+            %when systems are singular
+            if strcmp(method, 'singular') 
+                
                 %Rigid Body Modes
                 R = cell(1,length(K));
                 %pseudo inverse
@@ -41,19 +48,32 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 B = cell(1,length(K));
                 %test variable for correct pseudo Inverse/Body Modes
                 test = 0;
+                
+                %iterate over all substructures
                 for it = 1:length(K)
+                    
+                    %if the chosen substructure is singular
                     if ismember(it, singulars)
-                        %find pseudo Inverse/body modes for singulars
+                        %find pseudo Inverse/body modes for singulars:
+                        %K{1,it}:stiffness matrix for according substructur
                         [r, kinv, test] = FetiPreparer.psInvRBM(K{1,it},test);
                         R{1,it} = r;
                         Kinv{1,it} = kinv;
+                        
                     else
                         %pseudo Inverse/body modes set to zero for
                         %non-singular subdomain
                         R{1,it} = 0;
                         Kinv{1,it} = 0;
-                    end           
-                    %create Boolean Matrix
+                    end   
+                    
+                    %create Boolean Matrix: 
+                    %substructures: cellArray with all substructures
+                    %intfNodes: see above
+                    %it: index of iteration
+                    %allIntfNodes: see above
+                    %allNodesIntf: see above
+                    %dim: dimension of problem
                     B{1,it} = FetiPreparer.createBooleanMatrix...
                     (substructures, intfNodes, it, allIntfNodes, allNodesIntf, dim);
                 end
@@ -62,13 +82,19 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 %Matrices, so assign the correct sign:
                 B{1,2} = -B{1,2};
                 B{1,3} = -B{1,3};
-                B{1,6} = -B{1,6};
-%                 B{1,8} = -B{1,8};
                 
-                %find matrix C
+                %find matrix C:
+                %substructures: cellArray with all substructures
+                %intfNodes: see above
+                %allNodesIntf: see above
+                %dim: dimension of problem
                 C = FetiPreparer.findC(substructures,intfNodes,allNodesIntf,dim);
                 
-                %find matrix W, which scales the preconditioners.
+                %find matrix W, which scales the preconditioner:
+                %substructures: cellArray with all substructures
+                %intfNodes: see above
+                %allNodesIntf: see above
+                %dim: dimension of problem
                 W = FetiPreparer.findW(substructures,intfNodes,allNodesIntf,dim);
                 
                 %test for correct Pseudo Invers and Rigid Body Modes
@@ -76,16 +102,17 @@ classdef FetiPreparer < SimpleSolvingStrategy
                     disp('ERROR: Pseudo Invers and/or Rigid Body Modes are not correct!');
                 end
                 
-                %all information given to the pCG is in cell array format
-                %with one row and number of columns corresponding to the
-                %number of subdomains
-
-                %FETI 2 Level
+                %All information given to the pCG is in cell array format:
+                %one row and number of columns corresponding to the number
+                %of subdomains.
+                %Choose between one of the two methods:
+                %FETI 2-Method
                 [lambda, alpha] = Feti2Solver.pCG(K,f,B,R,Kinv,C,W);
-                %FETI 1 Level
+                %FETI 1-Methode
                 %[lambda, alpha] = Feti1Solver.pCG(K,f,B,R,Kinv);
                 
-                %calculate displacements from lambda and alpha
+                %Calculate displacements for each substructure from lambda 
+                %and alpha
                 for numSubs = 1:length(substructures)
                     if Kinv{1,numSubs} == 0
                         u{1,numSubs} = inv(K{1,numSubs})*(f{1,numSubs}'-B{1,numSubs}'*lambda);
@@ -93,12 +120,8 @@ classdef FetiPreparer < SimpleSolvingStrategy
                         u{1,numSubs} = Kinv{1,numSubs}*(f{1,numSubs}'-B{1,numSubs}'*lambda)+R{1,numSubs}*alpha{1,numSubs};
                     end
                 end
-
-                %check Interface condition
-                %B{1,1}*u{1,1}+B{1,2}*u{1,2}+B{1,3}*u{1,3}+B{1,4}*u{1,4};
                 
-                %B{1,1}*u{1,1}+B{1,2}*u{1,2};
-
+             %when systems are not singular   
              else
                 lenU = 0;
                 %define size for u
@@ -116,19 +139,23 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end
         end
         
+        %Matric C
         function C = findC(substructures,intfNodes,allNodesIntf,dim)
+            
             nodes = cell(1,length(substructures));
             multiNodes = [];
-            %find all interface nodes of all substructures and of these 
-            %nodes find the ones which occur more than twice, cross-points
+            
+            %Find all interface nodes which occur more than twice 
+            %--> Cross-Points
             for numSubs = 1:length(substructures)
                 for numSub = 1:length(substructures)
                     nodes{1,numSubs} = [nodes{1,numSubs} intfNodes{numSubs,numSub}];
+                    %the same as expression above but unique nodes only
                     nodesU{1,numSubs} = unique([nodes{1,numSubs}]);
                 end
                 %see how many times a certain node occurs
                 for numNodes = 1:length(nodesU{1,numSubs})
-                    %more than twice?
+                    %node occurs more than twice?
                     if sum(ismember(nodes{1,numSubs},nodesU{1,numSubs}(numNodes))) > 2
                         multiNodes = [multiNodes nodesU{1,numSubs}(numNodes)];
                     end
@@ -163,9 +190,9 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 C = 0;
             end
             
-            %go through all nodes at the interfaces and set the entry of
-            %matrix C to 1 if the interface node is a node which occurs
-            %multiple times.
+            %go through all dofs of the nodes at the interfaces and set the 
+            %entry of matrix C to if the interface nodes is a Cross Point
+            %(occurs multiple times in matrix multiNodes)
             for numNodes = 1:length(multiNodes)
                 coord = multiNodes(numNodes).getCoords;
                 ii = 0;
@@ -190,18 +217,23 @@ classdef FetiPreparer < SimpleSolvingStrategy
         %or more nodes per interface connection
         function allIntfNodes = findSystemInterfaceNodes(totIntfArray)
             
-            %all interface nodes in the system
+            %All interface nodes in the system. Each node with different Id 
+            %now occurs once. The same nodes with different Ids (opposite
+            %sides of interface) occur multiple times, need to filter out.
             totIntfArray = unique(totIntfArray);
+            
+            %sorted by Id
             [~,idx] = sort([totIntfArray.getId]);
             allIntfNodes = totIntfArray(idx);
-            %allIntfNodes.getId
+
+            %compare corrdinates of nodes with different Ids and delete the
+            %nodes which are a duplicate with same coords. but different Id
             numNodes = 1;
             while numNodes <= length(allIntfNodes)
                 coords = allIntfNodes(numNodes).getCoords;
                 itNodes = 1;
                 while itNodes <= length(allIntfNodes)
                     if allIntfNodes(numNodes).getId ~= allIntfNodes(itNodes).getId
-                        allIntfNodes(itNodes).getId;
                         coords2 = allIntfNodes(itNodes).getCoords;
                         if coords == coords2
                             allIntfNodes(itNodes) = [];
@@ -216,10 +248,12 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end
         end
         
-        %find W matrix, which is diagonal and has as diagonal elements the
-        %inverse of the multiplicity of substructures an interface dof 
-        %belongs to
+        %Matrix W
         function W = findW(substructures,intfNodes,allNodesIntf,dim)
+            %Diagonal Matrix. Diagonal Elements are the inverse of the
+            %multiplicity of substructures an interface dof belongs to.
+            
+            %check which interface dofs are free, which not
             numDof = 0;
             for numNodes = 1:length(allNodesIntf)
                 dofs = allNodesIntf(numNodes).getDofArray;
@@ -230,15 +264,21 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 end
             end
             
+            %Go through all interface dofs and check how many times they
+            %occur in the whole system. 
             W = zeros(numDof,numDof);
             ii = 0;
             for numNodes = 1:length(allNodesIntf)
                 dofs = allNodesIntf(numNodes).getDofArray;
-                for dof = 1:2
+                for dof = 1:dim
                     if  ~dofs(dof).isFixed
                         ii = ii+1;
                         coords = allNodesIntf(numNodes).getCoords;
                         count = 0;
+                        %go through all nodes of the system and compare
+                        %their coordinates with the current interface node.
+                        %If they are the same increase the multiplicity of
+                        %the interface dof by one
                         for numSubs = 1:length(substructures)
                             allNodes = substructures(numSubs).getAllNodes;
                             for numNode = 1:length(allNodes)
@@ -251,22 +291,26 @@ classdef FetiPreparer < SimpleSolvingStrategy
                     else
                         continue;
                     end
+                    %set W according to the multiplicity found in count
                     W(ii,ii) = 1/count;
                 end
             end
         end
         
         function [intfNodes, allIntfNodes] = findInterfaceNode(substructures)
-            
-            %find interface nodes of the substructures: intfNodes is a cell
-            %array which contains all interface nodes of a substructure in
-            %a row. The columns indicate with which other substructure the
-            %interface exists.
+
+            %intfNodes = Cell array showing the interface configurations 
+            %between the substructures: Each row corresponds to a
+            %substructur, each column to another substructure. The entries
+            %show the interface nodes between those two substructures.
             intfNodes = {};
-            %allIntfNodes just collects all nodes at the interface that
-            %between a substructure and all other substructures in the
+            
+            %allIntfNodes = Array containing all the interface nodes found
+            %in the system. Some nodes are doubled because they are
+            %taken from both sides of the interface
             %system
             allIntfNodes = [];
+            
             %iterate over all substructures
             for itS = 1:length(substructures)
                 nodes = substructures(itS).getAllNodes;
@@ -286,19 +330,23 @@ classdef FetiPreparer < SimpleSolvingStrategy
                             copies = [copies nodeIntf];
                         end
                     end
+                    %assign the interface nodes between two substructures
+                    %to the correct spot in the cell array
                     intfNodes{itS, itOn} = [copies];
+                    
+                    %collect all interface nodes in this vector
                     allIntfNodes = [allIntfNodes copies];
                 end
             end
         end
         
+        %Pseudo-Inverse, Rigid Body Modes
         function [R, pseudoInv, test] = psInvRBM(K, test)
             %function coordinating the cholesky decomposition, pseudo inverse
             %generation and also the generation of the rigid body modes
             
             %do cholesky decomposition to get cholesky factors and Kpr
             %needed to compute body modes
-            
             [KppFactors, Kpr, clm] = FetiPreparer.choleskyDecomp(K);
 
             %matrix of rigid body modes is created
@@ -309,13 +357,13 @@ classdef FetiPreparer < SimpleSolvingStrategy
             
             
 
-            %test for rigid body modes. 10 decimal places
+            %test for rigid body modes: K*R = 0. 10 decimal places
             nullspace = round(K*R, 9);
             if nullspace == 0
                 test = test+1;
             end
 
-            %test for pseudo inverse. 5 decimal places
+            %test for pseudo inverse: K*K^(+)*K = K. 5 decimal places
             a = round(K,5);
             b = round(K*pseudoInv*K,5);
             if ismember(b,a) == 1
@@ -323,13 +371,14 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end         
         end
         
+        %Cholesky Decomposition
         function [KppFac, Kpr, rowDeleted] = choleskyDecomp(K)
-            %   Function performing the cholesky decomposition. The matrix
-            %   Kpr needed to compute the rigid body modes is calculated as
-            %   well.
+            % Cholesky decomposition is performed and matrix Kpr, needed to
+            % compute the rigid body modes, is calculated as well.
             
             %length of K
             n = length(K);
+            %Cholesky Factorized Matrix
             KppFac = zeros(n,n);
             %indice for KppFactors
             indKpp = 1;
@@ -347,21 +396,24 @@ classdef FetiPreparer < SimpleSolvingStrategy
                                      KppFac(1:(indKpp-1),indKpp)'* ... 
                                      KppFac(1:(indKpp-1),indKpp));
                
-               %for zero pivot delete row, column and safe their indice
+               %for zero pivot delete row and column and safe their indice
                 if KppFac(indKpp,indKpp) < 2*10^-5
                     cntRow = cntRow+1;
                     %Matrix to compute rigid body modes
                     Kpr(1:(indKpp-1),cntRow)= -KppFac(1:(indKpp-1),indKpp);
+                   
                     %delete rows and columns
                     KppFac = removerows(KppFac, 'ind', indKpp);
-                    KppFac = (removerows(KppFac', 'ind', indKpp))';               
+                    KppFac = (removerows(KppFac', 'ind', indKpp))';
+                    
                     %remember which rows, columns are deleted
                     rowDeleted = [rowDeleted, indK];
-                    %decrease ii and n after deleting a row
+                    %decrease indKpp and n after deleting a row, because
+                    %the matrix K has a row/column fewer.
                     n = n-1;
                     indKpp = indKpp-1;
                 else             
-                    %if no zero-Pivot, contiue as usual
+                    %if no zero-Pivot, contiue as usual with Cholesky Fact.
                     jj = indKpp+1;
                     nn = indK+1;
                     while jj <= n
@@ -377,32 +429,34 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end
         end
         
+        %Rigid Body Modes
         function R = createBodyModesMatrix(KppFactors, Kpr, clm)
             %function creating the matrix of rigid body modes
-            
-            %PROBLEM: maybe the assembly of the R matrix is not completly
-            %right. needs to be further tested
 
             %backward substitution on R
             len = length(clm)-1;
             R = KppFactors\Kpr;
+            %add additional columns of R as zeros first
             R = [R; zeros(len,len)];
             
             %insert identity matrix under/into body modes. They need to be
             %at the position of the deleted zero-pivot
             for ii = 2:length(clm)
                 if clm(ii) < size(R,1)
-                    %safe row in which one for zero-pivot is inserted
+                    %safe row in which a "one" for zero-pivot is inserted,
+                    %needs be moved one row down
                     temp1 = R(clm(ii),:);
+                    
                     for numRows = clm(ii):size(R,1)-1
-                        %set row of zero-pivot to zero and move entries one row
-                        %down. this implies only identity one is in that row.
-                        %R(numRows,:) = zeros(1, size(R,2));
+                        %set row of zero-pivot to zero and move all entries 
+                        %from before one row down. this implies only 
+                        %identity "one" is in that row.
                         temp = R(numRows+1,:);
                         R(numRows+1,:) = temp1;
                         temp1 = temp;
                     end
-                    %set zero-pivot location to 1
+                    
+                    %set current row to 0 and zero-pivot location to 1
                     R(clm(ii),:) = zeros(1, size(R,2));
                     R(clm(ii),ii-1) = 1;
                     
@@ -413,42 +467,43 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end
         end
         
+        %Pseudo-Inverse
         function pseudoInv = createPseudoInv(KppFactors, clm)
             %function that creates the pseudo inverse
             
-            %get full rank submatrix of stiffness matrix
+            %get full rank submatrix of stiffness matrix from Cholesky
+            %Factors
             Kpp = KppFactors'*KppFactors;
             KppInv = inv(Kpp);
             pseudoInv = [];
             
-           
-            
+            %insert zero rows and columns at the positions where the zero
+            %pivot elements occured before
             for ii = 2:length(clm)      
                 %if deleted rows/columns have non redundant
                 %rows/columns in between
                 if clm(ii)-clm(ii-1) > 1            
                     diff = clm(ii)-clm(ii-1);
+                    
                     %first iteration create basic pseudoInv
                     if ii == 2
                         basePart = [KppInv(1:(clm(ii)-1), clm(ii-1):(clm(ii)-1))];
-                        %can be deleted I think  
-                        %pseudoInv = [pseudoInv, basePart];
                         pseudoInv = [basePart];
                     %all further iterations
                     else
-                        %wenn Zeilen verschoben werden
+                        %if existing columns need to be moved
                         if clm(ii) <= size(KppInv,2)
                             cols = clm(ii);
+                        %if inserted behind existing columns
                         else
                             cols = size(KppInv,2);
                         end
-                        %basePart is column of a non redundant column
-                        %between redundant ones. basePart2 same for rows
-                        
-                        %%%CHANGE zeros(diff-1,diff) to zeros(1,diff-1)
+                        %basePart is a non redundant column between
+                        %redundant ones. basePart2 same for rows
                         basePart = [KppInv(1:(clm(ii-1)-1), clm(ii-1):cols); zeros(1, diff-1)];           
                         basePart2 = [KppInv(clm(ii-1):cols, 1:clm(ii-1)-1), zeros(diff-1, 1), KppInv(clm(ii-1):cols,clm(ii-1):cols)];
                         
+                        %assembly of Pseudo-Inverse
                         pseudoInv = [pseudoInv, basePart; basePart2];
                     end
                     
@@ -456,11 +511,12 @@ classdef FetiPreparer < SimpleSolvingStrategy
                     high = size(pseudoInv,1);
                     len = size(pseudoInv,2); 
                     %insert zeros after a block of non-redundant rows,
-                    %columns to display next redundant equation.
+                    %columns to display redundant equation.
                     pseudoInv = [pseudoInv, zeros(high,1); zeros(1,len+1)];
 
-                %another zero line/column inserted if a deleted row/column
-                %directly follows another
+                %Zero line and column inserted if a deleted row/column pair
+                %directly follows another. There are no rows and columns in
+                %between, which are non-redundant.
                 else
                     high = size(pseudoInv,1);
                     len = size(pseudoInv,2);
@@ -470,11 +526,15 @@ classdef FetiPreparer < SimpleSolvingStrategy
             end             
         end
         
-        %Function creating the Boolean Matrix, named 'B' here, for each 
-        %substructure. 
+        %Boolean Matrix
         function B = createBooleanMatrix(substructures,... 
             intfNodes, it, totIntfArray, allNodesIntf, dim)
+        %Function creating the Boolean Matrix, named 'B' here, for each 
+        %substructure. Number of Rows of B corresponds to the number of
+        %interface dofs in the whole system. Number of columns of B
+        %corresponds to number of dofs in the particular substructure.
             
+            %all nodes in the substructure 
             allNodes = substructures(it).getAllNodes;
             %find number of free dofs in substructure
             numDofs = 0;
@@ -487,7 +547,7 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 end
             end
             
-            %find number of free dofs at System Interfaces
+            %find number of free dofs at all Interfaces
             numIntfDofs = 0;
             for numNodes = 1:length(allNodesIntf)
                 dofs = allNodesIntf(numNodes).getDofArray;
@@ -498,12 +558,13 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 end
             end
 
-            %Find nodes at the interface of the substructure. Exclude case
+            %Find nodes at the interfaces of the substructure. Exclude case
             %of interfaces sharing just one node, which happens for 
             %substructures which are across from each other and only share 
             %one node.
             nodesIntf = [];
             for numSubs = 1:length(substructures)
+                %more than one node at interface
                 if numel(intfNodes{it,numSubs}) > 1
                     nodesIntf = [nodesIntf intfNodes{it,numSubs}];
                 end
@@ -517,12 +578,18 @@ classdef FetiPreparer < SimpleSolvingStrategy
             %one for each interface dof
             count = 0;
             indices = [];
+            
+            %iterate over all interface nodes
             for itNodes = 1:length(allNodesIntf)
                 dofs = allNodesIntf(itNodes).getDofArray;
                 for dof = 1:dim
                     if ~dofs(dof).isFixed
                         count = count+1;
+                        %iterate over interface nodes of this subsystem
                         for numNodes = 1:length(nodesIntf)
+                            %if an global interface node lies in this
+                            %substructure remember the indice of this
+                            %global interface node
                             if nodesIntf(numNodes).getCoords == ...
                                 allNodesIntf(itNodes).getCoords
                                 indices = [indices count];
@@ -535,13 +602,19 @@ classdef FetiPreparer < SimpleSolvingStrategy
             %find column indices of the Boolean matrix that need to be set
             %to one for each interface dof
             indices2 = [];
+            
+            %iterate over all interface nodes
             for itNodes = 1:length(allNodesIntf)
                 count = 0;
+                %iterate over all nodes in substructure
                 for numNodes = 1:length(allNodes)
                     dofs = allNodes(numNodes).getDofArray;
                     for dof = 1:dim
                         if ~dofs(dof).isFixed
                             count = count+1;
+                            %in case that a node in this substructure is an
+                            %interface node remember the indice this node
+                            %in the substructure
                             if allNodesIntf(itNodes).getCoords == ...
                                allNodes(numNodes).getCoords
                                 indices2 = [indices2 count];
@@ -552,13 +625,17 @@ classdef FetiPreparer < SimpleSolvingStrategy
                 end
             end
             
-            %See how often one specific column indice (indices2) appears.
-            %then add those indices up. this is the same as adding the
-            %contributions from different interface configurations together
+            %See how often one specific row index appears. Make the column
+            %indices appear the same number of times as the row indices.
+            %This results in adding the contributions from different 
+            %interface configurations together. (adding B matrices 
+            %together B_1_2 + B_1_3)
             num = 1;
             jj = 0;
             for numIndi = 2:length(indices)
                 num = num+1;
+                %see whether indices are the same. If they are also make
+                %the corresponding column index appear twice.
                 if indices(numIndi) == indices(numIndi-1)
                     jj = 0;
                     for ii = num:length(indices2)+1
@@ -568,9 +645,12 @@ classdef FetiPreparer < SimpleSolvingStrategy
                     indices2(num) = indices2(num-1);
                 end
             end
-            
-            %create Boolean matrix
+
+            %create Boolean matrix. Rows: number of interface dofs,
+            %Columns: number of dofs in substructure
             B = zeros(numIntfDofs, numDofs);
+            
+            %add one for each index position found before
             for numIndi = 1:length(indices)
                 B(indices(numIndi), indices2(numIndi)) = B(indices(numIndi), indices2(numIndi))+1;
             end

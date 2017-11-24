@@ -40,8 +40,7 @@ classdef SimpleAssembler < Assembler
             nodes = femModel.getAllNodes;
             for ii = 1:(length(nodes)-1)
                 if nodes(ii+1).getId - nodes(ii).getId ~= 1
-                    disp('Error with the node order in SimpleAssembler,' ...
-                            'not correctly increasing.');
+                    disp('Error with the node order in SimpleAssembler, not correctly increasing.');
                 end
             end
             

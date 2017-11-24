@@ -1,5 +1,4 @@
 classdef Feti2Solver < FetiPreparer
-    %UNTITLED Summary of this class goes here
     %   This class can solve system with the FETI level 2 method
     
     properties
@@ -7,7 +6,8 @@ classdef Feti2Solver < FetiPreparer
     
     methods (Static)
         function [lambda, alpha] = pCG(K,f,B,R,Kinv,C,W)
-            %%%Set matrices
+            
+            %%%Set matrices:
             %ns = number of subdomains
             ns = length(K);
             %nf = number of floating subdomains
@@ -28,10 +28,7 @@ classdef Feti2Solver < FetiPreparer
                     F = F + B{1,numSubs}*Kinv{1,numSubs}*B{1,numSubs}';
                 end
             end
-            %definitness check
-            rank(F);
-            size(F,1);
-            
+
             %d-Matrix: sum(B*K^-1*f') from 1 to ns
             d = 0;
             for numSubs = 1:ns
@@ -72,19 +69,19 @@ classdef Feti2Solver < FetiPreparer
             end
             lumpedF = W*pre*W;
             
-            %%%Initializing
+            %%%Initializing:
+            
+            %gamma
             nomi = C'*P'*(d-F*G*inv(G'*G)*e);
             denomi = C'*P'*F*P*C;
-            %gamma: only works for this case with only one crosspoint
-            %otherwise a more complicated equation has to be solved for
-            %gamme...
             gamma(:,1) = denomi\nomi;
             %lambda
             lambda(:,1) = G*inv(G'*G)*e+P*C*gamma(:,1);
             %residuum-w
             w(:,1) = P'*(d-F*lambda(:,1));
             
-            %%%Iterate
+            %%%Iterate:
+            
             var = 0;
             kk = 1;
             while var < 1
@@ -96,7 +93,9 @@ classdef Feti2Solver < FetiPreparer
                     for mm = 1:kk-1
                         temp = temp + ((y(:,kk)'*F*p2(:,mm))/(p2(:,mm)'*F*p2(:,mm)))*p2(:,mm);
                     end
-                    p(:,kk) = y(:,kk)-temp;   
+                    p(:,kk) = y(:,kk)-temp; 
+                    
+                %for first iteration     
                 else
                     p(:,kk) = y(:,kk);
                 end
@@ -113,7 +112,7 @@ classdef Feti2Solver < FetiPreparer
                 
                 w(:,kk+1) = w(:,kk)-eta(:,kk)*P'*F*p2(:,kk);
                 
-                %check whether convergence criterion is fulfilled
+                %check convergence criterion (min. 10^-10)    
                 for numEntries = 1:size(w,1)
                     if abs(w(numEntries,kk)) > 10^-10
                         var = 0;
@@ -121,19 +120,20 @@ classdef Feti2Solver < FetiPreparer
                         break;
                     else
                         var = 1;
+                        %set final vector lambda
                         lambda = lambda(:,kk);
                         break;
                     end
                 end
             end
             
-            kk;
+            %%%Calculate alpha:
             
-             %calculate alpha
             alphA = inv(G'*G)*G'*(F*lambda-d);
             row = 1;
-            %this should be valid for all cases. n is used to assign the
-            %correct values of alpha to the corresponding subdomain
+            
+            %n is used to assign correct values of alpha to the 
+            %corresponding subdomain
             for numSubs = 1:ns
                 n = size(R{1,numSubs},2);
                 if Kinv{1,numSubs} == 0

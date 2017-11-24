@@ -35,6 +35,7 @@ methods (Static)
             disp('FETI');
             K = cell(1,length(substructures));
             f = cell(1,length(substructures));
+            
             %calculate stiffness Matrix and Force Vector for all
             %substructues and save them in a cell array
             for ii = 1:length(substructures)
@@ -42,7 +43,10 @@ methods (Static)
                 f{1,ii} = [SimpleAssembler(substructures(ii)).reducedForceVector];
             end
 
+            %start FETI calculations
             u = FetiPreparer.solveFeti(K, f, substructures);
+            
+            %assign dofs from all substructures
             for jj = 1:length(substructures)
                 SimpleAssembler.assignResultsToDofs(substructures(jj), u{1,jj});
             end
