@@ -18,8 +18,8 @@ classdef BarElement3d2n < BarElement
                 super_args = {};
             elseif nargin == 4
                 super_args = {id; material; crossSectionArea};
-            %for copy function needed
-            %nodeArray stands for material, can this be changed???
+            %ATTENTION: for copy function needed
+            %nodeArray stands for material(order is different)
             elseif nargin == 2
                 super_args ={id; nodeArray};
             end
@@ -31,7 +31,7 @@ classdef BarElement3d2n < BarElement
             
             
             % the constructor
-            %changed to > 2 for copy function
+            %ATTENTION: changed to > 2 for copy function
             if nargin > 2
                 if (length(nodeArray) == 2 && isa(nodeArray,'Node'))
                     barElement3d2n.nodeArray = nodeArray;
@@ -96,7 +96,7 @@ classdef BarElement3d2n < BarElement
                 /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ]*nodalDisplacement;  %Winkel überprüfen stets positiv
         end
         
-        %%%Start NEW
+        %find nodes to an element
         function nodes = findNodes(elements)
               nodes = [];
             for ii = 1:length(elements)
@@ -104,7 +104,6 @@ classdef BarElement3d2n < BarElement
             end
         end
     end
-         %%%End NEW
 end
    
 

@@ -42,7 +42,6 @@ classdef (Abstract) BarElement < Element
             barElement.crossSectionArea = area;
         end
         
-        %%%Start NEW
         %function to half crosssection area at interface
         function halfCrossSectionArea(element)
             for ii = 1:length(element)
@@ -76,8 +75,6 @@ classdef (Abstract) BarElement < Element
             end
 
         end
- 
-        %%%End NEW
         
         % member functions
         function update(barElement)
@@ -122,8 +119,8 @@ classdef (Abstract) BarElement < Element
         
     end
     
-    %%%Start NEW
     methods (Access = protected)
+        
         %function that copies the elements
         function cp = copyElement(obj, cpNodes, idt)
             %cp = copyElement@matlab.mixin.Copyable(obj);
@@ -138,6 +135,5 @@ classdef (Abstract) BarElement < Element
             cp.length = computeLength(cpNodes(1).getCoords, cpNodes(2).getCoords);
         end
     end   
-    %%%End NEW
 end
 
