@@ -50,7 +50,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             end
         end
 
-        function [N_mass, N,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,xi,eta)
+        function [N_mat, N,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,xi,eta)
             % Shape Function and Derivatives                    
             N(1) = (1-xi)*(1-eta)/4;
             N_Diff_Par(1,1) = -(1-eta)/4;
@@ -68,10 +68,10 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             N_Diff_Par(1,4) = -(1+eta)/4;
             N_Diff_Par(2,4) = (1-xi)/4;
        
-            N_mass = sparse(3,12);
-            N_mass(1,1:3:end) = N(:);
-            N_mass(2,2:3:end) = N(:);
-            N_mass(3,3:3:end) = N(:);
+            N_mat = sparse(3,12);
+            N_mat(1,1:3:end) = N(:);
+            N_mat(2,2:3:end) = N(:);
+            N_mat(3,3:3:end) = N(:);
             
             coords = zeros(4,2); 
             for i=1:4
@@ -137,7 +137,6 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                     stiffnessMatrix = stiffnessMatrix + thickness * ...
                         B_b' * D_b * B_b *det(J) * w(xi) * w(eta) + ...
                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);
-
                 end
             end
         end
@@ -149,40 +148,20 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             [w,g] = returnGaussPoint(nr_gauss_points);
-            
-%             a=reissnerMindlinElement3d4n.lengthY;
-%             b=reissnerMindlinElement3d4n.lengthX;
-%             a_w(1,1) = @(xi,eta)(1+2*xi)*(1-xi)^2*(1+2*eta)*(1-eta)^2;
-%             a_w(1,2) = @(xi,eta)(1+2*xi)*(1-xi)^2*eta*(1-eta)^2*b;
-%             a_w(1,3) = @(xi,eta)-xi*(1-xi)^2*(1+2*eta)*((1-eta)^2)*a;
-%             a_w(1,4) = @(xi,eta)(1+2*xi)*(1-xi)^2*(3-2*eta)*eta^2;
-%             a_w(1,5) = @(xi,eta)-(1+2*xi)*(1-xi)^2*(1-eta)*eta^2*b;
-%             a_w(1,6) = @(xi,eta)-xi*(1-xi)^2*(3-2*eta)*eta^2*a;
-%             a_w(1,7) = @(xi,eta)(3-2*xi)*xi^2*(3-2*eta)*eta^2;
-%             a_w(1,8) = @(xi,eta)-(3-2*xi)*xi^2*(1-eta)*eta^2*b;
-%             a_w(1,9) = @(xi,eta)(1-xi)*xi^2*(3-2*eta)*eta^2*a;
-%             a_w(1,10) = @(xi,eta)(3-2*xi)*xi^2*(1+2*eta)*(1-eta)^2;
-%             a_w(1,11) = @(xi,eta)(3-2*xi)*xi^2*eta*(1-eta)^2*b;
-%             a_w(1,12) = @(xi,eta)(1-xi)*xi^2*(1+2*eta)*(1-eta)^2*a;
 
-            
             dens_mat = zeros(3,3);
             dens_mat(1,1) = density*thickness; 
             dens_mat(2,2) = density*thickness^3/12; 
-            dens_mat(3,3) = density*thickness^3/12; 
-            
-            massMatrix = zeros(12,12);
-            
-            for xi=1:nr_gauss_points
-                for eta=1:nr_gauss_points
-                    [N_mass, ~,~,~,J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
-                    
-                    massMatrix = massMatrix + N_mass' * dens_mat * N_mass *det(J) * w(xi) * w(eta);
+            dens_mat(3,3) = dens_mat(2,2); 
+
+            massMatrix = sparse( 12,12);
+
+            for xi = 1 : nr_gauss_points
+                for eta = 1 : nr_gauss_points
+                    [N_mat, ~,~,~,J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+                    massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
                 end
             end
-          
-            disp(massMatrix);
-            
         end
    
     end
