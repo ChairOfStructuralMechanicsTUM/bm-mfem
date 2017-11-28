@@ -11,7 +11,7 @@ classdef BeamElement3d2n < LinearElement
         function beamElement = BeamElement3d2n(id, nodeArray)
             
             requiredPropertyNames = cellstr(["IY", "IZ", "IT", ...
-                "YOUNGS_MODULUS", "SHEAR_MODULUS", "CROSS_SECTION", ...
+                "YOUNGS_MODULUS", "POISSON_RATIO", "CROSS_SECTION", ...
                 "DENSITY"]);
             
             if nargin == 0
@@ -38,7 +38,8 @@ classdef BeamElement3d2n < LinearElement
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(element)
            E = element.getPropertyValue('YOUNGS_MODULUS');
-           G = element.getPropertyValue('SHEAR_MODULUS');
+           nu = element.getPropertyValue('POISSON_RATIO');
+           G = E / (2 * (1-nu) );
            A = element.getPropertyValue('CROSS_SECTION');
            Iy = element.getPropertyValue('IY');
            Iz = element.getPropertyValue('IZ');
@@ -107,13 +108,18 @@ classdef BeamElement3d2n < LinearElement
             m = A * L * rho;
             Iy = element.getPropertyValue('IY');
             Iz = element.getPropertyValue('IZ');
+%             h = .01; t = .01;
+%             It = 1/12*h*t*(h^2+t^2);
             It = element.getPropertyValue('IT');
+%             Iy = 0;
+%             Iz = 0;
             
             massMatrix = sparse(12,12);
             massMatrix(1,1) = m/3;
             massMatrix(7,7) = massMatrix(1,1);
             massMatrix(1,7) = m/6;
             massMatrix(7,1) = massMatrix(1,7);
+            
             massMatrix(2,2) = m * (13/35 + 6*Iz/(5*A*L2));
             massMatrix(2,6) = m * (11*L/210 + Iz/(10*A*L));
             massMatrix(6,2) = massMatrix(2,6);
@@ -121,6 +127,7 @@ classdef BeamElement3d2n < LinearElement
             massMatrix(8,2) = massMatrix(2,8);
             massMatrix(2,12) = m * (-13*L/420 + Iz/(10*A*L));
             massMatrix(12,2) = massMatrix(2,12);
+            
             massMatrix(3,3) = m * (13/35 + 6*Iy/(5*A*L2));
             massMatrix(3,5) = m * (- 11*L/210 - Iy/(10*A*L));
             massMatrix(5,3) = massMatrix(3,5);
@@ -128,26 +135,32 @@ classdef BeamElement3d2n < LinearElement
             massMatrix(9,3) = massMatrix(3,9);
             massMatrix(3,11) = m * (13*L/420 - Iy/(10*A*L));
             massMatrix(11,3) = massMatrix(3,11);
+            
             massMatrix(4,4) = m * (It/(3*A));
             massMatrix(10,10) = massMatrix(4,4);
             massMatrix(4,10) = massMatrix(4,4) / 2;
             massMatrix(10,4) = massMatrix(4,10);
+            
             massMatrix(5,5) = m * (L2/105 + 2*Iy/(15*A));
             massMatrix(5,9) = m * (-13*L/420 + Iy/(10*A*L));
             massMatrix(9,5) = massMatrix(5,9);
             massMatrix(5,11) = m * (-L2/140 - Iy/(30*A));
             massMatrix(11,5) = massMatrix(5,11);
+            
             massMatrix(6,6) = m * (L2/105 + 2*Iz/(15*A));
             massMatrix(6,8) = m * (13*L/420 - Iz/(10*A*L));
             massMatrix(8,6) = massMatrix(6,8);
             massMatrix(6,12) = m * (-L2/140 - Iz/(30*A));
             massMatrix(12,6) = massMatrix(6,12);
+            
             massMatrix(8,8) = massMatrix(2,2);
             massMatrix(8,12) = - massMatrix(2,6);
             massMatrix(12,8) = massMatrix(8,12);
+            
             massMatrix(9,9) = massMatrix(3,3);
             massMatrix(9,11) = - massMatrix(3,5);
             massMatrix(11,9) = massMatrix(9,11);
+            
             massMatrix(11,11) = massMatrix(5,5);
             massMatrix(12,12) = massMatrix(6,6);
             
@@ -161,9 +174,17 @@ classdef BeamElement3d2n < LinearElement
 %             massMatrix(1,1) = lMass;
 %             massMatrix(2,2) = lMass;
 %             massMatrix(3,3) = lMass;
+% %             massMatrix(4,4) = lMass;
+% %             massMatrix(5,5) = lMass;
+% %             massMatrix(6,6) = lMass;
 %             massMatrix(7,7) = lMass;
 %             massMatrix(8,8) = lMass;
 %             massMatrix(9,9) = lMass;
+% %             massMatrix(10,10) = lMass;
+% %             massMatrix(11,11) = lMass;
+% %             massMatrix(12,12) = lMass;
+%             tMat = element.getTransformationMatrix;
+%             massMatrix = tMat' * massMatrix * tMat;
         end
         
         function dampingMatrix = computeLocalDampingMatrix(element)
@@ -188,7 +209,9 @@ classdef BeamElement3d2n < LinearElement
         
         function forceVector = computeLocalForceVector(element)
            forceVector = sparse(1,12);
-           
+%            disp = element.getValuesVector('end');
+%            forceVector = element.computeLocalStiffnessMatrix() * disp';
+%            forceVector = - forceVector';
         end
         
         function dofs = getDofList(element)
