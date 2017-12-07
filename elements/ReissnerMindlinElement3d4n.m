@@ -344,6 +344,9 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
         end
         
+        function D = computeLocalDampingMatrix(e)
+            D = zeros(12,12);
+        end
    
     end
 end
