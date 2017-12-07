@@ -44,7 +44,7 @@ classdef EigensolverStrategy < Solver
             % solve
             [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
                 eigs(eigensolver.stiffnessMatrix, eigensolver.massMatrix, ...
-                nModes);
+                nModes, 'sm');
             
             % get eigenfrequencies
             eigensolver.eigenfrequencies = diag(eigensolver.spectralMatrix);
@@ -54,7 +54,7 @@ classdef EigensolverStrategy < Solver
         function assignModeShapes(eigensolver)
             nModes = size(eigensolver.modalMatrix, 1);
             for itEv = 1:nModes
-                eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
+%                 eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
             end
         end
         
