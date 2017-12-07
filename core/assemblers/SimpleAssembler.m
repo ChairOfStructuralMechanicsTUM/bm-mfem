@@ -77,7 +77,7 @@ classdef SimpleAssembler < Assembler
             for itEle = 1:length(elements)                
                 elementalForceVector = elements(itEle).computeLocalForceVector;
                 elementalDofs = elements(itEle).getDofList;
-                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) - elementalForceVector;
+                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
             end
             
             % get the point load on the dofs
@@ -260,13 +260,53 @@ classdef SimpleAssembler < Assembler
             %ASSEMBLEVALUESVECTOR returns a vector with all dof values of
             %the elements w.r.t. global dof ids
             dofs = femModel.getDofArray;
+            nDofs = length(dofs);
+            vals = zeros(1,nDofs);
+            for itDof = 1:nDofs
+                dof = dofs(itDof);
+                vals(dof.getId()) = dof.getValue(step);
+            end
+        end
+        
+        function vals = assembleValuesVector2(femModel, valueName, step)
+            %ASSEMBLEVALUESVECTOR returns a vector with all dof values of
+            %the elements w.r.t. global dof ids
+            dofs = femModel.getDofArray;
             vals = zeros(1,length(dofs));
-            elements = femModel.getAllElements;
-            for itEle = 1:length(elements)
-                element = elements(itEle);
-                dofIdList = element.getDofList().getId();
-                val = element.getValuesVector(step);
-                vals(dofIdList) = val;
+            
+            for itDof = 1:length(dofs)
+               dof = dofs(itDof);
+               if strcmp(valueName, dof.getValueType)
+                   vals(dof.getId()) = dof.getValue(step);
+               end
+            end
+        end
+        
+        function vals = assembleFirstDerivativesVector2(femModel, valueName, step)
+            %ASSEMBLEFIRSTDERIVATIVESVECTOR returns a vector with all values
+            % corresponding to the first derivative of the elements w.r.t.
+            % global dof ids
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+               dof = dofs(itDof);
+               if strcmp(valueName, dof.getValueType)
+                   vals(dof.getId()) = dof.getFirstDerivativeValue(step);
+               end
+            end
+        end
+        
+        function vals = assembleSecondDerivativesVector2(femModel, valueName, step)
+            %ASSEMBLEFIRSTDERIVATIVESVECTOR returns a vector with all values
+            % corresponding to the first derivative of the elements w.r.t.
+            % global dof ids
+            dofs = femModel.getDofArray;
+            vals = zeros(1,length(dofs));
+            for itDof = 1:length(dofs)
+               dof = dofs(itDof);
+               if strcmp(valueName, dof.getValueType)
+                   vals(dof.getId()) = dof.getSecondDerivativeValue(step);
+               end
             end
         end
         

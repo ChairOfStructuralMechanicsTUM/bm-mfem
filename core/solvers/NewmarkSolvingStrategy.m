@@ -50,8 +50,14 @@ classdef NewmarkSolvingStrategy < Solver
             dispOld = solver.assembler.assembleValuesVector(solver.femModel, step);
             dispOld = applyVectorBoundaryConditions(dispOld, fixedDofIds)';
             velOld = solver.assembler.assembleFirstDerivativesVector(solver.femModel, step);
+%             velOld = solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_X', step) ...
+%                 + solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_Y', step) ...
+%                 + solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_Z', step);
             velOld = applyVectorBoundaryConditions(velOld, fixedDofIds)';
             accOld = solver.assembler.assembleSecondDerivativesVector(solver.femModel, step);
+%             accOld = solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_X', step) ...
+%                 + solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_Y', step) ...
+%                 + solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_Z', step);
             accOld = applyVectorBoundaryConditions(accOld, fixedDofIds)';
             
             if solver.alpha == 0
@@ -71,8 +77,8 @@ classdef NewmarkSolvingStrategy < Solver
                     + solver.dampingMatrix * (dispOld .* c(2) + velOld .* c(5) + accOld .* c(6));
                 
                 dispNew = linsolve(solver.lhs, rhs);
-                accNew = dispNew .* c(1) - dispOld .* c(1) - velOld .* c(3) - accOld .* c(4);
-                velNew = velOld + accOld .* (solver.dt * (1 - solver.gamma)) + accNew .* (solver.dt * solver.gamma);
+                accNew = (dispNew - dispOld) .* c(1) - velOld .* c(3) - accOld .* c(4);
+                velNew = velOld + (solver.dt * (1 - solver.gamma)) .* accOld + accNew .* (solver.dt * solver.gamma);
             end
             
             %write the values back to the dofs / nodes
@@ -106,7 +112,8 @@ classdef NewmarkSolvingStrategy < Solver
             vel = solver.assembler.assembleFirstDerivativesVector(solver.femModel, step);
             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             
-            acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+%             acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+            acc0 = linsolve(solver.massMatrix, (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0));
             solver.assembler.setSecondDerivativeValuesToDofs(solver.femModel, acc0);
             solver.isInitialized = true;
             

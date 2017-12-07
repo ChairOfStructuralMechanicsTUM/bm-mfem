@@ -113,6 +113,7 @@ classdef BeamElement3d2n < LinearElement
             It = element.getPropertyValue('IT');
 %             Iy = 0;
 %             Iz = 0;
+%             It = 0;
             
             massMatrix = sparse(12,12);
             massMatrix(1,1) = m/3;
@@ -195,23 +196,14 @@ classdef BeamElement3d2n < LinearElement
                     + ePropertes.getValue('RAYLEIGH_BETA') * element.computeStiffnessMatrix;
             else
                 dampingMatrix = sparse(12,12);
-            end
-%            damping = element.getPropertyValue('ELEMENTAL_DAMPING');
-%            dampingMatrix = zeros(6);
-%            dampingMatrix(1,1) = damping;
-%            dampingMatrix(1,4) = - damping;
-%            dampingMatrix(4,4) = damping;
-%            dampingMatrix(4,1) = - damping;
-%            
-%            tMat = element.getTransformationMatrix;
-%            dampingMatrix = tMat' * dampingMatrix * tMat;           
+            end          
         end
         
         function forceVector = computeLocalForceVector(element)
            forceVector = sparse(1,12);
 %            disp = element.getValuesVector('end');
 %            forceVector = element.computeLocalStiffnessMatrix() * disp';
-%            forceVector = - forceVector';
+%            forceVector = forceVector';
         end
         
         function dofs = getDofList(element)

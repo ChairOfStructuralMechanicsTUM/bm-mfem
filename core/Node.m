@@ -115,6 +115,19 @@ classdef Node < handle & matlab.mixin.Copyable
             end
         end
         
+        function fixAllDofs(nodes)
+           for ii = 1:length(nodes)
+              nodes(ii).getDofArray().fix(); 
+           end
+        end
+        
+        function unfixDof(nodes, dofName)
+            for ii = 1:length(nodes)
+                dof = nodes(ii).dofMap(dofName);
+                dof.unfix();
+            end
+        end
+        
         function setDofValue(nodes, dofName, load)  %not load initial displacement
             %SETDOFVALUE set the value of a specific dof
             % parameters: dof, load
@@ -139,7 +152,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         function val = getDofValue(nodes, dofName, varargin)
             numvarargs = length(varargin);
-            optargs = { 1 };
+            optargs = { 'end' };
             optargs(1:numvarargs) = varargin;
             step = optargs{:};
             

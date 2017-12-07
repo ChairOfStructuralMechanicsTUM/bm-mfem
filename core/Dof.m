@@ -67,6 +67,14 @@ classdef Dof < handle
             end
         end
         
+        function val = getFirstDerivativeValue(dof, step)
+            [~, val, ~] = dof.getAllValues(step);
+        end
+        
+        function val = getSecondDerivativeValue(dof, step)
+            [~, ~, val] = dof.getAllValues(step);
+        end
+        
         function [value, firstDerivativeValue, secondDerivativeValue] = getAllValues(dofs, step)
             if (nargin == 1) || (strcmp(step, 'all'))
                 nsteps = length(dofs(1).value);
@@ -134,12 +142,16 @@ classdef Dof < handle
         end
 
         % setter functions
-        function fix(dof)
-            dof.fixed = true;
+        function fix(dofs)
+            for ii = 1:length(dofs)
+                dofs(ii).fixed = true;
+            end
         end
 
-        function unfix(dof)
-            dof.fixed = false;
+        function unfix(dofs)
+            for ii = 1:length(dofs)
+                dofs(ii).fixed = false;
+            end
         end
 
         function setValue(dofs, values, step)
