@@ -38,7 +38,7 @@ classdef (Abstract) PlateElement < Element
         end
         
         % Check wether Geometry is a convex Quadrilateral
-        function checkGeometry(plateElement)
+        function checkConvexity(plateElement)
             diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
             diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
             
@@ -52,6 +52,10 @@ classdef (Abstract) PlateElement < Element
                 error('problem with the element');
             end
         end
+        
+        function pl = draw(plateElement)
+            pl = line(plateElement.nodeArray.getX, plateElement.nodeArray.getY);
+        end
 
         function update(plateElement)
         end
@@ -59,7 +63,18 @@ classdef (Abstract) PlateElement < Element
         function computeLocalForceVector
         end
 
-        function barycenter
+        function c = barycenter(plateElement)
+            
+            
+            diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
+            diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
+            
+            diag2X = [plateElement.nodeArray(2).getX() plateElement.nodeArray(4).getX()];
+            diag2Y = [plateElement.nodeArray(2).getY() plateElement.nodeArray(4).getY()];
+            
+            [x,y] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
+            c(1) = x; 
+            c(2) = y; 
         end
 
     end

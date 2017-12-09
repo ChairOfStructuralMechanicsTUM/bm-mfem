@@ -120,7 +120,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(3,3) = (1-poisson_ratio)/2;
              
             K = (Emodul * thickness^3) / (12*(1-poisson_ratio^2));             
-%              % K Matrix from Fellipa
+            % K Matrix from Fellipa
 %             K = (Emodul * thickness^3)/(1-poisson_ratio^2); 
             D_b = D_b* K;
 
@@ -137,6 +137,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                     stiffnessMatrix = stiffnessMatrix + thickness * ...
                         B_b' * D_b * B_b *det(J) * w(xi) * w(eta) + ...
                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);
+
+                        
                 end
             end
         end
@@ -262,86 +264,9 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             massMatrix(12,11) = 484 * a * b;
             massMatrix(12,12) = 624 * a^2; 
             
-            massMatrix(1,2) = massMatrix(2,1);
-            massMatrix(1,3) = massMatrix(3,1);
-            massMatrix(1,4) = massMatrix(4,1);
-            massMatrix(1,5) = massMatrix(5,1);
-            massMatrix(1,6) = massMatrix(6,1);
-            massMatrix(1,7) = massMatrix(7,1);
-            massMatrix(1,8) = massMatrix(8,1);
-            massMatrix(1,9) = massMatrix(9,1);
-            massMatrix(1,10) = massMatrix(10,1);
-            massMatrix(1,11) = massMatrix(11,1);
-            massMatrix(1,12) = massMatrix(12,1);
-            
-            massMatrix(2,3) = massMatrix(3,2);
-            massMatrix(2,4) = massMatrix(4,2);
-            massMatrix(2,5) = massMatrix(5,2);
-            massMatrix(2,6) = massMatrix(6,2);
-            massMatrix(2,7) = massMatrix(7,2);
-            massMatrix(2,8) = massMatrix(8,2);
-            massMatrix(2,9) = massMatrix(9,2);
-            massMatrix(2,10) = massMatrix(10,2);
-            massMatrix(2,11) = massMatrix(11,2);
-            massMatrix(2,12) = massMatrix(12,2);
-            
-            massMatrix(3,4) = massMatrix(4,3);
-            massMatrix(3,5) = massMatrix(5,3);
-            massMatrix(3,6) = massMatrix(6,3);
-            massMatrix(3,7) = massMatrix(7,3);
-            massMatrix(3,8) = massMatrix(8,3);
-            massMatrix(3,9) = massMatrix(9,3);
-            massMatrix(3,10) = massMatrix(10,3);
-            massMatrix(3,11) = massMatrix(11,3);
-            massMatrix(3,12) = massMatrix(12,3);
-            
-            massMatrix(4,5) = massMatrix(5,4);
-            massMatrix(4,6) = massMatrix(6,4);
-            massMatrix(4,7) = massMatrix(7,4);
-            massMatrix(4,8) = massMatrix(8,4);
-            massMatrix(4,9) = massMatrix(9,4);
-            massMatrix(4,10) = massMatrix(10,4);
-            massMatrix(4,11) = massMatrix(11,4);
-            massMatrix(4,12) = massMatrix(12,4);
-            
-            massMatrix(5,6) = massMatrix(6,5);
-            massMatrix(5,7) = massMatrix(7,5);
-            massMatrix(5,8) = massMatrix(8,5);
-            massMatrix(5,9) = massMatrix(9,5);
-            massMatrix(5,10) = massMatrix(10,5);
-            massMatrix(5,11) = massMatrix(11,5);
-            massMatrix(5,12) = massMatrix(12,5);
-            
-            massMatrix(6,7) = massMatrix(7,6);
-            massMatrix(6,8) = massMatrix(8,6);
-            massMatrix(6,9) = massMatrix(9,6);
-            massMatrix(6,10) = massMatrix(10,6);
-            massMatrix(6,11) = massMatrix(11,6);
-            massMatrix(6,12) = massMatrix(12,6);
-            
-            massMatrix(7,8) = massMatrix(8,7);
-            massMatrix(7,9) = massMatrix(9,7);
-            massMatrix(7,10) = massMatrix(10,7);
-            massMatrix(7,11) = massMatrix(11,7);
-            massMatrix(7,12) = massMatrix(12,7);
-            
-            massMatrix(8,9) = massMatrix(9,8);
-            massMatrix(8,10) = massMatrix(10,8);
-            massMatrix(8,11) = massMatrix(11,8);
-            massMatrix(8,12) = massMatrix(12,8);
-            
-            massMatrix(9,10) = massMatrix(10,9);
-            massMatrix(9,11) = massMatrix(11,9);
-            massMatrix(9,12) = massMatrix(12,9);
-            
-            massMatrix(10,11) = massMatrix(11,10);
-            massMatrix(10,12) = massMatrix(12,10);
-            
-            massMatrix(11,12) = massMatrix(12,11);
-            
-            massMatrix = massMatrix * ((density * V)/176400);
-            
-            
+            massMatrix = massMatrix + tril(massMatrix,-1)';
+
+            massMatrix = massMatrix * ((density * V)/176400); 
         end
         
         function D = computeLocalDampingMatrix(e)
