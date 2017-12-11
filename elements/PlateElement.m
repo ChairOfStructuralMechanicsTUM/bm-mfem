@@ -60,7 +60,8 @@ classdef (Abstract) PlateElement < Element
         function update(plateElement)
         end
         
-        function computeLocalForceVector
+        function F = computeLocalForceVector(plateElement)
+            F = zeros(1,12);
         end
 
         function c = barycenter(plateElement)

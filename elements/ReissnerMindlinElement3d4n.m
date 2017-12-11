@@ -52,21 +52,10 @@ classdef ReissnerMindlinElement3d4n < PlateElement
 
         function [N_mat, N,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,xi,eta)
             % Shape Function and Derivatives                    
-            N(1) = (1-xi)*(1-eta)/4;
-            N_Diff_Par(1,1) = -(1-eta)/4;
-            N_Diff_Par(2,1) = -(1-xi)/4;
-
-            N(2) = (1+xi)*(1-eta)/4;
-            N_Diff_Par(1,2) = (1-eta)/4;
-            N_Diff_Par(2,2) = -(1+xi)/4;
-
-            N(3) = (1+xi)*(1+eta)/4;
-            N_Diff_Par(1,3) = (1+eta)/4;
-            N_Diff_Par(2,3) = (1+xi)/4;
-
-            N(4) = (1-xi)*(1+eta)/4;
-            N_Diff_Par(1,4) = -(1+eta)/4;
-            N_Diff_Par(2,4) = (1-xi)/4;
+            N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];  
+            
+            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+                          -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
        
             N_mat = sparse(3,12);
             N_mat(1,1:3:end) = N(:);
@@ -81,14 +70,12 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             % Jacobian 
             J = N_Diff_Par * coords; 
-            
             N_Diff = J \ N_Diff_Par;
             
             % Assembling the B_bending Matrix
             B_b = sparse(3,12);
             B_b(1,2:3:end) = N_Diff(1,:);     
             B_b(3,3:3:end) = N_Diff(1,:);
-
             B_b(2,3:3:end) = N_Diff(2,:);
             B_b(3,2:3:end) = N_Diff(2,:);
             
@@ -96,7 +83,6 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             B_s = sparse(2,12);
             B_s(1,1:3:end) = N_Diff(1,:);
             B_s(1,2:3:end) = N(:);
-
             B_s(2,1:3:end) = N_Diff(2,:);
             B_s(2,3:3:end) = N(:);
         end
@@ -118,10 +104,10 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(2,1) = D_b(1,2);
             D_b(2,2) = 1;
             D_b(3,3) = (1-poisson_ratio)/2;
-             
+            
+            %%% K Matrix from Fellipa
+%             K = (Emodul * thickness^3)/(1-poisson_ratio^2);   
             K = (Emodul * thickness^3) / (12*(1-poisson_ratio^2));             
-            % K Matrix from Fellipa
-%             K = (Emodul * thickness^3)/(1-poisson_ratio^2); 
             D_b = D_b* K;
 
             %Shear Equation
@@ -134,16 +120,16 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                 for eta=1:nr_gauss_points
                     [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
                     
-                    stiffnessMatrix = stiffnessMatrix + thickness * ...
+                    stiffnessMatrix = stiffnessMatrix +             ...
                         B_b' * D_b * B_b *det(J) * w(xi) * w(eta) + ...
-                        B_s' * D_s * B_s * det(J) * w(xi) * w(eta);
-
-                        
+                        B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
                 end
             end
         end
 
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
+            %Formulation of the Massmatrix based on the Shape Functions
+            
             density = reissnerMindlinElement3d4n.getPropertyValue('DENSITY');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
@@ -155,17 +141,20 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             dens_mat(3,3) = dens_mat(2,2); 
 
             massMatrix = sparse( 12,12);
-
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
                     [N_mat, ~,~,~,J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+                    
                     massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
                 end
             end
-        end
+        end        
         
-        
-        function massMatrix = computeLocalMassMatrix_PRZEMIENIECKI(reissnerMindlinElement3d4n)
+        function massMatrix =  computeLocalMassMatrix_PRZEMIENIECKI(reissnerMindlinElement3d4n)
+            % Formuulation of the Massmatrix taken from PRZEMIENIECKI -
+            % Equivalent mass matrices for rectangular plates in bending
+            % p.950
+            
             density = reissnerMindlinElement3d4n.getPropertyValue('DENSITY');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             a = reissnerMindlinElement3d4n.getLengthX();
