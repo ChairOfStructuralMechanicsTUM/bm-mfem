@@ -1,7 +1,6 @@
-close all; 
-clear all;  
-
-
+close all;
+% clear all; 
+clc; 
 %% example taken from Introduction to FEM (Felippa) 23-5
 % a=5; 
 % b=2*a;
@@ -12,29 +11,27 @@ clear all;
 % 
 % nodeArray = [node01 node02 node03 node04]; 
 % nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
-% ele = ReissnerMindlinElement3d4n(1,[nodeArray]); 
-% 
+% ele = ReissnerMindlinElement3d4n(1,nodeArray); 
 % 
 % elementArray = ele;
 % elementArray.setPropertyValue('THICKNESS', 1);
 % elementArray.setPropertyValue('YOUNGS_MODULUS', 8000);
-% elementArray.setPropertyValue('SHEAR_MODULUS', 0);
+% elementArray.setPropertyValue('SHEAR_MODULUS', 3000);
 % elementArray.setPropertyValue('POISSON_RATIO', 1/3);
-% elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
+% elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 2);
 % elementArray.setPropertyValue('DENSITY', 1);
-% 
 % 
 % model = FemModel(nodeArray,elementArray);
 % 
 % [K,~] = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
+% M = SimpleAssembler.assembleGlobalMassMatrix(model);
 
 %% 
 
-number_Elements = 30;
+number_Elements = 3;
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
 
 a=linspace(0,1,number_Elements+1);
-
 
 ii = 1;
 for i=1:length(a)
@@ -63,9 +60,9 @@ for i=1:length(node)
     end
 end
 
-arrayfun(@(node) node.fixDof('DISPLACEMENT_Z'), boundary);
-% arrayfun(@(node) node.fixDof('ROTATION_X'), boundary);
-% arrayfun(@(node) node.fixDof('ROTATION_Y'), boundary);
+nodeArray.fixDof('DISPLACEMENT_Z');
+nodeArray.fixDof('ROTATION_X');
+nodeArray.fixDof('ROTATION_Y');
 
 elementArray = ele(:)';
 
@@ -77,18 +74,14 @@ elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
 % elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 0.8601);
 
-elementIds = elementArray.getId;
-
 model = FemModel(nodeArray,elementArray);
 
 vis = Visualization(model); 
 vis.plotUndeformed(); 
-
 [K,~] = SimpleAssembler.assembleGlobalStiffnessMatrix(model); 
-M = SimpleAssembler.assembleGlobalMassMatrix(model);
-
-eigensolver = EigensolverStrategy(model);
-eigensolver.solve(5);
-eigenfrequencies = eigensolver.getEigenfrequencies();
-disp(eigenfrequencies);
+% M = SimpleAssembler.assembleGlobalMassMatrix(model);
+% eigensolver = EigensolverStrategy(model);
+% eigensolver.solve(5);
+% eigenfrequencies = eigensolver.getEigenfrequencies();
+% disp(eigenfrequencies);
 
