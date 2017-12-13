@@ -32,11 +32,9 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                 reissnerMindlinElement3d4n.nodeArray(2).getCoords);
             reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(4).getCoords);
-            
+            checkConvexity(reissnerMindlinElement3d4n);
         end
-
-
-
+        
         function responseDoF = getResponseDofArray(plateElement, step)
             responseDoF = zeros(12,1);
             
