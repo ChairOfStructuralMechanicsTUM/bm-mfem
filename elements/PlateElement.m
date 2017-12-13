@@ -41,20 +41,41 @@ classdef (Abstract) PlateElement < Element
         function checkConvexity(plateElement)
             diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
             diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
-            
             diag2X = [plateElement.nodeArray(2).getX() plateElement.nodeArray(4).getX()];
             diag2Y = [plateElement.nodeArray(2).getY() plateElement.nodeArray(4).getY()];
-            
             intersection = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
-            if  ~isempty(intersection)
-                disp("Geometry is convex!");
-            else
-                error('problem with the element');
-            end
+            
+            if  isempty(intersection)
+                error('Element %i is not convex', plateElement.getId());
+            end    
         end
         
-        function pl = draw(plateElement)
-            pl = line(plateElement.nodeArray.getX, plateElement.nodeArray.getY);
+        function pl = draw(plateElement)   
+            x = [plateElement.nodeArray(1).getX, plateElement.nodeArray(2).getX, ... 
+                 plateElement.nodeArray(3).getX, plateElement.nodeArray(4).getX,...
+                 plateElement.nodeArray(1).getX];
+            y = [plateElement.nodeArray(1).getY, plateElement.nodeArray(2).getY, ... 
+                 plateElement.nodeArray(3).getY, plateElement.nodeArray(4).getY, ...
+                 plateElement.nodeArray(1).getX];
+            z = [plateElement.nodeArray(1).getZ, plateElement.nodeArray(2).getZ, ... 
+                 plateElement.nodeArray(3).getZ, plateElement.nodeArray(4).getZ, ...
+                 plateElement.nodeArray(1).getZ];
+            pl = line(x,y,z);
+        end
+        
+        function pl = drawDeformed(plateElement, step, scaling)
+            x = [plateElement.nodeArray(1).getX, plateElement.nodeArray(2).getX, ... 
+                 plateElement.nodeArray(3).getX, plateElement.nodeArray(4).getX,...
+                 plateElement.nodeArray(1).getX];
+            y = [plateElement.nodeArray(1).getY, plateElement.nodeArray(2).getY, ... 
+                 plateElement.nodeArray(3).getY, plateElement.nodeArray(4).getY, ...
+                 plateElement.nodeArray(1).getX];
+            z = [plateElement.nodeArray(1).getZ, plateElement.nodeArray(2).getZ, ... 
+                 plateElement.nodeArray(3).getZ, plateElement.nodeArray(4).getZ, ...
+                 plateElement.nodeArray(1).getZ];
+             
+            pl = line(plateElement.nodeArray.getX' + scaling * plateElement.nodeArray.getDofValue('DISPLACEMENT_X', step), ...
+                plateElement.nodeArray.getY' + scaling * plateElement.nodeArray.getDofValue('DISPLACEMENT_Y', step));
         end
 
         function update(plateElement)
@@ -65,17 +86,11 @@ classdef (Abstract) PlateElement < Element
         end
 
         function c = barycenter(plateElement)
-            
-            
             diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
             diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
-            
             diag2X = [plateElement.nodeArray(2).getX() plateElement.nodeArray(4).getX()];
             diag2Y = [plateElement.nodeArray(2).getY() plateElement.nodeArray(4).getY()];
-            
-            [x,y] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
-            c(1) = x; 
-            c(2) = y; 
+            [c(1),c(2)] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
         end
 
     end
