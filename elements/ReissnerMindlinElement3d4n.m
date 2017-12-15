@@ -9,10 +9,10 @@ classdef ReissnerMindlinElement3d4n < PlateElement
         % Constructor
         function reissnerMindlinElement3d4n = ReissnerMindlinElement3d4n(id,nodeArray)
             
-            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "SHEAR_MODULUS", ...
-                                            "POISSON_RATIO", "THICKNESS",...
-                                            "NUMBER_GAUSS_POINT", "DENSITY",...
-                                            "SHEAR_CORRECTION_FACTOR"]); 
+            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
+                                             "THICKNESS", "NUMBER_GAUSS_POINT", ...
+                                             "DENSITY", "SHEAR_CORRECTION_FACTOR"]);
+                                         
             % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
@@ -92,12 +92,13 @@ classdef ReissnerMindlinElement3d4n < PlateElement
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
             
-            Emodul = reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            Gmodul = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_MODULUS');
+            EModul = reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS');
             poisson_ratio = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             alpha = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
+            
+            GModul = EModul/(2*(1+poisson_ratio));
             
             % Moment-Curvature Equations
             D_b = zeros(3,3);
@@ -108,13 +109,13 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(3,3) = (1-poisson_ratio)/2;
             
             %%% K Matrix from Fellipa
-%             K = (Emodul * thickness^3)/(1-poisson_ratio^2);   
+%             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
 
-            K = (Emodul * thickness^3) / (12*(1-poisson_ratio^2));             
+            K = (EModul * thickness^3) / (12*(1-poisson_ratio^2));             
             D_b = D_b * K;
 
             %Shear Equation
-            D_s = eye(2) * alpha * Gmodul * thickness; 
+            D_s = eye(2) * alpha * GModul * thickness; 
                 
             stiffnessMatrix = sparse(12,12);
             [w,g] = returnGaussPoint(nr_gauss_points);
