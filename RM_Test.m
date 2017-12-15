@@ -2,11 +2,12 @@ close all;
 clear all; 
 clc; 
 %% Initialization
-number_Elements = 2;
+
+number_Elements = 10;
+
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
 
 a=linspace(0,1,number_Elements+1);
-
 ii = 1;
 for i=1:length(a)
     for j=1:length(a)
@@ -34,48 +35,38 @@ for i=1:length(node)
     end
 end
 
-nodeArray.fixDof('DISPLACEMENT_Z');
-nodeArray.fixDof('ROTATION_X');
-nodeArray.fixDof('ROTATION_Y');
+boundary.fixDof('DISPLACEMENT_Z');
+boundary.fixDof('ROTATION_X');
+boundary.fixDof('ROTATION_Y');
 
 elementArray = ele(:)';
 
 elementArray.setPropertyValue('THICKNESS', 0.0125);
 elementArray.setPropertyValue('YOUNGS_MODULUS', 200e9);
-elementArray.setPropertyValue('SHEAR_MODULUS', 200e9/2.5);
 elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
 elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+%% Solving system
 
-addPointLoad_Plate(node(5), 100, [1,0,0]);
-
-
-%% Solving the system
 model = FemModel(nodeArray,elementArray);
-
+model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -100000000);
 assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.stiffnessMatrix;
-forceVector = assembling.forceVector
-reducedForceVector = assembling.reducedForceVector;
-
+forceVector = assembling.forceVector;
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
-
-step = 1;
-
-%% Plot 
-vis = Visualization(model); 
-vis.plotUndeformed();
-vis.plotDeformed();
-%% EigenFrquencies
-
+node(13).getDofValue('DISPLACEMENT_Z');
+%% Eigenfrequencies
+% 
 % eigensolver = EigensolverStrategy(model);
 % eigensolver.solve(5);
 % eigenfrequencies = eigensolver.getEigenfrequencies();
 % disp(eigenfrequencies);
 
-
+%% Plot 
+vis = Visualization(model); 
+vis.plotUndeformed();
+vis.plotDeformed();
 
 
 
