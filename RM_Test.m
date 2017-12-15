@@ -1,6 +1,6 @@
 close all;
-clear all; 
-clc; 
+% clear all; 
+% clc; 
 %% Initialization
 
 number_Elements = 10;
@@ -41,32 +41,34 @@ boundary.fixDof('ROTATION_Y');
 
 elementArray = ele(:)';
 
-elementArray.setPropertyValue('THICKNESS', 0.0125);
-elementArray.setPropertyValue('YOUNGS_MODULUS', 200e9);
+elementArray.setPropertyValue('THICKNESS', 0.1);
+elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
 elementArray.setPropertyValue('POISSON_RATIO', 0.3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 2);
 elementArray.setPropertyValue('DENSITY', 1);
-elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 0.8601);
 %% Solving system
 
 model = FemModel(nodeArray,elementArray);
-model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -100000000);
-assembling = SimpleAssembler(model);
-forceVector = assembling.forceVector;
+model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -1000000);
+
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
-node(13).getDofValue('DISPLACEMENT_Z');
+
+node(21).getDofValue('DISPLACEMENT_Z');
+node(21).getDofValue('ROTATION_X');
+node(21).getDofValue('ROTATION_Y');
 %% Eigenfrequencies
-% 
-% eigensolver = EigensolverStrategy(model);
-% eigensolver.solve(5);
-% eigenfrequencies = eigensolver.getEigenfrequencies();
-% disp(eigenfrequencies);
+
+eigensolver = EigensolverStrategy(model);
+eigensolver.solve(5);
+eigenfrequencies = eigensolver.getEigenfrequencies();
+fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
 
 %% Plot 
-vis = Visualization(model); 
-vis.plotUndeformed();
-vis.plotDeformed();
+% vis = Visualization(model); 
+% vis.plotUndeformed();
+% vis.plotDeformed();
 
 
 
