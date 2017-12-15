@@ -2,7 +2,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
     %REISSNERMINDLINPLATE  Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (Access = protected)
+    properties (Access = private)
     end 
     
     methods
@@ -11,7 +11,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "SHEAR_MODULUS", ...
                                             "POISSON_RATIO", "THICKNESS",...
-                                            "NUMBER_GAUSS_POINT", "DENSITY"]); 
+                                            "NUMBER_GAUSS_POINT", "DENSITY",...
+                                            "SHEAR_CORRECTION_FACTOR"]); 
             % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
@@ -27,17 +28,20 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             reissnerMindlinElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", ...
                                                 "ROTATION_X", "ROTATION_Y"]);
         end
+        
         function initialize(reissnerMindlinElement3d4n)
             reissnerMindlinElement3d4n.lengthX = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(2).getCoords);
+            
             reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(4).getCoords);
+            
             checkConvexity(reissnerMindlinElement3d4n);
         end
         
         function responseDoF = getResponseDofArray(plateElement, step)
+           
             responseDoF = zeros(12,1);
-            
             for itNodes = 1:1:4
                 nodalDof = plateElement.nodeArray(itNodes).getDofArray;
                 nodalDof = nodalDof.';
@@ -93,8 +97,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             poisson_ratio = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-            alpha = 0.8601;     % shear correction factor
-
+            alpha = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
+            
             % Moment-Curvature Equations
             D_b = zeros(3,3);
             D_b(1,1) = 1;
@@ -105,8 +109,9 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             %%% K Matrix from Fellipa
 %             K = (Emodul * thickness^3)/(1-poisson_ratio^2);   
+
             K = (Emodul * thickness^3) / (12*(1-poisson_ratio^2));             
-            D_b = D_b* K;
+            D_b = D_b * K;
 
             %Shear Equation
             D_s = eye(2) * alpha * Gmodul * thickness; 
@@ -114,15 +119,16 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             stiffnessMatrix = sparse(12,12);
             [w,g] = returnGaussPoint(nr_gauss_points);
             
-            for xi=1:nr_gauss_points
-                for eta=1:nr_gauss_points
+            for xi = 1 : nr_gauss_points
+                for eta = 1 : nr_gauss_points
                     [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
                     
                     stiffnessMatrix = stiffnessMatrix +             ...
-                        B_b' * D_b * B_b *det(J) * w(xi) * w(eta) + ...
+                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta) + ...
                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
                 end
             end
+
         end
 
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)

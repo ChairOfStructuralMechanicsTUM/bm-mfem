@@ -1,34 +1,8 @@
 close all;
-% clear all; 
+clear all; 
 clc; 
-%% example taken from Introduction to FEM (Felippa) 23-5
-% a=5; 
-% b=2*a;
-% node01 = Node(1,0,0,0);
-% node02 = Node(2,a,0,0);
-% node03 = Node(3,a,b,0);
-% node04 = Node(4,0,b,0);
-% 
-% nodeArray = [node01 node02 node03 node04]; 
-% nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
-% ele = ReissnerMindlinElement3d4n(1,nodeArray); 
-% 
-% elementArray = ele;
-% elementArray.setPropertyValue('THICKNESS', 1);
-% elementArray.setPropertyValue('YOUNGS_MODULUS', 8000);
-% elementArray.setPropertyValue('SHEAR_MODULUS', 3000);
-% elementArray.setPropertyValue('POISSON_RATIO', 1/3);
-% elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 2);
-% elementArray.setPropertyValue('DENSITY', 1);
-% 
-% model = FemModel(nodeArray,elementArray);
-% 
-% [K,~] = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
-% M = SimpleAssembler.assembleGlobalMassMatrix(model);
-
-%% 
-
-number_Elements = 3;
+%% Initialization
+number_Elements = 2;
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
 
 a=linspace(0,1,number_Elements+1);
@@ -66,22 +40,42 @@ nodeArray.fixDof('ROTATION_Y');
 
 elementArray = ele(:)';
 
-elementArray.setPropertyValue('THICKNESS', 0.01);
-elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
-elementArray.setPropertyValue('SHEAR_MODULUS', 4200);
+elementArray.setPropertyValue('THICKNESS', 0.0125);
+elementArray.setPropertyValue('YOUNGS_MODULUS', 200e9);
+elementArray.setPropertyValue('SHEAR_MODULUS', 200e9/2.5);
 elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
-% elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 0.8601);
+elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
 
+addPointLoad_Plate(node(5), 100, [1,0,0]);
+
+
+%% Solving the system
 model = FemModel(nodeArray,elementArray);
 
+assembling = SimpleAssembler(model);
+stiffnessMatrix = assembling.stiffnessMatrix;
+forceVector = assembling.forceVector
+reducedForceVector = assembling.reducedForceVector;
+
+solver = SimpleSolvingStrategy(model);
+x = solver.solve();
+
+step = 1;
+
+%% Plot 
 vis = Visualization(model); 
-vis.plotUndeformed(); 
-[K,~] = SimpleAssembler.assembleGlobalStiffnessMatrix(model); 
-% M = SimpleAssembler.assembleGlobalMassMatrix(model);
+vis.plotUndeformed();
+vis.plotDeformed();
+%% EigenFrquencies
+
 % eigensolver = EigensolverStrategy(model);
 % eigensolver.solve(5);
 % eigenfrequencies = eigensolver.getEigenfrequencies();
 % disp(eigenfrequencies);
+
+
+
+
 
