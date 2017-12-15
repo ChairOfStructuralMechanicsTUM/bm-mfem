@@ -81,6 +81,7 @@ classdef ElementTests < matlab.unittest.TestCase
         end
         
         function testBeamElement3d2nStatic(testCase)
+            warning('off','all')
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
             model = FemModel();
@@ -137,6 +138,8 @@ classdef ElementTests < matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
             testCase.assertThat(actualRotationZ, IsEqualTo(expectedRotationZ, ...
                 'Within', RelativeTolerance(1e-7)))
+            
+            warning('on','all')
         end
         
 %         function testBeamElement3d2nDynamic(testCase)
@@ -205,6 +208,7 @@ classdef ElementTests < matlab.unittest.TestCase
 %         end
         
         function testBeamElement3d2nEigen(testCase)
+            warning('off','all')
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             model = FemModel();
@@ -227,7 +231,6 @@ classdef ElementTests < matlab.unittest.TestCase
             model.getAllElements.setPropertyValue('IT',0.00001);
             model.getAllElements.setPropertyValue('YOUNGS_MODULUS',2.1e11);
             model.getAllElements.setPropertyValue('POISSON_RATIO',0.3);
-%             model.getAllElements.setPropertyValue('SHEAR_MODULUS',2.1e11/2/1.3);
             model.getAllElements.setPropertyValue('CROSS_SECTION',.01);
             model.getAllElements.setPropertyValue('DENSITY',7850);
             
@@ -246,6 +249,8 @@ classdef ElementTests < matlab.unittest.TestCase
 
             testCase.assertThat(actualEigenfrequenciesCantilever, IsEqualTo(expectedEigenfrequenciesCantilever, ...
                 'Within', AbsoluteTolerance(1e-5)))
+            
+            warning('on','all')
         end
         
         

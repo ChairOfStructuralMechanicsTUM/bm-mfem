@@ -27,7 +27,8 @@ classdef BeamElement3d2n < LinearElement
             beamElement@LinearElement(super_args{:});
             beamElement.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
                 "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
-                       
+            
+            warning('using the experimental beam element')
         end
         
         function initialize(element)
@@ -108,12 +109,7 @@ classdef BeamElement3d2n < LinearElement
             m = A * L * rho;
             Iy = element.getPropertyValue('IY');
             Iz = element.getPropertyValue('IZ');
-%             h = .01; t = .01;
-%             It = 1/12*h*t*(h^2+t^2);
             It = element.getPropertyValue('IT');
-%             Iy = 0;
-%             Iz = 0;
-%             It = 0;
             
             massMatrix = sparse(12,12);
             massMatrix(1,1) = m/3;
