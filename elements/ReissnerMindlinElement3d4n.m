@@ -109,7 +109,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(3,3) = (1-poisson_ratio)/2;
             
             %%% K Matrix from Fellipa
-%             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
+% %             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
 
             K = (EModul * thickness^3) / (12*(1-poisson_ratio^2));             
             D_b = D_b * K;
@@ -129,7 +129,6 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
                 end
             end
-
         end
 
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
@@ -162,11 +161,11 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             density = reissnerMindlinElement3d4n.getPropertyValue('DENSITY');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-            a = reissnerMindlinElement3d4n.getLengthX();
-            b = reissnerMindlinElement3d4n.getLengthY();
+            a = reissnerMindlinElement3d4n.lengthX();
+            b = reissnerMindlinElement3d4n.lengthY();
             V = a * b * thickness; 
             
-            massMatrix = zeros( 12,12);
+            massMatrix = sparse( 12,12);
             
             massMatrix(1,1) = 24336; 
             
@@ -265,6 +264,20 @@ classdef ReissnerMindlinElement3d4n < PlateElement
         
         function D = computeLocalDampingMatrix(e)
             D = zeros(12,12);
+        end
+        
+        function dofs = getDofList(element)
+            dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+            dofs([2 5 8 11]) = element.nodeArray.getDof('ROTATION_X');
+            dofs([3 6 9 12]) = element.nodeArray.getDof('ROTATION_Y');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,12);
+            
+            vals([1 4 7 10]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([2 5 8 11]) = element.nodeArray.getDofValue('ROTATION_X',step);
+            vals([3 6 9 12]) = element.nodeArray.getDofValue('ROTATION_Y',step);
         end
    
     end
