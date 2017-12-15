@@ -87,6 +87,36 @@ classdef BarElement3d2n < LinearElement
         function dampingMatrix = computeLocalDampingMatrix(element)
             dampingMatrix = zeros(6);
         end
+
+        function dofs = getDofList(element)
+            dofs([1 4]) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 5]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([3 6]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,6);
+            
+            vals([1 4]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 5]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 6]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+        end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,6);
+            
+            [~, vals([1 4]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 5]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3 6]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,6);
+
+            [~, ~, vals([1 4])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 5])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3 6])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+        end
         
         % Computation of the Internal Element Stresses
         function stressValue = computeElementStress(barElements, step)
