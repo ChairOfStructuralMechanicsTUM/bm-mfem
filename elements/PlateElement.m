@@ -46,7 +46,6 @@ classdef (Abstract) PlateElement < Element
         end
         
         function pl = drawDeformed(plateElement, step, scaling)
-           
             x = [plateElement.nodeArray(1).getX, plateElement.nodeArray(2).getX, ...
                  plateElement.nodeArray(3).getX, plateElement.nodeArray(4).getX, ...
                  plateElement.nodeArray(1).getX];
