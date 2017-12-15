@@ -88,7 +88,7 @@ classdef (Abstract) LinearElement < Element
         end
         
         function tMat = getTransformationMatrix(ele)
-            nDofs = size(ele.getDofs,2);
+            nDofs = length(ele.getDofList);
             lsystem = ele.getLocalSystem();
             tMat = zeros(nDofs);
             for ii = 1:3:nDofs

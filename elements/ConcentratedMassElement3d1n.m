@@ -50,6 +50,36 @@ classdef ConcentratedMassElement3d1n < Element
             dampingMatrix = zeros(3);
         end
         
+        function dofs = getDofList(element)
+            dofs(1) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs(2) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs(3) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,3);
+            
+            vals(1) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals(2) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals(3) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+        end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,3);
+            
+            [~, vals(1), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals(2), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals(3), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,3);
+
+            [~, ~, vals(1)] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals(2)] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals(3)] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+        end
+        
         
         
         function update(element)

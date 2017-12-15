@@ -11,6 +11,7 @@ classdef FemModel < handle
         initialized = false
         fixedDofs
         freeDofs
+        mProperties
     end
     
     methods
@@ -39,9 +40,14 @@ classdef FemModel < handle
                 femModel.femModelParts = femModelParts;
             end
             
+            femModel.mProperties = PropertyContainer();
         end
         
         % getter functions
+        function init = isInitialized(femModel)
+            init = femModel.initialized;
+        end
+        
         function nodeArray = getAllNodes(femModel)
             nodeArray = femModel.nodeArray;
         end
@@ -95,6 +101,10 @@ classdef FemModel < handle
             modelPart = femModel.femModelParts(name);
         end
         
+        function mProperties = getProperties(femModel)
+            mProperties = femModel.mProperties;
+        end
+        
         % setter functions
         function addModelPart(femModel, name, entityArray)
             femModel.femModelParts(name) = entityArray;
@@ -107,6 +117,11 @@ classdef FemModel < handle
         %(1) check if all elements are initialized correctly
         %(2) assign unique ids to the dofs
         %(3) determine free and fixed dofs
+        %(4) sets the step to 1
+            if femModel.initialized
+                return;
+            end
+            
             elements = femModel.getAllElements();
             for ii = 1:length(elements)
                 elements(ii).check();
@@ -114,9 +129,9 @@ classdef FemModel < handle
             
             femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
             femModel.dofArray = [femModel.dofArray{:}];
-            femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
+%             femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
             for ii = 1:length(femModel.dofArray)
-               femModel.dofArray(ii).setId(ii); 
+                femModel.dofArray(ii).setId(ii);
             end
             
             dofs = femModel.dofArray;
@@ -129,6 +144,8 @@ classdef FemModel < handle
                     femModel.freeDofs = [femModel.freeDofs dofs(itDof)];
                 end
             end
+            
+            femModel.getProperties.addValue('STEP',1);
             
             femModel.initialized = true;
         end
@@ -169,6 +186,8 @@ classdef FemModel < handle
                     element = BarElement2d2n(id, nodes);
                 case 'BarElement3d2n'
                     element = BarElement3d2n(id, nodes);
+                case 'BeamElement3d2n'
+                    element = BeamElement3d2n(id, nodes);
                 case 'ConcentratedMassElement3d1n'
                     element = ConcentratedMassElement3d1n(id, nodes);
                 case 'SpringDamperElement3d2n'

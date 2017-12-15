@@ -128,6 +128,32 @@ classdef BarElement2d2n < LinearElement
             
         end
         
+        function dofs = getDofList(element)
+            dofs([1 3]) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 4]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,4);
+            
+            vals([1 3]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 4]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+        end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,3);
+            
+            [~, vals([1 3]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 4]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,3);
+
+            [~, ~, vals([1 3])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 4])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+        end
+        
     end
     
 end

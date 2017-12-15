@@ -28,7 +28,10 @@ classdef EigensolverStrategy < Solver
                 eigensolver.femModel = femModel;
                 eigensolver.assembler = SimpleAssembler(femModel);
                 eigensolver.isInitialized = false;
+            else
+                error("Error (EigensolverStratey): no fem model defined!")
             end
+            
         end
         
         function solve(eigensolver, nModes)
@@ -52,7 +55,7 @@ classdef EigensolverStrategy < Solver
         end
         
         function assignModeShapes(eigensolver)
-            nModes = size(eigensolver.modalMatrix, 1);
+            nModes = size(eigensolver.modalMatrix, 2);
             for itEv = 1:nModes
 %                 eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
             end
@@ -181,6 +184,9 @@ classdef EigensolverStrategy < Solver
         end
         
         function initialize(eigensolver)
+            if ~ eigensolver.femModel.isInitialized()
+                eigensolver.femModel.initialize;
+            end
             eigensolver.femModel.initialize;
             
             % assemble and reduce matrices
