@@ -285,7 +285,6 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             massMatrix = (massMatrix * density * V)/176400; 
         end
         
-        
         function D = computeLocalDampingMatrix(e)
             D = zeros(12,12);
         end
