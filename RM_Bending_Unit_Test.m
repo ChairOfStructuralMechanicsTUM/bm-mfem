@@ -13,7 +13,6 @@ ele = ReissnerMindlinElement3d4n(1,nodeArray);
 elementArray = ele;
 elementArray.setPropertyValue('THICKNESS', 1);
 elementArray.setPropertyValue('YOUNGS_MODULUS', 8000);
-elementArray.setPropertyValue('SHEAR_MODULUS', 3000);
 elementArray.setPropertyValue('POISSON_RATIO', 1/3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 2);
 elementArray.setPropertyValue('DENSITY', 1);

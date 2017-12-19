@@ -1,13 +1,14 @@
 close all;
-% clear all; 
+clear all; 
 % clc; 
 %% Initialization
 
-number_Elements = 10;
+number_Elements = 8;
+length_x = 8;
 
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
 
-a=linspace(0,1,number_Elements+1);
+a=linspace(0,length_x,number_Elements+1);
 ii = 1;
 for i=1:length(a)
     for j=1:length(a)
@@ -29,7 +30,7 @@ nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
 
 ii = 1; 
 for i=1:length(node)
-    if node(i).getX == 0 || node(i).getY == 0 || node(i).getX == 1 || node(i).getY == 1
+    if node(i).getX == 0 || node(i).getY == 0 || node(i).getX == length_x || node(i).getY == length_x
         boundary(ii) = node(i);
         ii= ii+1;
     end
@@ -41,30 +42,30 @@ boundary.fixDof('ROTATION_Y');
 
 elementArray = ele(:)';
 
-elementArray.setPropertyValue('THICKNESS', 0.1);
-elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
-elementArray.setPropertyValue('POISSON_RATIO', 0.3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 2);
+elementArray.setPropertyValue('THICKNESS', 0.4);
+elementArray.setPropertyValue('YOUNGS_MODULUS', 1.2e4);
+elementArray.setPropertyValue('POISSON_RATIO', 0);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
-elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 0.8601);
+elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
 %% Solving system
 
 model = FemModel(nodeArray,elementArray);
-model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -1000000);
+model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -2.5);
 
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
 
-node(21).getDofValue('DISPLACEMENT_Z');
-node(21).getDofValue('ROTATION_X');
-node(21).getDofValue('ROTATION_Y');
+node(41).getDofValue('DISPLACEMENT_Z')
+% node(21).getDofValue('ROTATION_X');
+% node(21).getDofValue('ROTATION_Y');
+
 %% Eigenfrequencies
 
-eigensolver = EigensolverStrategy(model);
-eigensolver.solve(5);
-eigenfrequencies = eigensolver.getEigenfrequencies();
-fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
-
+% eigensolver = EigensolverStrategy(model);
+% eigensolver.solve(10);
+% eigenfrequencies = eigensolver.getEigenfrequencies();
+% fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
 %% Plot 
 % vis = Visualization(model); 
 % vis.plotUndeformed();

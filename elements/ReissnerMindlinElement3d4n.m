@@ -29,6 +29,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                                                 "ROTATION_X", "ROTATION_Y"]);
         end
         
+        %Initialization
         function initialize(reissnerMindlinElement3d4n)
             reissnerMindlinElement3d4n.lengthX = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(2).getCoords);
@@ -64,14 +65,16 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             N_mat(2,2:3:end) = N(:);
             N_mat(3,3:3:end) = N(:);
             
-            coords = zeros(4,2); 
+            % Coordinates of the nodes forming one element 
+            ele_coords = zeros(4,2); 
             for i=1:4
-                coords(i,1) = reissnerMindlinElement3d4n.nodeArray(i).getX;
-                coords(i,2) = reissnerMindlinElement3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = reissnerMindlinElement3d4n.nodeArray(i).getX;
+                ele_coords(i,2) = reissnerMindlinElement3d4n.nodeArray(i).getY;
             end
             
             % Jacobian 
-            J = N_Diff_Par * coords; 
+            J = N_Diff_Par * ele_coords;
+            
             N_Diff = J \ N_Diff_Par;
             
             % Assembling the B_bending Matrix
@@ -98,6 +101,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             alpha = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
             
+            % Calculate Shear Modulus from Youngs Modulus and Poisson
+            % Ratio
             GModul = EModul/(2*(1+poisson_ratio));
             
             % Moment-Curvature Equations
@@ -109,7 +114,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(3,3) = (1-poisson_ratio)/2;
             
             %%% K Matrix from Fellipa
-% %             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
+%             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
 
             K = (EModul * thickness^3) / (12*(1-poisson_ratio^2));             
             D_b = D_b * K;
@@ -118,8 +123,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_s = eye(2) * alpha * GModul * thickness; 
                 
             stiffnessMatrix = sparse(12,12);
-            [w,g] = returnGaussPoint(nr_gauss_points);
             
+            [w,g] = returnGaussPoint(nr_gauss_points);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
                     [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
@@ -129,6 +134,24 @@ classdef ReissnerMindlinElement3d4n < PlateElement
                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
                 end
             end
+
+%             for xi = 1 : nr_gauss_points
+%                 for eta = 1 : nr_gauss_points
+%                     [~, ~,B_b, ~, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+%                     
+%                     stiffnessMatrix = stiffnessMatrix +             ...
+%                         B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
+%                 end
+%             end
+%             [w,g] = returnGaussPoint(1);
+%             for xi = 1 : 1
+%                 for eta = 1 : 1
+%                     [~, ~,~, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+%                     
+%                     stiffnessMatrix = stiffnessMatrix +             ...
+%                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+%                 end
+%             end
         end
 
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
@@ -259,8 +282,9 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             massMatrix = massMatrix + tril(massMatrix,-1)';
 
-            massMatrix = massMatrix * ((density * V)/176400); 
+            massMatrix = (massMatrix * density * V)/176400; 
         end
+        
         
         function D = computeLocalDampingMatrix(e)
             D = zeros(12,12);

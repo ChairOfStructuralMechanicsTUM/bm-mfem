@@ -19,9 +19,16 @@ classdef (Abstract) PlateElement < Element
             
             plateElement@Element(super_args{:});
         end
-        
-        function checkConvexity(plateElement)
+ 
+        function c = barycenter(plateElement)
+            diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
+            diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
+            diag2X = [plateElement.nodeArray(2).getX() plateElement.nodeArray(4).getX()];
+            diag2Y = [plateElement.nodeArray(2).getY() plateElement.nodeArray(4).getY()];
+            [c(1),c(2)] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
+        end
         % Check Convexity of quad
+        function checkConvexity(plateElement)
             try 
                 [~] = plateElement.barycenter();
             catch 
@@ -68,14 +75,6 @@ classdef (Abstract) PlateElement < Element
         
         function F = computeLocalForceVector(plateElement)
             F = zeros(1,12);
-        end
-
-        function c = barycenter(plateElement)
-            diag1X = [plateElement.nodeArray(1).getX() plateElement.nodeArray(3).getX()];
-            diag1Y = [plateElement.nodeArray(1).getY() plateElement.nodeArray(3).getY()];
-            diag2X = [plateElement.nodeArray(2).getX() plateElement.nodeArray(4).getX()];
-            diag2Y = [plateElement.nodeArray(2).getY() plateElement.nodeArray(4).getY()];
-            [c(1),c(2)] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
         end
 
     end
