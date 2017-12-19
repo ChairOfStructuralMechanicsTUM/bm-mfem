@@ -3,7 +3,7 @@ clear all;
 % clc; 
 %% Initialization
 
-number_Elements = 8;
+number_Elements = 20;
 length_x = 8;
 
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
@@ -51,12 +51,13 @@ elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
 %% Solving system
 
 model = FemModel(nodeArray,elementArray);
-model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -2.5);
+% model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -2.5);
+model.getNode(221).setDofLoad('DISPLACEMENT_Z', -15);
 
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
 
-node(41).getDofValue('DISPLACEMENT_Z')
+node(221).getDofValue('DISPLACEMENT_Z')
 % node(21).getDofValue('ROTATION_X');
 % node(21).getDofValue('ROTATION_Y');
 

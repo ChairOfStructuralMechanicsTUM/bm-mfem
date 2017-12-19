@@ -96,31 +96,33 @@ classdef ReissnerMindlinElement3d4n < PlateElement
         function stiffnessMatrix = computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
             
             EModul = reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            poisson_ratio = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
+            prxy = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-            alpha = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
+            alpha_shear = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
             
             % Calculate Shear Modulus from Youngs Modulus and Poisson
             % Ratio
-            GModul = EModul/(2*(1+poisson_ratio));
+            GModul = EModul/(2*(1+prxy));
             
             % Moment-Curvature Equations
             D_b = zeros(3,3);
             D_b(1,1) = 1;
-            D_b(1,2) = poisson_ratio;
+            D_b(1,2) = prxy;
             D_b(2,1) = D_b(1,2);
             D_b(2,2) = 1;
-            D_b(3,3) = (1-poisson_ratio)/2;
+            D_b(3,3) = (1-prxy)/2;
             
             %%% K Matrix from Fellipa
-%             K = (EModul * thickness^3)/(1-poisson_ratio^2);   
+%             K = (EModul * thickness^3)/(1-prxy^2);   
 
-            K = (EModul * thickness^3) / (12*(1-poisson_ratio^2));             
+            K = (EModul * thickness^3) / (12*(1-prxy^2));       
+            
+            % Material Bending Matrix D_b
             D_b = D_b * K;
 
-            %Shear Equation
-            D_s = eye(2) * alpha * GModul * thickness; 
+            % Material Shear Matrix D_s
+            D_s = eye(2) * alpha_shear * GModul * thickness; 
                 
             stiffnessMatrix = sparse(12,12);
             
