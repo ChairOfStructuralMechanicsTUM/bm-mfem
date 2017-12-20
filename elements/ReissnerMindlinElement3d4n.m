@@ -11,7 +11,8 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...
-                                             "DENSITY", "SHEAR_CORRECTION_FACTOR"]);
+                                             "DENSITY", "SHEAR_CORRECTION_FACTOR", ...
+                                             "REDUCED_INTEGRATION"]);
                                          
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -111,10 +112,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             D_b(1,2) = prxy;
             D_b(2,1) = D_b(1,2);
             D_b(2,2) = 1;
-            D_b(3,3) = (1-prxy)/2;
-            
-            %%% K Matrix from Fellipa
-%             K = (EModul * thickness^3)/(1-prxy^2);   
+            D_b(3,3) = (1-prxy)/2; 
 
             K = (EModul * thickness^3) / (12*(1-prxy^2));       
             
@@ -127,33 +125,38 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             stiffnessMatrix = sparse(12,12);
             
             [w,g] = returnGaussPoint(nr_gauss_points);
-            for xi = 1 : nr_gauss_points
-                for eta = 1 : nr_gauss_points
-                    [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
-                    
-                    stiffnessMatrix = stiffnessMatrix +             ...
-                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta) + ...
-                        B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+            
+            if reissnerMindlinElement3d4n.getPropertyValue('REDUCED_INTEGRATION') == false
+                
+                for xi = 1 : nr_gauss_points
+                    for eta = 1 : nr_gauss_points
+                        [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_b' * D_b * B_b * det(J) * w(xi) * w(eta) + ...
+                            B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+                    end
+                end
+                
+            else
+                for xi = 1 : nr_gauss_points
+                    for eta = 1 : nr_gauss_points
+                        [~, ~,B_b, ~, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
+                    end
+                end
+                [w,g] = returnGaussPoint(1);
+                for xi = 1 : 1
+                    for eta = 1 : 1
+                        [~, ~,~, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
+                        
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+                    end
                 end
             end
-
-%             for xi = 1 : nr_gauss_points
-%                 for eta = 1 : nr_gauss_points
-%                     [~, ~,B_b, ~, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
-%                     
-%                     stiffnessMatrix = stiffnessMatrix +             ...
-%                         B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
-%                 end
-%             end
-%             [w,g] = returnGaussPoint(1);
-%             for xi = 1 : 1
-%                 for eta = 1 : 1
-%                     [~, ~,~, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
-%                     
-%                     stiffnessMatrix = stiffnessMatrix +             ...
-%                         B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
-%                 end
-%             end
         end
 
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
