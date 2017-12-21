@@ -11,8 +11,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...
-                                             "DENSITY", "SHEAR_CORRECTION_FACTOR", ...
-                                             "REDUCED_INTEGRATION"]);
+                                             "DENSITY", "SHEAR_CORRECTION_FACTOR"]);
                                          
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -92,42 +91,26 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             B_s(2,1:3:end) = N_Diff(2,:);
             B_s(2,3:3:end) = N(:);
         end
-
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)
-            
+        function stiffnessMatrix = computeLocalStiffnessMatrix(reissnerMindlinElement3d4n)            
             EModul = reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS');
             prxy = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
             nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
             alpha_shear = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
             
-            % Calculate Shear Modulus from Youngs Modulus and Poisson
-            % Ratio
+            % Calculate Shear Modulus
             GModul = EModul/(2*(1+prxy));
-            
             % Moment-Curvature Equations
-            D_b = zeros(3,3);
-            D_b(1,1) = 1;
-            D_b(1,2) = prxy;
-            D_b(2,1) = D_b(1,2);
-            D_b(2,2) = 1;
-            D_b(3,3) = (1-prxy)/2; 
-
-            K = (EModul * thickness^3) / (12*(1-prxy^2));       
-            
+            D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
             % Material Bending Matrix D_b
-            D_b = D_b * K;
-
+            D_b = D_b * (EModul * thickness^3) / (12*(1-prxy^2));
             % Material Shear Matrix D_s
             D_s = eye(2) * alpha_shear * GModul * thickness; 
-                
-            stiffnessMatrix = sparse(12,12);
             
             [w,g] = returnGaussPoint(nr_gauss_points);
-            
-            if reissnerMindlinElement3d4n.getPropertyValue('REDUCED_INTEGRATION') == false
-                
+            stiffnessMatrix = sparse(12,12);
+            if reissnerMindlinElement3d4n.getProperties.hasValue('FULL_INTEGRATION') == true
                 for xi = 1 : nr_gauss_points
                     for eta = 1 : nr_gauss_points
                         [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
@@ -159,6 +142,8 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             end
         end
 
+        
+        
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
             %Formulation of the Massmatrix based on the Shape Functions
             
