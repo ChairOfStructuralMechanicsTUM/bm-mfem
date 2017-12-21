@@ -1,3 +1,8 @@
+% TO DO:
+%       - Implement the ReissnerMindlin Test
+%       - Include the possibility to choose between Reduced Integration and
+%         Full Integration 
+%% 
 close all;
 clear all; 
 clc; 
@@ -48,9 +53,7 @@ elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
 elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
-elementArray.setPropertyValue('REDUCED_INTEGRATION', true);
 %% Solving system
-
 model = FemModel(nodeArray,elementArray);
 % model.getAllNodes.setDofLoad('DISPLACEMENT_Z', -0.25);
 model.getNode(61).setDofLoad('DISPLACEMENT_Z', -0.25);
@@ -60,7 +63,6 @@ x = solver.solve();
 
 node(61).getDofValue('DISPLACEMENT_Z')
 %% Eigenfrequencies
-
 % eigensolver = EigensolverStrategy(model);
 % eigensolver.solve(10);
 % eigenfrequencies = eigensolver.getEigenfrequencies();
