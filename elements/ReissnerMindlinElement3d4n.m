@@ -1,4 +1,4 @@
-classdef ReissnerMindlinElement3d4n < PlateElement 
+classdef ReissnerMindlinElement3d4n < QuadrilateralElement 
     %REISSNERMINDLINPLATE  Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -25,7 +25,7 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             end
             
             % call the super class contructor
-            reissnerMindlinElement3d4n@PlateElement(super_args{:});
+            reissnerMindlinElement3d4n@QuadrilateralElement(super_args{:});
             reissnerMindlinElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", ...
                                                 "ROTATION_X", "ROTATION_Y"]);
         end
@@ -41,11 +41,11 @@ classdef ReissnerMindlinElement3d4n < PlateElement
             checkConvexity(reissnerMindlinElement3d4n);
         end
         
-        function responseDoF = getResponseDofArray(plateElement, step)
+        function responseDoF = getResponseDofArray(reissnerMindlinElement, step)
            
             responseDoF = zeros(12,1);
             for itNodes = 1:1:4
-                nodalDof = plateElement.nodeArray(itNodes).getDofArray;
+                nodalDof = reissnerMindlinElement.nodeArray(itNodes).getDofArray;
                 nodalDof = nodalDof.';
                 
                 for itDof = 3:(-1):1
