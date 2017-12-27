@@ -253,9 +253,146 @@ classdef ElementTests < matlab.unittest.TestCase
             warning('on','all')
         end
         
+        function testReissnerMindlinElement3d4nStatic (testCase)
+            warning('off','all')
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
         
+            a=linspace(0,1,5);
+            % Nodes
+            ii = 1;
+            for i=1:5
+                for j=1:5
+                    node(ii) = Node(ii,a(j),a(i),0);
+                    ii = ii + 1; 
+                end
+            end
+            nodeArray = node(:)';
+            nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
+            
+            % Elements
+            ii = 1; 
+            for i = 1 : 5 : 16
+                for j= i:(i+3)
+                    ele(ii) = ReissnerMindlinElement3d4n(ii, [node(j) node(j+1) node(j+6) node(j+5)]);
+                    ii = ii + 1;
+                end
+            end
+            elementArray = ele(:)';
+            
+            % Boundary Conditions 
+            ii = 1; 
+            for i=1:length(node)
+                if node(i).getX == 0 || node(i).getY == 0 || node(i).getX == 1 || node(i).getY == 1
+                    boundary(ii) = node(i);
+                    ii= ii+1;
+                end
+            end
+            boundary.fixDof('DISPLACEMENT_Z');
+            boundary.fixDof('ROTATION_X');
+            boundary.fixDof('ROTATION_Y');
+
+            % Properties
+            elementArray.setPropertyValue('THICKNESS', .1);
+            elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
+            elementArray.setPropertyValue('POISSON_RATIO', 0.3);
+            elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
+            elementArray.setPropertyValue('DENSITY', 1);
+            elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+            
+            % Solver
+            model = FemModel(nodeArray,elementArray);
+            model.getNode(13).setDofLoad('DISPLACEMENT_Z', -0.25);
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+
+            actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
+            actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
+            actualRotationY = model.getAllNodes.getDofValue('ROTATION_Y');
+            
+            expectedDisplacementZ = [0;0;0;0;0;0;-0.000422362795098927;-0.000613870097726914;...
+                        -0.000422362795098927;0;0;-0.000613870097726913;-0.00168945118039571;...
+                        -0.000613870097726913;0;0;-0.000422362795098926;-0.000613870097726913;...
+                        -0.000422362795098927;0;0;0;0;0;0];
+            expectedRotationX = [0;0;0;0;0;0;0.00254235733839925;4.40124127619258e-18; ...
+                        -0.00254235733839923;0;0;0.00473720688683214;1.18261027682316e-17;...
+                        -0.00473720688683216;0;0;0.00254235733839923;1.73756544264676e-18;...
+                        -0.00254235733839923;0;0;0;0;0;0];
+            expectedRotationY = [0;0;0;0;0;0;0.00254235733839925;0.00473720688683215;...
+                        0.00254235733839921;0;0;-1.09535396625964e-17;1.06625639192173e-18;...
+                        9.26364511108020e-19;0;0;-0.00254235733839922;-0.00473720688683216;...
+                        -0.00254235733839923;0;0;0;0;0;0];
+            
+            testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+                'Within', RelativeTolerance(1e-7)))
+            testCase.assertThat(actualRotationX, IsEqualTo(expectedRotationX, ...
+                'Within', RelativeTolerance(1e-7)))
+            testCase.assertThat(actualRotationY, IsEqualTo(expectedRotationY, ...
+                'Within', RelativeTolerance(1e-7)))
+
+            warning('on','all')
+        end 
         
+        function testReissnerMindlinElement3d4nEigen (testCase)
+            warning('off','all')
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+        
+            a=linspace(0,1,5);
+            % Nodes
+            ii = 1;
+            for i=1:5
+                for j=1:5
+                    node(ii) = Node(ii,a(j),a(i),0);
+                    ii = ii + 1; 
+                end
+            end
+            nodeArray = node(:)';
+            nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
+            
+            % Elements
+            ii = 1; 
+            for i = 1 : 5 : 16
+                for j= i:(i+3)
+                    ele(ii) = ReissnerMindlinElement3d4n(ii, [node(j) node(j+1) node(j+6) node(j+5)]);
+                    ii = ii + 1;
+                end
+            end
+            elementArray = ele(:)';
+            
+            % Boundary Conditions 
+            ii = 1; 
+            for i=1:length(node)
+                if node(i).getX == 0 || node(i).getY == 0 || node(i).getX == 1 || node(i).getY == 1
+                    boundary(ii) = node(i);
+                    ii= ii+1;
+                end
+            end
+            boundary.fixDof('DISPLACEMENT_Z');
+
+            % Properties
+            elementArray.setPropertyValue('THICKNESS', 0.01);
+            elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
+            elementArray.setPropertyValue('POISSON_RATIO', 0.3);
+            elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
+            elementArray.setPropertyValue('DENSITY', 1);
+            elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+            
+            % Solver
+            model = FemModel(nodeArray,elementArray);
+            
+            solver = EigensolverStrategy(model);
+            solver.solve(5);
+            
+            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            expectedEigenfrequencies = [1.01402840311520;3.22165476249304;3.22165476249320;...
+                                            5.32248978160243;10.5674305646586];
+            
+            testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
+                'Within', RelativeTolerance(1e-7)))
+
+            warning('on','all')
+        end 
     end
-    
 end
 
