@@ -110,7 +110,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             
             [w,g] = returnGaussPoint(nr_gauss_points);
             stiffnessMatrix = sparse(12,12);
-            if reissnerMindlinElement3d4n.getProperties.hasValue('FULL_INTEGRATION') == true
+            if (reissnerMindlinElement3d4n.getProperties.hasValue('FULL_INTEGRATION')) && (reissnerMindlinElement3d4n.getPropertyValue('FULL_INTEGRATION'))
                 for xi = 1 : nr_gauss_points
                     for eta = 1 : nr_gauss_points
                         [~, ~,B_b, B_s, J] = computeShapeFunction(reissnerMindlinElement3d4n,g(xi),g(eta));
