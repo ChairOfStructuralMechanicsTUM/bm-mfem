@@ -37,11 +37,10 @@ classdef MORStrategy < Solver
                 error('MOR strategy not initialized!')
             end
             
-            for i = samplingPoints
-                disp(i)
-                uR = (-i^2*s.massMatrixR + s.stiffnessMatrixR) \ s.forceR;
-                
-                s.assembler.appendValuesToDofs(s.femModel, uR);
+            for ii = samplingPoints
+                uR = (-ii^2*s.massMatrixR + s.stiffnessMatrixR) \ s.forceR;
+                u = s.basisR * uR;
+                s.assembler.appendValuesToDofs(s.femModel, u);
             end
                 
         end
@@ -54,31 +53,29 @@ classdef MORStrategy < Solver
             
             % assemble and reduce matrices
             massMatrix = s.assembler.assembleGlobalMassMatrix(s.femModel);
-            %s.dampingMatrix = s.assembler.assembleGlobalDampingMatrix(s.femModel);
             stiffnessMatrix = s.assembler.assembleGlobalStiffnessMatrix(s.femModel);
             
             [~, fixedDofs] = s.femModel.getDofConstraints();
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
                 massMatrix = applyMatrixBoundaryConditions(massMatrix, fixedDofIds);
-                %s.dampingMatrix = applyMatrixBoundaryConditions(s.dampingMatrix, fixedDofIds);
                 stiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
             end
             [~, force] = s.assembler.applyExternalForces(s.femModel);
             
             switch s.MORmethod
                 case 'krylov-galerkin-proj'
-                    
-                    K_dyn = stiffnessMatrix - (sampling)^2 * massMatrix;
-                    b = K_dyn \ force;
-                    Ab = K_dyn \ (massMatrix * b);
-                    AAb = K_dyn\ (massMatrix * Ab);
-                    basis = [b,Ab,AAb];
-                    
+                    for ii = 1:length(sampling)
+                        K_dyn = stiffnessMatrix - (sampling(ii))^2 * massMatrix;
+                        b = K_dyn \ force';
+                        Ab = K_dyn \ (massMatrix * b);
+                        AAb = K_dyn\ (massMatrix * Ab);
+                        basis(:,(ii-1)*3+1:(ii-1)*3+3) = [b,Ab,AAb];
+                    end
                     [s.basisR, ~] = qr(basis, 0);
-                    s.massMatrixR = s.basisR.' * s.massMatrix * s.basisR;
-                    s.stiffnessMatrixR = s.basisR.' * s.stiffnessMatrix * s.basisR;
-                    s.forceR = s.basisR.' * force;
+                    s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
+                    s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
+                    s.forceR = s.basisR.' * force';
                     
                 otherwise
                     error('unknown MOR method!')
