@@ -41,5 +41,21 @@ classdef ShellElement3d4n < QuadrilateralElement
             checkConvexity(shellElement3d4n);
         end
         
+        function responseDoF = getResponseDofArray(shellElement3d4n, step)
+           
+            responseDoF = zeros(24,1);
+            for itNodes = 1:1:6
+                nodalDof = shellElement3d4n.nodeArray(itNodes).getDofArray;
+                nodalDof = nodalDof.';
+                
+                for itDof = 3:(-1):1
+                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
+                end
+            end
+        end
+        
+        
+        
+        
     end
 end

@@ -8,7 +8,7 @@ clear all;
 clc; 
 %% Initialization
 
-number_Elements = 4;
+number_Elements = 10;
 length_x = 1;
 
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
@@ -21,6 +21,8 @@ for i=1:length(a)
         ii = ii + 1; 
     end
 end
+nodeArray = node(:)';
+nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
 
 ii = 1; 
 for i = 1 : length(a) : (length(a)-1)^2
@@ -29,9 +31,7 @@ for i = 1 : length(a) : (length(a)-1)^2
         ii = ii + 1;
     end
 end
-
-nodeArray = node(:)';
-nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
+elementArray = ele(:)';
 
 ii = 1; 
 for i=1:length(node)
@@ -40,11 +40,11 @@ for i=1:length(node)
         ii= ii+1;
     end
 end
-
 boundary.fixDof('DISPLACEMENT_Z');
+boundary.fixDof('ROTATION_X');
+boundary.fixDof('ROTATION_Y');
 
 
-elementArray = ele(:)';
 
 elementArray.setPropertyValue('THICKNESS', 0.01);
 elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
@@ -52,26 +52,30 @@ elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
 elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+
 %% Solving system
+
+point_load = 61; 
 model = FemModel(nodeArray,elementArray);
-% model.getNode(13).setDofLoad('DISPLACEMENT_Z', -0.25);
-% 
-% solver = SimpleSolvingStrategy(model);
-% solver.solve();
-% 
-% % node(13).getDofValue('DISPLACEMENT_Z');
-% actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
-% actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
-% actualRotationY = model.getAllNodes.getDofValue('ROTATION_Y');
+model.getNode(point_load).setDofLoad('DISPLACEMENT_Z', -.25);
+solver = SimpleSolvingStrategy(model);
+solver.solve();
+actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
+actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
+actualRotationY = model.getAllNodes.getDofValue('ROTATION_Y');
+fprintf("Displacement at Node %i : %f", point_load, node(point_load).getDofValue('DISPLACEMENT_Z'));
 %% Eigenfrequencies
-eigensolver = EigensolverStrategy(model);
-eigensolver.solve(5);
-eigenfrequencies = sort(eigensolver.getEigenfrequencies());
-fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
+
+% eigensolver = EigensolverStrategy(model);
+% eigensolver.solve(5);
+% eigenfrequencies = sort(eigensolver.getEigenfrequencies());
+% fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
+
 %% Plot 
-% vis = Visualization(model); 
-% vis.plotUndeformed();
-% vis.plotDeformed();
+
+vis = Visualization(model); 
+vis.plotUndeformed();
+vis.plotDeformed();
 
 
 
