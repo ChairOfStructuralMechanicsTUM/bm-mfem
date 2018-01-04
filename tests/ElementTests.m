@@ -254,9 +254,8 @@ classdef ElementTests < matlab.unittest.TestCase
         end
         
         function testReissnerMindlinElement3d4nStatic (testCase)
-            warning('off','all')
             import matlab.unittest.constraints.IsEqualTo
-            import matlab.unittest.constraints.RelativeTolerance
+            import matlab.unittest.constraints.AbsoluteTolerance
         
             a=linspace(0,1,5);
             % Nodes
@@ -324,17 +323,15 @@ classdef ElementTests < matlab.unittest.TestCase
                         -0.00254235733839923;0;0;0;0;0;0];
             
             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-7)))
             testCase.assertThat(actualRotationX, IsEqualTo(expectedRotationX, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-7)))
             testCase.assertThat(actualRotationY, IsEqualTo(expectedRotationY, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-7)))
 
-            warning('on','all')
         end 
         
         function testReissnerMindlinElement3d4nEigen (testCase)
-            warning('off','all')
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
         
@@ -391,7 +388,6 @@ classdef ElementTests < matlab.unittest.TestCase
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
 
-            warning('on','all')
         end 
     end
 end
