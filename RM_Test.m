@@ -52,6 +52,7 @@ elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
 elementArray.setPropertyValue('DENSITY', 1);
 elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+elementArray.addProperty('FULL_INTEGRATION',false);
 
 %% Solving system
 
