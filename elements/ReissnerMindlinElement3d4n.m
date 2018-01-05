@@ -310,6 +310,22 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             vals([2 5 8 11]) = element.nodeArray.getDofValue('ROTATION_X',step);
             vals([3 6 9 12]) = element.nodeArray.getDofValue('ROTATION_Y',step);
         end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,12);
+            
+            [~, vals([1 4 7 10]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([2 5 8 11]), ~] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, vals([3 6 9 12]), ~] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,12);            
+            
+            [~, ~, vals([1 4 7 10])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, ~, vals([3 6 9 12])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+        end
    
     end
 end
