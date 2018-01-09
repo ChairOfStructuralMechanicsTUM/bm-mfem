@@ -21,50 +21,27 @@ classdef SimpleAssembler < Assembler
                 error('input model is missing');
             end
         end
-    
-      
     end
     
     methods (Static)
         
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
-            nDofs = length(femModel.getDofArray);
-            nNodalDofs = nDofs / length(femModel.getAllNodes);
-            stiffnessMatrix = zeros(nDofs);
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            stiffnessMatrix = zeros(ndofs);
             
-            for itEle = 1:length(femModel.getAllElements)
-                elements = femModel.getAllElements;
-                currentElement = elements(itEle);
-                elementFreedomTable = {};
-                
-                for itNode = 1:length(currentElement.getNodes)
-                    nodes = currentElement.getNodes;
-                    currentNode = nodes(itNode);
-                    globalDofArray = zeros(1,nNodalDofs);   %ids of the global dofs
-                    globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
-                   
-                    for i = (nNodalDofs - 1) : -1 : 1
-                        globalDofArray(i) = globalDofArray(i+1) - 1;
-                    end
-                    
-                    elementFreedomTable = [elementFreedomTable globalDofArray];
-                    
-                end
-                
-                elementFreedomTable = [elementFreedomTable{:}];
-                elementStiffnessMatrix = currentElement.computeLocalStiffnessMatrix;
-                
-                stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    = stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    + elementStiffnessMatrix;
-                
+            for itEle = 1:length(elements)
+               elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
+               elementalDofIds = elements(itEle).getDofList().getId;
+               stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
+                   stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
             end
-            
-            reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
-            
-        end
-        
-       
+            [~, fixedDofs] = femModel.getDofConstraints;
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
+            end
+        end 
         
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
