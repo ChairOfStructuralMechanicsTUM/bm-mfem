@@ -192,6 +192,8 @@ classdef FemModel < handle
                     element = ConcentratedMassElement3d1n(id, nodes);
                 case 'SpringDamperElement3d2n'
                     element = SpringDamperElement3d2n(id, nodes);
+                case 'ReissnerMindlinElement3d4n'
+                    element = ReissnerMindlinElement3d4n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
