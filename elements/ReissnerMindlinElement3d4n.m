@@ -141,8 +141,6 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
                 end
             end
         end
-
-        
         
         function massMatrix = computeLocalMassMatrix(reissnerMindlinElement3d4n)
             %Formulation of the Massmatrix based on the Shape Functions
@@ -167,116 +165,20 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             end
         end        
         
-        function massMatrix =  computeLocalMassMatrix_PRZEMIENIECKI(reissnerMindlinElement3d4n)
-            % Formuulation of the Massmatrix taken from PRZEMIENIECKI -
-            % Equivalent mass matrices for rectangular plates in bending
-            % p.950
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(12,12);
             
-            density = reissnerMindlinElement3d4n.getPropertyValue('DENSITY');
-            thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
-            a = reissnerMindlinElement3d4n.lengthX();
-            b = reissnerMindlinElement3d4n.lengthY();
-            V = a * b * thickness; 
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
             
-            massMatrix = sparse( 12,12);
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
             
-            massMatrix(1,1) = 24336; 
-            
-            massMatrix(2,1) = 3432 * b; 
-            massMatrix(2,2) = 624 * b^2; 
-            
-            massMatrix(3,1) = -3432 * a; 
-            massMatrix(3,2) = -484 * a * b; 
-            massMatrix(3,3) = 624 * a^2; 
-            
-            massMatrix(4,1) = 8424; 
-            massMatrix(4,2) = 2028 * b; 
-            massMatrix(4,3) = -1188 * a; 
-            massMatrix(4,4) = 24336; 
-            
-            massMatrix(5,1) = -2028 * b; 
-            massMatrix(5,2) = -468 * b^2; 
-            massMatrix(5,3) = 286 * a * b; 
-            massMatrix(5,4) = -3432 * b; 
-            massMatrix(5,5) = 624 * b^2; 
-            
-            massMatrix(6,1) = -1188 * a; 
-            massMatrix(6,2) = -286 * a * b; 
-            massMatrix(6,3) = 216 * a^2; 
-            massMatrix(6,4) = -3432 * a;
-            massMatrix(6,5) = 484 * a * b; 
-            massMatrix(6,6) = 624 * a^2; 
-            
-            massMatrix(7,1) = 2916; 
-            massMatrix(7,2) = 702 * b;
-            massMatrix(7,3) = -702 * a; 
-            massMatrix(7,4) = 8424; 
-            massMatrix(7,5) = -1188 * b;
-            massMatrix(7,6) = -2028 * a; 
-            massMatrix(7,7) = 24336; 
-            
-            massMatrix(8,1) = -702 * b; 
-            massMatrix(8,2) = -162 * b^2; 
-            massMatrix(8,3) = 169 * a * b; 
-            massMatrix(8,4) = -1188 * b;
-            massMatrix(8,5) = 216 * b^2;
-            massMatrix(8,6) = 286 * a * b; 
-            massMatrix(8,7) = -3432 * b; 
-            massMatrix(8,8) = 624 * b^2; 
-            
-            massMatrix(9,1) = 702 * a; 
-            massMatrix(9,2) = 169 * a * b; 
-            massMatrix(9,3) = -162 * a^2; 
-            massMatrix(9,4) = 2028 * a; 
-            massMatrix(9,5) = -286 * a * b; 
-            massMatrix(9,6) = -468 * a^2; 
-            massMatrix(9,7) = 3432 * a; 
-            massMatrix(9,8) = -484 * a * b; 
-            massMatrix(9,9) = 624 * a^2; 
-            
-            massMatrix(10,1) = 8424; 
-            massMatrix(10,2) = 1188 * b; 
-            massMatrix(10,3) = -2028 * a; 
-            massMatrix(10,4) = 2916; 
-            massMatrix(10,5) = -702 * b; 
-            massMatrix(10,6) = -702 * a; 
-            massMatrix(10,7) = 8424;
-            massMatrix(10,8) = -2028 * b; 
-            massMatrix(10,9) = 1188 * a; 
-            massMatrix(10,10) = 24336;
-            
-            massMatrix(11,1) = 1188 * b; 
-            massMatrix(11,2) = 216 * b^2; 
-            massMatrix(11,3) = -286 * a * b; 
-            massMatrix(11,4) = 702 * b; 
-            massMatrix(11,5) = -162 * b^2; 
-            massMatrix(11,6) = -169 * a * b; 
-            massMatrix(11,7) = 2028 * b; 
-            massMatrix(11,8) = -468 * b^2; 
-            massMatrix(11,9) = 286 * a * b; 
-            massMatrix(11,10) = 3432 * b; 
-            massMatrix(11,11) = 624 * b^2;
-            
-            massMatrix(12,1) = 2028 * a; 
-            massMatrix(12,2) = 286 * a * b; 
-            massMatrix(12,3) = -468 * a^2;
-            massMatrix(12,4) = 702 * a; 
-            massMatrix(12,5) = -169 * a * b; 
-            massMatrix(12,6) = -162 * a^2; 
-            massMatrix(12,7) = 1188 * a; 
-            massMatrix(12,8) = -286 * a * b; 
-            massMatrix(12,9) = 216 * a^2; 
-            massMatrix(12,10) = 3432 * a; 
-            massMatrix(12,11) = 484 * a * b;
-            massMatrix(12,12) = 624 * a^2; 
-            
-            massMatrix = massMatrix + tril(massMatrix,-1)';
-
-            massMatrix = (massMatrix * density * V)/176400; 
-        end
-        
-        function D = computeLocalDampingMatrix(e)
-            D = zeros(12,12);
         end
         
         function pl = drawDeformed(reissnerMindlinElement3d4n, step, scaling)
