@@ -38,21 +38,11 @@ classdef SimpleSolvingStrategy < Solver
         end
         
         function nodalForces = getNodalForces(simpleSolver, step)
+            nodalForces = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
+            [~, fixedDofs] = simpleSolver.femModel.getDofConstraints();
             
-            dofs = simpleSolver.femModel.getDofArray;
-            nDofs = length(dofs);
-            nodalForces = SimpleAssembler(simpleSolver.femModel).forceVector;
-            fixedDofs = [];
-            
-            for itDof = 1:nDofs
-                if (dofs(itDof).isFixed)
-                    fixedDofs = [fixedDofs itDof];                          % array of fixed dofs and their location
-                else
-                    nodalForces(itDof) = dofs(itDof).getDofLoad;
-                end
-            end
-            
-            nodalForces(fixedDofs) = SimpleAssembler(simpleSolver.femModel).stiffnessMatrix(fixedDofs, :) ...
+            K = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
+            nodalForces(fixedDofs.getId) = K(fixedDofs.getId, :) ...
                 * simpleSolver.femModel.getDofArray.getValue(step);
             
         end

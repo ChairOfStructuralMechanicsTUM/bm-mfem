@@ -3,10 +3,10 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
-        stiffnessMatrix
-        reducedStiffnessMatrix
-        forceVector
-        reducedForceVector
+%         stiffnessMatrix
+%         reducedStiffnessMatrix
+%         forceVector
+%         reducedForceVector
     end
     
     methods %test
@@ -14,8 +14,8 @@ classdef SimpleAssembler < Assembler
         function assembling = SimpleAssembler(femModel)
             if (nargin > 0)
                 
-                [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
-                [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
+%                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
+%                 [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
                 
             else
                 error('input model is missing');
@@ -47,27 +47,25 @@ classdef SimpleAssembler < Assembler
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
             forceVector = zeros(1,nDofs);
-            fixedDofs = [];
+            [~, fixedDofs] = femModel.getDofConstraints();
             
-             % get the external forces from every element
-            elements = femModel.getAllElements;
-            for itEle = 1:length(elements)                
-                elementalForceVector = elements(itEle).computeLocalForceVector;
-                elementalDofs = elements(itEle).getDofList;
-                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
-            end
-            
-            % get the point load on the dofs
+            % get the external load on the dofs
             for itDof = 1:nDofs
-                if (dofs(itDof).isFixed)
-                    fixedDofs = [fixedDofs itDof];   % array of fixed dofs and their location
-                else
+                if ( ~ dofs(itDof).isFixed)
                     forceVector(itDof) = dofs(itDof).getDofLoad;
                 end
             end
             
+             % get the external forces from every element
+%             elements = femModel.getAllElements;
+%             for itEle = 1:length(elements)                
+%                 elementalForceVector = elements(itEle).computeLocalForceVector;
+%                 elementalDofs = elements(itEle).getDofList;
+%                 forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
+%             end
+            
             reducedForceVector = forceVector;
-            reducedForceVector(fixedDofs) = [];
+            reducedForceVector(fixedDofs.getId()) = [];
             
         end
         
