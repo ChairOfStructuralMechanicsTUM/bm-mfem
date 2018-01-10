@@ -1,6 +1,5 @@
 classdef (Abstract) QuadrilateralElement < Element
-    
-    %PLATEELEMENT Summary of this class goes here
+    %QUADRILATERALELEMENT Base class for quadrilateral elements
     %   Detailed explanation goes here
     
     properties (Access = protected)

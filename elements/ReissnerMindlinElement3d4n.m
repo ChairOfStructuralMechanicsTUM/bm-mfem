@@ -1,5 +1,5 @@
 classdef ReissnerMindlinElement3d4n < QuadrilateralElement 
-    %REISSNERMINDLINPLATE  Summary of this class goes here
+    %REISSNERMINDLINELEMENT3D4N  A quadrilateral plate element
     %   Detailed explanation goes here
     
     properties (Access = private)
