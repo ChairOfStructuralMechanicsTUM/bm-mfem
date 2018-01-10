@@ -3,10 +3,10 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
-        stiffnessMatrix
-        reducedStiffnessMatrix
-        forceVector
-        reducedForceVector
+%         stiffnessMatrix
+%         reducedStiffnessMatrix
+%         forceVector
+%         reducedForceVector
     end
     
     methods %test
@@ -14,83 +14,58 @@ classdef SimpleAssembler < Assembler
         function assembling = SimpleAssembler(femModel)
             if (nargin > 0)
                 
-                [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
-                [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
+%                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
+%                 [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
                 
             else
                 error('input model is missing');
             end
         end
-    
-      
     end
     
     methods (Static)
         
         function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
-            nDofs = length(femModel.getDofArray);
-            nNodalDofs = nDofs / length(femModel.getAllNodes);
-            stiffnessMatrix = zeros(nDofs);
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            stiffnessMatrix = zeros(ndofs);
             
-            for itEle = 1:length(femModel.getAllElements)
-                elements = femModel.getAllElements;
-                currentElement = elements(itEle);
-                elementFreedomTable = {};
-                
-                for itNode = 1:length(currentElement.getNodes)
-                    nodes = currentElement.getNodes;
-                    currentNode = nodes(itNode);
-                    globalDofArray = zeros(1,nNodalDofs);   %ids of the global dofs
-                    globalDofArray(nNodalDofs) = nNodalDofs * currentNode.getId;
-                   
-                    for i = (nNodalDofs - 1) : -1 : 1
-                        globalDofArray(i) = globalDofArray(i+1) - 1;
-                    end
-                    
-                    elementFreedomTable = [elementFreedomTable globalDofArray];
-                    
-                end
-                
-                elementFreedomTable = [elementFreedomTable{:}];
-                elementStiffnessMatrix = currentElement.computeLocalStiffnessMatrix;
-                
-                stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    = stiffnessMatrix(elementFreedomTable, elementFreedomTable) ...
-                    + elementStiffnessMatrix;
-                
+            for itEle = 1:length(elements)
+               elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
+               elementalDofIds = elements(itEle).getDofList().getId;
+               stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
+                   stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
             end
-            
-            reducedStiffnessMatrix = SimpleAssembler.applyBoundaryConditions(femModel, stiffnessMatrix);
-            
-        end
-        
-       
+            [~, fixedDofs] = femModel.getDofConstraints;
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
+            end
+        end 
         
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
             forceVector = zeros(1,nDofs);
-            fixedDofs = [];
+            [~, fixedDofs] = femModel.getDofConstraints();
             
-             % get the external forces from every element
-            elements = femModel.getAllElements;
-            for itEle = 1:length(elements)                
-                elementalForceVector = elements(itEle).computeLocalForceVector;
-                elementalDofs = elements(itEle).getDofList;
-                forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
-            end
-            
-            % get the point load on the dofs
+            % get the external load on the dofs
             for itDof = 1:nDofs
-                if (dofs(itDof).isFixed)
-                    fixedDofs = [fixedDofs itDof];   % array of fixed dofs and their location
-                else
+                if ( ~ dofs(itDof).isFixed)
                     forceVector(itDof) = dofs(itDof).getDofLoad;
                 end
             end
             
+             % get the external forces from every element
+%             elements = femModel.getAllElements;
+%             for itEle = 1:length(elements)                
+%                 elementalForceVector = elements(itEle).computeLocalForceVector;
+%                 elementalDofs = elements(itEle).getDofList;
+%                 forceVector(elementalDofs.getId) = forceVector(elementalDofs.getId) + elementalForceVector;
+%             end
+            
             reducedForceVector = forceVector;
-            reducedForceVector(fixedDofs) = [];
+            reducedForceVector(fixedDofs.getId()) = [];
             
         end
         
