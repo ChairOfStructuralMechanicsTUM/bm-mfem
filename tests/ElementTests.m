@@ -331,6 +331,78 @@ classdef ElementTests < matlab.unittest.TestCase
 
         end 
         
+        function testReissnerMindlinElement3d4nDynamic (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            model = FemModel();
+            nelex = 5;
+            mid = 13;
+            a=linspace(0,1,nelex);
+            
+            % Nodes
+            ii = 1;
+            for i=1:nelex
+                for j=1:nelex
+                    model.addNewNode(ii,a(j),a(i),0);
+                    ii = ii + 1;
+                end
+            end
+            model.getAllNodes.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'});
+            nodes = model.getAllNodes();
+            
+            % Elements
+            ii = 1;
+            for i = 1 : nelex : (nelex^2-nelex)
+                for j= i:(i+nelex-2)
+                    model.addNewElement('ReissnerMindlinElement3d4n', ii, [nodes(j) nodes(j+1) nodes(j+nelex+1) nodes(j+nelex)]);
+                    ii = ii + 1;
+                end
+            end
+            
+            % Boundary Conditions
+            for i=1:length(nodes)
+                if nodes(i).getX == 0 || nodes(i).getY == 0 || nodes(i).getX == 1 || nodes(i).getY == 1
+                    nodes(i).fixDof('DISPLACEMENT_Z');
+                end
+            end
+            
+            % Properties
+            model.getAllElements.setPropertyValue('THICKNESS', .00125);
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.07e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT', 4);
+            model.getAllElements.setPropertyValue('DENSITY', 7850);
+            model.getAllElements.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
+            
+            % Solver
+            model.getNode(mid).setDofLoad('DISPLACEMENT_Z', 1);
+            
+            dt = .01;
+            time = 0;
+            endTime = .2;
+            solver = NewmarkSolvingStrategy(model, dt);
+            
+            while time < endTime
+                solver.solve();
+                time = time + dt;                
+            end
+            
+            actualDisplacementZ = model.getNode(mid).getDofValue('DISPLACEMENT_Z','all');
+            
+            expectedDisplacementZ = [0 5.63499025462025e-05 0.000110356168474448 ...
+                0.000195291413790720 0.000348022151124683 0.000436442533214557 ...
+                0.000549911355006482 0.000638983074213174 0.000633900627028416 ...
+                0.000646184028790807 0.000576985852794556 0.000460890315653250 ...
+                0.000377492675821615 0.000228575313367927 0.000127279605314402 ...
+                7.17349829089917e-05 3.30152776432233e-06 4.13423283962989e-05 ...
+                9.48520255923515e-05 0.000166360041372910 0.000315266268863059];
+            
+            testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+                'Within', AbsoluteTolerance(1e-7)))
+            
+        end
+        
         function testReissnerMindlinElement3d4nEigen (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
