@@ -101,6 +101,61 @@ classdef SolverTests <  matlab.unittest.TestCase
                 
             end
         end
+        
+        function PODtest(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            %solve POD
+            POD_model = SolverTests.create12DofModel;
+            PODsolver = MORStrategy(POD_model,'POD','nPODmodes',8);
+            coarse_sampling = linspace(1e-4,3.188,41);
+            fine_sampling = linspace(0,1,120);
+            PODsolver.initialize(coarse_sampling);
+            PODsolver.solve(fine_sampling);
+            disp = abs(POD_model.getNode(12).getDofValue('DISPLACEMENT_X','all'));
+            load('tests/test_data.mat','POD_disp');
+            
+            testCase.assertThat(disp, IsEqualTo(POD_disp, ...
+                    'Within', AbsoluteTolerance(1e-5)))
+        end
+    end
+    
+    methods (Access = private, Static)
+        function model = create12DofModel
+            model = FemModel();
+            
+            %nodes
+            n01 = model.addNewNode(1,0,0,0);
+            n=12;
+            for id = 1:n
+                model.addNewNode(1+id,10*id/n,0,0);
+            end
+            endnode = model.getNode(n+1);
+            
+            model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            %elements
+            for id = 1:n
+                model.addNewElement('SpringDamperElement3d2n', id, [id id+1]);
+            end
+            model.getAllElements.setPropertyValue('ELEMENTAL_STIFFNESS',1);
+            model.getAllElements.setPropertyValue('ELEMENTAL_DAMPING',0.6);
+            
+            %masses
+            mass_id = length(model.getAllElements()) + 1;
+            for id = 1:n
+                model.addNewElement('ConcentratedMassElement3d1n',id + n, id+1);
+            end
+            
+            model.getElements(mass_id:length(model.getAllElements)).setPropertyValue('ELEMENTAL_MASS',1);
+            
+            %boundary conditions
+            addPointLoad(endnode,10,[1 0 0]);
+            model.getAllNodes.fixDof('DISPLACEMENT_Y');
+            model.getAllNodes.fixDof('DISPLACEMENT_Z');
+            n01.fixAllDofs();
+        end
     end
     
 end
