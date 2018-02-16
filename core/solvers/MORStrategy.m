@@ -18,11 +18,13 @@ classdef MORStrategy < Solver
         forceR
         
         MORmethod
+        
+        nPODmodes
     end
     
     methods
         
-        function strategy = MORStrategy(femModel, method)
+        function strategy = MORStrategy(femModel, method, varargin)
             if nargin > 0
                 strategy.femModel = femModel;
                 strategy.assembler = SimpleAssembler(femModel);
@@ -31,6 +33,11 @@ classdef MORStrategy < Solver
             else
                 error("Error (MORStratey): no fem model defined!")
             end
+            
+            p = inputParser;
+            p.addParameter('nPODmodes', -1, @isnumeric);
+            p.parse(varargin{:});
+            strategy.nPODmodes = p.Results.nPODmodes;
         end
         
         function solve(s, samplingPoints)
@@ -89,6 +96,31 @@ classdef MORStrategy < Solver
                         basis(:,(ii-1)*3+1:(ii-1)*3+3) = [u,dudw,dduddw];
                     end
                     [s.basisR, ~] = qr(basis, 0);
+                    s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
+                    s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
+                    s.forceR = s.basisR.' * force';
+                    
+                case 'POD'
+                    %generate snapshots in frequency domain
+                    %do not exceed the smapling range to frequencies, where
+                    %there is no systems response
+                    u_snap = zeros(length(force), length(sampling));
+                    for ii = 1:length(sampling) 
+                        sp = sampling(ii);
+                        u_snap(:,ii) = (-sp^2 * massMatrix + stiffnessMatrix) \ force';
+                    end
+                    
+                    %compute eigenvectors
+                    %do not choose a higher number of POD modes than there
+                    %are eigenfrequencies in the sampling frequency range
+                    %(2*max(sampling))
+                    if s.nPODmodes > 0
+                        [basis, ~] = eigs(u_snap' * u_snap, s.nPODmodes, 'lm');
+                    else
+                        error('Error (MORStratey): please provide a valid number of POD modes')
+                    end
+                    
+                    s.basisR = u_snap * basis;
                     s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
                     s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
                     s.forceR = s.basisR.' * force';
