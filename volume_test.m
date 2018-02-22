@@ -20,7 +20,7 @@ elementArray = [ele01];
 
 elementArray.setPropertyValue('YOUNGS_MODULUS',32);
 elementArray.setPropertyValue('POISSON_RATIO',1/3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT',3);
 elementArray.setPropertyValue('DENSITY',7860);
 
 elementIds = elementArray.getId;
