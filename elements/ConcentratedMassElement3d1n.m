@@ -8,29 +8,25 @@ classdef ConcentratedMassElement3d1n < Element
     methods
         % constructor
         function element = ConcentratedMassElement3d1n(id, nodeArray)
+            requiredPropertyNames = cellstr(["ELEMENTAL_MASS", "VOLUME_ACCELERATION"]);
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                if ~(length(nodeArray) == 1 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
             
             % call the super class constructor
             element@Element(super_args{:});
             element.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            element.requiredProperties = cellstr("ELEMENTAL_MASS");
-            element.required3dProperties = cellstr("VOLUME_ACCELERATION");
-            
-            % the constructor
-            if nargin > 0
-                if (length(nodeArray) == 1 && isa(nodeArray,'Node'))
-                    element.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
-            end
-            
+                        
         end
         
+        function initialize(element)
+            
+        end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(element)
             stiffnessMatrix = zeros(3);
@@ -52,6 +48,36 @@ classdef ConcentratedMassElement3d1n < Element
         
         function dampingMatrix = computeLocalDampingMatrix(element)
             dampingMatrix = zeros(3);
+        end
+        
+        function dofs = getDofList(element)
+            dofs(1) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs(2) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs(3) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,3);
+            
+            vals(1) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals(2) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals(3) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+        end
+        
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,3);
+            
+            [~, vals(1), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals(2), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals(3), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,3);
+
+            [~, ~, vals(1)] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals(2)] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals(3)] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
         end
         
         

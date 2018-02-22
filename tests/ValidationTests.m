@@ -52,6 +52,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
         function sdofWithHarmonicExcitation(testCase)
             %SDOFWITHHARMONICEXCITATION sdof spring mass system with
             %harmonic excitiation
+            
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             
@@ -100,6 +101,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 
                 time = time + dt;
             end
+            
         end
         
         function mdofWithDamping(testCase)
@@ -157,6 +159,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 
                 time = time + dt;
             end
+            
         end
         
         function twoDofHarmonicAnalysis(testCase)

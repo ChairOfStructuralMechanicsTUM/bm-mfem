@@ -42,15 +42,22 @@ classdef NewmarkSolvingStrategy < Solver
             if ~solver.isInitialized
                 solver.initialize;
             end
+            step = solver.femModel.getProperties.getValue('STEP');
             [~, fixedDofs] = solver.femModel.getDofConstraints();
             fixedDofIds = fixedDofs.getId();
             
             [~, force] = solver.assembler.applyExternalForces(solver.femModel);
-            dispOld = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
+            dispOld = solver.assembler.assembleValuesVector(solver.femModel, step);
             dispOld = applyVectorBoundaryConditions(dispOld, fixedDofIds)';
-            velOld = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
+            velOld = solver.assembler.assembleFirstDerivativesVector(solver.femModel, step);
+%             velOld = solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_X', step) ...
+%                 + solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_Y', step) ...
+%                 + solver.assembler.assembleFirstDerivativesVector2(solver.femModel, 'DISPLACEMENT_Z', step);
             velOld = applyVectorBoundaryConditions(velOld, fixedDofIds)';
-            accOld = solver.assembler.assemble3dValueVector(solver.femModel, 'ACCELERATION');
+            accOld = solver.assembler.assembleSecondDerivativesVector(solver.femModel, step);
+%             accOld = solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_X', step) ...
+%                 + solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_Y', step) ...
+%                 + solver.assembler.assembleSecondDerivativesVector2(solver.femModel, 'DISPLACEMENT_Z', step);
             accOld = applyVectorBoundaryConditions(accOld, fixedDofIds)';
             
             if solver.alpha == 0
@@ -70,21 +77,22 @@ classdef NewmarkSolvingStrategy < Solver
                     + solver.dampingMatrix * (dispOld .* c(2) + velOld .* c(5) + accOld .* c(6));
                 
                 dispNew = linsolve(solver.lhs, rhs);
-                accNew = dispNew .* c(1) - dispOld .* c(1) - velOld .* c(3) - accOld .* c(4);
-                velNew = velOld + accOld .* (solver.dt * (1 - solver.gamma)) + accNew .* (solver.dt * solver.gamma);
+                accNew = (dispNew - dispOld) .* c(1) - velOld .* c(3) - accOld .* c(4);
+                velNew = velOld + (solver.dt * (1 - solver.gamma)) .* accOld + accNew .* (solver.dt * solver.gamma);
             end
             
             %write the values back to the dofs / nodes
             solver.assembler.appendValuesToDofs(solver.femModel, dispNew);
-            solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', velNew);
-            solver.assembler.appendValuesToNodes(solver.femModel, 'ACCELERATION', accNew);
+            solver.assembler.appendFirstDerivativeValuesToDofs(solver.femModel, velNew);
+            solver.assembler.appendSecondDerivativeValuesToDofs(solver.femModel, accNew);
+            
+            solver.femModel.getProperties.setValue('STEP', step+1);
             
         end
         
         function initialize(solver)
             solver.femModel.initialize;
-            solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
-                "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
+            step = solver.femModel.getProperties.getValue('STEP');
             
             % assemble and reduce matrices
             [~, fixedDofs] = solver.femModel.getDofConstraints();
@@ -99,13 +107,14 @@ classdef NewmarkSolvingStrategy < Solver
             
             % initial acceleration
             [~, force0] = solver.assembler.applyExternalForces(solver.femModel);
-            disp = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
+            disp = solver.assembler.assembleValuesVector(solver.femModel, step);
             disp0 = applyVectorBoundaryConditions(disp, fixedDofIds)';
-            vel = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
+            vel = solver.assembler.assembleFirstDerivativesVector(solver.femModel, step);
             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             
-            acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
-            solver.assembler.assignValuesToNodes(solver.femModel, 'ACCELERATION', acc0, 1);
+%             acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+            acc0 = linsolve(solver.massMatrix, (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0));
+            solver.assembler.setSecondDerivativeValuesToDofs(solver.femModel, acc0);
             solver.isInitialized = true;
             
             if solver.alpha == 0

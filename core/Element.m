@@ -4,31 +4,45 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     properties (Access = private)
         id
-        eProperties
     end
     properties (Access = protected)
         nodeArray
         dofNames
-        requiredProperties
-        required3dProperties
+        eProperties
+        requiredPropertyNames
     end
     
     methods
         % constructor
-        function element = Element(id)
-            if nargin == 1
+        function element = Element(id, nodeArray, requiredPropertyNames)
+            if nargin > 0
                 element.id = id;
                 element.eProperties = PropertyContainer();
                 element.nodeArray = {};
             end
+            
+            if nargin == 3
+                element.nodeArray = nodeArray;
+                
+                for ii = 1:length(requiredPropertyNames)
+                    element.eProperties.addValue(requiredPropertyNames{ii});
+                end
+                element.requiredPropertyNames = requiredPropertyNames;
+                
+                element.initialize();
+            end
+            
         end
     end
     
     methods (Abstract)
+        initialize(element)
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
         computeLocalStiffnessMatrix(element)
         computeLocalForceVector(element)
+        getDofList(element)
+        getValuesVector(element, step)
     end
     
     methods (Sealed)
@@ -55,13 +69,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
-        function dofs = getDofs(element)
-           dofs = Dof.empty;
-           nodes = element.nodeArray;
-           for ii = 1:length(nodes)
-              dofs = [dofs nodes(ii).getDofArray'];
-           end
-        end
+%         function dofs = getDofs(element)
+%            dofs = Dof.empty;
+%            nodes = element.nodeArray;
+%            for ii = 1:length(nodes)
+%               dofs = [dofs nodes(ii).getDofArray];
+%            end
+%         end
         
         function setProperties(elements, props)
             for ii = 1:length(elements)
@@ -72,6 +86,12 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         function setPropertyValue(elements, valueName, value)
             for ii = 1:length(elements)
                 elements(ii).eProperties.setValue(valueName, value);
+            end
+        end
+        
+        function addProperty(elements, valueName, value)
+            for ii = 1:length(elements)
+                elements(ii).eProperties.addValue(valueName, value);
             end
         end
             
@@ -100,26 +120,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
             
             %check the properties
-            valsToCheck = element.requiredProperties;
+            valsToCheck = element.requiredPropertyNames;
             properties = element.getProperties;
             availableValueNames = properties.getValueNames;
             for ii = 1:length(valsToCheck)
                 if ~ any(ismember(valsToCheck(ii), availableValueNames))
 %                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.setValue(cell2mat(valsToCheck(ii)), 0);
-                end
-            end
-            
-            valsToCheck3d = element.required3dProperties;
-            for ii = 1:length(valsToCheck3d)
-                if any(ismember(valsToCheck3d(ii), availableValueNames))
-                    val = properties.getValue(cell2mat(valsToCheck3d(ii)));
-                    if length(val) ~= 3
-                        error('error in element %d: property %s must have 3 values', element.id, cell2mat(valsToCheck3d(ii)))
-                    end
-                else
-%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.setValue(cell2mat(valsToCheck3d(ii)), [0, 0, 0]);
+                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
                 end
             end
         end

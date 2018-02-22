@@ -68,9 +68,9 @@ addPointLoad(node07,16,[0 -1 0]);
 model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.stiffnessMatrix;
-forceVector = assembling.forceVector;
-reducedForceVector = assembling.reducedForceVector;
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+forceVector = assembling.applyExternalForces(model);
+% reducedForceVector = assembling.reducedForceVector;
 
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
@@ -98,3 +98,5 @@ n09d(2).getValue(step);
 n01d = node01.getDofArray;
 n01d(1).getValueType;
 n01d(1).getValue(step);
+
+
