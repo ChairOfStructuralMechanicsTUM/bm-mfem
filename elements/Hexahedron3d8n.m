@@ -14,29 +14,23 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
         % constructor
         function hexahedron3d8n = Hexahedron3d8n(id, nodeArray)
             
+            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO","NUMBER_GAUSS_POINT", "DENSITY"]);
+            
             % define the arguments for the super class constructor call
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                super_args = {id};
+                if ~(length(nodeArray) == 8 && isa(nodeArray,'Node'))
+                    error('problem with the nodes in element %d', id);
+                end
+                super_args = {id, nodeArray, requiredPropertyNames};
             end
             
             % call the super class constructor
             hexahedron3d8n@Element(super_args{:});
             
             hexahedron3d8n.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
-            hexahedron3d8n.requiredProperties = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO","NUMBER_GAUSS_POINT", "DENSITY"]);
-            hexahedron3d8n.required3dProperties = [ ];
             
-            % the constructor
-            if nargin > 0
-                if (length(nodeArray) == 8 && isa(nodeArray,'Node'))
-                    hexahedron3d8n.nodeArray = nodeArray;
-                else
-                    error('problem with the nodes in element %d', id);
-                end
-                
-            end
             
         end
         
@@ -184,21 +178,38 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
             
         end
         
-        function computeLocalForceVector(e)
-            
+        function forceVector = computeLocalForceVector(element)
+            forceVector = sparse(1,24);
         end
         
-        function barycenter(e)
-            
+        function initialize(element)
+            %Implemantation here if necessary
         end
         
-        function update(e)
-            
+        function update(element)
+            %Implemantation here if necessary
         end
         
+        function barycenter(element)
+            %Can be determined via integration; Implementation just if
+            %necessary; not trivial
+        end
+        
+        function dofs = getDofList(element)
+            dofs([1 4 7 10 13 16 19 22]) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 5 8 11 14 17 20 23]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([3 6 9 12 15 18 21 24]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        end
+        
+        function vals = getValuesVector(element, step)
+            vals = zeros(1,24);
+            
+            vals([1 4 7 10 13 16 19 22]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 5 8 11 14 17 20 23]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 6 9 12 15 18 21 24]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+        end
         
     end
-    
     
     methods (Access = protected)
         
@@ -208,7 +219,6 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
         end
         
     end
-    
-    
+      
 end
 

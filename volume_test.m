@@ -18,7 +18,7 @@ ele01 = Hexahedron3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node0
 
 elementArray = [ele01];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',32);
+elementArray.setPropertyValue('YOUNGS_MODULUS',32000);
 elementArray.setPropertyValue('POISSON_RATIO',1/3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',3);
 elementArray.setPropertyValue('DENSITY',7860);
