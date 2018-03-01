@@ -13,9 +13,9 @@ ele01 = QuadrilateralElement2d4n(1,[node01 node02 node03 node04]);
 
 elementArray = [ele01];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',96000000);
-elementArray.setPropertyValue('POISSON_RATIO',1/3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+elementArray.setPropertyValue('YOUNGS_MODULUS',96);
+elementArray.setPropertyValue('POISSON_RATIO',0.2);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT',1);
 elementArray.setPropertyValue('DENSITY',7860);
 
 elementIds = elementArray.getId;
@@ -31,6 +31,7 @@ model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+stiffnessMatrix_2 = computeLocalStiffnessMatrix_Option2(ele01,2,1);
 
 for i=1:8
     for j=1:8

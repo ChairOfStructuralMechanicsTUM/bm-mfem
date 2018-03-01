@@ -113,6 +113,32 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement2d
             end
         end
         
+        function stiffnessMatrix = computeLocalStiffnessMatrix_Option2(quadrilateralElement2d4n,a,b)
+            EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
+            PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
+            s=a/b;
+            width=1;
+            
+            k1 = (1 + PoissonRatio)*s;
+            k2 = (1 - 3*PoissonRatio)*s;
+            k3 = 2 + (1 - PoissonRatio)*s^2;
+            k4 = 2*s^2 + (1 - PoissonRatio);
+            k5 = (1 - PoissonRatio)*s^2 - 4;
+            k6 = (1 - PoissonRatio)*s^2 - 1;
+            k7 = 4*s^2 - (1 - PoissonRatio);
+            k8 = s^2 - (1 -PoissonRatio);
+            
+            stiffnessMatrix = EModul*width/(24*s*(1-PoissonRatio^2)) * [  4*k3  3*k1  2*k5 -3*k2 -2*k3 -3*k1 -4*k6  3*k2;
+                3*k1  4*k4  3*k2  4*k8 -3*k1 -2*k4 -3*k2 -2*k7;
+                2*k5  3*k2  4*k3 -3*k1 -4*k6 -3*k2 -2*k3  3*k1;
+                -3*k2  4*k8 -3*k1  4*k4  3*k2 -2*k7  3*k1 -2*k4;
+                -2*k3 -3*k1 -4*k6  3*k2  4*k3  3*k1  2*k5 -3*k2;
+                -3*k1 -2*k4 -3*k2 -2*k7  3*k1  4*k4  3*k2  4*k8;
+                -4*k6 -3*k2 -2*k3  3*k1  2*k5  3*k2  4*k3 -3*k1;
+                3*k2 -2*k7  3*k1 -2*k4 -3*k2  4*k8 -3*k1  4*k4];
+            
+        end
+        
         function massMatrix = computeLocalMassMatrix(quadrilateralElement2d4n)
             roh = quadrilateralElement2d4n.getPropertyValue('DENSITY');
             p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
