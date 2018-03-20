@@ -54,8 +54,54 @@ classdef ShellElement3d4n < QuadrilateralElement
             end
         end
         
+        function [] = computeShapeFunction(shellElement3d4n, xi, eta)
+            
+            M = [(1-xi)/2    (1+xi)/2    ;   (1-eta)/2     (1+eta)/2];
+            N = [1/2 - 3/4*xi + xi^3/4     ,  1/4 - xi/4 - xi^2/4 + xi^3/4       , 1/2 + 3/4 * xi - xi^3/4      ,  -1/4 - xi/4 +xi^2/4 + xi^3/4      
+                    1/2 - 3/4*eta + eta^3/4 , 1/4 - eta/4 - eta^2/4 + eta^3/4 , 1/2 + 3/4 * eta - eta^3/4 ,  -1/4 - eta/4 +eta^2/4 + eta^3/4]
+            
+            MN = sparse(2,16); 
+            
+            MN(1,1)   =  M(1,1) * N(2,1); 
+            MN(2,2)   =  M(2,1) * N(1,1);
+            MN(1,3)   = -M(1,1) * N(2,2); 
+            MN(2,4)   =  M(2,1) * N(1,2);
+            MN(1,5)   =  M(1,2) * N(2,1);
+            MN(2,6)   =  M(2,1) * N(1,3);
+            MN(1,7)   = -M(1,2) * N(2,2);
+            MN(2,8)   =  M(2,1) * N(1,3); 
+            MN(1,9)   =  M(1,2) * N(2,3); 
+            MN(2,10) =  M(2,2) * N(1,3); 
+            MN(1,11) = -M(1,2) * N(2,4); 
+            MN(2,12) =  M(2,2) * N(1,4); 
+            MN(1,13) =  M(1,1) * N(2,3); 
+            MN(2,14) =  M(2,2) * N(1,1); 
+            MN(1,15) = -M(1,1) * N(2,4); 
+            MN(2,16) =  M(2,2) * N(1,2); 
+            
+            
+            Tr = sparse(16,12);
+            
+            Tr(1,1) = 1; 
+            Tr(2,2) = 1; 
+            Tr(3,3) = 
+            
+            
+            
+        end
         
+        function stiffnessMatrix = computeLocalStiffnessMatrix(shellElement3d4n)
+            EModul = reissnerMindlinElement3d4n.getPropertyValue('YOUNGS_MODULUS');
+            prxy = reissnerMindlinElement3d4n.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = reissnerMindlinElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            thickness = reissnerMindlinElement3d4n.getPropertyValue('THICKNESS');
+            alpha_shear = reissnerMindlinElement3d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');     % shear correction factor
         
+        end
         
     end
 end
+
+
+
+
