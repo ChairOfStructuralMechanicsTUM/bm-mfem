@@ -10,6 +10,7 @@ classdef ModelIO < handle
         % default element types
         line2n = 'BarElement3d2n'
         triangle3n = 'not yet implemented'
+        quadrilateral = 'PlaneStessElement3d4n'
         %etc
     end
     
@@ -133,6 +134,11 @@ classdef ModelIO < handle
                             case 2 % 3-node triangle
                                 
                             case 3 %4-node quadrangle
+                                
+                                cElement = PlaneStressElement3d4n(elementData(1),...
+                                    [nodes(elementData(end-3)) nodes(elementData(end-2)) ...
+                                    nodes(elementData(end-1)) nodes(elementData(end))]);
+                                            
                                 
                             case 15 %1-node point
                                 % here, cElement points to a node; gmsh
