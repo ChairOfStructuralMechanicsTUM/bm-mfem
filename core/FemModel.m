@@ -194,6 +194,8 @@ classdef FemModel < handle
                     element = SpringDamperElement3d2n(id, nodes);
                 case 'ReissnerMindlinElement3d4n'
                     element = ReissnerMindlinElement3d4n(id, nodes);
+                case 'ShellElement3d4n'
+                    element = ShellElement3d4n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
