@@ -1,10 +1,17 @@
-function [ plate ] = createRectangularPlate( lx, ly, nx, ny, varargin )
+function [ plate, x0, xl, y0, yl ] = createRectangularPlate( lx, ly, nx, ny, varargin )
 %CREATERECTANGULARPLATE Creates the mesh of a rectangular plate
-%   lx: length in x
-%   ly: length in y
-%   nx: number of elements in x
-%   ny: number of elements in y
-%   'elementType': used element type
+%   inputs:
+%       lx: length in x
+%       ly: length in y
+%       nx: number of elements in x
+%       ny: number of elements in y
+%       'elementType': used element type
+%    outputs:
+%        plate: FemModel with all nodes and elements
+%        x0: nodes on x=0
+%        xl: nodes on x=ly
+%        y0: nodes on y=0
+%        yl: nodes on y=lx
 
 p = inputParser();
 p.addParameter('elementType','ReissnerMindlinElement3d4n');
@@ -33,6 +40,12 @@ for idy = 1:ny
         ide = ide + 1;
     end
 end
+
+nNodes = (nx+1)*(ny+1);
+x0 = plate.getNodes(1:nx+1:nNodes);
+y0 = plate.getNodes(1:nx+1);
+xl = plate.getNodes(nx+1:nx+1:nNodes);
+yl = plate.getNodes(nNodes-nx:nNodes);
 
 end
 
