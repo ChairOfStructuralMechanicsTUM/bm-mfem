@@ -17,5 +17,15 @@ end
 addpath('tests');
 addpath('utilities');
 
+% check, if all neccessary toolboxes are installed
+requiredToolboxes = {'MATLAB','Mapping Toolbox'};
+v = ver;
+[installedToolboxes{1:length(v)}] = deal(v.Name);
+missing = setdiff(requiredToolboxes,installedToolboxes);
+if ~isempty(missing)
+    error('required %s is not available\n',missing{:})
+end
+clear v installedToolboxes requiredToolboxes missing
+
 % switch off unnecessary warnings
 warning off MATLAB:handle_graphics:exceptions:SceneNode
