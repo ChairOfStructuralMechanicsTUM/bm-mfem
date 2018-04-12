@@ -78,7 +78,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement2d
             Jinv=inv(J);
             
             % Calculation of B-Matrix
-            B=Jinv*[N_Diff_Par]/Jdet;
+            B=J\N_Diff_Par;%/Jdet;
             Bx=B(1,1:4);
             By=B(2,1:4);
         end

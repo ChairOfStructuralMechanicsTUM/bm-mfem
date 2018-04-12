@@ -1,8 +1,8 @@
 clear;
 
 node01 = Node(1,0,0);
-node02 = Node(2,2,0);
-node03 = Node(3,2,1);
+node02 = Node(2,1,0);
+node03 = Node(3,1,1);
 node04 = Node(4,0,1);
 
 nodeArray = [node01 node02 node03 node04];
@@ -13,9 +13,9 @@ ele01 = QuadrilateralElement2d4n(1,[node01 node02 node03 node04]);
 
 elementArray = [ele01];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',96);
-elementArray.setPropertyValue('POISSON_RATIO',0.2);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',1);
+elementArray.setPropertyValue('YOUNGS_MODULUS',96000000);
+elementArray.setPropertyValue('POISSON_RATIO',1/3);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
 elementArray.setPropertyValue('DENSITY',7860);
 
 elementIds = elementArray.getId;
@@ -25,21 +25,13 @@ node01.fixDof('DISPLACEMENT_Y');
 node04.fixDof('DISPLACEMENT_X');
 node04.fixDof('DISPLACEMENT_Y');
 
-addPointLoad(node03,1,[0 -1]);
+addPointLoad(node03,10,[0 -1]);
 
 model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-stiffnessMatrix_2 = computeLocalStiffnessMatrix_Option2(ele01,2,1);
-
-for i=1:8
-    for j=1:8
-        if stiffnessMatrix(i,j)<1e-6
-            stiffnessMatrix(i,j)=0;
-        end
-    end
-end
+stiffnessMatrix_2 = computeLocalStiffnessMatrix_Option2(ele01,1,1);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
@@ -56,7 +48,7 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 nodalForces = solver.getNodalForces(step);
 
 %x=0:0.25:1.75;
-fig=figure;
+%fig=figure;
 plot(0:1:1.75,VerschiebungDofs(2:2:4))
     
     
