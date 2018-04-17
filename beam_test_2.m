@@ -1,3 +1,5 @@
+%%%Test Beam
+
 clear;
 
 node01 = Node(1,0,0);
