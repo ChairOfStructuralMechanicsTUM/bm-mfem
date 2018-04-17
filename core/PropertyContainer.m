@@ -48,7 +48,12 @@ classdef PropertyContainer < handle
                    error('The value for property \"%s\" must be a vector of length 3.', name)
                end
                propertyContainer.propertyMap(name) = value;
-               
+           
+           elseif strcmp(type, 'flag')
+              if nargin == 1
+                  value = true; 
+              end
+              propertyContainer.propertyMap(name) = value;
            else
                error('A property with name \"%s\" is not defined in mfem!', name)
            end

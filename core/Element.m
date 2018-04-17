@@ -88,6 +88,12 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                 elements(ii).eProperties.setValue(valueName, value);
             end
         end
+        
+        function addProperty(elements, valueName, value)
+            for ii = 1:length(elements)
+                elements(ii).eProperties.addValue(valueName, value);
+            end
+        end
             
         
         function check(element)
