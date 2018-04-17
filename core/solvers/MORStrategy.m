@@ -3,22 +3,19 @@ classdef MORStrategy < Solver
     %   Detailed explanation goes here
     
     properties (Access = private)
+        %base properties
         femModel
         assembler
         isInitialized
+        MORmethod
         
-        %stiffnessMatrix
-        %dampingMatrix
-        %massMatrix
-        %basis
-        
+        %reduced matrices and vectors
         stiffnessMatrixR
         massMatrixR
         basisR
         forceR
         
-        MORmethod
-        
+        %specific values
         nPODmodes
     end
     
@@ -54,6 +51,8 @@ classdef MORStrategy < Solver
         end
         
         function initialize(s, sampling)
+            %INITIALIZE assembles and reduces all needed matrices and
+            %vectors according to the chosen MOR method
             if ~ s.femModel.isInitialized()
                 s.femModel.initialize;
             end
@@ -126,7 +125,7 @@ classdef MORStrategy < Solver
                     s.forceR = s.basisR.' * force';
                     
                 otherwise
-                    error('unknown MOR method!')
+                    error('Error (MORStrategy.initialize): unknown MOR method!')
             end
             
             s.isInitialized = true;

@@ -27,8 +27,6 @@ classdef BeamElement3d2n < LinearElement
             beamElement@LinearElement(super_args{:});
             beamElement.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
                 "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
-            
-%             warning('using the experimental beam element')
         end
         
         function initialize(element)
