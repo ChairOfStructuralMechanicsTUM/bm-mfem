@@ -132,6 +132,9 @@ classdef ModelIO < handle
                                 
                                 
                             case 2 % 3-node triangle
+                                cElement = PlaneStressElement3d3n(elementData(1),...
+                                    [nodes(elementData(end-2)) nodes(elementData(end-1)) ...
+                                    nodes(elementData(end))]);
                                 
                             case 3 %4-node quadrangle
                                 

@@ -30,7 +30,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
     
         %Initialization
         function initialize(planeStressElement3d4n)
-            planeStressElement3d4n.lengthY = computeLength(planeStressElement3d4n.nodeArray(1).getCoords, ...
+            planeStressElement3d4n.lengthX = computeLength(planeStressElement3d4n.nodeArray(1).getCoords, ...
                 planeStressElement3d4n.nodeArray(2).getCoords);
 
             planeStressElement3d4n.lengthY = computeLength(planeStressElement3d4n.nodeArray(1).getCoords, ...
@@ -92,7 +92,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
 
             % Moment-Curvature Equations
             D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
-            % Material Bending Matrix D
+            % Material Matrix D
             D = D * EModul * thickness / (1-prxy^2);
 
             [w,g] = returnGaussPoint(nr_gauss_points);
@@ -142,6 +142,62 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
+        %Computation of the Internal Element Stresses
+        function [stressValue, element_nodes] = computeElementStress(elementArray,nodeArray, step)
+
+            element_nodes = zeros(length(elementArray),4);
+
+            
+            for i = 1:length(elementArray)
+
+                element_nodes(i,1:4) = elementArray(i).getNodes.getId();
+                stressPoints = [-1 -1;1 -1;1 1;-1 1];            
+                EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
+                thickness = elementArray(i).getPropertyValue('THICKNESS');
+                prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
+                % Moment-Curvature Equations
+                D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
+                % Material Matrix D
+                D = D * EModul * thickness / (1-prxy^2);
+                
+                for j = 1:4
+                    [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
+                    displacement_e = getValuesVector(elementArray(i),1);
+                    displacement_e = displacement_e';
+                    strain_e = B * displacement_e;
+                    stress_e = D * strain_e;
+                    
+                    % elementwise stress calculation
+                    sigma_xx(i,j) = stress_e(1);
+                    sigma_yy(i,j) = stress_e(2);
+                    sigma_xy(i,j) = stress_e(3);
+
+                end
+            end
+            
+            for k = 1 : length(nodeArray)
+                [I,J] = find(element_nodes() == k);
+                
+                sum_sigma_xx = 0;
+                sum_sigma_yy = 0;
+                sum_sigma_xy = 0;
+                
+                for l = 1: length(I)
+                    sum_sigma_xx = sum_sigma_xx + sigma_xx(I(l),J(l));
+                    sum_sigma_yy = sum_sigma_yy + sigma_yy(I(l),J(l));
+                    sum_sigma_xy = sum_sigma_xy + sigma_xy(I(l),J(l));
+                end
+                
+                smooth_sigma_xx(k) = sum_sigma_xx/length(I);
+                smooth_sigma_yy(k) = sum_sigma_yy/length(I);
+                smooth_sigma_xy(k) = sum_sigma_xy/length(I);
+            end
+            
+        stressValue{1} = smooth_sigma_xx;
+        stressValue{2} = smooth_sigma_yy;
+        stressValue{3} = smooth_sigma_xy;
+        
+        end   
     end
 end
 
