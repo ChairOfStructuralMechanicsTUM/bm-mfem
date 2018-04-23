@@ -52,7 +52,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
         end
 
-        function [N_mat, N, B, J] = computeShapeFunction(planeStressElemet3d4n,xi,eta)
+        function [N_mat, N, B, J] = computeShapeFunction(planeStressElement3d4n,xi,eta)
             % Shape Function and Derivatives                    
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];  
 
@@ -66,8 +66,8 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(4,2); 
             for i=1:4
-                ele_coords(i,1) = planeStressElemet3d4n.nodeArray(i).getX;
-                ele_coords(i,2) = planeStressElemet3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = planeStressElement3d4n.nodeArray(i).getX;
+                ele_coords(i,2) = planeStressElement3d4n.nodeArray(i).getY;
             end
 
             % Jacobian 
@@ -142,15 +142,16 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
-        %Computation of the Internal Element Stresses
-        function [stressValue, element_nodes] = computeElementStress(elementArray,nodeArray, step)
+        %Computation of Stresses
+        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray)
 
-            element_nodes = zeros(length(elementArray),4);
+            element_connect = zeros(length(elementArray),4);
+            stressValue = zeros(3,length(nodeArray));
 
             
             for i = 1:length(elementArray)
 
-                element_nodes(i,1:4) = elementArray(i).getNodes.getId();
+                element_connect(i,1:4) = elementArray(i).getNodes.getId();
                 stressPoints = [-1 -1;1 -1;1 1;-1 1];            
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
                 thickness = elementArray(i).getPropertyValue('THICKNESS');
@@ -176,7 +177,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
             
             for k = 1 : length(nodeArray)
-                [I,J] = find(element_nodes() == k);
+                [I,J] = find(element_connect == k);
                 
                 sum_sigma_xx = 0;
                 sum_sigma_yy = 0;
@@ -193,11 +194,17 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 smooth_sigma_xy(k) = sum_sigma_xy/length(I);
             end
             
-        stressValue{1} = smooth_sigma_xx;
-        stressValue{2} = smooth_sigma_yy;
-        stressValue{3} = smooth_sigma_xy;
+        stressValue(1,:) = smooth_sigma_xx;
+        stressValue(2,:) = smooth_sigma_yy;
+        stressValue(3,:) = smooth_sigma_xy;
         
         end   
+    end
+    methods (Static)
+        function ord = drawOrder() % Order of Points in which Element is drawn 
+            
+            ord = [1,2,3,4,1];
+        end
     end
 end
 
