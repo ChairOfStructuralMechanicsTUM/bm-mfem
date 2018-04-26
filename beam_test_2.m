@@ -3,9 +3,9 @@
 clear;
 
 node01 = Node(1,0,0);
-node02 = Node(2,1,0);
-node03 = Node(3,1,1);
-node04 = Node(4,0,1);
+node02 = Node(2,0.5,0);
+node03 = Node(3,0.5,0.25);
+node04 = Node(4,0,0.25);
 
 nodeArray = [node01 node02 node03 node04];
 
