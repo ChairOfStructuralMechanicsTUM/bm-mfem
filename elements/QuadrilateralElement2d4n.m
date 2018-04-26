@@ -1,5 +1,4 @@
 classdef QuadrilateralElement2d4n < QuadrilateralElement
-    %REISSNERMINDLINELEMENT3D4N  A quadrilateral plate element
     %   Detailed explanation goes here
     
     properties (Access = private)
@@ -177,23 +176,6 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         %
         %         end
         
-        %         function pl = drawDeformed(reissnerMindlinElement3d4n, step, scaling)
-        %             x = [reissnerMindlinElement3d4n.nodeArray(1).getX, reissnerMindlinElement3d4n.nodeArray(2).getX, ...
-        %                  reissnerMindlinElement3d4n.nodeArray(3).getX, reissnerMindlinElement3d4n.nodeArray(4).getX, ...
-        %                  reissnerMindlinElement3d4n.nodeArray(1).getX];
-        %
-        %             y = [reissnerMindlinElement3d4n.nodeArray(1).getY, reissnerMindlinElement3d4n.nodeArray(2).getY, ...
-        %                  reissnerMindlinElement3d4n.nodeArray(3).getY, reissnerMindlinElement3d4n.nodeArray(4).getY, ...
-        %                  reissnerMindlinElement3d4n.nodeArray(1).getY];
-        %
-        %             z = [reissnerMindlinElement3d4n.nodeArray(1).getZ + scaling * reissnerMindlinElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Z', step), ...
-        %                  reissnerMindlinElement3d4n.nodeArray(2).getZ + scaling * reissnerMindlinElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_Z', step), ...
-        %                  reissnerMindlinElement3d4n.nodeArray(3).getZ + scaling * reissnerMindlinElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_Z', step), ...
-        %                  reissnerMindlinElement3d4n.nodeArray(4).getZ + scaling * reissnerMindlinElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_Z', step), ...
-        %                  reissnerMindlinElement3d4n.nodeArray(1).getZ + scaling * reissnerMindlinElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Z', step)];
-        %
-        %             pl = line(x,y,z);
-        %         end
         
         function dofs = getDofList(element)
             dofs([1 3 5 7]) = element.nodeArray.getDof('DISPLACEMENT_X');
