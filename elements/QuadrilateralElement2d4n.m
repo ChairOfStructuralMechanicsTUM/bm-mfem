@@ -1,4 +1,4 @@
-classdef QuadrilateralElement2d4n < QuadrilateralElement2d
+classdef QuadrilateralElement2d4n < QuadrilateralElement
     %REISSNERMINDLINELEMENT3D4N  A quadrilateral plate element
     %   Detailed explanation goes here
     
@@ -23,7 +23,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement2d
             end
             
             % call the super class contructor
-            quadrilateralElement2d4n@QuadrilateralElement2d(super_args{:});
+            quadrilateralElement2d4n@QuadrilateralElement(super_args{:});
             quadrilateralElement2d4n.dofNames = cellstr(["DISPLACEMENT_X", ...
                 "DISPLACEMENT_Y"]);
         end
