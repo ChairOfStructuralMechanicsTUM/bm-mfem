@@ -7,7 +7,7 @@ for i=1:21
 end
 
 for i=22:42
-    model.addNewNode(i,(i-1)*0.5,0.25);
+    model.addNewNode(i,(i-22)*0.5,0.25);
 end
 
 model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
@@ -42,20 +42,24 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 
 nodalForces = solver.getNodalForces(step);
 
-fig=figure;
-subplot(2,2,1);
-plot(0:0.5:10,VerschiebungDofs(2:2:42));
-title('w_unten', 'FontSize', 8);
+v = Visualization(model);
+v.plotUndeformed
+v.plotDeformed
 
-subplot(2,2,2);
-plot(0:0.5:10,VerschiebungDofs(44:2:end));
-title('w_oben', 'FontSize', 8);
-
-subplot(2,2,3);
-plot(0:0.5:10,VerschiebungDofs(1:2:41));
-title('u_unten', 'FontSize', 8);
-
-subplot(2,2,4);
-plot(0:0.5:10,VerschiebungDofs(43:2:end));
-title('u_oben', 'FontSize', 8);
+% fig=figure;
+% subplot(2,2,1);
+% plot(0:0.5:10,VerschiebungDofs(2:2:42));
+% title('w_unten', 'FontSize', 8);
+% 
+% subplot(2,2,2);
+% plot(0:0.5:10,VerschiebungDofs(44:2:end));
+% title('w_oben', 'FontSize', 8);
+% 
+% subplot(2,2,3);
+% plot(0:0.5:10,VerschiebungDofs(1:2:41));
+% title('u_unten', 'FontSize', 8);
+% 
+% subplot(2,2,4);
+% plot(0:0.5:10,VerschiebungDofs(43:2:end));
+% title('u_oben', 'FontSize', 8);
     
