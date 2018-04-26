@@ -12,6 +12,7 @@ classdef Node < handle & matlab.mixin.Copyable
 %         dofArray
         dofMap
         nProperties
+        dimension
     end
     
     methods
@@ -26,11 +27,13 @@ classdef Node < handle & matlab.mixin.Copyable
                     node.id = id;
                     node.x = x;
                     node.y = y;
+                    node.dimension = 2;
                 case 4
                     node.id = id;
                     node.x = x;
                     node.y = y;
                     node.z = z;
+                    node.dimension = 3;
                 otherwise
                     error('Wrong number of arguments')
             end
@@ -51,6 +54,13 @@ classdef Node < handle & matlab.mixin.Copyable
         function coords = getCoords(node)
             %GETCOORDS Return all coordinates in the form x, y(, z)
             coords = [node.x node.y node.z];
+        end
+        
+        function dim = getDimension(nodes)
+            dim = zeros(1,length(nodes));
+            for ii = 1:length(nodes)
+                dim(ii) = nodes(ii).dimension();
+            end
         end
         
         function x = getX(nodes)
