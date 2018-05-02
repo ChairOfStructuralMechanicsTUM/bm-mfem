@@ -455,12 +455,99 @@ classdef ElementTests < matlab.unittest.TestCase
             
             actualEigenfrequencies = sort(solver.getEigenfrequencies);
             expectedEigenfrequencies = [1.01402840311520;3.22165476249304;3.22165476249320;...
-                                            5.32248978160243;10.5674305646586];
+                5.32248978160243;10.5674305646586];
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
+            
+        end
+        
+        function testQuadrilateralElement2d4n (testCase)
+            node01 = Node(1,0,0);
+            node02 = Node(2,0.5,0);
+            node03 = Node(3,0.5,0.25);
+            node04 = Node(4,0,0.25);
+            
+            nodeArray = [node01 node02 node03 node04];
+            
+            nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            
+            ele01 = QuadrilateralElement2d4n(1,[node01 node02 node03 node04]);
+            
+            elementArray = [ele01];
+            
+            elementArray.setPropertyValue('YOUNGS_MODULUS',96);
+            elementArray.setPropertyValue('POISSON_RATIO',1/3);
+            elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+            elementArray.setPropertyValue('DENSITY',7860);
+            
+            actualSolution = ele01.computeLocalStiffnessMatrix;
+            
+            expectedSolution = [42 18 -6 0 -21 -18 -15 0; ...
+                18 78 0 30 -18 -39 0 -69; ...
+                -6 0 42 -18 -15 0 -21 18; ...
+                0 30 -18 78 0 -69 18 -39; ...
+                -21 -18 -15 0 42 18 -6 0; ...
+                -18 -39 0 -69 18 78 0 30; ...
+                -15 0 -21 18 -6 0 42 -18; ...
+                0 -69 18 -39 0 30 -18 78];
+            testCase.verifyEqual(actualSolution, expectedSolution)
+            
+        end
+        
+        function testHexahedron3d8n (testCase)
+            node01 = Node(1,-1,-1,-1);
+            node02 = Node(2,1,-1,-1);
+            node03 = Node(3,1,1,-1);
+            node04 = Node(4,-1,1,-1);
+            node05 = Node(5,-1,-1,1);
+            node06 = Node(6,1,-1,1);
+            node07 = Node(7,1,1,1);
+            node08 = Node(8,-1,1,1);
+            
+            nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08];
+            
+            nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            ele01 = Hexahedron3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
+            
+            elementArray = [ele01];
+            
+            elementArray.setPropertyValue('YOUNGS_MODULUS',32);
+            elementArray.setPropertyValue('POISSON_RATIO',1/3);
+            elementArray.setPropertyValue('NUMBER_GAUSS_POINT',3);
+            elementArray.setPropertyValue('DENSITY',7860);
 
-        end 
+            actualSolution = ele01.computeLocalStiffnessMatrix;
+            
+            expectedSolution = [16,6,6,-8,2,2,-6,-6,1,4,-2,3,4,3,-2,-6,1,-6,-4,-3,-3,0,-1,-1;
+                6,16,6,-2,4,3,-6,-6,1,2,-8,2,3,4,-2,-1,0,-1,-3,-4,-3,1,-6,-6;
+                6,6,16,-2,3,4,-1,-1,0,3,-2,4,2,2,-8,-6,1,-6,-3,-3,-4,1,-6,-6;
+                -8,-2,-2,16,-6,-6,4,2,-3,-6,6,-1,-6,-1,6,4,-3,2,0,1,1,-4,3,3;
+                2,4,3,-6,16,6,-2,-8,2,6,-6,1,1,0,-1,-3,4,-2,-1,-6,-6,3,-4,-3;
+                2,3,4,-6,6,16,-3,-2,4,1,-1,0,6,1,-6,-2,2,-8,-1,-6,-6,3,-3,-4;
+                -6,-6,-1,4,-2,-3,16,6,-6,-8,2,-2,-4,-3,3,0,-1,1,4,3,2,-6,1,6;
+                -6,-6,-1,2,-8,-2,6,16,-6,-2,4,-3,-3,-4,3,1,-6,6,3,4,2,-1,0,1;
+                1,1,0,-3,2,4,-6,-6,16,2,-3,4,3,3,-4,-1,6,-6,-2,-2,-8,6,-1,-6;
+                4,2,3,-6,6,1,-8,-2,2,16,-6,6,0,1,-1,-4,3,-3,-6,-1,-6,4,-3,-2;
+                -2,-8,-2,6,-6,-1,2,4,-3,-6,16,-6,-1,-6,6,3,-4,3,1,0,1,-3,4,2;
+                3,2,4,-1,1,0,-2,-3,4,6,-6,16,1,6,-6,-3,3,-4,-6,-1,-6,2,-2,-8;
+                4,3,2,-6,1,6,-4,-3,3,0,-1,1,16,6,-6,-8,2,-2,-6,-6,-1,4,-2,-3;
+                3,4,2,-1,0,1,-3,-4,3,1,-6,6,6,16,-6,-2,4,-3,-6,-6,-1,2,-8,-2;
+                -2,-2,-8,6,-1,-6,3,3,-4,-1,6,-6,-6,-6,16,2,-3,4,1,1,0,-3,2,4;
+                -6,-1,-6,4,-3,-2,0,1,-1,-4,3,-3,-8,-2,2,16,-6,6,4,2,3,-6,6,1;
+                1,0,1,-3,4,2,-1,-6,6,3,-4,3,2,4,-3,-6,16,-6,-2,-8,-2,6,-6,-1;
+                -6,-1,-6,2,-2,-8,1,6,-6,-3,3,-4,-2,-3,4,6,-6,16,3,2,4,-1,1,0;
+                -4,-3,-3,0,-1,-1,4,3,-2,-6,1,-6,-6,-6,1,4,-2,3,16,6,6,-8,2,2;
+                -3,-4,-3,1,-6,-6,3,4,-2,-1,0,-1,-6,-6,1,2,-8,2,6,16,6,-2,4,3;
+                -3,-3,-4,1,-6,-6,2,2,-8,-6,1,-6,-1,-1,0,3,-2,4,6,6,16,-2,3,4;
+                0,1,1,-4,3,3,-6,-1,6,4,-3,2,4,2,-3,-6,6,-1,-8,-2,-2,16,-6,-6;
+                -1,-6,-6,3,-4,-3,1,0,-1,-3,4,-2,-2,-8,2,6,-6,1,2,4,3,-6,16,6;
+                -1,-6,-6,3,-3,-4,6,1,-6,-2,2,-8,-3,-2,4,1,-1,0,2,3,4,-6,6,16];
+            
+            testCase.verifyEqual(actualSolution, expectedSolution)
+            
+        end
     end
 end
 

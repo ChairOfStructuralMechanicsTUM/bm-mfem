@@ -1,4 +1,8 @@
 classdef QuadrilateralElement2d4n < QuadrilateralElement
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % CAUTION SHEAR LOCKING NOT PEREVENTED YET %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     %   Detailed explanation goes here
     
     properties (Access = private)
