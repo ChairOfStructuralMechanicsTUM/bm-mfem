@@ -1,39 +1,51 @@
-%%%Test Beam
-
 clear;
 
-node01 = Node(1,0,0);
-node02 = Node(2,0.5,0);
-node03 = Node(3,0.5,0.25);
-node04 = Node(4,0,0.25);
+model = FemModel();
 
-nodeArray = [node01 node02 node03 node04];
+for i=1:21
+    model.addNewNode(i,(i-1)*0.5,0);
+end
 
-nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+for i=22:42
+    model.addNewNode(i,(i-22)*0.5,0.5);
+end
 
-ele01 = QuadrilateralElement2d4n(1,[node01 node02 node03 node04]);
+for i=43:63
+    model.addNewNode(i,(i-43)*0.5,1);
+end
 
-elementArray = [ele01];
+model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',96);
-elementArray.setPropertyValue('POISSON_RATIO',1/3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
-elementArray.setPropertyValue('DENSITY',7860);
+for i=1:20
+    model.addNewElement('QuadrilateralElement2d4n',i,[i i+1 i+22 i+21]);
+end
 
-elementIds = elementArray.getId;
+for i=21:40
+    model.addNewElement('QuadrilateralElement2d4n',i,[i+1 i+2 i+23 i+22]);
+end
 
-node01.fixDof('DISPLACEMENT_X');
-node01.fixDof('DISPLACEMENT_Y');
-node04.fixDof('DISPLACEMENT_X');
-node04.fixDof('DISPLACEMENT_Y');
 
-addPointLoad(node03,10,[0 -1]);
 
-model = FemModel(nodeArray, elementArray);
+model.getNode(1).fixDof('DISPLACEMENT_X');
+model.getNode(1).fixDof('DISPLACEMENT_Y');
+model.getNode(22).fixDof('DISPLACEMENT_X');
+model.getNode(22).fixDof('DISPLACEMENT_Y');
+model.getNode(43).fixDof('DISPLACEMENT_X');
+model.getNode(43).fixDof('DISPLACEMENT_Y');
+% model.getNode(21).fixDof('DISPLACEMENT_X');
+% model.getNode(21).fixDof('DISPLACEMENT_Y');
+% model.getNode(42).fixDof('DISPLACEMENT_X');
+% model.getNode(42).fixDof('DISPLACEMENT_Y');
+
+model.getAllElements.setPropertyValue('YOUNGS_MODULUS',210000000000);
+model.getAllElements.setPropertyValue('POISSON_RATIO',0.3);
+model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',3);
+model.getAllElements.setPropertyValue('DENSITY',7860);
+
+addPointLoad(model.getNode(63),1,[0 -1]);
 
 assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-stiffnessMatrix_2 = computeLocalStiffnessMatrix_Option2(ele01,0.5,0.25);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
@@ -42,15 +54,12 @@ x = solver.solve();
 
 step = 1;
 
-% stressVector = computeElementStress(elementArray, step)';
-
-
 VerschiebungDofs = model.getDofArray.getValue(step);
 
 nodalForces = solver.getNodalForces(step);
 
-%x=0:0.25:1.75;
-%fig=figure;
-plot(0:1:1.75,VerschiebungDofs(2:2:4))
-    
+v = Visualization(model);
+v.setScaling(1000000);
+v.plotUndeformed
+v.plotDeformed
     
