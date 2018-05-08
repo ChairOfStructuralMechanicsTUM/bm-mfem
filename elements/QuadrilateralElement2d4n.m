@@ -13,7 +13,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         function quadrilateralElement2d4n = QuadrilateralElement2d4n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
-                "NUMBER_GAUSS_POINT","DENSITY"]);
+                "NUMBER_GAUSS_POINT","DENSITY","SHEAR_CORRECTION_FACTOR"]);
             
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -55,7 +55,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             end
         end
         
-        function [N_mat, N, Bx, By, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
+        function [N_mat, N, B_b, B_s, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
             % Shape Function and Derivatives
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             
@@ -76,17 +76,78 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             % Jacobian
             J = N_Diff_Par * ele_coords;
             
-            Jdet=det(J);
-            
-            Jinv=inv(J);
-            
             % Calculation of B-Matrix
             B=J\N_Diff_Par;%/Jdet;
             Bx=B(1,1:4);
             By=B(2,1:4);
+            
+            % Calculation of B_bending Matrix
+            %B_b = sparse(3,8);
+            B_b=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
+                0,By(1),0,By(2),0,By(3),0,By(4);
+                By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+            
+            % Calculation of B_shear Matrix
+            %B_s = sparse(2,8);
+            %If 3 DOF Element: B_s=[Bx(1),N(1),0,Bx(2),N(2),0,Bx(3),N(3),0,Bx(4),N(4),0; By(1),N(1),0,By(2),N(2),0,By(3),N(3),0,By(4),N(4),0];
+            B_s=[N(1),0,N(2),0,N(3),0,N(4),0; 
+                N(1),0,N(2),0,N(3),0,N(4),0];
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(quadrilateralElement2d4n)
+            EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
+            prxy = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
+            p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            alpha_shear = quadrilateralElement2d4n.getPropertyValue('SHEAR_CORRECTION_FACTOR');
+            
+            % Calculate Shear Modulus
+            GModul = EModul/(2*(1+prxy));
+            % Moment-Curvature Equations
+            D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
+            % Material Bending Matrix D_b
+            D_b = D_b * (EModul) / (12*(1-prxy^2));
+            % Material Shear Matrix D_s
+            D_s = eye(2) * alpha_shear * GModul; 
+            
+            [w,g]=returnGaussPoint(p);
+            
+            stiffnessMatrix=sparse(8,8);
+           
+            if (quadrilateralElement2d4n.getProperties.hasValue('FULL_INTEGRATION')) && (quadrilateralElement2d4n.getPropertyValue('FULL_INTEGRATION'))
+                for xi = 1 : p
+                    for eta = 1 : p
+                        [~, ~,B_b, B_s, J] = computeShapeFunction(quadrilateralElement2d4n,g(xi),g(eta));
+
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_b' * D_b * B_b * det(J) * w(xi) * w(eta) + ...
+                            B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+                    end
+                end
+                
+            else
+                for xi = 1 : p
+                    for eta = 1 : p
+                        [~, ~,B_b, ~, J] = computeShapeFunction(quadrilateralElement2d4n,g(xi),g(eta));
+
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
+                    end
+                end
+                [w,g] = returnGaussPoint(1);
+                for xi = 1 : 1
+                    for eta = 1 : 1
+                        [~, ~,~, B_s, J] = computeShapeFunction(quadrilateralElement2d4n,g(xi),g(eta));
+                        
+                        stiffnessMatrix = stiffnessMatrix +             ...
+                            B_s' * D_s * B_s * det(J) * w(xi) * w(eta);                       
+                    end
+                end
+            end
+        end
+        
+        %The two Versions below work for some Elements, but lock for slender structures
+        
+        function stiffnessMatrix = computeLocalStiffnessMatrix_Option2(quadrilateralElement2d4n)
             EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
             PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
             p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
@@ -116,7 +177,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             end
         end
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix_Option2(quadrilateralElement2d4n,a,b)
+        function stiffnessMatrix = computeLocalStiffnessMatrix_Option3(quadrilateralElement2d4n,a,b)
             EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
             PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
             s=a/b;

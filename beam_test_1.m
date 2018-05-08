@@ -33,7 +33,6 @@ model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-stiffnessMatrix_2 = computeLocalStiffnessMatrix_Option2(ele01,0.5,0.25);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
@@ -47,7 +46,7 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
-v.setScaling(1000000);
+v.setScaling(0.01);
 v.plotUndeformed
 v.plotDeformed
     
