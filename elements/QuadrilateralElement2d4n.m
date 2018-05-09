@@ -105,7 +105,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             % Moment-Curvature Equations
             D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
             % Material Bending Matrix D_b
-            D_b = D_b * (EModul) / (12*(1-prxy^2));
+            D_b = D_b * (EModul) / ((1-prxy^2));
             % Material Shear Matrix D_s
             D_s = eye(2) * alpha_shear * GModul; 
             

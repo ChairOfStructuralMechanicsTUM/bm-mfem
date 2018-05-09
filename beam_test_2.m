@@ -59,7 +59,7 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
-v.setScaling(1000000);
+v.setScaling(10000000);
 v.plotUndeformed
 v.plotDeformed
     
