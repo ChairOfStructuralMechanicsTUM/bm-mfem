@@ -228,6 +228,10 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
             [~, ~, vals([3 6 9 12])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
         end
+        
+        function F = computeLocalForceVector(quadrilateralElement)
+            F = zeros(1,12);
+        end
    
     end
 end

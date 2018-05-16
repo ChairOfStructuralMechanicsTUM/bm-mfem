@@ -3,8 +3,8 @@
 clear;
 
 node01 = Node(1,0,0);
-node02 = Node(2,1,0);
-node03 = Node(3,1,1);
+node02 = Node(2,2,0);
+node03 = Node(3,2,1);
 node04 = Node(4,0,1);
 
 nodeArray = [node01 node02 node03 node04];
@@ -19,8 +19,6 @@ elementArray.setPropertyValue('YOUNGS_MODULUS',96);
 elementArray.setPropertyValue('POISSON_RATIO',1/3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
 elementArray.setPropertyValue('DENSITY',7860);
-
-%elementIds = elementArray.getId;
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');

@@ -7,11 +7,11 @@ for i=1:21
 end
 
 for i=22:42
-    model.addNewNode(i,(i-22)*0.5,0.5);
+    model.addNewNode(i,(i-22)*0.5,1);
 end
 
 for i=43:63
-    model.addNewNode(i,(i-43)*0.5,1);
+    model.addNewNode(i,(i-43)*0.5,2);
 end
 
 model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
@@ -24,22 +24,16 @@ for i=21:40
     model.addNewElement('QuadrilateralElement2d4n',i,[i+1 i+2 i+23 i+22]);
 end
 
-
-
 model.getNode(1).fixDof('DISPLACEMENT_X');
 model.getNode(1).fixDof('DISPLACEMENT_Y');
 model.getNode(22).fixDof('DISPLACEMENT_X');
 model.getNode(22).fixDof('DISPLACEMENT_Y');
 model.getNode(43).fixDof('DISPLACEMENT_X');
 model.getNode(43).fixDof('DISPLACEMENT_Y');
-% model.getNode(21).fixDof('DISPLACEMENT_X');
-% model.getNode(21).fixDof('DISPLACEMENT_Y');
-% model.getNode(42).fixDof('DISPLACEMENT_X');
-% model.getNode(42).fixDof('DISPLACEMENT_Y');
 
 model.getAllElements.setPropertyValue('YOUNGS_MODULUS',210000000000);
 model.getAllElements.setPropertyValue('POISSON_RATIO',0.3);
-model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',3);
+model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',7860);
 
 addPointLoad(model.getNode(63),1,[0 -1]);

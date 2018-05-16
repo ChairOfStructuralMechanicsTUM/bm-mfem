@@ -84,10 +84,6 @@ classdef (Abstract) QuadrilateralElement < Element
         
         function update(quadrilateralElement)
         end
-        
-        function F = computeLocalForceVector(quadrilateralElement)
-            F = zeros(1,12);
-        end
 
     end
 
