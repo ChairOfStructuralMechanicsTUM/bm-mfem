@@ -59,7 +59,7 @@ classdef Node < handle & matlab.mixin.Copyable
         function dim = getDimension(nodes)
             dim = zeros(1,length(nodes));
             for ii = 1:length(nodes)
-                dim(ii) = nodes(ii).dimension();
+                dim(ii) = nodes(ii).dimension;
             end
         end
         
