@@ -1,4 +1,4 @@
-classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
+classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
     %HEXAHEDRON3D8N Summary of this class goes here
     %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ classdef Hexahedron3d8n < Element  %Class Hexahedron to be implemented
     
     methods
         % constructor
-        function hexahedron3d8n = Hexahedron3d8n(id, nodeArray)
+        function hexahedron3d8n = HexahedronElement3d8n(id, nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO","NUMBER_GAUSS_POINT", "DENSITY"]);
             
