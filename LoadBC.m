@@ -220,7 +220,30 @@ function pushbutton4_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton4 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+fig = findobj('Tag','figure1');
+data = guidata(fig);
+model = data.model;
+nodes = model.getAllNodes;
+if ~isempty(get(handles.edit2,'String'))
+    startNodeId = str2double(get(handles.edit2,'String'));
+else
+    startContents = cellstr(get(handles.popupmenu2,'String'));
+    modelPart = startContents{get(handles.popupmenu2,'Value')};
+    startNodeId = model.getModelPart(modelPart).getId();
+end
 
+if ~isempty(get(handles.edit3,'String'))
+    endNodeId = str2double(get(handles.edit3,'String'));
+else
+    endContents = cellstr(get(handles.popupmenu3,'String'));
+    modelPart = endContents{get(handles.popupmenu3,'Value')};
+    endNodeId = model.getModelPart(modelPart).getId();
+end
+
+fx = str2double(get(handles.edit12,'string'));
+fy = str2double(get(handles.edit13,'string'));
+
+addConstLineLoadGUI(startNodeId,endNodeId,nodes,fx,fy);
 
 
 function edit12_Callback(hObject, eventdata, handles)

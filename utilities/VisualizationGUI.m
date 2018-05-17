@@ -91,14 +91,23 @@ classdef VisualizationGUI < handle
                 coords(i,3) = nodes(i).getZ();
             end
             
-            if     fieldType == 'sigma_xx'
+            if     strcmp(fieldType,'sigma_xx')
                     field = stressValue(1,:);
                     
-            elseif fieldType == 'sigma_yy'
+            elseif strcmp(fieldType,'sigma_yy')
                     field = stressValue(2,:);
                     
-            elseif fieldType == 'sigma_xy'
+            elseif strcmp(fieldType,'sigma_xy')
                     field = stressValue(3,:);
+                    
+            elseif strcmp(fieldType,'prin_I')
+                    field = stressValue(4,:);
+                    
+            elseif strcmp(fieldType,'prin_II')
+                    field = stressValue(5,:);
+            
+            elseif strcmp(fieldType,'vm_stress')
+                    field = stressValue(6,:);
             end
             
             for ii = 1:nElements

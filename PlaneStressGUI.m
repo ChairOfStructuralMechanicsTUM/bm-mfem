@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 06-May-2018 14:42:36
+% Last Modified by GUIDE v2.5 17-May-2018 16:29:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,18 +57,22 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-set(findall(handles.uipanel_numbering, '-property', 'enable'), 'enable', 'off');
+set(findall(handles.uipanel_visibility, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_solver, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
-set(handles.edit1,'string','Quad10x40.msh');
+set(handles.edit1,'string','Quad4_4x40.msh');
+set(handles.edit_youngsModulus,'string','2e+05');
+set(handles.edit_thickness,'string','0.5');
+set(handles.edit_prxy,'string','0.3');
+set(handles.edit_numberGaussPoint,'string','3');
 set(handles.axes1,'Visible', 'off');
 
 cla(handles.axes1);
 colorbar off
 
-fieldType = {'Select Field' 'sigma_xx' 'sigma_yy' 'sigma_xy'};
+fieldType = {'Select Field' 'sigma_xx' 'sigma_yy' 'sigma_xy' 'prin_I' 'prin_II' 'vm_stress'};
 set(handles.popupmenu2,'String',fieldType);
 
 % UIWAIT makes PlaneStressGUI wait for user response (see UIRESUME)
@@ -76,7 +80,7 @@ set(handles.popupmenu2,'String',fieldType);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = PlaneStressGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = PlaneStressGUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -150,7 +154,8 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
     set(findall(handles.uipanel_solver, '-property', 'enable'), 'enable', 'off');
     set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
-    set(findall(handles.uipanel_numbering, '-property', 'enable'), 'enable', 'on');
+    set(findall(handles.uipanel_visibility, '-property', 'enable'), 'enable', 'on');
+    set(findall(handles.uipanel_visibility, '-property', 'enable'), 'Value', 0);
     set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
 
 
@@ -537,3 +542,18 @@ nodes.unfixDof('DISPLACEMENT_X');
 nodes.unfixDof('DISPLACEMENT_Y');
 handles.constrained = false;
 guidata(hObject,handles);
+
+
+% --- Executes on button press in checkbox5.
+function checkbox5_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox5
+
+if(get(hObject,'Value') == get(hObject,'Max'))
+    axis on               
+else
+    axis off
+end
