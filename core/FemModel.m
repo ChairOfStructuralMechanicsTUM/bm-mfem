@@ -196,6 +196,8 @@ classdef FemModel < handle
                     element = ReissnerMindlinElement3d4n(id, nodes);
                 case 'QuadrilateralElement2d4n'
                     element = QuadrilateralElement2d4n(id, nodes);
+                case 'HexahedronElement3d8n'
+                    element = HexahedronElement3d8n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
