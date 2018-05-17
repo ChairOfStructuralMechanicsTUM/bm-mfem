@@ -230,12 +230,28 @@ classdef PlaneStressElement3d8n < QuadrilateralElement
                 smooth_sigma_xx(k) = sum_sigma_xx/length(I);
                 smooth_sigma_yy(k) = sum_sigma_yy/length(I);
                 smooth_sigma_xy(k) = sum_sigma_xy/length(I);
+                
+                vec = zeros(2,2);
+                lamda = zeros(2,2);
+
+                stress_ele = [smooth_sigma_xx(k) smooth_sigma_xy(k);
+                smooth_sigma_xy(k) smooth_sigma_yy(k)];
+                [vec,lamda] = eig(stress_ele);
+
+                prin_I(k) = lamda(1,1);
+                prin_II(k) = lamda(2,2);
+                prI_dir(k,:) = vec(:,1);
+                prII_dir(k,:) = vec(:,2);
+
+                vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
             end
             
         stressValue(1,:) = smooth_sigma_xx;
         stressValue(2,:) = smooth_sigma_yy;
         stressValue(3,:) = smooth_sigma_xy;
-        
+        stressValue(4,:) = prin_I;
+        stressValue(5,:) = prin_II;
+        stressValue(6,:) = vm_stress;
         end   
     end
     
