@@ -52,7 +52,7 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
             end
         end
 
-        function [N_mat, N, B, J] = computeShapeFunction(planeStressElement3d4n,xi,eta)
+        function [N_mat, N, B, J] = computeShapeFunction(planeStressElement3d9n,xi,eta)
             % Shape Function and Derivatives                    
             N = [(1-xi)*(1-eta)*xi*eta/4,-(1+xi)*(1-eta)*xi*eta/4,(1+xi)*(1+eta)*xi*eta/4,-(1-xi)*(1+eta)*xi*eta/4,...
                     -(1-xi^2)*(1-eta)*eta/2,(1+xi)*(1-eta^2)*xi/2,(1-xi^2)*(1+eta)*eta/2,-(1-xi)*(1-eta)*xi*eta/2,(1-xi^2)*(1-eta^2)];  
@@ -73,8 +73,8 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(9,2); 
             for i=1:9
-                ele_coords(i,1) = planeStressElement3d4n.nodeArray(i).getX;
-                ele_coords(i,2) = planeStressElement3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = planeStressElement3d9n.nodeArray(i).getX;
+                ele_coords(i,2) = planeStressElement3d9n.nodeArray(i).getY;
             end
 
             % Jacobian 
@@ -91,11 +91,11 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
 
         end
 
-        function stiffnessMatrix = computeLocalStiffnessMatrix(planeStressElement3d4n)
-            EModul = planeStressElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            prxy = planeStressElement3d4n.getPropertyValue('POISSON_RATIO');
-            nr_gauss_points = planeStressElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            thickness = planeStressElement3d4n.getPropertyValue('THICKNESS');
+        function stiffnessMatrix = computeLocalStiffnessMatrix(planeStressElement3d9n)
+            EModul = planeStressElement3d9n.getPropertyValue('YOUNGS_MODULUS');
+            prxy = planeStressElement3d9n.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = planeStressElement3d9n.getPropertyValue('NUMBER_GAUSS_POINT');
+            thickness = planeStressElement3d9n.getPropertyValue('THICKNESS');
 
             % Moment-Curvature Equations
             D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
@@ -106,31 +106,68 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
             stiffnessMatrix = sparse(18,18);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                    [~, ~, B, J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
+                    [~, ~, B, J] = computeShapeFunction(planeStressElement3d9n,g(xi),g(eta));
 
                     stiffnessMatrix = stiffnessMatrix + ...
                         B' * D *B * det(J) * w(xi) * w(eta);
                 end
             end
         end
-      
-        function pl = drawDeformed(planeStressElement3d4n, step, scaling)
-    
-            x = [planeStressElement3d4n.nodeArray(1).getX + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d4n.nodeArray(2).getX + scaling * planeStressElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d4n.nodeArray(3).getX + scaling * planeStressElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
-                 planeStressElement3d4n.nodeArray(4).getX + scaling * planeStressElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_X', step), ...
-                 planeStressElement3d4n.nodeArray(1).getX + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
-             
-            y = [planeStressElement3d4n.nodeArray(1).getY + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d4n.nodeArray(2).getY + scaling * planeStressElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d4n.nodeArray(3).getY + scaling * planeStressElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
-                 planeStressElement3d4n.nodeArray(4).getY + scaling * planeStressElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_Y', step), ...
-                 planeStressElement3d4n.nodeArray(1).getY + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
+        
+        function massMatrix = computeLocalMassMatrix(planeStressElement3d9n)
+            %Formulation of the Massmatrix based on the Shape Functions
             
-            z = [planeStressElement3d4n.nodeArray(1).getZ, planeStressElement3d4n.nodeArray(2).getZ, ...
-                 planeStressElement3d4n.nodeArray(3).getZ, planeStressElement3d4n.nodeArray(4).getZ, ...
-                 planeStressElement3d4n.nodeArray(1).getZ];
+            density = planeStressElement3d9n.getPropertyValue('DENSITY');
+            thickness = planeStressElement3d9n.getPropertyValue('THICKNESS');
+            nr_gauss_points = planeStressElement3d9n.getPropertyValue('NUMBER_GAUSS_POINT');
+            [w,g] = returnGaussPoint(nr_gauss_points);
+
+            dens_mat = sparse(2,2);
+            dens_mat(1,1) = density*thickness; 
+            dens_mat(2,2) = dens_mat(1,1); 
+
+            massMatrix = sparse(18,18);
+            for xi = 1 : nr_gauss_points
+                for eta = 1 : nr_gauss_points
+                    [N_mat,~,~,J] = computeShapeFunction(planeStressElement3d9n,g(xi),g(eta));
+                    
+                    massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
+                end
+            end
+        end        
+        
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(18,18);
+
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
+
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
+        end
+        
+        function pl = drawDeformed(planeStressElement3d9n, step, scaling)
+    
+            x = [planeStressElement3d9n.nodeArray(1).getX + scaling * planeStressElement3d9n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
+                 planeStressElement3d9n.nodeArray(2).getX + scaling * planeStressElement3d9n.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
+                 planeStressElement3d9n.nodeArray(3).getX + scaling * planeStressElement3d9n.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
+                 planeStressElement3d9n.nodeArray(4).getX + scaling * planeStressElement3d9n.nodeArray(4).getDofValue('DISPLACEMENT_X', step), ...
+                 planeStressElement3d9n.nodeArray(1).getX + scaling * planeStressElement3d9n.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
+             
+            y = [planeStressElement3d9n.nodeArray(1).getY + scaling * planeStressElement3d9n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
+                 planeStressElement3d9n.nodeArray(2).getY + scaling * planeStressElement3d9n.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
+                 planeStressElement3d9n.nodeArray(3).getY + scaling * planeStressElement3d9n.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
+                 planeStressElement3d9n.nodeArray(4).getY + scaling * planeStressElement3d9n.nodeArray(4).getDofValue('DISPLACEMENT_Y', step), ...
+                 planeStressElement3d9n.nodeArray(1).getY + scaling * planeStressElement3d9n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
+            
+            z = [planeStressElement3d9n.nodeArray(1).getZ, planeStressElement3d9n.nodeArray(2).getZ, ...
+                 planeStressElement3d9n.nodeArray(3).getZ, planeStressElement3d9n.nodeArray(4).getZ, ...
+                 planeStressElement3d9n.nodeArray(1).getZ];
              
             pl = line(x,y,z);
         end
@@ -159,14 +196,14 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
             for i = 1:length(elementArray)
 
                 element_nodes(i,1:9) = elementArray(i).getNodes.getId();
-                stressPoints = [-1 -1;1 -1;1 1;-1 1;-1 0;0 1;1 0;0 -1;0 0];           
+%                 stressPoints = [-1 -1;1 -1;1 1;-1 1;-1 0;0 1;1 0;0 -1;0 0];
+                stressPoints = [-1 -1;1 -1;1 1;-1 1;0 -1;1 0;0 1;-1 0;0 0];
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                thickness = elementArray(i).getPropertyValue('THICKNESS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
-                D = D * EModul * thickness / (1-prxy^2);
+                D = D * EModul / (1-prxy^2);
                 
                 for j = 1:9
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
@@ -209,9 +246,9 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
     end
     
     methods (Static)
-        function ord = drawOrder() % Order of Points in which Element is drawn 
+        function ord = drawOrder()
 
-            ord = [1,5,2,6,3,7,4,8,1];
+            ord = [1,5,2,6,3,7,4,8,1]; % Note: stress value at node 9 is ignored
         end
     end
 end

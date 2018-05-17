@@ -104,21 +104,57 @@ classdef PlaneStressElement3d6n < TriangularElement
                 w * B' * D * B * 0.5 * det(J);
             end
         end
-      
-        function pl = drawDeformed(planeStressElement3d3n, step, scaling)
-    
-            x = [planeStressElement3d3n.nodeArray(1).getX + scaling * planeStressElement3d3n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d3n.nodeArray(2).getX + scaling * planeStressElement3d3n.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d3n.nodeArray(3).getX + scaling * planeStressElement3d3n.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
-                 planeStressElement3d3n.nodeArray(1).getX + scaling * planeStressElement3d3n.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
-             
-            y = [planeStressElement3d3n.nodeArray(1).getY + scaling * planeStressElement3d3n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d3n.nodeArray(2).getY + scaling * planeStressElement3d3n.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d3n.nodeArray(3).getY + scaling * planeStressElement3d3n.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
-                 planeStressElement3d3n.nodeArray(1).getY + scaling * planeStressElement3d3n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
+        
+        function massMatrix = computeLocalMassMatrix(planeStressElement3d6n)
+            %Formulation of the Massmatrix based on the Shape Functions
             
-            z = [planeStressElement3d3n.nodeArray(1).getZ, planeStressElement3d3n.nodeArray(2).getZ, ...
-                 planeStressElement3d3n.nodeArray(3).getZ, planeStressElement3d3n.nodeArray(1).getZ];
+            density = planeStressElement3d6n.getPropertyValue('DENSITY');
+            thickness = planeStressElement3d6n.getPropertyValue('THICKNESS');
+            nr_gauss_points = planeStressElement3d6n.getPropertyValue('NUMBER_GAUSS_POINT');
+            
+            dens_mat = sparse(2,2);
+            dens_mat(1,1) = density*thickness; 
+            dens_mat(2,2) = dens_mat(1,1); 
+
+            massMatrix = sparse(12,12);
+            for i = 1 : nr_gauss_points
+                
+                [w,g] = returnGaussPointTrig(nr_gauss_points,i);
+                [N_mat, ~, ~, J] = computeShapeFunction(planeStressElement3d6n,g);
+  
+                massMatrix = massMatrix + N_mat' * dens_mat * N_mat * 0.5 * det(J) * w;
+            end
+        end
+        
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(12,12);
+
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
+
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
+        end
+                  
+        function pl = drawDeformed(planeStressElement3d6n, step, scaling)
+    
+            x = [planeStressElement3d6n.nodeArray(1).getX + scaling * planeStressElement3d6n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
+                 planeStressElement3d6n.nodeArray(2).getX + scaling * planeStressElement3d6n.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
+                 planeStressElement3d6n.nodeArray(3).getX + scaling * planeStressElement3d6n.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
+                 planeStressElement3d6n.nodeArray(1).getX + scaling * planeStressElement3d6n.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
+             
+            y = [planeStressElement3d6n.nodeArray(1).getY + scaling * planeStressElement3d6n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
+                 planeStressElement3d6n.nodeArray(2).getY + scaling * planeStressElement3d6n.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
+                 planeStressElement3d6n.nodeArray(3).getY + scaling * planeStressElement3d6n.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
+                 planeStressElement3d6n.nodeArray(1).getY + scaling * planeStressElement3d6n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
+            
+            z = [planeStressElement3d6n.nodeArray(1).getZ, planeStressElement3d6n.nodeArray(2).getZ, ...
+                 planeStressElement3d6n.nodeArray(3).getZ, planeStressElement3d6n.nodeArray(1).getZ];
              
             pl = line(x,y,z);
         end
@@ -146,14 +182,13 @@ classdef PlaneStressElement3d6n < TriangularElement
             for i = 1:length(elementArray)
 
                 element_connect(i,1:6) = elementArray(i).getNodes.getId();
-                stressPoints = [1 0 0;0.5 0.5 0;0 1 0;0 0.5 0.5;0 0 1;0.5 0 0.5];
+                stressPoints = [1 0 0;0 1 0;0 0 1;0.5 0.5 0;0 0.5 0.5;0.5 0 0.5];
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                thickness = elementArray(i).getPropertyValue('THICKNESS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
-                D = D * EModul * thickness / (1-prxy^2);
+                D = D * EModul / (1-prxy^2);
                 
                 for j = 1:6
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
@@ -201,7 +236,7 @@ classdef PlaneStressElement3d6n < TriangularElement
     end
     
     methods (Static)
-        function ord = drawOrder() % Order of Points in which Element is drawn 
+        function ord = drawOrder()
             
             ord = [1,4,2,5,3,6,1];
         end        

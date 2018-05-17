@@ -106,7 +106,44 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 end
             end
         end
-      
+
+        function massMatrix = computeLocalMassMatrix(planeStressElement3d4n)
+            %Formulation of the Massmatrix based on the Shape Functions
+            
+            density = planeStressElement3d4n.getPropertyValue('DENSITY');
+            thickness = planeStressElement3d4n.getPropertyValue('THICKNESS');
+            nr_gauss_points = planeStressElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            [w,g] = returnGaussPoint(nr_gauss_points);
+
+            dens_mat = sparse(2,2);
+            dens_mat(1,1) = density*thickness; 
+            dens_mat(2,2) = dens_mat(1,1); 
+
+            massMatrix = sparse(8,8);
+            for xi = 1 : nr_gauss_points
+                for eta = 1 : nr_gauss_points
+                    [N_mat,~,~,J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
+                    
+                    massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
+                end
+            end
+        end        
+        
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(8,8);
+
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
+
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
+        end
+        
         function pl = drawDeformed(planeStressElement3d4n, step, scaling)
     
             x = [planeStressElement3d4n.nodeArray(1).getX + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
@@ -154,12 +191,11 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 element_connect(i,1:4) = elementArray(i).getNodes.getId();
                 stressPoints = [-1 -1;1 -1;1 1;-1 1];            
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                thickness = elementArray(i).getPropertyValue('THICKNESS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
-                D = D * EModul * thickness / (1-prxy^2);
+                D = D * EModul / (1-prxy^2);
                 
                 for j = 1:4
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
@@ -201,7 +237,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
         end   
     end
     methods (Static)
-        function ord = drawOrder() % Order of Points in which Element is drawn 
+        function ord = drawOrder()
             
             ord = [1,2,3,4,1];
         end

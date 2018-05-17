@@ -102,7 +102,43 @@ classdef PlaneStressElement3d3n < TriangularElement
                 w * B' * D * B * 0.5 * det(J);
             end
         end
-      
+        
+        function massMatrix = computeLocalMassMatrix(planeStressElement3d3n)
+            %Formulation of the Massmatrix based on the Shape Functions
+            
+            density = planeStressElement3d3n.getPropertyValue('DENSITY');
+            thickness = planeStressElement3d3n.getPropertyValue('THICKNESS');
+            nr_gauss_points = planeStressElement3d3n.getPropertyValue('NUMBER_GAUSS_POINT');
+
+            dens_mat = sparse(2,2);
+            dens_mat(1,1) = density*thickness; 
+            dens_mat(2,2) = dens_mat(1,1); 
+
+            massMatrix = sparse(6,6);
+            for i = 1 : nr_gauss_points
+                
+                [w,g] = returnGaussPointTrig(nr_gauss_points,i);
+                [N_mat, ~, ~, J] = computeShapeFunction(planeStressElement3d3n,g);
+  
+                massMatrix = massMatrix + N_mat' * dens_mat * N_mat * 0.5 * det(J) * w;
+            end
+        end
+        
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(6,6);
+
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
+
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
+        end
+            
         function pl = drawDeformed(planeStressElement3d3n, step, scaling)
     
             x = [planeStressElement3d3n.nodeArray(1).getX + scaling * planeStressElement3d3n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
@@ -145,12 +181,11 @@ classdef PlaneStressElement3d3n < TriangularElement
                 element_connect(i,1:3) = elementArray(i).getNodes.getId();
                 stressPoints = [1 0 0;0 1 0;0 0 1];
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                thickness = elementArray(i).getPropertyValue('THICKNESS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
-                D = D * EModul * thickness / (1-prxy^2);
+                D = D * EModul / (1-prxy^2);
                 
                 for j = 1:3
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
@@ -193,7 +228,7 @@ classdef PlaneStressElement3d3n < TriangularElement
     end
     
     methods (Static)
-        function ord = drawOrder() % Order of Points in which Element is drawn 
+        function ord = drawOrder()
             
             ord = [1,2,3,1];
         end        
