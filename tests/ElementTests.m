@@ -463,6 +463,9 @@ classdef ElementTests < matlab.unittest.TestCase
         end
         
         function testQuadrilateralElement2d4n (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
             node01 = Node(1,0,0);
             node02 = Node(2,0.5,0);
             node03 = Node(3,0.5,0.25);
@@ -491,11 +494,15 @@ classdef ElementTests < matlab.unittest.TestCase
                 -18 -39 0 -69 18 78 0 30; ...
                 -15 0 -21 18 -6 0 42 -18; ...
                 0 -69 18 -39 0 30 -18 78];
-            testCase.verifyEqual(actualSolution, expectedSolution)
+            testCase.assertThat(actualSolution, IsEqualTo(expectedSolution, ...
+                'Within', AbsoluteTolerance(1e-7)))
             
         end
         
-        function testHexahedron3d8n (testCase)
+        function testHexahedronElement3d8n (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
             node01 = Node(1,-1,-1,-1);
             node02 = Node(2,1,-1,-1);
             node03 = Node(3,1,1,-1);
@@ -509,14 +516,12 @@ classdef ElementTests < matlab.unittest.TestCase
             
             nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
             
-            ele01 = Hexahedron3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
+            ele01 = HexahedronElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
             
-            elementArray = [ele01];
-            
-            elementArray.setPropertyValue('YOUNGS_MODULUS',32);
-            elementArray.setPropertyValue('POISSON_RATIO',1/3);
-            elementArray.setPropertyValue('NUMBER_GAUSS_POINT',3);
-            elementArray.setPropertyValue('DENSITY',7860);
+            ele01.setPropertyValue('YOUNGS_MODULUS',32);
+            ele01.setPropertyValue('POISSON_RATIO',1/3);
+            ele01.setPropertyValue('NUMBER_GAUSS_POINT',3);
+            ele01.setPropertyValue('DENSITY',7860);
 
             actualSolution = ele01.computeLocalStiffnessMatrix;
             
@@ -545,7 +550,8 @@ classdef ElementTests < matlab.unittest.TestCase
                 -1,-6,-6,3,-4,-3,1,0,-1,-3,4,-2,-2,-8,2,6,-6,1,2,4,3,-6,16,6;
                 -1,-6,-6,3,-3,-4,6,1,-6,-2,2,-8,-3,-2,4,1,-1,0,2,3,4,-6,6,16];
             
-            testCase.verifyEqual(actualSolution, expectedSolution)
+            testCase.assertThat(actualSolution, IsEqualTo(expectedSolution, ...
+                'Within',AbsoluteTolerance(1e-7)))
             
         end
     end
