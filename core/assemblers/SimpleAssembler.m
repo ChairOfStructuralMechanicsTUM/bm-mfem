@@ -353,4 +353,3 @@ classdef SimpleAssembler < Assembler
     end
     
 end
-

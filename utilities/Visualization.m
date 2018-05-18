@@ -38,20 +38,36 @@ classdef Visualization < handle
             end
             
             % show element numbers
-            for ii = 1:length(elements)
-                c = elements(ii).barycenter;
-                elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                text(c(1), c(2), elemStr,'Interpreter','latex', ...
-                    'HorizontalAlignment','center','FontSize',10)
+            if(all(nodes.getDimension == 3))
+                for ii = 1:length(elements)
+                    c = elements(ii).barycenter;
+                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+                    text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
+                        'HorizontalAlignment','center','FontSize',10)
+                end
+            else
+                for ii = 1:length(elements)
+                    c = elements(ii).barycenter;
+                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+                    text(c(1), c(2), elemStr,'Interpreter','latex', ...
+                        'HorizontalAlignment','center','FontSize',10)
+                end
             end
             
             % show node numbers
-            for ii = 1:length(nodes)
-                nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
-                text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
-                    'HorizontalAlignment','left','FontSize',10,'Color','blue')
+            if(all(nodes.getDimension == 3))
+                for ii = 1:length(nodes)
+                    nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+                    text(nodes(ii).getX, nodes(ii).getY, nodes(ii).getZ, nodeStr,'Interpreter','latex', ...
+                        'HorizontalAlignment','left','FontSize',10,'Color','blue')
+                end
+            else
+                for ii = 1:length(nodes)
+                    nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+                    text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
+                        'HorizontalAlignment','left','FontSize',10,'Color','blue')
+                end
             end
-            
             
         end
         

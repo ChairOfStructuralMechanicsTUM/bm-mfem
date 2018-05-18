@@ -14,6 +14,7 @@ addpath('elements');
 if (exist('external_libs','dir') == 7)
     addpath(genpath('external_libs'));
 end
+addpath('examples');
 addpath('tests');
 addpath('utilities');
 
