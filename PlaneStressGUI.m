@@ -72,7 +72,8 @@ set(handles.axes1,'Visible', 'off');
 cla(handles.axes1);
 colorbar off
 
-fieldType = {'Select Field' 'sigma_xx' 'sigma_yy' 'sigma_xy' 'prin_I' 'prin_II' 'vm_stress'};
+fieldType = {'Select Field' 'displacement_x' 'displacement_y' 'displacement_absolute'...
+    'sigma_xx' 'sigma_yy' 'sigma_xy' 'prin_I' 'prin_II' 'vm_stress'};
 set(handles.popupmenu2,'String',fieldType);
 
 % UIWAIT makes PlaneStressGUI wait for user response (see UIRESUME)

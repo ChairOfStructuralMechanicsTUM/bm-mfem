@@ -83,15 +83,28 @@ classdef VisualizationGUI < handle
             nodes = visualization.model.getAllNodes;
             nElements = length(elements);
             [stressValue, element_connect] = computeElementStress(elements,nodes);
-            coords = zeros(length(nodes),3);
-
-            for i = 1:length(nodes)
-                coords(i,1) = nodes(i).getX();
-                coords(i,2) = nodes(i).getY();
-                coords(i,3) = nodes(i).getZ();
-            end
             
-            if     strcmp(fieldType,'sigma_xx')
+            disp_x = nodes.getDofValue('DISPLACEMENT_X');
+            disp_y = nodes.getDofValue('DISPLACEMENT_Y');
+            disp_absolute = sqrt(disp_x.^2+disp_y.^2);
+            
+            coords = zeros(length(nodes),3);
+            scaling = 1;
+            
+            coords(:,1) = transpose(nodes.getX) + scaling * disp_x;
+            coords(:,2) = transpose(nodes.getY) + scaling * disp_y;
+            coords(:,3) = nodes.getZ;
+            
+            if     strcmp(fieldType,'displacement_x')
+                    field = disp_x;
+                    
+            elseif     strcmp(fieldType,'displacement_y')
+                    field = disp_y;
+                    
+            elseif     strcmp(fieldType,'displacement_absolute')
+                    field = disp_absolute;
+                
+            elseif     strcmp(fieldType,'sigma_xx')
                     field = stressValue(1,:);
                     
             elseif strcmp(fieldType,'sigma_yy')
