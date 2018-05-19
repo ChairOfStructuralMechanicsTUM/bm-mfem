@@ -6,6 +6,7 @@ classdef VisualizationGUI < handle
         model
         
         deformedPlotLines
+        fieldPlotLines
         
         scalingFactor
     end
@@ -16,11 +17,53 @@ classdef VisualizationGUI < handle
         function v = VisualizationGUI(femModel)
             v.model = femModel;
             v.scalingFactor = 1;
-        end
-        
+        end 
+
+%         function plotUndeformed(visualization)
+%             hold on
+%             tic;
+%             elements = visualization.model.getAllElements;
+%             nodes = visualization.model.getAllNodes;
+%             
+%             for ii = 1:length(elements)
+%             connect(ii,1:4) = elements(ii).getNodes.getId();
+%             end
+%             
+%             coords(:,1) = transpose(nodes.getX);
+%             coords(:,2) = transpose(nodes.getY);
+%             
+%             % plot the undeformed system
+%             for ii = 1:length(elements)
+%                 
+%                 ord = elements(ii).drawOrder();
+%                 
+%                 x = coords(connect(ii,ord),1);
+%                 y = coords(connect(ii,ord),2);
+% 
+%                 plot(x,y,'Tag','undeformed','Color','blue');
+% 
+%             end
+%             toc
+%             % show element numbers
+%             for ii = 1:length(elements)
+%                 c = elements(ii).barycenter;
+%                 elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+%                 text(c(1), c(2), elemStr,'Interpreter','latex', ...
+%                     'HorizontalAlignment','center','FontSize',10,'Tag','ElemNum','Visible','off')
+%             end
+%             % show node numbers
+%             for ii = 1:length(nodes)
+% %                 nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+%                 nodeStr = num2str(nodes(ii).getId());
+%                 text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
+%                     'HorizontalAlignment','left','FontSize',10,'Color','blue','Tag','NodeNum','Visible','off')
+%             end
+%             axis equal
+%             hold off
+%             
+%         end
         function plotUndeformed(visualization)
             hold on
-            
             elements = visualization.model.getAllElements;
             nodes = visualization.model.getAllNodes;
             
@@ -29,7 +72,6 @@ classdef VisualizationGUI < handle
                 elPlot = elements(ii).draw;
                 elPlot.Tag = 'undeformed';
             end
-            
             % show element numbers
             for ii = 1:length(elements)
                 c = elements(ii).barycenter;
@@ -37,10 +79,10 @@ classdef VisualizationGUI < handle
                 text(c(1), c(2), elemStr,'Interpreter','latex', ...
                     'HorizontalAlignment','center','FontSize',10,'Tag','ElemNum','Visible','off')
             end
-            
             % show node numbers
             for ii = 1:length(nodes)
-                nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+%                 nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+                nodeStr = num2str(nodes(ii).getId());
                 text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
                     'HorizontalAlignment','left','FontSize',10,'Color','blue','Tag','NodeNum','Visible','off')
             end
@@ -69,6 +111,11 @@ classdef VisualizationGUI < handle
                 elPlot.Tag = 'deformed';
                 visualization.deformedPlotLines(ii) = elPlot;
             end
+            
+            data = guidata(findobj('Tag','figure1'));
+            data.deformedScaling = visualization.scalingFactor;
+            guidata(findobj('Tag','figure1'),data);
+            
             hold off
         end
         
@@ -77,7 +124,9 @@ classdef VisualizationGUI < handle
             hold on
             if nargin == 2
                 step = 'end';
-            end            
+            end
+            
+            visualization.clearField;
             
             elements = visualization.model.getAllElements;
             nodes = visualization.model.getAllNodes;
@@ -89,10 +138,10 @@ classdef VisualizationGUI < handle
             disp_absolute = sqrt(disp_x.^2+disp_y.^2);
             
             coords = zeros(length(nodes),3);
-            scaling = 1;
+            scaling = visualization.scalingFactor;
             
-            coords(:,1) = transpose(nodes.getX) + scaling * disp_x;
-            coords(:,2) = transpose(nodes.getY) + scaling * disp_y;
+            coords(:,1) = transpose(nodes.getX) + scaling .* disp_x;
+            coords(:,2) = transpose(nodes.getY) + scaling .* disp_y;
             coords(:,3) = nodes.getZ;
             
             if     strcmp(fieldType,'displacement_x')
@@ -132,9 +181,14 @@ classdef VisualizationGUI < handle
                 zpt = coords(element_connect(ii,ord),3);
                 fpt = field(element_connect(ii,ord));
 
-                fill3(xpt,ypt,zpt,fpt,'Tag',fieldType);
-
+                fieldPlot = fill3(xpt,ypt,zpt,fpt);
+                fieldPlot.Tag = fieldType;
+                visualization.fieldPlotLines(ii) = fieldPlot;
             end
+            
+            data = guidata(findobj('Tag','figure1'));
+            data.fieldScaling = visualization.scalingFactor;
+            guidata(findobj('Tag','figure1'),data);
                 
             colorbar
             hold off
@@ -148,8 +202,17 @@ classdef VisualizationGUI < handle
             v.scalingFactor = scalingFactor;
         end
         
+        function scalingFactor = getScaling(v)
+            scalingFactor = v.scalingFactor;
+        end
+        
         function clearDeformed(v)
            delete(v.deformedPlotLines);
+           drawnow;
+        end
+        
+        function clearField(v)
+           delete(v.fieldPlotLines);
            drawnow;
         end
         

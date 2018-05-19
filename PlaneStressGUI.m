@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 17-May-2018 16:29:18
+% Last Modified by GUIDE v2.5 18-May-2018 17:51:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -134,9 +134,10 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     model = io.readModel;
     model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
     handles.model = model;
+    vis = VisualizationGUI(model);
+    handles.vis = vis;
     handles.loaded = false;
     handles.constrained = false;
-    guidata(hObject,handles);
     
     axes1 = handles.axes1;
     cla(axes1);
@@ -145,7 +146,7 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     axis off
     colorbar off
     
-    vis = VisualizationGUI(model);
+    vis = handles.vis;
     vis.plotUndeformed();
 
     set(handles.popupmenu2,'Value',1);
@@ -159,7 +160,7 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     set(findall(handles.uipanel_visibility, '-property', 'enable'), 'Value', 0);
     set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
 
-
+    guidata(hObject,handles);
 % --- Executes on button press in checkbox_NodeNum.
 function checkbox_NodeNum_Callback(hObject, eventdata, handles)
 % hObject    handle to checkbox_NodeNum (see GCBO)
@@ -167,13 +168,13 @@ function checkbox_NodeNum_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_NodeNum
-
+tic;
     if(get(hObject,'Value') == get(hObject,'Max'))
         set(findobj(gcf,'tag','NodeNum'),'Visible','on');                     
     else
         set(findobj(gcf,'tag','NodeNum'),'Visible','off');
     end
-
+toc
 
 % --- Executes on button press in checkbox_ElemNum.
 function checkbox_ElemNum_Callback(hObject, eventdata, handles)
@@ -348,27 +349,32 @@ function pushbutton_solve_Callback(hObject, eventdata, handles)
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
 
 model = handles.model;
-nodeArray = model.getAllNodes();
+nodes = model.getAllNodes();
+
 solver = SimpleSolvingStrategy(model);
 solver.solve();
-% evaluation_point = model.getModelPart('LMPoint').getId();
-% dy = nodeArray(evaluation_point).getDofValue('DISPLACEMENT_Y');
-% fprintf("Displacement at Node %i: %f\n", evaluation_point, dy);
 
-% set(findall(handles.uipanel7, '-property', 'enable'), 'enable', 'on');
+% Scale Deflection to 5 % of maximum Model Length 
+maxModelLength = max(abs([max(nodes.getX)-min(nodes.getX),max(nodes.getY)-min(nodes.getY)]));
+maxDeformation = max(max(abs(nodes.getDofValue('DISPLACEMENT_X'))),max(abs(nodes.getDofValue('DISPLACEMENT_Y'))));
+scaling = maxModelLength * 0.05 / maxDeformation;
+handles.vis.setScaling(scaling);
+set(handles.edit7,'String',scaling);
 
 cla(handles.axes1);
 colorbar off
-vis = VisualizationGUI(model);
-vis.plotUndeformed();
-vis.plotDeformed();
+handles.vis.plotUndeformed();
+handles.vis.plotDeformed();
 
+set(findobj(gcf,'Tag','undeformed'),'Visible','off');
+set(findobj(gcf,'Tag','deformed'),'Visible','on');
 set(handles.popupmenu2,'Value',1);
-set(handles.checkbox3,'Value',1);
-set(handles.checkbox4,'Value',0);
+set(handles.checkbox3,'Value',0);
+set(handles.checkbox4,'Value',1);
 set(handles.radiobutton1,'Value',1);
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'on');
 set(handles.popupmenu2,'enable','off');
+guidata(hObject, handles);
 % --- Executes on button press in checkbox3.
 function checkbox3_Callback(hObject, eventdata, handles)
 % hObject    handle to checkbox3 (see GCBO)
@@ -409,8 +415,7 @@ axes1 = handles.axes1;
 children = axes1.Children;
 set(children,'Visible','off');
 
-model = handles.model;
-vis = VisualizationGUI(model);
+vis = handles.vis;
 contents = cellstr(get(hObject,'String'));
 fieldType = contents{get(hObject,'Value')};
 
@@ -463,6 +468,13 @@ function radiobutton1_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton1
 
+scaling = str2num(get(handles.edit7,'String'));
+
+if scaling ~= handles.deformedScaling
+    handles.vis.setScaling(scaling);
+    handles.vis.plotDeformed;
+end
+
 if(get(hObject,'Value') == get(hObject,'Max'))
     
     set(handles.checkbox3,'Enable','on')
@@ -495,6 +507,7 @@ function radiobutton2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton2
+scaling = str2num(get(handles.edit7,'String'));
 
 if(get(hObject,'Value') == get(hObject,'Max'))
     
@@ -510,8 +523,12 @@ if(get(hObject,'Value') == get(hObject,'Max'))
     fieldType = contents{get(handles.popupmenu2,'Value')};
     
     if ~strcmp(fieldType,'Select Field')
-        set(findobj(gcf,'Tag',fieldType),'Visible','on');
-        colorbar
+        if scaling == handles.fieldScaling
+            set(findobj(gcf,'Tag',fieldType),'Visible','on');
+            colorbar
+        else
+            handles.vis.plotField(fieldType);
+        end
     end
 end
 
@@ -557,4 +574,41 @@ if(get(hObject,'Value') == get(hObject,'Max'))
     axis on               
 else
     axis off
+end
+
+
+
+function edit7_Callback(hObject, eventdata, handles)
+% hObject    handle to edit7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit7 as text
+%        str2double(get(hObject,'String')) returns contents of edit7 as a double
+vis = handles.vis();
+scaling = str2num(get(hObject,'String'));
+vis.setScaling(scaling);
+
+if(get(handles.radiobutton1,'Value') == get(handles.radiobutton1,'Max'))
+    if(get(handles.checkbox4,'Value') == get(handles.checkbox4,'Max'))
+        vis.plotDeformed;
+        set(findobj(gcf,'Tag','deformed'),'Visible','on');
+    end
+else
+    contents = cellstr(get(handles.popupmenu2,'String'));
+    fieldType = contents{get(handles.popupmenu2,'Value')};
+    vis.plotField(fieldType);
+end
+    
+guidata(hObject,handles);
+% --- Executes during object creation, after setting all properties.
+function edit7_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
