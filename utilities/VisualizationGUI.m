@@ -7,6 +7,8 @@ classdef VisualizationGUI < handle
         
         deformedPlotLines
         fieldPlotLines
+        loadPlotLines
+        constrainPlotLines
         
         scalingFactor
     end
@@ -137,12 +139,11 @@ classdef VisualizationGUI < handle
             disp_y = nodes.getDofValue('DISPLACEMENT_Y');
             disp_absolute = sqrt(disp_x.^2+disp_y.^2);
             
-            coords = zeros(length(nodes),3);
+            coords = zeros(length(nodes),2);
             scaling = visualization.scalingFactor;
             
             coords(:,1) = transpose(nodes.getX) + scaling .* disp_x;
             coords(:,2) = transpose(nodes.getY) + scaling .* disp_y;
-            coords(:,3) = nodes.getZ;
             
             if     strcmp(fieldType,'displacement_x')
                     field = disp_x;
@@ -176,12 +177,11 @@ classdef VisualizationGUI < handle
                 
                 ord = elements(ii).drawOrder();
                 
-                xpt = coords(element_connect(ii,ord),1);
-                ypt = coords(element_connect(ii,ord),2);
-                zpt = coords(element_connect(ii,ord),3);
-                fpt = field(element_connect(ii,ord));
+                x = coords(element_connect(ii,ord),1);
+                y = coords(element_connect(ii,ord),2);
+                f = field(element_connect(ii,ord));
 
-                fieldPlot = fill3(xpt,ypt,zpt,fpt);
+                fieldPlot = fill(x,y,f);
                 fieldPlot.Tag = fieldType;
                 visualization.fieldPlotLines(ii) = fieldPlot;
             end
@@ -189,8 +189,84 @@ classdef VisualizationGUI < handle
             data = guidata(findobj('Tag','figure1'));
             data.fieldScaling = visualization.scalingFactor;
             guidata(findobj('Tag','figure1'),data);
-                
+            
             colorbar
+            hold off
+        end
+
+        function plotLoad(visualization)
+            hold on
+            
+            try
+                visualization.clearLoad;
+            end
+            
+            nodes = visualization.model.getAllNodes;
+            maxModelLength = max(abs([max(nodes.getX)-min(nodes.getX),max(nodes.getY)-min(nodes.getY)]));
+            data = guidata(findobj('Tag','figure1'));
+            maxDofLoad = data.maxDofLoad;
+            scaling = maxModelLength * 0.05 / maxDofLoad;
+
+            for ii = 1:length(nodes)
+
+                dofLoadX = nodes(ii).getDof('DISPLACEMENT_X').getDofLoad();
+                dofLoadY = nodes(ii).getDof('DISPLACEMENT_Y').getDofLoad();
+                x = nodes(ii).getX - dofLoadX * scaling;
+                y = nodes(ii).getY - dofLoadY * scaling;
+                
+                if any([dofLoadX dofLoadY])
+                    loadPlot = quiver(x,y,dofLoadX,dofLoadY);
+                    loadPlot.Color = 'red';
+                    loadPlot.MaxHeadSize = 0.6;
+                    loadPlot.AutoScaleFactor = scaling;
+                    loadPlot.LineWidth = 1;
+                    loadPlot.Tag = 'load';
+                    visualization.loadPlotLines(ii) = loadPlot;
+                end
+            end
+            
+            hold off
+            
+        end
+        
+        function plotConstrain(visualization)
+            hold on
+            
+            try
+                visualization.clearConstrain;
+            end
+            
+            nodes = visualization.model.getAllNodes;
+            maxModelLength = max(abs([max(nodes.getX)-min(nodes.getX),max(nodes.getY)-min(nodes.getY)]));
+            scaling = maxModelLength * 0.01;
+            
+            for ii = 1:length(nodes)
+
+                dofX = nodes(ii).getDof('DISPLACEMENT_X').isFixed();
+                dofY = nodes(ii).getDof('DISPLACEMENT_Y').isFixed();
+                x = nodes(ii).getX;
+                y = nodes(ii).getY;
+                
+                if dofX == 1
+                    plotX = [x;x-scaling;x-scaling;x];
+                    plotY = [y;y+scaling;y-scaling;y];
+                    constrainPlot = line(plotX,plotY);
+                    constrainPlot.Color = 'green';
+                    constrainPlot.LineWidth = 1;
+                    constrainPlot.Tag = 'constrain';
+                    visualization.constrainPlotLines(ii) = constrainPlot;
+                end
+                    
+                if dofY == 1
+                    plotX = [x;x+scaling;x-scaling;x];
+                    plotY = [y;y-scaling;y-scaling;y];
+                    constrainPlot = line(plotX,plotY);
+                    constrainPlot.Color = 'green';
+                    constrainPlot.LineWidth = 1;
+                    constrainPlot.Tag = 'constrain';
+                    visualization.constrainPlotLines(ii) = constrainPlot;
+                end
+            end
             hold off
         end
         
@@ -209,6 +285,16 @@ classdef VisualizationGUI < handle
         function clearDeformed(v)
            delete(v.deformedPlotLines);
            drawnow;
+        end
+        
+        function clearLoad(v)
+            delete(v.loadPlotLines);
+            drawnow;
+        end
+        
+        function clearConstrain(v)
+            delete(v.constrainPlotLines);
+            drawnow;
         end
         
         function clearField(v)

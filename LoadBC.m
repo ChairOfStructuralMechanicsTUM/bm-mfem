@@ -99,7 +99,13 @@ for i = 1:length(nodes)
 end
 loaded = any(dofLoad(:));
 data.loaded = loaded;
+
+data.maxDofLoad = max(max(abs(dofLoad)));
 guidata(fig,data);
+
+figure(fig);
+data.vis.plotLoad();
+
 
 try
     constrained = data.constrained;

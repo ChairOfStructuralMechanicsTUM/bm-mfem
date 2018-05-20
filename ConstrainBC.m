@@ -99,6 +99,9 @@ for i = 1:length(nodes)
 end
 constrained = any(dof(:));
 data.constrained = constrained;
+
+figure(fig);
+data.vis.plotConstrain;
 guidata(fig,data);
 
 try

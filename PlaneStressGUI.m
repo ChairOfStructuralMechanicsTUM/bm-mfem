@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 18-May-2018 17:51:28
+% Last Modified by GUIDE v2.5 20-May-2018 19:18:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -363,14 +363,18 @@ set(handles.edit7,'String',scaling);
 
 cla(handles.axes1);
 colorbar off
-handles.vis.plotUndeformed();
-handles.vis.plotDeformed();
+handles.vis.plotUndeformed;
+handles.vis.plotLoad;
+handles.vis.plotConstrain;
+handles.vis.plotDeformed;
 
-set(findobj(gcf,'Tag','undeformed'),'Visible','off');
+% set(findobj(gcf,'Tag','undeformed'),'Visible','off');
 set(findobj(gcf,'Tag','deformed'),'Visible','on');
 set(handles.popupmenu2,'Value',1);
-set(handles.checkbox3,'Value',0);
+set(handles.checkbox3,'Value',1);
 set(handles.checkbox4,'Value',1);
+set(handles.checkbox6,'Value',1);
+set(handles.checkbox7,'Value',1);
 set(handles.radiobutton1,'Value',1);
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'on');
 set(handles.popupmenu2,'enable','off');
@@ -611,4 +615,31 @@ function edit7_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox6.
+function checkbox6_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox6
+if(get(hObject,'Value') == get(hObject,'Max'))
+    set(findobj(gcf,'Tag','load'),'Visible','on');
+else
+    set(findobj(gcf,'Tag','load'),'Visible','off');
+end
+
+% --- Executes on button press in checkbox7.
+function checkbox7_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox7
+if(get(hObject,'Value') == get(hObject,'Max'))
+    set(findobj(gcf,'Tag','constrain'),'Visible','on');
+else
+    set(findobj(gcf,'Tag','constrain'),'Visible','off');
 end
