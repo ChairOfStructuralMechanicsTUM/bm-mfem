@@ -128,7 +128,9 @@ classdef VisualizationGUI < handle
                 step = 'end';
             end
             
+            try
             visualization.clearField;
+            end
             
             elements = visualization.model.getAllElements;
             nodes = visualization.model.getAllNodes;
@@ -145,56 +147,76 @@ classdef VisualizationGUI < handle
             coords(:,1) = transpose(nodes.getX) + scaling .* disp_x;
             coords(:,2) = transpose(nodes.getY) + scaling .* disp_y;
             
-            if     strcmp(fieldType,'displacement_x')
-                    field = disp_x;
+            if     strcmp(fieldType,'No Contour')
+
+                for ii = 1:length(elements)
+                    
+                    ord = elements(ii).drawOrder();
+                    
+                    x = coords(element_connect(ii,ord),1);
+                    y = coords(element_connect(ii,ord),2);
+                    
+                    defPlot = line(x,y);
+                    defPlot.Tag = fieldType;
+                    defPlot.Color = 'black';
+                    visualization.fieldPlotLines(ii) = defPlot;
+                end
+                colorbar off
+            elseif     strcmp(fieldType,'displacement_x')
+                field = disp_x;
                     
             elseif     strcmp(fieldType,'displacement_y')
-                    field = disp_y;
+                field = disp_y;
                     
             elseif     strcmp(fieldType,'displacement_absolute')
-                    field = disp_absolute;
+                field = disp_absolute;
                 
             elseif     strcmp(fieldType,'sigma_xx')
-                    field = stressValue(1,:);
-                    
+                field = stressValue(1,:);
+                
             elseif strcmp(fieldType,'sigma_yy')
-                    field = stressValue(2,:);
-                    
+                field = stressValue(2,:);
+                
             elseif strcmp(fieldType,'sigma_xy')
-                    field = stressValue(3,:);
-                    
+                field = stressValue(3,:);
+                
             elseif strcmp(fieldType,'prin_I')
-                    field = stressValue(4,:);
-                    
+                field = stressValue(4,:);
+                
             elseif strcmp(fieldType,'prin_II')
-                    field = stressValue(5,:);
-            
+                field = stressValue(5,:);
+                
             elseif strcmp(fieldType,'vm_stress')
-                    field = stressValue(6,:);
+                field = stressValue(6,:);
+                
+            else
+                warning('fieldType not yet implemented.');
             end
             
-            for ii = 1:nElements
-                
-                ord = elements(ii).drawOrder();
-                
-                x = coords(element_connect(ii,ord),1);
-                y = coords(element_connect(ii,ord),2);
-                f = field(element_connect(ii,ord));
+            if ~strcmp(fieldType,'No Contour')
+                for ii = 1:nElements
 
-                fieldPlot = fill(x,y,f);
-                fieldPlot.Tag = fieldType;
-                visualization.fieldPlotLines(ii) = fieldPlot;
+                    ord = elements(ii).drawOrder();
+
+                    x = coords(element_connect(ii,ord),1);
+                    y = coords(element_connect(ii,ord),2);
+                    f = field(element_connect(ii,ord));
+
+                    fieldPlot = fill(x,y,f);
+                    fieldPlot.Tag = fieldType;
+                    visualization.fieldPlotLines(ii) = fieldPlot;
+                end
+                colorbar
             end
             
             data = guidata(findobj('Tag','figure1'));
-            data.fieldScaling = visualization.scalingFactor;
+            data.scaling = visualization.scalingFactor;
             guidata(findobj('Tag','figure1'),data);
             
-            colorbar
             hold off
         end
 
-        function plotLoad(visualization)
+        function plotLoad(visualization,state)
             hold on
             
             try
@@ -206,16 +228,30 @@ classdef VisualizationGUI < handle
             data = guidata(findobj('Tag','figure1'));
             maxDofLoad = data.maxDofLoad;
             scaling = maxModelLength * 0.05 / maxDofLoad;
+            disp_x = nodes.getDofValue('DISPLACEMENT_X');
+            disp_y = nodes.getDofValue('DISPLACEMENT_Y');
+            data = guidata(findobj('Tag','figure1'));
+            defScaling = str2num(get(data.edit7,'String'));
+            
+            if strcmp(state,'undeformed')
+                x = nodes.getX';
+                y = nodes.getY';
+            elseif strcmp(state,'deformed')
+                x = nodes.getX' + defScaling .* disp_x;
+                y = nodes.getY' + defScaling .* disp_y;
+            else
+                warning('Error plotting Load Boundary Condition.');
+            end
 
             for ii = 1:length(nodes)
 
                 dofLoadX = nodes(ii).getDof('DISPLACEMENT_X').getDofLoad();
                 dofLoadY = nodes(ii).getDof('DISPLACEMENT_Y').getDofLoad();
-                x = nodes(ii).getX - dofLoadX * scaling;
-                y = nodes(ii).getY - dofLoadY * scaling;
+                plotX = x(ii) - dofLoadX * scaling;
+                plotY = y(ii) - dofLoadY * scaling;
                 
                 if any([dofLoadX dofLoadY])
-                    loadPlot = quiver(x,y,dofLoadX,dofLoadY);
+                    loadPlot = quiver(plotX,plotY,dofLoadX,dofLoadY);
                     loadPlot.Color = 'red';
                     loadPlot.MaxHeadSize = 0.6;
                     loadPlot.AutoScaleFactor = scaling;

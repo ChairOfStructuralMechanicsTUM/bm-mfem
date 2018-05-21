@@ -104,7 +104,7 @@ data.maxDofLoad = max(max(abs(dofLoad)));
 guidata(fig,data);
 
 figure(fig);
-data.vis.plotLoad();
+data.vis.plotLoad('undeformed');
 
 
 try

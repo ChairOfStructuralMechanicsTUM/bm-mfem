@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 20-May-2018 19:18:05
+% Last Modified by GUIDE v2.5 21-May-2018 15:25:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,7 +72,7 @@ set(handles.axes1,'Visible', 'off');
 cla(handles.axes1);
 colorbar off
 
-fieldType = {'Select Field' 'displacement_x' 'displacement_y' 'displacement_absolute'...
+fieldType = {'No Contour' 'displacement_x' 'displacement_y' 'displacement_absolute'...
     'sigma_xx' 'sigma_yy' 'sigma_xy' 'prin_I' 'prin_II' 'vm_stress'};
 set(handles.popupmenu2,'String',fieldType);
 
@@ -152,7 +152,6 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     set(handles.popupmenu2,'Value',1);
     set(handles.checkbox3,'Value',1);
     set(handles.checkbox4,'Value',0);
-    set(handles.radiobutton1,'Value',1);
     set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
     set(findall(handles.uipanel_solver, '-property', 'enable'), 'enable', 'off');
     set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
@@ -161,13 +160,13 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
 
     guidata(hObject,handles);
-% --- Executes on button press in checkbox_NodeNum.
-function checkbox_NodeNum_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_NodeNum (see GCBO)
+% --- Executes on button press in checkbox_nodeID.
+function checkbox_nodeID_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_nodeID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of checkbox_NodeNum
+% Hint: get(hObject,'Value') returns toggle state of checkbox_nodeID
 tic;
     if(get(hObject,'Value') == get(hObject,'Max'))
         set(findobj(gcf,'tag','NodeNum'),'Visible','on');                     
@@ -176,13 +175,13 @@ tic;
     end
 toc
 
-% --- Executes on button press in checkbox_ElemNum.
-function checkbox_ElemNum_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_ElemNum (see GCBO)
+% --- Executes on button press in checkbox_elemID.
+function checkbox_elemID_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_elemID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of checkbox_ElemNum
+% Hint: get(hObject,'Value') returns toggle state of checkbox_elemID
 
     if(get(hObject,'Value') == get(hObject,'Max'))
         set(findobj(gcf,'tag','ElemNum'),'Visible','on');                     
@@ -361,23 +360,23 @@ scaling = maxModelLength * 0.05 / maxDeformation;
 handles.vis.setScaling(scaling);
 set(handles.edit7,'String',scaling);
 
-cla(handles.axes1);
-colorbar off
-handles.vis.plotUndeformed;
-handles.vis.plotLoad;
+handles.vis.plotField('No Contour');
 handles.vis.plotConstrain;
-handles.vis.plotDeformed;
+handles.vis.plotLoad('deformed');
 
-% set(findobj(gcf,'Tag','undeformed'),'Visible','off');
 set(findobj(gcf,'Tag','deformed'),'Visible','on');
 set(handles.popupmenu2,'Value',1);
 set(handles.checkbox3,'Value',1);
 set(handles.checkbox4,'Value',1);
 set(handles.checkbox6,'Value',1);
 set(handles.checkbox7,'Value',1);
-set(handles.radiobutton1,'Value',1);
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'on');
-set(handles.popupmenu2,'enable','off');
+set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'off');
+set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
+set(handles.checkbox_elemID,'Enable','off');
+set(handles.checkbox_nodeID,'Enable','off');
+set(handles.pushbutton11,'Enable','on');
+set(hObject,'Enable','off');
 guidata(hObject, handles);
 % --- Executes on button press in checkbox3.
 function checkbox3_Callback(hObject, eventdata, handles)
@@ -400,11 +399,25 @@ function checkbox4_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox4
-    if(get(hObject,'Value') == get(hObject,'Max'))
-        set(findobj(gcf,'Tag','deformed'),'Visible','on');                     
-    else
-        set(findobj(gcf,'Tag','deformed'),'Visible','off');
-    end
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+if(get(hObject,'Value') == get(hObject,'Max'))
+    
+    set(handles.text6,'Enable','on');
+    set(handles.text7,'Enable','on');
+    set(handles.edit7,'Enable','on');
+    set(handles.popupmenu2,'Enable','on');
+    set(findobj(gcf,'Tag',fieldType),'Visible','on');
+
+    
+else
+    set(findobj(gcf,'Tag',fieldType),'Visible','off');
+    set(handles.text6,'Enable','off');
+    set(handles.text7,'Enable','off');
+    set(handles.edit7,'Enable','off');
+    set(handles.popupmenu2,'Enable','off');
+end
 
 
 % --- Executes on selection change in popupmenu2.
@@ -415,9 +428,9 @@ function popupmenu2_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu2 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu2
-axes1 = handles.axes1;
-children = axes1.Children;
-set(children,'Visible','off');
+% axes1 = handles.axes1;
+% children = axes1.Children;
+% set(children,'Visible','off');
 
 vis = handles.vis;
 contents = cellstr(get(hObject,'String'));
@@ -589,19 +602,14 @@ function edit7_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit7 as text
 %        str2double(get(hObject,'String')) returns contents of edit7 as a double
-vis = handles.vis();
-scaling = str2num(get(hObject,'String'));
-vis.setScaling(scaling);
 
-if(get(handles.radiobutton1,'Value') == get(handles.radiobutton1,'Max'))
-    if(get(handles.checkbox4,'Value') == get(handles.checkbox4,'Max'))
-        vis.plotDeformed;
-        set(findobj(gcf,'Tag','deformed'),'Visible','on');
-    end
-else
-    contents = cellstr(get(handles.popupmenu2,'String'));
-    fieldType = contents{get(handles.popupmenu2,'Value')};
-    vis.plotField(fieldType);
+scaling = str2num(get(hObject,'String'));
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+if scaling ~= handles.vis.getScaling
+    handles.vis.setScaling(scaling);
+    handles.vis.plotField(fieldType);
 end
     
 guidata(hObject,handles);
@@ -643,3 +651,21 @@ if(get(hObject,'Value') == get(hObject,'Max'))
 else
     set(findobj(gcf,'Tag','constrain'),'Visible','off');
 end
+
+
+% --- Executes on button press in pushbutton11.
+function pushbutton11_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+cla(handles.axes1);
+colorbar off
+handles.vis.plotUndeformed;
+handles.vis.plotLoad('undeformed');
+handles.vis.plotConstrain;
+set(handles.pushbutton_solve,'Enable','on');
+set(handles.checkbox_elemID,'Enable','on');
+set(handles.checkbox_nodeID,'Enable','on');
+set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
+set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
+set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'on');
