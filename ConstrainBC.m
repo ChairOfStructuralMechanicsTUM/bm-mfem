@@ -227,7 +227,7 @@ data = guidata(fig);
 model = data.model;
 nodes = model.getAllNodes();
 if ~isempty(get(handles.edit2,'String'))
-    startNodeId = str2double(get(handles.edit1,'String'));
+    startNodeId = str2double(get(handles.edit2,'String'));
 else
     startContents = cellstr(get(handles.popupmenu2,'String'));
     modelPart = startContents{get(handles.popupmenu2,'Value')};
@@ -235,7 +235,7 @@ else
 end
 
 if ~isempty(get(handles.edit3,'String'))
-    endNodeId = str2double(get(handles.edit1,'String'));
+    endNodeId = str2double(get(handles.edit3,'String'));
 else
     endContents = cellstr(get(handles.popupmenu3,'String'));
     modelPart = endContents{get(handles.popupmenu3,'Value')};

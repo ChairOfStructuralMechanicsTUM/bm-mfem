@@ -435,18 +435,10 @@ function popupmenu2_Callback(hObject, eventdata, handles)
 vis = handles.vis;
 contents = cellstr(get(hObject,'String'));
 fieldType = contents{get(hObject,'Value')};
-
-h = findobj(gcf,'Tag',fieldType);
-if ~isempty(h)
-    set(h,'Visible','on');
-    colorbar
-else   
-    if ~strcmp(fieldType,'Select Field')
-        vis.plotField(fieldType);
-    else
-        colorbar off
-    end
-end
+vis.plotField(fieldType);
+uistack(findobj(gcf,'Tag','load'),'top');
+uistack(findobj(gcf,'Tag','constrain'),'top');
+uistack(findobj(gcf,'Tag','undeformed'),'top');
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu2_CreateFcn(hObject, eventdata, handles)
@@ -610,6 +602,9 @@ fieldType = contents{get(handles.popupmenu2,'Value')};
 if scaling ~= handles.vis.getScaling
     handles.vis.setScaling(scaling);
     handles.vis.plotField(fieldType);
+    if (get(handles.checkbox6,'Value') == get(hObject,'Max'))
+        handles.vis.plotLoad('deformed');
+    end
 end
     
 guidata(hObject,handles);
