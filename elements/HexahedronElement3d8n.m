@@ -1,5 +1,5 @@
-classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
-    %HEXAHEDRON3D8N Summary of this class goes here
+classdef HexahedronElement3d8n < Element  
+    %   HEXAHEDRONELEMENT3D8N Summary of this class goes here
     %   Detailed explanation goes here
 
     properties (Access = private)
@@ -199,7 +199,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         end
         
         function vals = getFirstDerivativesVector(element, step)
-            vals = zeros(1,12);
+            vals = zeros(1,24);
             
             [~, vals([1 4 7 10 13 16 19 22]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, vals([2 5 8 11 14 17 20 23]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
@@ -207,7 +207,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         end
         
         function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,12);            
+            vals = zeros(1,24);            
             
             [~, ~, vals([1 4 7 10 13 16 19 22])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, ~, vals([2 5 8 11 14 17 20 23])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
