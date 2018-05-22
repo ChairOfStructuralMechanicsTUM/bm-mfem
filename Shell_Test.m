@@ -22,9 +22,6 @@ elementArray.setPropertyValue('THICKNESS', 0.01);
 elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
 elementArray.setPropertyValue('POISSON_RATIO', 0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
-elementArray.setPropertyValue('DENSITY', 1);
-elementArray.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
-
 %% Solving system
 
 model = FemModel(nodeArray,elementArray);
