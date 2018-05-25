@@ -19,8 +19,8 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 node
 
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 
-ele01 = Hexahedron3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
-ele02 = Hexahedron3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
+ele01 = HexahedronElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
+ele02 = HexahedronElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
 
 elementArray = [ele01 ele02];
 
