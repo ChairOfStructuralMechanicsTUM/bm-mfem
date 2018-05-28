@@ -248,45 +248,45 @@ classdef PorousElement3d8n < Element
         end
         
         function dofs = getDofList(element)
-            dofs([1 7 13 19 25 31 37 43]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
-            dofs([2 8 14 20 26 32 38 44]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');
-            dofs([3 9 15 21 27 33 39 45]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z');
-            dofs([4 10 16 22 28 34 40 46]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
-            dofs([5 11 17 23 29 35 41 47]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
-            dofs([6 12 18 24 30 36 42 48]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z');
+            dofs([1 4 7 10 13 16 19 22]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
+            dofs([2 5 8 11 14 17 20 23]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');
+            dofs([3 6 9 12 15 18 21 24]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z');
+            dofs([25 28 31 34 37 40 43 46]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
+            dofs([26 29 32 35 38 41 44 47]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
+            dofs([27 30 33 36 39 42 45 48]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z');
         end
         
         function vals = getValuesVector(element, step)
             vals = zeros(1,48);
             
-            vals([1 7 13 19 25 31 37 43]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_X',step);
-            vals([2 8 14 20 26 32 38 44]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Y',step);
-            vals([3 9 15 21 27 33 39 45]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Z',step);
-            vals([4 10 16 22 28 34 40 46]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
-            vals([5 11 17 23 29 35 41 47]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
-            vals([6 12 18 24 30 36 42 48]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Z',step);
+            vals([1 4 7 10 13 16 19 22]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_X',step);
+            vals([2 5 8 11 14 17 20 23]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Y',step);
+            vals([3 6 9 12 15 18 21 24]) = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Z',step);
+            vals([25 28 31 34 37 40 43 46]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
+            vals([26 29 32 35 38 41 44 47]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
+            vals([27 30 33 36 39 42 45 48]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Z',step);
         end
         
         function vals = getFirstDerivativesVector(element, step)
             vals = zeros(1,48);
             
-            [~, vals([1 7 13 19 25 31 37 43]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
-            [~, vals([2 8 14 20 26 32 38 44]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
-            [~, vals([3 9 15 21 27 33 39 45]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z').getAllValues(step);
-            [~, vals([4 10 16 22 28 34 40 46]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
-            [~, vals([5 11 17 23 29 35 41 47]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
-            [~, vals([6 12 18 24 30 36 42 48]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z').getAllValues(step);
+            [~, vals([1 4 7 10 13 16 19 22]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
+            [~, vals([2 5 8 11 14 17 20 23]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
+            [~, vals([3 6 9 12 15 18 21 24]), ~] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z').getAllValues(step);
+            [~, vals([25 28 31 34 37 40 43 46]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+            [~, vals([26 29 32 35 38 41 44 47]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+            [~, vals([27 30 33 36 39 42 45 48]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z').getAllValues(step);
         end
         
         function vals = getSecondDerivativesVector(element, step)
             vals = zeros(1,48);
             
-            [~, ~, vals([1 7 13 19 25 31 37 43])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
-            [~, ~, vals([2 8 14 20 26 32 38 44])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
-            [~, ~, vals([3 9 15 21 27 33 39 45])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z').getAllValues(step);
-            [~, ~, vals([4 10 16 22 28 34 40 46])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
-            [~, ~, vals([5 11 17 23 29 35 41 47])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
-            [~, ~, vals([6 12 18 24 30 36 42 48])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z').getAllValues(step);
+            [~, ~, vals([1 4 7 10 13 16 19 22])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
+            [~, ~, vals([2 5 8 11 14 17 20 23])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
+            [~, ~, vals([3 6 9 12 15 18 21 24])] = element.nodeArray.getDof('DISPLACEMENT_SOLID_Z').getAllValues(step);
+            [~, ~, vals([25 28 31 34 37 40 43 46])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+            [~, ~, vals([26 29 32 35 38 41 44 47])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+            [~, ~, vals([27 30 33 36 39 42 45 48])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Z').getAllValues(step);
         end
         
         function pl = draw(obj)
