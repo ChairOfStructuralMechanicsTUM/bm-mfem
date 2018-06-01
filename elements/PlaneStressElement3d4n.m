@@ -175,12 +175,25 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             vals = zeros(1,8);
             
             vals([1 3 5 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-
             vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,8);
+            
+            [~, vals([1 3 5 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([1 3 5 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,8);
+            
+            [~, ~, vals([1 3 5 7])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([1 3 5 7])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+        end
+        
         %Computation of Stresses
-        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray)
+        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray,step)
 
             element_connect = zeros(length(elementArray),4);
             stressValue = zeros(6,length(nodeArray));
@@ -199,7 +212,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 
                 for j = 1:4
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
-                    displacement_e = getValuesVector(elementArray(i),1);
+                    displacement_e = getValuesVector(elementArray(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;

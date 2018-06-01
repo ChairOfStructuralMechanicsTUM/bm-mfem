@@ -6,12 +6,13 @@ load = [fx fy];
 
 startCoord = nodeArray(startNodeId).getCoords();
 endCoord = nodeArray(endNodeId).getCoords();
+tol = 1e-10;
 
 ii = 1;
-    if startCoord(1) == endCoord(1)
+    if  abs(startCoord(1)-endCoord(1)) < tol
         lengthY = abs(startCoord(2)-endCoord(2));
         for i = 1:length(nodeArray)
-            if nodeArray(i).getX == startCoord(1)
+            if abs(nodeArray(i).getX-startCoord(1)) < tol
                 loadNodes(ii) = nodeArray(i);
                 ii = ii + 1;
             end
@@ -25,10 +26,10 @@ ii = 1;
         nodeArray(endNodeId).setDofLoad('DISPLACEMENT_X', (nodalLoad(1) / 2));
         nodeArray(endNodeId).setDofLoad('DISPLACEMENT_Y', (nodalLoad(2) / 2));
         
-    elseif startCoord(2) == endCoord(2)
+    elseif abs(startCoord(2)-endCoord(2)) < tol
         lengthX = abs(startCoord(1)-endCoord(1));
         for i = 1:length(nodeArray)
-            if nodeArray(i).getY == startCoord(2)
+            if abs(nodeArray(i).getY-startCoord(2)) < tol
                 loadNodes(ii) = nodeArray(i);
                 ii = ii + 1;
             end
@@ -43,6 +44,6 @@ ii = 1;
         nodeArray(endNodeId).setDofLoad('DISPLACEMENT_Y', (nodalLoad(2) / 2));
 
     else
-        warndlg('Line Load must be parallel to global X or Y Axsis.','Warning');
+        warndlg('Line Load must be parallel to global X or Y Axis.','Warning');
     end
 end

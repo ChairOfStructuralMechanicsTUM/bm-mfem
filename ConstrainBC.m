@@ -107,12 +107,12 @@ guidata(fig,data);
 try
     loaded = data.loaded;
 catch
-    loaded = false;
+    loaded = 'false';
 end
 
 if constrained
     close(handles.figure_ConstrainBC);
-    if loaded
+    if strcmp(loaded, 'dynamic') || strcmp(loaded, 'static')
         set(data.pushbutton_solve, 'enable', 'on');
     end
 else

@@ -121,7 +121,7 @@ classdef VisualizationGUI < handle
             hold off
         end
         
-        function plotField(visualization,fieldType, step)
+        function plotField(visualization,fieldType,step)
             
             hold on
             if nargin == 2
@@ -135,10 +135,11 @@ classdef VisualizationGUI < handle
             elements = visualization.model.getAllElements;
             nodes = visualization.model.getAllNodes;
             nElements = length(elements);
-            [stressValue, element_connect] = computeElementStress(elements,nodes);
             
-            disp_x = nodes.getDofValue('DISPLACEMENT_X');
-            disp_y = nodes.getDofValue('DISPLACEMENT_Y');
+            [stressValue, element_connect] = computeElementStress(elements,nodes,step);
+
+            disp_x = nodes.getDofValue('DISPLACEMENT_X',step);
+            disp_y = nodes.getDofValue('DISPLACEMENT_Y',step);
             disp_absolute = sqrt(disp_x.^2+disp_y.^2);
             
             coords = zeros(length(nodes),2);
@@ -214,6 +215,39 @@ classdef VisualizationGUI < handle
             guidata(findobj('Tag','figure1'),data);
             
             hold off
+        end
+        
+        function plotLineData(visualization, selectedNodeIds, step)
+            elements = visualization.model.getAllElements;
+            nodes = visualization.model.getAllNodes;
+            
+            [stressValue, element_connect] = computeElementStress(elements,nodes,step);
+            field = stressValue(1,:);
+            
+            for i = 1:length(selectedNodeIds)
+                selectedField(i) = field(selectedNodeIds(i));
+            end
+            
+            for i = 1:length(selectedNodeIds)
+                selectedNodes(i) = nodes(selectedNodeIds(i));
+            end
+            
+            if abs(selectedNodes(1).getX-selectedNodes(2).getX) < 1e-10
+                y = selectedNodes.getY';
+                value = selectedField';
+%                 value = selectedNodes.getDofValue('DISPLACEMENT_X',step);
+                plot = sortrows([y value]);
+                
+                figure
+                line(plot(:,2),plot(:,1))
+            else
+                x = selectedNodes.getX';
+                value = selectedField';
+%                 value = selectedNodes.getDofValue('DISPLACEMENT_Y',step);
+                plot = sortrows([x value]);
+                figure
+                line(plot(:,1),plot(:,2))
+            end
         end
 
         function plotLoad(visualization,state)

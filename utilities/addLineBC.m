@@ -4,12 +4,12 @@ function addLineBC(startNodeId, endNodeId, nodeArray)
 
 startCoord = nodeArray(startNodeId).getCoords();
 endCoord = nodeArray(endNodeId).getCoords();
+tol = 1e-10;
 
 ii = 1;
-    if startCoord(1) == endCoord(1)
-        lengthY = abs(startCoord(2)-endCoord(2));
+    if abs(startCoord(1)-endCoord(1)) < tol
         for i = 1:length(nodeArray)
-            if nodeArray(i).getX == startCoord(1)
+            if abs(nodeArray(i).getX-startCoord(1)) < tol
                 boundary(ii) = nodeArray(i);
                 ii = ii + 1;
             end
@@ -17,10 +17,9 @@ ii = 1;
         boundary.fixDof('DISPLACEMENT_X');
         boundary.fixDof('DISPLACEMENT_Y');
         
-    elseif startCoord(2) == endCoord(2)
-        lengthX = abs(startCoord(1)-endCoord(1));
+    elseif abs(startCoord(2)-endCoord(2)) < tol
         for i = 1:length(nodeArray)
-            if nodeArray(i).getY == startCoord(2)
+            if abs(nodeArray(i).getY-startCoord(2)) < tol
                 boundary(ii) = nodeArray(i);
                 ii = ii + 1;
             end
@@ -29,7 +28,7 @@ ii = 1;
         boundary.fixDof('DISPLACEMENT_Y');
 
     else
-        error('LineBC must be parallel to global X or Y Axsis.')
+        error('LineBC must be parallel to global X or Y Axis.')
     end
 end
 

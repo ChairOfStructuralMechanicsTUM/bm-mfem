@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 21-May-2018 15:25:52
+% Last Modified by GUIDE v2.5 01-Jun-2018 12:38:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,10 +63,6 @@ set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_solver, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
 set(handles.edit1,'string','Quad4_4x40.msh');
-set(handles.edit_youngsModulus,'string','2e+05');
-set(handles.edit_thickness,'string','0.5');
-set(handles.edit_prxy,'string','0.3');
-set(handles.edit_numberGaussPoint,'string','3');
 set(handles.axes1,'Visible', 'off');
 
 cla(handles.axes1);
@@ -136,8 +132,15 @@ function pushbutton_ImportModel_Callback(hObject, eventdata, handles)
     handles.model = model;
     vis = VisualizationGUI(model);
     handles.vis = vis;
-    handles.loaded = false;
+    handles.loaded = 'false';
     handles.constrained = false;
+    
+    %populate popupmenu with modelParts
+    modelParts = keys(getAllModelParts(model));
+    modelPartsDefault = {'Select Model Part'};
+    modelPartsList = [modelPartsDefault, modelParts];
+    set(handles.popupmenu3,'string',modelPartsList);
+    set(handles.popupmenu4,'string',modelPartsList);
     
     axes1 = handles.axes1;
     cla(axes1);
@@ -284,22 +287,7 @@ end
 
 % --- Executes on button press in pushbutton_submit.
 function pushbutton_submit_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_submit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-model = handles.model;
-elementArray = model.getAllElements();
-youngsModulus = str2num(get(handles.edit_youngsModulus,'string'));
-thickness = str2num(get(handles.edit_thickness,'string'));
-prxy = str2num(get(handles.edit_prxy,'string'));
-nrGaussPoint = str2num(get(handles.edit_numberGaussPoint,'string'));
-
-elementArray.setPropertyValue('THICKNESS', thickness);
-elementArray.setPropertyValue('YOUNGS_MODULUS', youngsModulus);
-elementArray.setPropertyValue('POISSON_RATIO', prxy);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT', nrGaussPoint);
-
-set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'on');
+Properties();
 
 % --- Executes on button press in pushbutton4.
 function pushbutton4_Callback(hObject, eventdata, handles)
@@ -349,9 +337,31 @@ set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
 
 model = handles.model;
 nodes = model.getAllNodes();
+loaded = handles.loaded;
 
-solver = SimpleSolvingStrategy(model);
-solver.solve();
+if strcmp(loaded,'static')
+    solver = SimpleSolvingStrategy(model);
+    solver.solve();
+else strcmp(loaded,'dynamic')
+    endTime = handles.endTime;
+    time = 0;
+    dt = handles.dt;
+    load = handles.load;
+    direction = handles.direction;
+    excitationFrequency = handles.excitationFrequency;
+    node = nodes(handles.nodeId);
+    
+    solver = NewmarkSolvingStrategy(model, dt);
+    while time < endTime
+        applyHarmonicSineLoad(node, load, direction, excitationFrequency, time);
+        solver.solve();
+        time = time + dt;
+    end
+    totalSteps = endTime/dt;
+    set(handles.text9,'String',totalSteps);
+%     set(handles.edit9,'Max',totalSteps);
+    set(handles.edit9,'String',1);
+end
 
 % Scale Deflection to 5 % of maximum Model Length 
 maxModelLength = max(abs([max(nodes.getX)-min(nodes.getX),max(nodes.getY)-min(nodes.getY)]));
@@ -360,7 +370,8 @@ scaling = maxModelLength * 0.05 / maxDeformation;
 handles.vis.setScaling(scaling);
 set(handles.edit7,'String',scaling);
 
-handles.vis.plotField('No Contour');
+handles.vis.plotField('No Contour',1);
+% handles.vis.plotDeformed(10);
 handles.vis.plotConstrain;
 handles.vis.plotLoad('deformed');
 
@@ -553,7 +564,7 @@ model = handles.model;
 nodes = model.getAllNodes();
 nodes.setDofLoad('DISPLACEMENT_X',0);
 nodes.setDofLoad('DISPLACEMENT_Y',0);
-handles.loaded = false;
+handles.loaded = 'false';
 guidata(hObject,handles);
 
 % --- Executes on button press in pushbutton10.
@@ -664,3 +675,267 @@ set(handles.checkbox_nodeID,'Enable','on');
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
 set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'on');
+
+
+% --- Executes on slider movement.
+function slider2_Callback(hObject, eventdata, handles)
+% hObject    handle to slider2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+step = get(hObject,'Value');
+handles.vis.plotField(fieldType,step);
+
+% --- Executes during object creation, after setting all properties.
+function slider2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function edit_density_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_density (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_density as text
+%        str2double(get(hObject,'String')) returns contents of edit_density as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_density_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_density (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes during object creation, after setting all properties.
+function slider3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in pushbutton12.
+function pushbutton12_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.pushbutton13,'Enable','on');
+step = str2num(get(handles.edit9,'String'));
+step = step + 1;
+set(handles.edit9,'string',step);
+totalSteps = str2num(get(handles.text9,'String'));
+if step == totalSteps
+    set(hObject,'Enable','off');
+end
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+handles.vis.plotField(fieldType,step+1);
+
+function edit9_Callback(hObject, eventdata, handles)
+% hObject    handle to edit9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit9 as text
+%        str2double(get(hObject,'String')) returns contents of edit9 as a double
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+totalSteps = str2num(get(handles.text9,'String'));
+step = str2num(get(hObject,'String'));
+
+if step == totalSteps
+    set(handles.pushbutton12,'Enable','off');
+elseif step == 1
+    set(handles.pushbutton12,'Enable','on');
+else
+    set(handles.pushbutton12,'Enable','on');
+end
+    
+handles.vis.plotField(fieldType,step+1);
+% --- Executes during object creation, after setting all properties.
+function edit9_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton13.
+function pushbutton13_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.pushbutton12,'Enable','on');
+step = str2num(get(handles.edit9,'String'));
+step = step - 1;
+if step == 1
+    set(hObject,'Enable','off');
+end
+set(handles.edit9,'string',step);
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+handles.vis.plotField(fieldType,step+1);
+
+
+
+function edit10_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit10_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popupmenu3.
+function popupmenu3_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu3 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu3
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popupmenu4.
+function popupmenu4_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu4 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu4
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit11_Callback(hObject, eventdata, handles)
+% hObject    handle to edit11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit11 as text
+%        str2double(get(hObject,'String')) returns contents of edit11 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit11_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton14.
+function pushbutton14_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton14 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+model = handles.model;
+nodes = model.getAllNodes;
+if ~isempty(get(handles.edit10,'String'))
+    startNodeId = str2double(get(handles.edit10,'String'));
+else
+    startContents = cellstr(get(handles.popupmenu3,'String'));
+    modelPart = startContents{get(handles.popupmenu3,'Value')};
+    startNodeId = model.getModelPart(modelPart).getId();
+end
+
+if ~isempty(get(handles.edit11,'String'))
+    endNodeId = str2double(get(handles.edit11,'String'));
+else
+    endContents = cellstr(get(handles.popupmenu4,'String'));
+    modelPart = endContents{get(handles.popupmenu4,'Value')};
+    endNodeId = model.getModelPart(modelPart).getId();
+end
+
+selectedNodeIds = getNodeIdsAlongLine(startNodeId,endNodeId,nodes);
+step = 1;
+handles.vis.plotLineData(selectedNodeIds,step);
+% if strcmp(dir,'horizontal')
+%     x = selectedNodes.getX';
+%     value = selectedNodes.getDofValue('DISPLACEMENT_X');
+%     line(x,value);
+% else
+%     y = selectedNodes.getY';
+%     value = [1;2;3;4;5];
+%     [y,value] = sortrows([y value]);
+%     figure
+%     line(value,y);
+% end
+
+    
