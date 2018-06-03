@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 01-Jun-2018 12:38:25
+% Last Modified by GUIDE v2.5 03-Jun-2018 16:46:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,7 +55,7 @@ function PlaneStressGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for PlaneStressGUI
 handles.output = hObject;
 
-% Update handles structure
+bm_fem;
 guidata(hObject, handles);
 set(findall(handles.uipanel_visibility, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'off');
@@ -68,7 +68,7 @@ set(handles.axes1,'Visible', 'off');
 cla(handles.axes1);
 colorbar off
 
-fieldType = {'No Contour' 'displacement_x' 'displacement_y' 'displacement_absolute'...
+fieldType = {'Select Field' 'displacement_x' 'displacement_y' 'displacement_absolute'...
     'sigma_xx' 'sigma_yy' 'sigma_xy' 'prin_I' 'prin_II' 'vm_stress'};
 set(handles.popupmenu2,'String',fieldType);
 
@@ -172,9 +172,10 @@ function checkbox_nodeID_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox_nodeID
 tic;
     if(get(hObject,'Value') == get(hObject,'Max'))
-        set(findobj(gcf,'tag','NodeNum'),'Visible','on');                     
+        handles.vis.plotNumbering('nodes','deformed');                   
     else
-        set(findobj(gcf,'tag','NodeNum'),'Visible','off');
+        handles.vis.clearNumbering;
+%         set(findobj(gcf,'tag','NodeNum'),'Visible','off');
     end
 toc
 
@@ -342,6 +343,8 @@ loaded = handles.loaded;
 if strcmp(loaded,'static')
     solver = SimpleSolvingStrategy(model);
     solver.solve();
+    set(findall(handles.uipanel11, '-property', 'enable'), 'enable', 'off');
+    
 else strcmp(loaded,'dynamic')
     endTime = handles.endTime;
     time = 0;
@@ -359,8 +362,8 @@ else strcmp(loaded,'dynamic')
     end
     totalSteps = endTime/dt;
     set(handles.text9,'String',totalSteps);
-%     set(handles.edit9,'Max',totalSteps);
     set(handles.edit9,'String',1);
+    set(findall(handles.uipanel11, '-property', 'enable'), 'enable', 'off');
 end
 
 % Scale Deflection to 5 % of maximum Model Length 
@@ -370,9 +373,9 @@ scaling = maxModelLength * 0.05 / maxDeformation;
 handles.vis.setScaling(scaling);
 set(handles.edit7,'String',scaling);
 
-handles.vis.plotField('No Contour',1);
+handles.vis.plotField('Select Field',1);
 % handles.vis.plotDeformed(10);
-handles.vis.plotConstrain;
+handles.vis.plotConstrain('deformed');
 handles.vis.plotLoad('deformed');
 
 set(findobj(gcf,'Tag','deformed'),'Visible','on');
@@ -384,8 +387,6 @@ set(handles.checkbox7,'Value',1);
 set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'on');
 set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'off');
-set(handles.checkbox_elemID,'Enable','off');
-set(handles.checkbox_nodeID,'Enable','off');
 set(handles.pushbutton11,'Enable','on');
 set(hObject,'Enable','off');
 guidata(hObject, handles);
@@ -450,6 +451,8 @@ vis.plotField(fieldType);
 uistack(findobj(gcf,'Tag','load'),'top');
 uistack(findobj(gcf,'Tag','constrain'),'top');
 uistack(findobj(gcf,'Tag','undeformed'),'top');
+uistack(findobj(gcf,'Tag','NodeNum'),'top');
+uistack(findobj(gcf,'Tag','ElemNum'),'top');
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu2_CreateFcn(hObject, eventdata, handles)
@@ -668,7 +671,7 @@ cla(handles.axes1);
 colorbar off
 handles.vis.plotUndeformed;
 handles.vis.plotLoad('undeformed');
-handles.vis.plotConstrain;
+handles.vis.plotConstrain('undeformed');
 set(handles.pushbutton_solve,'Enable','on');
 set(handles.checkbox_elemID,'Enable','on');
 set(handles.checkbox_nodeID,'Enable','on');
@@ -905,6 +908,11 @@ function pushbutton14_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton14 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+step = str2num(get(handles.edit9,'String'));
+
 model = handles.model;
 nodes = model.getAllNodes;
 if ~isempty(get(handles.edit10,'String'))
@@ -924,8 +932,8 @@ else
 end
 
 selectedNodeIds = getNodeIdsAlongLine(startNodeId,endNodeId,nodes);
-step = 1;
-handles.vis.plotLineData(selectedNodeIds,step);
+
+handles.vis.plotLineData(selectedNodeIds,fieldType,step);
 % if strcmp(dir,'horizontal')
 %     x = selectedNodes.getX';
 %     value = selectedNodes.getDofValue('DISPLACEMENT_X');
@@ -939,3 +947,83 @@ handles.vis.plotLineData(selectedNodeIds,step);
 % end
 
     
+
+
+% --- Executes on selection change in popupmenu13.
+function popupmenu13_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu13 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu13
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu13_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit20_Callback(hObject, eventdata, handles)
+% hObject    handle to edit20 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit20 as text
+%        str2double(get(hObject,'String')) returns contents of edit20 as a double
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+step = str2num(get(handles.edit9,'String'));
+
+model = handles.model;
+if ~isempty(get(handles.edit20,'String'))
+    nodeId = str2double(get(handles.edit20,'String'));
+else
+    startContents = cellstr(get(handles.popupmenu13,'String'));
+    modelPart = startContents{get(handles.popupmenu13,'Value')};
+    nodeId = model.getModelPart(modelPart).getId();
+end
+handles.vis.plotLineData(nodeId,fieldType,step); 
+
+% --- Executes during object creation, after setting all properties.
+function edit20_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit20 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton19.
+function pushbutton19_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton19 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+contents = cellstr(get(handles.popupmenu2,'String'));
+fieldType = contents{get(handles.popupmenu2,'Value')};
+
+step = str2num(get(handles.edit9,'String'));
+
+model = handles.model;
+if ~isempty(get(handles.edit20,'String'))
+    nodeId = str2double(get(handles.edit20,'String'));
+else
+    startContents = cellstr(get(handles.popupmenu13,'String'));
+    modelPart = startContents{get(handles.popupmenu13,'Value')};
+    nodeId = model.getModelPart(modelPart).getId();
+end
+handles.vis.plotLineData(nodeId,fieldType,step);    

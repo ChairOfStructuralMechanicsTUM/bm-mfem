@@ -101,7 +101,7 @@ constrained = any(dof(:));
 data.constrained = constrained;
 
 figure(fig);
-data.vis.plotConstrain;
+data.vis.plotConstrain('undeformed');
 guidata(fig,data);
 
 try
