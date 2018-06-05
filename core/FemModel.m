@@ -196,7 +196,8 @@ classdef FemModel < handle
                     element = ReissnerMindlinElement3d4n(id, nodes);
                 case 'ShellElement3d4n'
                     element = ShellElement3d4n(id, nodes);
-                    
+                case 'DiscreteKirchhoffElement3d4n'
+                    element = DiscreteKirchhoffElement3d4n(id, nodes);    
                 otherwise
                     error('unknown element %s',elementName)
             end %switch
