@@ -13,7 +13,6 @@ classdef EigensolverStrategy < Solver
         
         eigenfrequencies
         modalMatrix
-        spectralMatrix
         
         normalizedModalMatrix
         rayleighAlpha
@@ -45,13 +44,12 @@ classdef EigensolverStrategy < Solver
             end
             
             % solve
-            [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
+            [eigensolver.modalMatrix, spectralMatrix] = ...
                 eigs(eigensolver.stiffnessMatrix, eigensolver.massMatrix, ...
                 nModes, 'sm');
             
-            % get eigenfrequencies
-            eigensolver.eigenfrequencies = diag(eigensolver.spectralMatrix);
-            eigensolver.eigenfrequencies = sqrt(eigensolver.eigenfrequencies) ./ (2*pi);
+            % get eigenfrequencies in rad/s
+            eigensolver.eigenfrequencies = sqrt(diag(spectralMatrix));
         end
         
         function assignModeShapes(eigensolver)
@@ -149,8 +147,6 @@ classdef EigensolverStrategy < Solver
             [~, force] = solver.assembler.applyExternalForces(solver.femModel);
             nModes = length(solver.eigenfrequencies);
             
-            eigenvalues = diag(solver.spectralMatrix);
-            
             for e=1:length(excitations)
                 excitation = excitations(e);
                 result = zeros;
@@ -158,11 +154,12 @@ classdef EigensolverStrategy < Solver
                     if solver.modalDampingRatio ~= 0
                         dampingRatio = solver.modalDampingRatio;
                     elseif (solver.rayleighAlpha ~= 0) || (solver.rayleighBeta ~= 0)
-                        dampingRatio = solver.rayleighAlpha / (2 * sqrt(eigenvalues(n))) + solver.rayleighBeta * sqrt(eigenvalues(n)) / 2;
+                        dampingRatio = solver.rayleighAlpha / (2 * solver.eigenfrequencies(n) ) ...
+                            + solver.rayleighBeta * solver.eigenfrequencies(n) / 2;
                     else
                         dampingRatio = 0.0;
                     end
-                    factor = (eigenvalues(n) - excitation^2) + 2i * dampingRatio * sqrt(eigenvalues(n)) * excitation;
+                    factor = (solver.eigenfrequencies(n)^2 - excitation^2) + 2i * dampingRatio * solver.eigenfrequencies(n) * excitation;
                     result = result + 1/factor .* ((solver.modalMatrix(:,n) * solver.modalMatrix(:,n)') * force');
                 end
                 solver.assembler.appendValuesToDofs(solver.femModel, result);
@@ -221,6 +218,7 @@ classdef EigensolverStrategy < Solver
         end
         
         function ef = getEigenfrequencies(eigensolver)
+            %GETEIGENFREQUENCIES returns the eigenfrequencies in rad/s
             ef = eigensolver.eigenfrequencies;
         end
         

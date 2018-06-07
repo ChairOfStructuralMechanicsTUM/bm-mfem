@@ -40,8 +40,8 @@ classdef SolverTests <  matlab.unittest.TestCase
             solver.solve(2);
             solver.assignModeShapes();
             
-            %eigenfrequencies in Hz
-            expectedEigenfrequencies = (1 / (2*pi)) .* [sqrt(stiffness/(2*mass)) sqrt(2*stiffness/mass)]';
+            %eigenfrequencies in rad/s
+            expectedEigenfrequencies = [sqrt(stiffness/(2*mass)) sqrt(2*stiffness/mass)]';
             actualEigenfrequencies = sort(solver.getEigenfrequencies);
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
