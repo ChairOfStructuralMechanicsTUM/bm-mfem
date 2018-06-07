@@ -48,8 +48,12 @@ classdef EigensolverStrategy < Solver
                 eigs(eigensolver.stiffnessMatrix, eigensolver.massMatrix, ...
                 nModes, 'sm');
             
-            % get eigenfrequencies in rad/s
+            % save eigenfrequencies in rad/s
             eigensolver.eigenfrequencies = sqrt(diag(spectralMatrix));
+            
+            % sort eigenfrequencies and mode shapes
+            [eigensolver.eigenfrequencies, order] = sort(eigensolver.eigenfrequencies);
+            eigensolver.modalMatrix = eigensolver.modalMatrix(:,order);
         end
         
         function assignModeShapes(eigensolver)

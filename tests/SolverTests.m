@@ -42,7 +42,7 @@ classdef SolverTests <  matlab.unittest.TestCase
             
             %eigenfrequencies in rad/s
             expectedEigenfrequencies = [sqrt(stiffness/(2*mass)) sqrt(2*stiffness/mass)]';
-            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            actualEigenfrequencies = solver.getEigenfrequencies;
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                     'Within', AbsoluteTolerance(1e-7)))
