@@ -48,6 +48,30 @@ classdef SolverTests <  matlab.unittest.TestCase
                     'Within', AbsoluteTolerance(1e-7)))
         end
         
+        function dampedHarmonicTest(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            a = .01;
+            m = createBeam(.4,10,'IY',a^4/12,'IZ',a^4/12,'IT',a^4/12,'CROSS_SECTION',a^2);
+            m.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z','ROTATION_X', 'ROTATION_Y', 'ROTATION_Z'});
+            
+            m.getNode(1).fixAllDofs;
+            m.getNode(11).setDofLoad('DISPLACEMENT_Z',100);
+            m.getAllElements.addProperty('RAYLEIGH_ALPHA',4.64);
+            m.getAllElements.addProperty('RAYLEIGH_BETA',9.1e-5);
+            
+            s = EigensolverStrategy(m);
+            s.harmonicAnalysis(2*pi*logspace(1,4,100),10);
+            
+            disp = abs(m.getNode(11).getDofValue('DISPLACEMENT_Z','all'));
+            load('tests/test_data.mat','damped_harmonic_disp');
+            
+            testCase.assertThat(disp, IsEqualTo(damped_harmonic_disp, ...
+                'Within', AbsoluteTolerance(1e-5)))
+            
+        end
+        
         function newmarkTest(testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
