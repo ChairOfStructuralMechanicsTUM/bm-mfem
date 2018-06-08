@@ -34,13 +34,15 @@ classdef EigensolverStrategy < Solver
         end
         
         function solve(eigensolver, nModes)
+            %EIGENSOLVERSTRATEGY.SOLVE computes the eigenfrequencies and mode shapes of the
+            %given system
             if ~ eigensolver.isInitialized
                 eigensolver.initialize();
             end
             
             if size(eigensolver.stiffnessMatrix,1) < nModes
                 nModes = size(eigensolver.stiffnessMatrix,1);
-                fprintf("Warning (EigensolverStrategy): setting number of modes to %d\n",nModes);
+                warning('EigensolverStrategy: setting number of modes to %d\n',nModes);
             end
             
             % solve
@@ -57,6 +59,8 @@ classdef EigensolverStrategy < Solver
         end
         
         function assignModeShapes(eigensolver)
+            %EIGENSOLVERSTRATEGY.ASSIGNMODESHAPES assigns the modal displacement to all dofs.
+            %   step 1 visualizes the first eigenvector etc.
             nModes = size(eigensolver.modalMatrix, 2);
             eigensolver.assembler.assignResultsToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,1));
             for itEv = 2:nModes
@@ -224,10 +228,13 @@ classdef EigensolverStrategy < Solver
         
         function ef = getEigenfrequencies(eigensolver)
             %GETEIGENFREQUENCIES returns the eigenfrequencies in rad/s
+            %sorted from low to high
             ef = eigensolver.eigenfrequencies;
         end
         
         function mm = getModalMatrix(eigensolver)
+            %GETMODALMATRIX returns the modal matrix of the system sorted
+            %according to the eigenfrequencies
             mm = eigensolver.modalMatrix;
         end
         
