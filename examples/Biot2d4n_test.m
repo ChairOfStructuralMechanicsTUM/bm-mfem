@@ -48,7 +48,7 @@ node04.fixDof('DISPLACEMENT_FLUID_X');
 node04.fixDof('DISPLACEMENT_FLUID_Y');
 
 
-addPointLoadPorous(node03,100,[0 -1]);
+addPointLoadPorous(node03,10000,[0 -1]);
 
 
 model = FemModel(nodeArray, elementArray);
@@ -58,7 +58,7 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-solver = SimpleSolvingStrategy(model);
+solver = NewmarkSolvingStrategy(model);
 x = solver.solve();
 
 step = 1;
