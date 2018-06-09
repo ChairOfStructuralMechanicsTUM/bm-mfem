@@ -14,7 +14,7 @@ classdef BiotElement2d4n < QuadrilateralElement
             
         requiredPropertyNames = cellstr(["OMEGA","NUMBER_GAUSS_POINT", "LAMBDA", ...
                 "MU","ETA_S","DENSITY_S","DENSITY_F","ETA_F","PRESSURE_0","HEAT_CAPACITY_RATIO",...
-                 "PRANDL_NUMBER","POROSITY","TURTUOSITY","STATIC_FLOW_RESISTIVITY",...
+                 "PRANDL_NUMBER","POROSITY","TORTUOSITY","STATIC_FLOW_RESISTIVITY",...
                 "VISCOUS_CHARACT_LENGTH","THERMAL_CHARACT_LENGTH"]);
             
     % define the arguments for the super class constructor call
@@ -120,12 +120,12 @@ classdef BiotElement2d4n < QuadrilateralElement
          
     % Calculate Bulk-Modulus K_f:
             K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
-               (1+(8*ETA_F)/(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
-               (1+(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
+               (1+(8*ETA_F)/(n*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
+               (1+(n*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
         
     % Hysteretic proportional damping model:
-            LameCoeff = (1+i*ETA_S)*LAMBDA;
-            ShearModulus = (1+i*ETA_S)*MU;
+            LameCoeff = (1+n*ETA_S)*LAMBDA;
+            ShearModulus = (1+n*ETA_S)*MU;
             
             
     % Biot's Elasticity Coefficients:
@@ -175,32 +175,32 @@ classdef BiotElement2d4n < QuadrilateralElement
             totalElementStiffnessMatrix = zeros(16,16);
             
     % Assemble total element stiffness matrix:
-            for i=1:1:8
-               for j=1:1:8
-               totalElementStiffnessMatrix(i,j) = stiffnessMatrix_s(i,j); 
+            for n=1:1:8
+               for m=1:1:8
+               totalElementStiffnessMatrix(n,m) = stiffnessMatrix_s(n,m); 
                end  
-            totalElementStiffnessMatrix(i,j) = stiffnessMatrix_s(i,j);
+            totalElementStiffnessMatrix(n,m) = stiffnessMatrix_s(n,m);
             end
 
-            for i=1:1:8
-               for j=9:1:16
-               totalElementStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j); 
+            for n=1:1:8
+               for m=9:1:16
+               totalElementStiffnessMatrix(n,m) = stiffnessMatrix_sf(n,m); 
                end  
-            totalElementStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j);
+            totalElementStiffnessMatrix(n,m) = stiffnessMatrix_sf(n,m);
             end
 
-            for i=9:1:16
-               for j=1:1:8
-               totalElementStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j); 
+            for n=9:1:16
+               for m=1:1:8
+               totalElementStiffnessMatrix(n,m) = stiffnessMatrix_sf(n,m); 
                end  
-            totalElementStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j);
+            totalElementStiffnessMatrix(n,m) = stiffnessMatrix_sf(n,m);
             end
 
-            for i=9:1:16
-               for j=9:1:16
-               totalElementStiffnessMatrix(i,j) = stiffnessMatrix_f(i,j); 
+            for n=9:1:16
+               for m=9:1:16
+               totalElementStiffnessMatrix(n,m) = stiffnessMatrix_f(n,m); 
                end  
-            totalElementStiffnessMatrix(i,j) = stiffnessMatrix_f(i,j);
+            totalElementStiffnessMatrix(n,m) = stiffnessMatrix_f(n,m);
             end
            
         end
@@ -220,7 +220,7 @@ classdef BiotElement2d4n < QuadrilateralElement
             p = biot2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             
     % G_J(OMEGA) = flow resistivity of air particles in the pores:
-            AirFlowResistivity = (1+(4*i*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
+            AirFlowResistivity = (1+(4*n*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
                 (STATIC_FLOW_RESISTIVITY^2*VISCOUS_CHARACT_LENGTH^2*POROSITY^2))^(0.5);
             
             
@@ -234,7 +234,7 @@ classdef BiotElement2d4n < QuadrilateralElement
             Rho_a = POROSITY*DENSITY_F*(TORTUOSITY-1);
             
     % Equivalent densities for expressing the elastodynamic coupled equations in condensed form:
-            Rho_sf = -Rho_a+i*(ViscousDrag)/(OMEGA);
+            Rho_sf = -Rho_a+n*(ViscousDrag)/(OMEGA);
             Rho_s = (1-POROSITY)*DENSITY_S-Rho_sf;
             Rho_f = POROSITY*DENSITY_F-Rho_sf;
             
@@ -245,14 +245,14 @@ classdef BiotElement2d4n < QuadrilateralElement
     % Calculate geometric-only mass matrix:
             [w,g]=returnGaussPoint(p);
             
-            for i=1:p
-                xi=g(i);
-                for j=1:p
-                    eta=g(j);
+            for n=1:p
+                xi=g(n);
+                for m=1:p
+                    eta=g(m);
                     
                     [N_mat, ~, ~, ~, J] = computeShapeFunction(biot2d4n,xi,eta);
                     
-                    M = M + (w(i)*w(j)*transpose(N_mat)*N_mat*det(J));
+                    M = M + (w(n)*w(m)*transpose(N_mat)*N_mat*det(J));
                     
                 end
              end
@@ -264,32 +264,32 @@ classdef BiotElement2d4n < QuadrilateralElement
              M_sf = Rho_sf*M;
             
     % Assemble total element mass matrix:
-             for i=1:1:8
-                for j=1:1:8
-                totalElementMassMatrix(i,j) = M_s(i,j); 
+             for n=1:1:8
+                for m=1:1:8
+                totalElementMassMatrix(n,m) = M_s(n,m); 
                 end  
-             totalElementMassMatrix(i,j) = M_s(i,j);
+             totalElementMassMatrix(n,m) = M_s(n,m);
              end
 
-             for i=1:1:8
-                for j=9:1:16
-                totalElementMassMatrix(i,j) = M_sf(i,j); 
+             for n=1:1:8
+                for m=9:1:16
+                totalElementMassMatrix(n,m) = M_sf(n,m); 
                 end  
-             totalElementMassMatrix(i,j) = M_sf(i,j);
+             totalElementMassMatrix(n,m) = M_sf(n,m);
              end
 
-             for i=9:1:16
-                for j=1:1:8
-                totalElementMassMatrix(i,j) = M_sf(i,j); 
+             for n=9:1:16
+                for m=1:1:8
+                totalElementMassMatrix(n,m) = M_sf(n,m); 
                 end  
-             totalElementMassMatrix(i,j) = M_sf(i,j);
+             totalElementMassMatrix(n,m) = M_sf(n,m);
              end
 
-             for i=9:1:16
-                for j=9:1:16
-                totalElementMassMatrix(i,j) = M_f(i,j); 
+             for n=9:1:16
+                for m=9:1:16
+                totalElementMassMatrix(n,m) = M_f(n,m); 
                 end  
-             totalElementMassMatrix(i,j) = M_f(i,j);
+             totalElementMassMatrix(n,m) = M_f(n,m);
              end
         end
         
