@@ -96,37 +96,11 @@ classdef BiotElement2d4n < QuadrilateralElement
                 0,By(1),0,By(2),0,By(3),0,By(4);
                 By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
             
-            % Calculation of B_shear Matrix
-            %B_s = sparse(2,8);
-            %If 3 DOF Element: B_s=[Bx(1),N(1),0,Bx(2),N(2),0,Bx(3),N(3),0,Bx(4),N(4),0; By(1),N(1),0,By(2),N(2),0,By(3),N(3),0,By(4),N(4),0];
-            B_s=[N(1),0,N(2),0,N(3),0,N(4),0; 
-                N(1),0,N(2),0,N(3),0,N(4),0];
+
         end
-        
-        
-        
-%%__________________________________________________________
-        
-        function K_f = FluidBulkModulus(OMEGA)
-        
-            HEAT_CAPACITY_RATIO= biotElement2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
-            PRESSURE_0 = biotElement2d4n.getPropertyValue('PRESSURE_0');
-            ETA_F = biotElement2d4n.getPropertyValue('ETA_F');
-            PRANDL_NUMBER = biotElement2d4n.getPropertyValue('PRANDL_NUMBER');
-            THERMAL_CHARACT_LENGTH = biotElement2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
-            DENSITY_F = biotElement2d4n.getPropertyValue('DENSITY_F');
-         
-         
-            K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
-               (1+(8*ETA_F)/(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
-               (1+(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1))
-        
-        end
-    
 
 
-
-        function [stiffnessMatrix_s, stiffnessMatrix_f] = computeLocalStiffnessMatrix(biotElement2d4n)
+        function [totalLocalStiffnessMatrix] = computeLocalStiffnessMatrix(biotElement2d4n)
         
 
             ETA_S = biotElement2d4n.getPropertyValue('ETA_S');
@@ -135,34 +109,47 @@ classdef BiotElement2d4n < QuadrilateralElement
             OMEGA = biotElement2d4n.getPropertyValue('OMEGA');
             POROSITY = biotElement2d4n.getPropertyValue('POROSITY');
             
-            LameCoeff = (1+i*ETA_S)*LAMBDA
-            ShearModulus = (1+i*ETA_S)*MU
+        
+            HEAT_CAPACITY_RATIO= biotElement2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
+            PRESSURE_0 = biotElement2d4n.getPropertyValue('PRESSURE_0');
+            ETA_F = biotElement2d4n.getPropertyValue('ETA_F');
+            PRANDL_NUMBER = biotElement2d4n.getPropertyValue('PRANDL_NUMBER');
+            THERMAL_CHARACT_LENGTH = biotElement2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
+            DENSITY_F = biotElement2d4n.getPropertyValue('DENSITY_F');
             
-            K_f = FluidBulkModulus(OMEGA)
+         
+         
+            K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
+               (1+(8*ETA_F)/(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
+               (1+(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
+        
             
-            R = POROSITY*K_f
-            Q = (1-POROSITY)*K_f
-            A = LameCoeff+(1-POROSITY)^2/POROSITY*K_f
+            LameCoeff = (1+i*ETA_S)*LAMBDA;
+            ShearModulus = (1+i*ETA_S)*MU;
             
             
-            D_s = [A+2*MU,A,0;A,A+2*MU,0;0,0,MU]
-            D_sf = [Q,Q,0;Q,Q,0;0,0,0]
-            D_f = [R,R,0;R,R,0;0,0,0]
             
-
-%%__________________________________________________________            
+            R = POROSITY*K_f;
+            Q = (1-POROSITY)*K_f;
+            A = LameCoeff+(1-POROSITY)^2/POROSITY*K_f;
+            
+            
+            D_s = [A+2*MU,A,0;A,A+2*MU,0;0,0,MU];
+            D_sf = [Q,Q,0;Q,Q,0;0,0,0];
+            D_f = [R,R,0;R,R,0;0,0,0];
+                  
             
  
-            %%% get gauss integration factors
+            % Get gauss integration factors:
             [w,g]=returnGaussPoint(p);
            
             
-            %%% empty Stiffnessmatrix
+            % Generate empty Stiffnessmatrix:
             
             stiffnessMatrix_s=sparse(8,8);
             stiffnessMatrix_f=sparse(8,8);
-           
-            %%%% WERDEN BENDING- UND SHEARMATRIX BENUTZT? WARUM?
+            stiffnessMatrix_sf = sparse(8,8);
+          
             
             if (biotElement2d4n.getProperties.hasValue('FULL_INTEGRATION')) && (biotElement2d4n.getPropertyValue('FULL_INTEGRATION'))
                 for xi = 1 : p
@@ -170,71 +157,94 @@ classdef BiotElement2d4n < QuadrilateralElement
                         [~, ~,B_b, B_s, J] = computeShapeFunction(biotElement2d4n,g(xi),g(eta));
 
                         stiffnessMatrix_s = stiffnessMatrix_s +             ...
-                            B_b' * D_s * B_b * det(J) * w(xi) * w(eta) + ...
-                            B_s' * D_sf * B_s * det(J) * w(xi) * w(eta);
-                        
+                            B_b' * D_s * B_b * det(J) * w(xi) * w(eta);
+           
                         stiffnessMatrix_f = stiffnessMatrix_f +             ...
-                            B_b' * D_f * B_b * det(J) * w(xi) * w(eta) + ...
-                            B_s' * D_sf' * B_s * det(J) * w(xi) * w(eta);
+                            B_b' * D_f * B_b * det(J) * w(xi) * w(eta);
                         
+                        stiffnessMatrix_sf = stiffnessMatrix_sf +             ...
+                            B_b' * D_sf * B_b * det(J) * w(xi) * w(eta); 
                         
-                    end
-                end
-                
-            
-            else
-                for xi = 1 : p
-                    for eta = 1 : p
-                        [~, ~,B_b, ~, J] = computeShapeFunction(biotElement2d4n,g(xi),g(eta));
-
-                        stiffnessMatrix_s = stiffnessMatrix_s +             ...
-                            B_b' * D_s * B_b * det(J) * w(xi) * w(eta) + ...
-                            B_b' * D_sf * B_b * det(J) * w(xi) * w(eta);
-                        
-                        stiffnessMatrix_f = stiffnessMatrix_f +             ...
-                            B_b' * D_f * B_b * det(J) * w(xi) * w(eta) + ...
-                            B_b' * D_sf' * B_b * det(J) * w(xi) * w(eta);
-                 
-                       
-                    end
-                end
-                
-                [w,g] = returnGaussPoint(1);
-              
-                for xi = 1 : 1
-                    for eta = 1 : 1
-                        [~, ~,~, B_s, J] = computeShapeFunction(biotElement2d4n,g(xi),g(eta));
-                        
-                        stiffnessMatrix_s = stiffnessMatrix_s +             ...
-                            B_s' * D_s * B_s * det(J) * w(xi) * w(eta) + ...
-                            B_s' * D_sf * B_s * det(J) * w(xi) * w(eta);
-                        stiffnessMatrix_f = stiffnessMatrix_f +             ...
-                            B_s' * D_f * B_s * det(J) * w(xi) * w(eta) + ...
-                            B_s' * D_sf' * B_s * det(J) * w(xi) * w(eta); 
-                        
-                    end
-                end
+                     end
+                 end
             end
-        end
-        
             
-        
+            % Assemble total Stiffness Matrix:
             
-        %%%% WAS IST MIT DER MASSENMATRIX?    
-        %%%% WIE KANN SPÄTER NACH SOLID UND FLUID GELOEST WERDEN?
-        
-        
-        function [massMatrix_s, massMatrix_f] = computeLocalMassMatrix(quadrilateralElement2d4n)
+            totalLocalStiffnessMatrix = zeros(16,16);
+           
+            for i=1:1:8
+               for j=1:1:8
+               totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_s(i,j); 
+               end  
+            totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_s(i,j);
+            end
 
-            
-            massMatrix_s=zeros(8,8);
-            massMatrix_f=zeros(8,8);
-            
-            roh_s = quadrilateralElement2d4n.getPropertyValue('DENSITY_S');
-            roh_f = quadrilateralElement2d4n.getPropertyValue('DENSITY_F');
+            for i=1:1:8
+               for j=9:1:16
+               totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j); 
+               end  
+            totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j);
+            end
+
+            for i=9:1:16
+               for j=1:1:8
+               totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j); 
+               end  
+            totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_sf(i,j);
+            end
+
+            for i=9:1:16
+               for j=9:1:16
+               totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_f(i,j); 
+               end  
+            totalLocalStiffnessMatrix(i,j) = stiffnessMatrix_f(i,j);
+            end
+           
+        end
+                
+           
+                
+        
+  
+        
+        
+        function [totalLocalMassMatrix] = computeLocalMassMatrix(quadrilateralElement2d4n)
+
+            STATIC_FLOW_RESISTIVITY = biotElement2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
+            POROSITY = biotElement2d4n.getPropertyValue('POROSITY');
+            OMEGA = biotElement2d4n.getPropertyValue('OMEGA');
+            TORTUOSITY = biotElement2d4n.getPropertyValue('TORTUOSITY');
+            ETA_F = biotElement2d4n.getPropertyValue('ETA_F');
+            DENSITY_F = biotElement2d4n.getPropertyValue('DENSITY_F');
+            DENSITY_S = biotElement2d4n.getPropertyValue('DENSITY_S');
+            VISCOUS_CHARACT_LENGTH = biotElement2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
             p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             
+            % G_J(OMEGA) = flow resistivity of air particles in the pores:
+            AirFlowResistivity = (1+(4*i*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
+                (STATIC_FLOW_RESISTIVITY^2*VISCOUS_CHARACT_LENGTH^2*POROSITY^2))^(0.5);
             
+            
+            % Viscous Drag accounts for viscous body forces interacting between solid and fluid phases, 
+            % proportional to the relative velocity:
+            ViscousDrag = STATIC_FLOW_RESISTIVITY*POROSITY^2*AirFlowResistivity;
+            
+
+            % Inertial coupling term, related to the tortuosity, increases the fluid density  to model the motion
+            % of fluid particles vibrating around the structural frame:
+            Rho_a = POROSITY*DENSITY_F*(TORTUOSITY-1);
+            
+            % Equivalent density-expressions for expressing the elastodynamic coupled equations in condesed form:
+            Rho_sf = -Rho_a+i*(ViscousDrag)/(OMEGA);
+            Rho_s = (1-POROSITY)*DENSITY_S-Rho_sf;
+            Rho_f = POROSITY*DENSITY_F-Rho_sf;
+            
+            % Generate empty mass matrices:
+            M=zeros(8,8);
+            totalLocalMassMatrix = zeros(16,16);
+
+            % Calculate geometric-only mass matrix:
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
@@ -244,51 +254,94 @@ classdef BiotElement2d4n < QuadrilateralElement
                     
                     [N_mat, ~, ~, ~, J] = computeShapeFunction(biotElement2d4n,xi,eta);
                     
-                    massMatrix_s=massMatrix_s + (w(i)*w(j)*roh_s*transpose(N_mat)*N_mat*det(J));
+                    M = M + (w(i)*w(j)*transpose(N_mat)*N_mat*det(J));
                     
                 end
-            end
+             end
             
             
-            for i=1:p
-                xi=g(i);
-                for j=1:p
-                    eta=g(j);
-                    
-                    [N_mat, ~, ~, ~, J] = computeShapeFunction(biotElement2d4n,xi,eta);
-                    
-                    massMatrix_f=massMatrix_f + (w(i)*w(j)*roh_f*transpose(N_mat)*N_mat*det(J));
-                    
-                end
-            end
+             % Calculate solid, fluid and coupling mass matrices:
+             M_s = Rho_s*M;
+             M_f = Rho_f*M;
+             M_sf = Rho_sf*M;
             
-        end
+             % Assemble total mass matrix:
+             for i=1:1:8
+                for j=1:1:8
+                totalLocalMassMatrix(i,j) = M_s(i,j); 
+                end  
+             totalLocalMassMatrix(i,j) = M_s(i,j);
+             end
+
+             for i=1:1:8
+                for j=9:1:16
+                totalLocalMassMatrix(i,j) = M_sf(i,j); 
+                end  
+             totalLocalMassMatrix(i,j) = M_sf(i,j);
+             end
+
+             for i=9:1:16
+                for j=1:1:8
+                totalLocalMassMatrix(i,j) = M_sf(i,j); 
+                end  
+             totalLocalMassMatrix(i,j) = M_sf(i,j);
+             end
+
+             for i=9:1:16
+                for j=9:1:16
+                totalLocalMassMatrix(i,j) = M_f(i,j); 
+                end  
+             totalLocalMassMatrix(i,j) = M_f(i,j);
+             end
+         end
         
-        
-        
-        
-        %%%% FREIHEITSGRADE - WIE DEFINIERT?
-        %%%% MÜSSEN BC ZWISCHEN SOLID UND FLUID BZW PORO DEFINIERT WERDEN?
-        
+
         function dofs = getDofList(element)
-            dofs([1 3 5 7]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 4 6 8]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([1 3 5 7])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
+            dofs([2 4 6 8])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');
+            dofs([9 11 13 15])  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
+            dofs([10 12 14 16]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
         end
         
         
         function vals = getValuesVector(element, step)
-            vals = zeros(1,8);
+            vals = zeros(1,16);
             
-            vals([1 3 5 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([1 3 5 7])     = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_X',step);
+            vals([2 4 6 8])     = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Y',step);
+            vals([9 11 13 15])  = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
+            vals([10 12 14 16]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
         end
              
              
+        function vals = getFirstDerivativesVector(element, step)
+            vals = zeros(1,16);
+            
+            [~, vals([1 3 5 7]), ~]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
+            [~, vals([2 4 6 8]), ~]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
+            [~, vals([9 11 13 15]), ~]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+            [~, vals([10 12 14 16]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+            
+        end
+        
+        function vals = getSecondDerivativesVector(element, step)
+            vals = zeros(1,16);
+            
+            [~, ~, vals([1 3 5 7])]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
+            [~, ~, vals([2 4 6 8])]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
+            [~, ~, vals([9 11 13 15])]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+            [~, ~, vals([10 12 14 16])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+          
+        end
         
         
-        %%%% WO MUSS ICH DIE DISPLACEMENT BASED FORMULATION EINBAUEN? 
-        %%%% UND WOZU?
-    
-    
+ 
+        function update(biotElement2d4n)
+        end
+        
+        function F = computeLocalForceVector(biotElement2d4n)
+            F = zeros(1,16);
+        end
+        
     end
 end
