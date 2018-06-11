@@ -247,6 +247,12 @@ classdef PorousElement3d8n < Element
             
         end
         
+        function dampingMatrix = computeLocalDampingMatrix(porous3d8n)
+            
+            dampingMatrix = zeros(48,48);
+            
+        end
+        
         function dofs = getDofList(element)
             dofs([1 4 7 10 13 16 19 22]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
             dofs([2 5 8 11 14 17 20 23]) = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');

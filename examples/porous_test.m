@@ -8,19 +8,19 @@ node05 = Node(5,-1,-1,1);
 node06 = Node(6,1,-1,1);
 node07 = Node(7,1,1,1);
 node08 = Node(8,-1,1,1);
-% node09 = Node(9,-1,-1,2);
-% node10 = Node(10,1,-1,2);
-% node11 = Node(11,1,1,2);
-% node12 = Node(12,-1,1,2);
+node09 = Node(9,-1,-1,2);
+node10 = Node(10,1,-1,2);
+node11 = Node(11,1,1,2);
+node12 = Node(12,-1,1,2);
 
-nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08];
+nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 node10 node11 node12];
 
 nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z','DISPLACEMENT_FLUID_X', 'DISPLACEMENT_FLUID_Y', 'DISPLACEMENT_FLUID_Z'});
 
 ele01 = PorousElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
-% ele02 = PorousElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
+ele02 = PorousElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
 
-elementArray = [ele01];
+elementArray = [ele01 ele02];
 
 elementArray.setPropertyValue('DENSITY_SOLID',30);
 elementArray.setPropertyValue('LAMBDA_SOLID',905357);
@@ -68,8 +68,9 @@ node08.fixDof('DISPLACEMENT_FLUID_X');
 node08.fixDof('DISPLACEMENT_FLUID_Y');
 node08.fixDof('DISPLACEMENT_FLUID_Z');
 
-% addPointLoadPorous(node03,1,[0 -1]);
-% addPointLoadPorous(node09,1,[1 0]);
+addPointLoadPorous(node02,1,[1 0 0]);
+addPointLoadPorous(node03,2,[0 -1 0]);
+addPointLoadPorous(node07,1,[0 0 -1]);
 
 model = FemModel(nodeArray, elementArray);
 
@@ -78,17 +79,71 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-solver = SimpleSolvingStrategy(model);
-x = solver.solve();
-
-step = 1;
-
-VerschiebungDofs = model.getDofArray.getValue(step);
-
-nodalForces = solver.getNodalForces(step);
-
+% solver = SimpleSolvingStrategy(model);
+% x = solver.solve();
+% 
+% step = 1;
+% 
+% VerschiebungDofs = model.getDofArray.getValue(step);
+% 
+% nodalForces = solver.getNodalForces(step);
+% 
 v = Visualization(model);
-v.setScaling(1);
+v.setScaling(5000);
 v.plotUndeformed
-v.plotDeformed
+% v.plotDeformed
 
+%% Dynamic Test
+
+% mid = 13;
+% 
+% Solver
+% model.getNode(mid).setDofLoad('DISPLACEMENT_Z', 1);
+% 
+% dt = .01;
+% time = 0;
+% endTime = .2;
+% solver = NewmarkSolvingStrategy(model, dt);
+% 
+% while time < endTime
+%     solver.solve();
+%     time = time + dt;
+% end
+
+dt = .05;
+time = 0;
+endTime = 1.5;
+ls = linspace(time,endTime,endTime/dt+1);
+% disp = zeros(1,endTime/dt+1);
+solver = NewmarkSolvingStrategy(model, dt);
+% disp = 0;
+% while time < endTime
+%     solver.solve();
+%     time = time + dt;
+%         hold on
+%         v.plotDeformed();
+%         hold off
+%         pause(0.1)
+% %         plot(model.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Z','end'))
+% %     
+% %         disp(model.getProperties.getValue('STEP')) = node05.getDofValue('DISPLACEMENT_SOLID_Z','end');
+%     
+% end
+% plot(ls,endnode.getDofValue('DISPLACEMENT_Y','all'))
+% solver = SimpleSolvingStrategy(model);
+% solver.solve();
+
+%% Movie
+
+for j = 1:30
+    solver.solve();
+    time = j*0.05;
+    hold on
+    v.plotDeformed();
+    view(3)
+    axis([-1.1 1.1 -1.1 1.1 -1.1 2.1])
+    F(j) = getframe(gcf);
+end
+
+fig = figure;
+movie(fig,F,1,2)
