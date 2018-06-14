@@ -5,6 +5,9 @@ classdef NewtonRaphsoSolvingStrategy < Solver
     properties (Access = private)
         femModel
         isInitialized
+        
+        max_iterations
+        tolerance
     end
     
     
@@ -24,29 +27,36 @@ classdef NewtonRaphsoSolvingStrategy < Solver
                 newtonRaphsonSolver.initialize();
             end
             
-            [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
-            [~, fred] = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
+            nIter = 0;
+            while (nIter < newtonRaphsonSolver.max_iterations && residual_norm > newtonRaphsonSolver.tolerance)
+                
+               
+                nIter = nIter + 1; 
+            end
             
-            x = linsolve(Kred, fred.');
+
+                
+                
+                
             
-            SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);
+                
+            end
+
+            
+             
+%             [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
+%             [~, fred] = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
+%             
+%             x = linsolve(Kred, fred.');
+%             
+%             SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);
         end
         
-        function initialize(simpleSolver)
-            simpleSolver.femModel.initialize;
-            simpleSolver.isInitialized = true;
+        function initialize(newtonRaphsonSolver)
+            newtonRaphsonSolver.femModel.initialize;
+            newtonRaphsonSolver.isInitialized = true;
         end
         
-        function nodalForces = getNodalForces(simpleSolver, step)
-            nodalForces = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
-            [~, fixedDofs] = simpleSolver.femModel.getDofConstraints();
-            
-            K = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
-            nodalForces(fixedDofs.getId) = K(fixedDofs.getId, :) ...
-                * simpleSolver.femModel.getDofArray.getValue(step);
-            
-        end
-        
-    end
+
 end
 
