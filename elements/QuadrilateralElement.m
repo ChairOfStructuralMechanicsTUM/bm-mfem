@@ -19,20 +19,58 @@ classdef (Abstract) QuadrilateralElement < Element
             quadrilateralElement@Element(super_args{:});
         end
  
-        function c = barycenter(quadrilateralElement)
-            diag1X = [quadrilateralElement.nodeArray(1).getX() quadrilateralElement.nodeArray(3).getX()];
-            diag1Y = [quadrilateralElement.nodeArray(1).getY() quadrilateralElement.nodeArray(3).getY()];
-            diag2X = [quadrilateralElement.nodeArray(2).getX() quadrilateralElement.nodeArray(4).getX()];
-            diag2Y = [quadrilateralElement.nodeArray(2).getY() quadrilateralElement.nodeArray(4).getY()];
-            [c(1),c(2)] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
-        end
-        % Check Convexity of quad
-        function checkConvexity(quadrilateralElement)
-            try 
-                [~] = quadrilateralElement.barycenter();
-            catch 
-                error('Element %i is not convex', quadrilateralElement.getId());
+        function c = barycenter(obj)
+            %QUADRILATERALELEMENT.BARYCENTER returns the barycenter of the
+            %element in the x-y plane
+            diag1X = [obj.nodeArray(1).getX() obj.nodeArray(3).getX()];
+            diag1Y = [obj.nodeArray(1).getY() obj.nodeArray(3).getY()];
+            diag2X = [obj.nodeArray(2).getX() obj.nodeArray(4).getX()];
+            diag2Y = [obj.nodeArray(2).getY() obj.nodeArray(4).getY()];
+            
+            try
+                [c(1),c(2)] = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
+            catch e
+                if (strcmp(e.identifier,'MATLAB:subsassigndimmismatch'))
+                    msg = ['Barycenter of element ', ...
+                        num2str(obj.getId()), ...
+                        ' could not be computed. ', ...
+                        'Check the element for convexity.'];
+                    causeException = MException('MATLAB:bm_mfem:barycenter',msg);
+                    e = addCause(e,causeException);
+                elseif (strcmp(e.identifier,'MATLAB:UndefinedFunction'))
+                    msg = ['Function ''polyxpoly'' not found. ', ...
+                        'Please install the Mapping Toolbox.'];
+                    causeException = MException('MATLAB:bm_mfem:toolboxnotfound',msg);
+                    e = addCause(e,causeException);
+                end
+                rethrow(e);
             end
+        end
+
+        function c = checkConvexity(obj)
+            %QUADRILATERALELEMENT.CHECKCONVEXITY returns true, if the
+            %element is convex
+            diag1X = [obj.nodeArray(1).getX() obj.nodeArray(3).getX()];
+            diag1Y = [obj.nodeArray(1).getY() obj.nodeArray(3).getY()];
+            diag2X = [obj.nodeArray(2).getX() obj.nodeArray(4).getX()];
+            diag2Y = [obj.nodeArray(2).getY() obj.nodeArray(4).getY()];
+            
+            c = 0;
+            try
+                res = polyxpoly(diag1X, diag1Y, diag2X, diag2Y);
+            catch e
+                if (strcmp(e.identifier,'MATLAB:subsassigndimmismatch'))
+                    c = 0;
+                elseif (strcmp(e.identifier,'MATLAB:UndefinedFunction'))
+                    msg = ['Function ''polyxpoly'' not found. ', ...
+                        'Please install the Mapping Toolbox.'];
+                    causeException = MException('MATLAB:bm_mfem:toolboxnotfound',msg);
+                    e = addCause(e,causeException);
+                    rethrow(e);
+                end
+            end
+            
+            if ~isempty(res); c = 1; end
         end
         
         function pl = draw(obj)
@@ -82,7 +120,7 @@ classdef (Abstract) QuadrilateralElement < Element
             end
         end
         
-        function update(quadrilateralElement)
+        function update(obj)
         end
 
     end

@@ -37,7 +37,10 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(4).getCoords);
             
-            checkConvexity(reissnerMindlinElement3d4n);
+            if ~checkConvexity(reissnerMindlinElement3d4n)
+                error('ReissnerMindlinElement2d4n: Element %i is not convex.', ...
+                    reissnerMindlinElement3d4n.getId());
+            end
         end
         
         function responseDoF = getResponseDofArray(reissnerMindlinElement, step)
