@@ -1,31 +1,35 @@
 %% Preamble
 close all;
 clear all; 
-clc; 
+% clc; 
 %% Initialization
 
-a = 1; 
-b = 1; 
+nx = 20; 
+ny = 20; 
 
-node(1) = Node(1, 0, 0); 
-node(2) = Node(2, a, 0); 
-node(3) = Node(3, a, b); 
-node(4) = Node(4, 0, b); 
+[ model, x0, xl, y0, yl ] = createRectangularPlate( 1, 1, nx, ny,'elementType', 'DiscreteKirchhoffElement3d4n');
+model.getAllNodes.addDof({'DISPLACEMENT_Z', 'ROTATION_X', 'ROTATION_Y'})
 
-nodeArray = node(:)';
-% nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z', 'ROTATION_X',  'ROTATION_Y', 'ROTATION_Z'});
-nodeArray.addDof({'DISPLACEMENT_Z', 'ROTATION_X',  'ROTATION_Y'});
-ele(1) = ShellElement3d4n(1, [node(1) node(2) node(3) node(4)]); 
-elementArray = ele(:)';
+model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 10920);
+model.getAllElements.setPropertyValue('POISSON_RATIO',.3);
+model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',4);
+% model.getAllElements.setPropertyValue('DENSITY',7860);
+% model.getAllElements.setPropertyValue('SHEAR_CORRECTION_FACTOR',5/6);
+% model.getAllElements.addProperty('FULL_INTEGRATION',false);
 
-elementArray.setPropertyValue('THICKNESS', 0.01);
-elementArray.setPropertyValue('YOUNGS_MODULUS', 10920);
-elementArray.setPropertyValue('POISSON_RATIO', 0.3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT', 4);
-%% Solving system
+middle = fix((nx+1)*(ny+1)/2)+1
 
-model = FemModel(nodeArray,elementArray);
-assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+support = [x0 xl y0 yl];
+% support.fixAllDofs();
+support.fixDof('DISPLACEMENT_Z');
 
+model.getNode(middle).setDofLoad('DISPLACEMENT_Z',   -.00025);
+solver = SimpleSolvingStrategy(model);
+solver.solve();
+v=Visualization(model);
+v.setScaling(50);
+v.plotUndeformed()
+v.plotDeformed()
 
+model.getNode(middle).getDofValue('DISPLACEMENT_Z')
