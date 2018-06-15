@@ -369,6 +369,40 @@ classdef ShellElement3d4n < QuadrilateralElement
             
         end
         
+        
+        function massMatrix = computeLocalMassMatrix(shellElement3d4n)
+            density = shellElement3d4n.getPropertyValue('DENSITY');
+            thickness = shellElement3d4n.getPropertyValue('THICKNESS');
+            nr_gauss_points = shellElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            
+            
+            massMatrix = zeros(24,24); 
+            
+            % Coordinates of the nodes forming one element 
+            ele_coords = zeros(4,2); 
+            for i=1:4
+                ele_coords(i,1) = shellElement3d4n.nodeArray(i).getX;
+                ele_coords(i,2) = shellElement3d4n.nodeArray(i).getY;
+            end
+            
+            
+            lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * computeLength(ele_coords(1,:), ele_coords(2,:));
+            nodalMass = 0.25 * density * thickness * lumpArea; 
+            index = 1; 
+            for i = 1 : 3
+                
+               massMatrix(index,index) = nodalMass; 
+               massMatrix(index+1,index+1) = nodalMass; 
+               massMatrix(index+2,index+2) = nodalMass; 
+               index = i * 6;
+            end
+           
+        end
+        
+        function dampingMatrix=computeLocalDampingMatrix(element)
+        dampingMatrix = zeros(24,24); 
+        end
+        
         function dofs = getDofList(element)
             dofs([1  7  13 19]) = element.nodeArray.getDof('DISPLACEMENT_X');
             dofs([2  8  14 20]) = element.nodeArray.getDof('DISPLACEMENT_Y');
