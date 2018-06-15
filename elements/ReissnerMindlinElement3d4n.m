@@ -37,9 +37,11 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
                 reissnerMindlinElement3d4n.nodeArray(4).getCoords);
             
-            if ~checkConvexity(reissnerMindlinElement3d4n)
-                error('ReissnerMindlinElement2d4n: Element %i is not convex.', ...
-                    reissnerMindlinElement3d4n.getId());
+            if ~checkConvexity(obj)
+                msg = ['QuaadrilateralElement2d4n: Element ', ...
+                    num2str(obj.getId), ' is not convex.'];
+                e = MException('MATLAB:bm_mfem:elementNotConvex',msg);
+                throw(e);
             end
         end
         
