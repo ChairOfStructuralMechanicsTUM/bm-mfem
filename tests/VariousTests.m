@@ -31,6 +31,14 @@ classdef VariousTests <  matlab.unittest.TestCase
             testCase.verifyEqual(ele02.getPropertyValue('CROSS_SECTION'), 1)
             testCase.verifyEqual(ele02.getPropertyValue('YOUNGS_MODULUS'), 2)
         end
+        
+        function checkConvexityTest(testCase)
+            nodeArray = [Node(1,0,0) Node(3,2,1) Node(2,2,0) Node(4,0,1)];
+            nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            
+            testCase.verifyError(@() QuadrilateralElement2d4n(1,nodeArray), ...
+                'MATLAB:bm_mfem:elementNotConvex');
+        end
     end
     
 end
