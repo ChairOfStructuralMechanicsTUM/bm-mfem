@@ -58,17 +58,39 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-solver = NewmarkSolvingStrategy(model);
-x = solver.solve();
-
-step = 1;
-
-VerschiebungDofs = model.getDofArray.getValue(step);
-
-nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
 v.setScaling(1);
 v.plotUndeformed
-v.plotDeformed
+%v.plotDeformed
+
+dt = .05;
+time = 0;
+endTime = 1.5;
+ls = linspace(time,endTime,endTime/dt+1);
+% disp = zeros(1,endTime/dt+1);
+solver = NewmarkSolvingStrategy(model, dt);
+
+for j = 1:30
+    solver.solve();
+    time = j*0.05;
+    hold on
+    v.plotDeformed();
+    view(3)
+    axis([-1.1 1.1 -1.1 1.1 -1.1 2.1])
+    F(j) = getframe(gcf);
+end
+
+fig = figure;
+movie(fig,F,1,2)
+
+%solver = NewmarkSolvingStrategy(model);
+%x = solver.solve();
+
+%step = 1;
+
+%VerschiebungDofs = model.getDofArray.getValue(step);
+
+%nodalForces = solver.getNodalForces(step);
+
 

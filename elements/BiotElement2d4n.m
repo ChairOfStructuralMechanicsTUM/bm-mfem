@@ -333,6 +333,9 @@ classdef BiotElement2d4n < QuadrilateralElement
           
         end
         
+        function [totalElementDampingMatrix] = computeLocalDampingMatrix(biot2d4n)
+            totalElementDampingMatrix = zeros(16,16);
+        end
         
  
         %function update(biot2d4n)
