@@ -1,4 +1,5 @@
 %Quadril.Element2d6n
+clear;
 
 model = FemModel();
 
@@ -7,14 +8,14 @@ for i=1:3
 end
 %Erstellen von oberer Knotenreihe mit y=0 und x-Abstand 0,5
 for i=4:6
-    model.addNewNode(i,(i-22)*0.5,1);
+    model.addNewNode(i,(i-4)*0.5,1);
 end
 
 model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 %Benennen der x und y Verschiebungen;
 
 for i=1:2
-    model.addNewElement('QuadrilateralElement2d4n',i,[i i+1 i+22 i+21]);
+    model.addNewElement('QuadrilateralElement2d4n',i,[i i+1 i+4 i+3]);
 end %Elemente mit ID i, bestehend aus 4 Knoten (obere und mittlere Reihe);innere Knoten jew Doppelt
 %2 Elemente 
 

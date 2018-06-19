@@ -14,7 +14,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         function quadrilateralElement2d4n = QuadrilateralElement2d4n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
-                "NUMBER_GAUSS_POINT","DENSITY"]);
+                "NUMBER_GAUSS_POINT","DENSITY"]);  %Erstellen von Zeilenvektor mit 4 Schrifteinträgen
             
             % define the arguments for the super class constructor call
             if nargin == 0
