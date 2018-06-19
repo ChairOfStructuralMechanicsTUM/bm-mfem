@@ -169,7 +169,7 @@ classdef EigensolverStrategy < Solver
                         dampingRatio = 0.0;
                     end
                     factor = (obj.eigenfrequencies(n)^2 - excitation^2) + 2i * dampingRatio * obj.eigenfrequencies(n) * excitation;
-                    result = result + 1/factor .* ((obj.modalMatrix(:,n) * obj.modalMatrix(:,n)') * force');
+                    result = result + 1/factor .* (obj.modalMatrix(:,n) .* obj.modalMatrix(:,n) .* force');
                 end
                 obj.assembler.appendValuesToDofs(obj.femModel, result);
 %                 solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', (1i * excitation) .* result)
