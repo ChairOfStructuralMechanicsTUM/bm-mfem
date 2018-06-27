@@ -192,9 +192,10 @@ classdef EigensolverStrategy < Solver
             eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
             eigensolver.dampingMatrix = eigensolver.assembler.assembleGlobalDampingMatrix(eigensolver.femModel);
             eigensolver.stiffnessMatrix = eigensolver.assembler.assembleGlobalStiffnessMatrix(eigensolver.femModel);
-            
+            %%%%nicht ab hier
             [~, fixedDofs] = eigensolver.femModel.getDofConstraints();
             if ~ isempty(fixedDofs)
+                
                 fixedDofIds = fixedDofs.getId();
                 eigensolver.massMatrix = applyMatrixBoundaryConditions(eigensolver.massMatrix, fixedDofIds);
                 eigensolver.dampingMatrix = applyMatrixBoundaryConditions(eigensolver.dampingMatrix, fixedDofIds);
