@@ -45,9 +45,7 @@ classdef BlochInverse1D < Solver
             
             %%% suche nach weiteren Fehlern einfügen
             nodes = femModel.getAllNodes;
-            
             a=2;
-
             while nodes(3,1) == nodes(3,a) %Compare y-Coordinates of first row
                 a=a+1;
             end
@@ -77,7 +75,7 @@ classdef BlochInverse1D < Solver
                 end
             end
 
-        end %initialize
+        end %end initialize
         
         function [leftDofs,rightDofs]=getLeftRightDofs(NodeArray)
         
