@@ -39,7 +39,7 @@ elementArray.setPropertyValue('FLOW_RESISTIVITY',32e3);
 elementArray.setPropertyValue('VISCOUS_LENGHT',90);
 elementArray.setPropertyValue('THERMAL_LENGTH',165);
 
-elementArray.setPropertyValue('FREQUENCY',9);
+elementArray.setPropertyValue('FREQUENCY',100);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
 
 node01.fixDof('DISPLACEMENT_SOLID_X');
@@ -69,7 +69,7 @@ node08.fixDof('DISPLACEMENT_FLUID_Y');
 node08.fixDof('DISPLACEMENT_FLUID_Z');
 
 addPointLoadPorous(node02,1,[1 0 0]);
-addPointLoadPorous(node03,2,[0 -1 0]);
+%addPointLoadPorous(node03,2,[0 -1 0]);
 addPointLoadPorous(node07,1,[0 0 -1]);
 
 model = FemModel(nodeArray, elementArray);
@@ -79,19 +79,20 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-% solver = SimpleSolvingStrategy(model);
-% x = solver.solve();
-% 
-% step = 1;
-% 
-% VerschiebungDofs = model.getDofArray.getValue(step);
-% 
-% nodalForces = solver.getNodalForces(step);
-% 
+%solver = SimpleSolvingStrategy(model);
+solver = SimpleHarmonicSolvingStrategy(model,100);
+x = solver.solve();
+
+step = 1;
+
+VerschiebungDofs = model.getDofArray.getValue(step);
+
+nodalForces = solver.getNodalForces(step);
+
 v = Visualization(model);
-v.setScaling(5000);
+v.setScaling(20000);
 v.plotUndeformed
-% v.plotDeformed
+v.plotDeformed
 
 %% Dynamic Test
 
@@ -147,3 +148,43 @@ end
 
 fig = figure;
 movie(fig,F,1,2)
+
+%% Create bigger Model
+
+clear;
+
+Lx=2;
+Ly=2;
+Lz=1;
+
+nx=10;
+ny=10;
+nz=5;
+
+dx=Lx/nx;
+dy=Ly/ny;
+dz=Lz/nz;
+
+numnodes=(nx + 1)*(ny + 1)*(nz + 1);
+model = FemModel();
+id=0;
+
+for i=1:(nx + 1)
+    for j=1:(ny + 1)
+        for k=1:(nz + 1)
+          id=id+1;
+          model.addNewNode(id,(i-1)*dx,(j-1)*dy,(k-1)*dz);
+        end
+    end
+end
+
+
+model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+
+for i=1:20
+    model.addNewElement('QuadrilateralElement2d4n',i,[i i+1 i+22 i+21]);
+end
+
+for i=21:40
+    model.addNewElement('QuadrilateralElement2d4n',i,[i+1 i+2 i+23 i+22]);
+end
