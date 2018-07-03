@@ -18,10 +18,6 @@ ele02 = QuadrilateralElement2d4n(2,[node02 node03 node04 node05]);
 
 elementArray = [ele01,ele02];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',96);
-elementArray.setPropertyValue('POISSON_RATIO',1/3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
-elementArray.setPropertyValue('DENSITY',7860);
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');

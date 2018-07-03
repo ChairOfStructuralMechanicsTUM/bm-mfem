@@ -15,16 +15,48 @@ nodeArray = [node01 node02 node03 node04 node05 ...
 
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 
+leftDofIDs=[1,2,3,4,5,6];     %kann später entfernt werden
+rightDofIDs=[13,14,15,16,17,18];  %-----------"----------
+
 leftNodes = [node01 node04 node07];
 rightNodes = [node03 node06 node 09];
 
-ele01=[node01 node02 node03];
-ele02=[node04 node05 node06];
-ele03=[node07 node08 node09];
+ele01 = QuadrilateralElement2d4n(1,[node01 node02 node05 node04]);
+ele02 = QuadrilateralElement2d4n(2,[node02 node03 node06 node05]);
+ele03 = QuadrilateralElement2d4n(3,[node04 node05 node08 node07]);
+ele04 = QuadrilateralElement2d4n(4,[node05 node06 node09 node08]);
 
-elementArray=[ele01 ele02 ele03];
+
+% ele01=[node01 node02 node03]; %alternativ über Quadril.El.2d4n?
+% ele02=[node04 node05 node06]; 
+% ele03=[node07 node08 node09]; 
+elementArray=[ele01 ele02 ele03 ele04];
+
+elementArray.setPropertyValue('YOUNGS_MODULUS',96);
+elementArray.setPropertyValue('POISSON_RATIO',1/3);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+elementArray.setPropertyValue('DENSITY',7860);
+
 
 model = FemModel(nodeArray, elementArray);
 
 blochInverse1D=BlochInverse1D(model,leftNodes,rightNodes);
-assembling
+assembling=SimpleAssembler(model);
+
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+            
+massMatrix = assembling.assembleGlobalMassMatrix(model);
+
+%solver = SimpleSolvingStrategy(model);
+%x = solver.solve();
+% 
+% step = 1;
+% 
+% VerschiebungDofs = model.getDofArray.getValue(step);
+% 
+% nodalForces = solver.getNodalForces(step);
+% 
+% v = Visualization(model);
+% v.setScaling(1);
+% v.plotUndeformed
+% v.plotDeformed
