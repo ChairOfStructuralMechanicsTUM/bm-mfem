@@ -165,6 +165,10 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             pl = line(x,y,z);
         end
         
+        function f = computeLocalForceVector(obj)
+            f = zeros(1,8);
+        end
+        
         function dofs = getDofList(element)
             dofs([1 3 5 7]) = element.nodeArray.getDof('DISPLACEMENT_X'); 
            
@@ -193,26 +197,45 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
         end
         
         %Computation of Stresses
-        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray,step)
-
-            element_connect = zeros(length(elementArray),4);
-            stressValue = zeros(6,length(nodeArray));
-
+        function [stressValue, element_connect] = computeElementStress(objs,nodeArray,step)
+        %COMPUTEELEMENTSTRESS stress in the element
+        %   [STRESS, EC] = computeElementStress(ELEMENTS,NODES,STEP) returns
+        %   element connectivity EC and the matrix STRESS containing:
+        %       STRESS(1,:) = stress in xx
+        %       STRESS(2,:) = stress in yy
+        %       STRESS(3,:) = stress in xy
+        %       STRESS(4,:) = first principal stress
+        %       STRESS(5,:) = second principal stress
+        %       STRESS(6,:) = von-Mises stress
+        
+            nElements = length(objs);
+            nNodes = length(nodeArray);
             
-            for i = 1:length(elementArray)
-
-                element_connect(i,1:4) = elementArray(i).getNodes.getId();
+            element_connect = zeros(nElements,4);
+            stressValue = zeros(6,nNodes);
+            sigma_xx = zeros(nElements,4);
+            sigma_yy = zeros(nElements,4);
+            sigma_xy = zeros(nElements,4);
+            smooth_sigma_xx = zeros(1,nNodes);
+            smooth_sigma_yy = zeros(1,nNodes);
+            smooth_sigma_xy = zeros(1,nNodes);
+            prin_I = zeros(1,nNodes);
+            prin_II = zeros(1,nNodes);
+            vm_stress = zeros(1,nNodes);
+            
+            for i = 1:nElements
+                element_connect(i,1:4) = objs(i).getNodes.getId();
                 stressPoints = [-1 -1;1 -1;1 1;-1 1];            
-                EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
+                EModul = objs(i).getPropertyValue('YOUNGS_MODULUS');
+                prxy = objs(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
                 D = D * EModul / (1-prxy^2);
                 
                 for j = 1:4
-                    [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
-                    displacement_e = getValuesVector(elementArray(i),step);
+                    [~, ~, B, ~] = computeShapeFunction(objs(i),stressPoints(j,1),stressPoints(j,2));
+                    displacement_e = getValuesVector(objs(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;
@@ -225,7 +248,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 end
             end
             
-            for k = 1 : length(nodeArray)
+            for k = 1 : nNodes
                 [I,J] = find(element_connect == k);
                 
                 sum_sigma_xx = 0;
@@ -242,30 +265,28 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 smooth_sigma_yy(k) = sum_sigma_yy/length(I);
                 smooth_sigma_xy(k) = sum_sigma_xy/length(I);
 
-                vec = zeros(2,2);
-                lamda = zeros(2,2);
-
                 stress_ele = [smooth_sigma_xx(k) smooth_sigma_xy(k);
                 smooth_sigma_xy(k) smooth_sigma_yy(k)];
-                [vec,lamda] = eig(stress_ele);
+                [~,lambda] = eig(stress_ele);
 
-                prin_I(k) = lamda(1,1);
-                prin_II(k) = lamda(2,2);
-                prI_dir(k,:) = vec(:,1);
-                prII_dir(k,:) = vec(:,2);
-
+                prin_I(k) = lambda(1,1);
+                prin_II(k) = lambda(2,2);
+%                 prI_dir(k,:) = vec(:,1);
+%                 prII_dir(k,:) = vec(:,2);
+                
                 vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
             end
             
-        stressValue(1,:) = smooth_sigma_xx;
-        stressValue(2,:) = smooth_sigma_yy;
-        stressValue(3,:) = smooth_sigma_xy;
-        stressValue(4,:) = prin_I;
-        stressValue(5,:) = prin_II;
-        stressValue(6,:) = vm_stress;
-        
-        end   
+            stressValue(1,:) = smooth_sigma_xx;
+            stressValue(2,:) = smooth_sigma_yy;
+            stressValue(3,:) = smooth_sigma_xy;
+            stressValue(4,:) = prin_I;
+            stressValue(5,:) = prin_II;
+            stressValue(6,:) = vm_stress;
+            
+        end
     end
+    
     methods (Static)
         function ord = drawOrder()
             
