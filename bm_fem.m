@@ -15,7 +15,7 @@ if (exist('external_libs','dir') == 7)
     addpath(genpath('external_libs'));
 end
 addpath(genpath('examples'));
-addpath('tests');
+addpath(genpath('tests'));
 addpath(genpath('utilities'));
 
 % check, if all neccessary toolboxes are installed
