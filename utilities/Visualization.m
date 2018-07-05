@@ -112,7 +112,7 @@ classdef Visualization < handle
             elements = visualization.model.getAllElements;
             nodes = visualization.model.getAllNodes;
             nElements = length(elements);
-            [stressValue, element_connect] = computeElementStress(elements,nodes);
+            [stressValue, element_connect] = computeElementStress(elements,nodes,step);
             coords = zeros(length(nodes),3);
 
             for i = 1:length(nodes)
