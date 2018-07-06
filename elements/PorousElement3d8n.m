@@ -44,7 +44,7 @@ classdef PorousElement3d8n < Element
         end
         
         
-        % Check Convexity of quad
+        %Check Convexity of quad
         function checkConvexity(porous3d8n)
             try
                 [~] = porous3d8n.barycenter();
