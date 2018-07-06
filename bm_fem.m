@@ -7,7 +7,7 @@ disp(' /_.___/_/ /_/ /_/     /_/   /_____/_/  /_/   ')
 disp('Initializing bm-fem')
 
 % add all folders to the search path
-addpath('core');
+addpath(genpath('core'));
 addpath('core/assemblers');
 addpath('core/solvers');
 addpath('elements');
