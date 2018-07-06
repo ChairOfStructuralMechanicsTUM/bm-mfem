@@ -1,9 +1,8 @@
 classdef GmshInput < ModelIO
-    %MODELIO Summary of this class goes here
+    %GMSHINPUT Read input from meshes generated with gmsh
     %   Detailed explanation goes here
     
     properties (Access = private)
-        inputFile
         modelPartNames = strings
         props = PropertyContainer
         
@@ -17,7 +16,17 @@ classdef GmshInput < ModelIO
         
         %Constructor
         function gmshInput = GmshInput(file)
-            gmshInput.inputFile = file;
+            if nargin == 0
+                super_args = {};
+            elseif nargin == 1
+                if ~ exist(file, 'file')
+                    msg = ['GmshInput: File ', file, ' not found.'];
+                    e = MException('MATLAB:bm_mfem:fileNotFound',msg);
+                    throw(e);
+                end
+                super_args = {file};
+            end
+            gmshInput@ModelIO(super_args{:});
         end
         
         function setElementTypeLine2n(obj, typeName)
@@ -41,7 +50,7 @@ classdef GmshInput < ModelIO
         
         function nodeArray = readNodes(obj)
             nodeArray = Node.empty;
-            fid = fopen(obj.inputFile);
+            fid = fopen(obj.file);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -79,7 +88,7 @@ classdef GmshInput < ModelIO
         
         function elementArray = readElements(obj, modelParts, nodes)
             elementArray = Element.empty;
-            fid = fopen(obj.inputFile);
+            fid = fopen(obj.file);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -174,7 +183,7 @@ classdef GmshInput < ModelIO
             % and boundary conditions. 2d: points -> bc, lines -> material
             % 3d: lines -> bc, tetras.. -> material
             modelParts = containers.Map;
-            fid = fopen(obj.inputFile);
+            fid = fopen(obj.file);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -207,7 +216,7 @@ classdef GmshInput < ModelIO
         end
         
         function readProperties(obj)
-            fid = fopen(obj.inputFile);
+            fid = fopen(obj.file);
             tline = fgetl(fid);
             
             while ischar(tline)
