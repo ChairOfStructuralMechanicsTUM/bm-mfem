@@ -23,9 +23,9 @@ classdef BlochInverse1D < Solver
             else
                 error('Error (BlochInverse1D): no fem model defined!')
             end        
-            obj.leftNodes = obj.findLeftNodes();
-            
-            obj.rightNodes = obj.findRightNodes();
+%             obj.leftNodes = obj.findLeftNodes();
+%             
+%             obj.rightNodes = obj.findRightNodes();
         end %blochInverse1D
         
         function solve(obj, ~)
@@ -57,10 +57,14 @@ classdef BlochInverse1D < Solver
                     %ausgehen, dass alle Knoten in nodeArray
                     %aufeinanderfolgende Ids haben? ->in NodeArray hat
                     %NodeArray(1) die ID 1
+                    
+                    
+                    %obj.leftNodes(n) = nodeIds(i);
+                    
                 end
             end
             fprintf('Number of left boundary nodes is %s. \n', num2str(n))
-            
+            %obj.leftNodes = nodeIdsLeft    anstatt 
         end
             
        function [nodeIdsRight] = findRightNodes(obj) 
@@ -77,7 +81,10 @@ classdef BlochInverse1D < Solver
                     n = n+1;
                     nodeIdsRight(n) = nodeIds(i);
                     %nodeXcoordsRight(n) = nodeXcoords(i); für function
-                    %[nodeXcoordsRight,nodeIdsRight]=...                                     
+                    %[nodeXcoordsRight,nodeIdsRight]=...    
+                    
+                    
+                    %obj.rightNodes = nodeIds(i);
                 end
             end
 %             rightNodes = [nodeIds;nodeXcoordsRight];
@@ -91,7 +98,7 @@ classdef BlochInverse1D < Solver
             if ~ obj.femModel.isInitialized()
                 obj.femModel.initialize;
             end
-            
+                       
             % assemble and reduce matrices
             obj.massMatrix = obj.assembler.assembleGlobalMassMatrix(obj.femModel);
             obj.stiffnessMatrix = obj.assembler.assembleGlobalStiffnessMatrix(obj.femModel);
@@ -106,10 +113,7 @@ classdef BlochInverse1D < Solver
             
             leftNodes = getNodes(obj.femModel, nodeIdsLeft); 
             rightNodes = getNodes(obj.femModel, nodeIdsRight);
-            
-           
-            
-            
+
             leftNodeX = getX(leftNodes);
             leftNodeY = getY(leftNodes);
             rightNodeX = getX(rightNodes);
@@ -123,22 +127,27 @@ classdef BlochInverse1D < Solver
             Y=[nodeIdsRight.' rightNodeX.' rightNodeY.'];
             disp(Y)
             
+            
+            %[leftDofs,rightDofs] = getLeftRightDofIds(nodeIdsLeft,nodeIdsRight,obj)
+            
+            
+            
             if length(nodeIdsLeft) ~= length(nodeIdsRight)
-                disp('Same amount of left and right boundary nodes are requiered')
+                error('Same amount of left and right boundary nodes are requiered')
             end
             
             for i = 1:length(leftNodeY)
                 if leftNodeY(i) ~= rightNodeY(i)
-                    disp('corresponding boundary nodes must have the same y-coordinates')
+                    error('corresponding boundary nodes must have the same y-coordinates')
                 end
             end
             
             for i = 1:length(leftNodeX)
                 if leftNodeX(1) ~= leftNodeX(i)
-                    disp('All left boundary nodes must have the same x-coordinates')
+                    error('All left boundary nodes must have the same x-coordinates')
                 end
                 if rightNodeX(1) ~= rightNodeX(i)
-                    disp('All right boundary nodes must have the same x-coordinates')
+                    error('All right boundary nodes must have the same x-coordinates')
                 end
             end
                 
@@ -206,9 +215,11 @@ classdef BlochInverse1D < Solver
         end %end initialize
         
         
-        function [leftDofs,rightDofs] = getLeftRightDofs(NodeArray)
+        function [leftDofs,rightDofs] = getLeftRightDofIds(obj)
+            nodeArray = obj.femModel.getAllNodes;
+            leftNodes = getNodes(obj.femModel, nodeIdsLeft);
+            rightNodes = getNodes(obj.femModel, nodeIdsRight);
             
-        
         end
         
       

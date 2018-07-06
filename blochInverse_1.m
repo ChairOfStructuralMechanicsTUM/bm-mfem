@@ -47,8 +47,6 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-[nodeIdsRight] = findRightNodes(obj);
-[nodeIdsLeft] = findLeftNodes(obj);
 
 initialize(obj)
 
