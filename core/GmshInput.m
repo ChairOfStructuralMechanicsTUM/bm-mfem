@@ -20,28 +20,28 @@ classdef GmshInput < ModelIO
             gmshInput.inputFile = file;
         end
         
-        function setElementTypeLine2n(modelIO, typeName)
-           modelIO.line2n = typeName; 
+        function setElementTypeLine2n(obj, typeName)
+           obj.line2n = typeName; 
         end
         
-        function printElementTypes(modelIO)
+        function printElementTypes(obj)
            fprintf('Currently defined element types:\n')
-           fprintf('Line2n: %s\n',modelIO.line2n)
-           fprintf('Triangle3n: %s\n',modelIO.triangle3n)
+           fprintf('Line2n: %s\n',obj.line2n)
+           fprintf('Triangle3n: %s\n',obj.triangle3n)
         end
         
         % member functions
-        function model = readModel(modelIO)
-            modelIO.readProperties;
-            modelParts = modelIO.readModelParts();
-            nodes = modelIO.readNodes();
-            elements = modelIO.readElements(modelParts, nodes);
+        function model = readModel(obj)
+            obj.readProperties;
+            modelParts = obj.readModelParts();
+            nodes = obj.readNodes();
+            elements = obj.readElements(modelParts, nodes);
             model = FemModel(nodes, elements, modelParts);
         end
         
-        function nodeArray = readNodes(modelIO)
+        function nodeArray = readNodes(obj)
             nodeArray = Node.empty;
-            fid = fopen(modelIO.inputFile);
+            fid = fopen(obj.inputFile);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -77,9 +77,9 @@ classdef GmshInput < ModelIO
             
         end
         
-        function elementArray = readElements(modelIO, modelParts, nodes)
+        function elementArray = readElements(obj, modelParts, nodes)
             elementArray = Element.empty;
-            fid = fopen(modelIO.inputFile);
+            fid = fopen(obj.inputFile);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -99,9 +99,9 @@ classdef GmshInput < ModelIO
                         switch elementType
                             
                             case 1 % 2-node line
-                                switch modelIO.line2n
+                                switch obj.line2n
                                     case 'BarElement2d2n' %id, nodeArray, material, crossSectionArea)
-                                        cProperties = modelIO.props(elementData(4));
+                                        cProperties = obj.props(elementData(4));
                                         
                                         cElement = BarElement2d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
@@ -109,7 +109,7 @@ classdef GmshInput < ModelIO
                                         cElement.setProperties(cProperties);
                                         
                                     case 'BarElement3d2n'
-                                        cProperties = modelIO.props(elementData(4));
+                                        cProperties = obj.props(elementData(4));
                                         
                                         cElement = BarElement3d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
@@ -117,7 +117,7 @@ classdef GmshInput < ModelIO
                                         cElement.setProperties(cProperties);
                                         
                                     case 'BeamElement3d2n'
-                                        cProperties = modelIO.props(elementData(4));
+                                        cProperties = obj.props(elementData(4));
                                         
                                         cElement = BeamElement3d2n(elementData(1), ...
                                             [nodes(elementData(end-1)) ...
@@ -125,7 +125,7 @@ classdef GmshInput < ModelIO
                                         cElement.setProperties(cProperties);
                                         
                                     otherwise
-                                        error('2-node element type %s not available',modelIO.line2n)
+                                        error('2-node element type %s not available',obj.line2n)
                                 end
                                 
                                 
@@ -152,11 +152,11 @@ classdef GmshInput < ModelIO
                             end
                             nModelPart = elementData(4);
                             
-                            if modelParts(char(modelIO.modelPartNames(nModelPart))) == 0
-                                modelParts(char(modelIO.modelPartNames(nModelPart))) = cElement;
+                            if modelParts(char(obj.modelPartNames(nModelPart))) == 0
+                                modelParts(char(obj.modelPartNames(nModelPart))) = cElement;
                             else
-                                modelParts(char(modelIO.modelPartNames(nModelPart))) = ...
-                                    [modelParts(char(modelIO.modelPartNames(nModelPart))) cElement];
+                                modelParts(char(obj.modelPartNames(nModelPart))) = ...
+                                    [modelParts(char(obj.modelPartNames(nModelPart))) cElement];
                             end
                             
                         end
@@ -169,12 +169,12 @@ classdef GmshInput < ModelIO
             end %while
         end
         
-        function modelParts = readModelParts(modelIO)
+        function modelParts = readModelParts(obj)
             % the "physical tag" will be used to assign material properties
             % and boundary conditions. 2d: points -> bc, lines -> material
             % 3d: lines -> bc, tetras.. -> material
             modelParts = containers.Map;
-            fid = fopen(modelIO.inputFile);
+            fid = fopen(obj.inputFile);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -195,7 +195,7 @@ classdef GmshInput < ModelIO
                         nModelPartName = str2double(modelPartNameString(end-1));
                         modelPartName = char(strrep(modelPartNameString(end),'"',''));
                         
-                        modelIO.modelPartNames(nModelPartName) = modelPartName;
+                        obj.modelPartNames(nModelPartName) = modelPartName;
                         modelParts(modelPartName) = 0;
                         tline = fgetl(fid);
                     end
@@ -206,8 +206,8 @@ classdef GmshInput < ModelIO
             end
         end
         
-        function readProperties(modelIO)
-            fid = fopen(modelIO.inputFile);
+        function readProperties(obj)
+            fid = fopen(obj.inputFile);
             tline = fgetl(fid);
             
             while ischar(tline)
@@ -227,7 +227,7 @@ classdef GmshInput < ModelIO
                         tline = fgetl(fid);
                     end
                     
-                    modelIO.props(nProperty) = property;
+                    obj.props(nProperty) = property;
                     
                 end
                 tline = fgetl(fid);
