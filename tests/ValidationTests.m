@@ -12,7 +12,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
 
-            io = ModelIO('validation_bridge_input.msh');
+            io = GmshInput('validation_bridge_input.msh');
             model = io.readModel;
             
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});

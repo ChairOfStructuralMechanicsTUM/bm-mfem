@@ -1,4 +1,4 @@
-io = ModelIO('tests/validation_bridge_input.msh');
+io = GmshInput('tests/validation_bridge_input.msh');
 model = io.readModel;
 model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 model.getModelPart('fixed_support').fixDof('DISPLACEMENT_X');
