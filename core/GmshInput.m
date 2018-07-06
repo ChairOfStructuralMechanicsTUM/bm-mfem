@@ -16,8 +16,8 @@ classdef GmshInput < ModelIO
     methods
         
         %Constructor
-        function modelIO = ModelIO(file)
-            modelIO.inputFile = file;
+        function gmshInput = GmshInput(file)
+            gmshInput.inputFile = file;
         end
         
         function setElementTypeLine2n(modelIO, typeName)
