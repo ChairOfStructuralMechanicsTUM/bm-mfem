@@ -169,7 +169,7 @@ classdef FemModel < handle
             end
         end
         
-        function element = addNewElement(femModel, elementName, id, nodes)
+        function element = addNewElement(femModel, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
         %elementName, id, and an array of nodes
             elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
@@ -202,6 +202,10 @@ classdef FemModel < handle
                 otherwise
                     error('unknown element %s',elementName)
             end %switch
+            
+            if nargin == 5
+                element.setProperties(props);
+            end
             
             femModel.elementArray(id) = element;
             
