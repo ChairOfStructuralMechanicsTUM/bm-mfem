@@ -1,9 +1,8 @@
 classdef MdpaInput < ModelIO
-    %MDPAINPUT Summary of this class goes here
+    %MDPAINPUT Read model input from mdpa
     %   Detailed explanation goes here
     
-    properties %(Access = private)
-        props = PropertyContainer
+    properties (Access = private)
     end
     
     methods
@@ -24,33 +23,100 @@ classdef MdpaInput < ModelIO
         
         function model = readModel(obj)
             fid = fopen(obj.file);
+            props = PropertyContainer;
+            model = FemModel;
+            
             tline = fgetl(fid);
             
             while ischar(tline)
                 if contains(tline,'Begin Properties')
                     nProp = strsplit(tline);
                     nProp = str2double(nProp{end});
-                    fid = obj.readProperties(fid, nProp);
+                    [fid,props] = obj.readProperties(fid,props,nProp);
+                end
+                
+                if contains(tline,'Begin Nodes')
+                    [fid,model] = obj.readNodes(fid,model);
+                end
+                
+                if contains(tline,'Begin Elements')
+                    etype = strsplit(tline);
+                    etype = cell2mat(etype(3));
+                    etype = erase(etype,'//');
+                    [fid,model] = obj.readElements(fid,model,etype,props);
+                end
+                
+                if contains(tline,'Begin SubModelPart')
+                    name = strsplit(tline);
+                    name = cell2mat(name(3));
+                    [fid,model] = obj.readSubModelParts(fid,model,name);
                 end
                 
                 tline = fgetl(fid);
             end
-%             obj.readProperties;
-%             modelParts = obj.readModelParts();
-%             nodes = obj.readNodes();
-%             elements = obj.readElements(modelParts, nodes);
-%             model = FemModel(nodes, elements, modelParts);
+            
         end
         
-        function fid = readProperties(obj, fid, nProp)
+    end
+    
+    methods (Static)
+        
+        function [fid,props] = readProperties(fid,props,nProp)
             tline = fgetl(fid);
             property = PropertyContainer;
-            while ~ strcmp(tline, 'End Properties')
-                prop = strsplit(tline);
-                property.addValue(cell2mat(prop(1)), str2double(prop(2)));
+            while ~ strcmp(tline,'End Properties')
+                propData = strsplit(tline);
+                propData(cellfun('isempty',propData)) = [];
+                property.addValue(cell2mat(propData(1)),str2double(propData(2)));
                 tline = fgetl(fid);
             end
-            obj.props(nProp) = property;
+            props(nProp) = property;
+        end
+        
+        function [fid,model] = readNodes(fid,model)
+            tline = fgetl(fid);
+            while ~ strcmp(tline,'End Nodes')
+                n = cell2mat(textscan(tline,'%f'))';
+                model.addNewNode(n(1),n(2),n(3),n(4));
+                tline = fgetl(fid);
+            end
+        end
+        
+        function [fid,model] = readElements(fid,model,etype,props)
+            tline = fgetl(fid);
+            while ~ strcmp(tline,'End Elements')
+                e = cell2mat(textscan(tline,'%f'));
+                model.addNewElement(etype,e(1),e(3:end),props(e(2)));
+                tline = fgetl(fid);
+            end
+        end
+        
+        function [fid,model] = readSubModelParts(fid,model,name)
+            tline = fgetl(fid);
+            nodes = [];
+            elements = [];
+            while ~ strcmp(tline,'End SubModelPart')
+                if contains(tline,'Begin SubModelPartNodes')
+                    tline = fgetl(fid);
+                    while ~ contains(tline,'End SubModelPartNodes')
+                        nodes = [nodes str2double(tline)]; %#ok<AGROW>
+                        tline = fgetl(fid);
+                    end
+                end
+                
+                if contains(tline,'Begin SubModelPartElements')
+                    tline = fgetl(fid);
+                    while ~ contains(tline,'End SubModelPartElements')
+                        elements = [elements str2double(tline)]; %#ok<AGROW>
+                        tline = fgetl(fid);
+                    end
+                end
+                
+                tline = fgetl(fid);
+            end
+            mp = struct('nodes',model.getNodes(nodes), ...
+                'elements',model.getElements(elements));
+            model.addModelPart(name,mp);
         end
         
     end
