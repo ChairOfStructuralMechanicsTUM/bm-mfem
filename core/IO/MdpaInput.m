@@ -29,6 +29,8 @@ classdef MdpaInput < ModelIO
             tline = fgetl(fid);
             
             while ischar(tline)
+                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+            
                 if contains(tline,'Begin Properties')
                     nProp = strsplit(tline);
                     nProp = str2double(nProp{end});
@@ -65,6 +67,8 @@ classdef MdpaInput < ModelIO
             tline = fgetl(fid);
             property = PropertyContainer;
             while ~ strcmp(tline,'End Properties')
+                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+                
                 propData = strsplit(tline);
                 propData(cellfun('isempty',propData)) = [];
                 property.addValue(cell2mat(propData(1)),str2double(propData(2)));
@@ -76,6 +80,8 @@ classdef MdpaInput < ModelIO
         function [fid,model] = readNodes(fid,model)
             tline = fgetl(fid);
             while ~ strcmp(tline,'End Nodes')
+                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+                
                 n = cell2mat(textscan(tline,'%f'))';
                 model.addNewNode(n(1),n(2),n(3),n(4));
                 tline = fgetl(fid);
@@ -85,6 +91,8 @@ classdef MdpaInput < ModelIO
         function [fid,model] = readElements(fid,model,etype,props)
             tline = fgetl(fid);
             while ~ strcmp(tline,'End Elements')
+                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+                
                 e = cell2mat(textscan(tline,'%f'));
                 model.addNewElement(etype,e(1),e(3:end),props(e(2)));
                 tline = fgetl(fid);
@@ -96,6 +104,8 @@ classdef MdpaInput < ModelIO
             nodes = [];
             elements = [];
             while ~ strcmp(tline,'End SubModelPart')
+                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+                
                 if contains(tline,'Begin SubModelPartNodes')
                     tline = fgetl(fid);
                     while ~ contains(tline,'End SubModelPartNodes')
@@ -114,9 +124,8 @@ classdef MdpaInput < ModelIO
                 
                 tline = fgetl(fid);
             end
-            mp = struct('nodes',model.getNodes(nodes), ...
-                'elements',model.getElements(elements));
-            model.addModelPart(name,mp);
+            
+            model.addNewModelPart(name,nodes,elements);
         end
         
     end
