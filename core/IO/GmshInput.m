@@ -155,17 +155,17 @@ classdef GmshInput < ModelIO
                         
                         %add the element to the array and the modelParts map
                         if exist('cElement','var') == 1
-                            % don't add nodes to the array
-                            if elementType ~= 15
-                                elementArray = [elementArray cElement];
-                            end
-                            nModelPart = elementData(4);
+                            nModelPartId = elementData(4);
+                            modelPartName = char(obj.modelPartNames(nModelPartId));
+                            nModelPart = modelParts(modelPartName);
                             
-                            if modelParts(char(obj.modelPartNames(nModelPart))) == 0
-                                modelParts(char(obj.modelPartNames(nModelPart))) = cElement;
+                            if elementType == 15 % don't add nodes to the array
+                                nModelPart.nodes = [modelParts(modelPartName).nodes cElement];
+                                modelParts(modelPartName) = nModelPart;
                             else
-                                modelParts(char(obj.modelPartNames(nModelPart))) = ...
-                                    [modelParts(char(obj.modelPartNames(nModelPart))) cElement];
+                                elementArray = [elementArray cElement];
+                                nModelPart.elements = [nModelPart.elements cElement];
+                                modelParts(modelPartName) = nModelPart;
                             end
                             
                         end
@@ -205,7 +205,8 @@ classdef GmshInput < ModelIO
                         modelPartName = char(strrep(modelPartNameString(end),'"',''));
                         
                         obj.modelPartNames(nModelPartName) = modelPartName;
-                        modelParts(modelPartName) = 0;
+                        modelParts(modelPartName) = struct('nodes',[],...
+                            'elements',[]);
                         tline = fgetl(fid);
                     end
                     

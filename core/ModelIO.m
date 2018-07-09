@@ -1,5 +1,5 @@
 classdef ModelIO < handle
-    %MODELIO Summary of this class goes here
+    %MODELIO Base class for all external input and output functionalities
     %   Detailed explanation goes here
     
     properties (Access = protected)
