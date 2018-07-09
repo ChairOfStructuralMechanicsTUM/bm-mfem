@@ -187,8 +187,9 @@ classdef ShellElement3d4n < QuadrilateralElement
             Psi_Diff_Par(1,11) = 0.375 * (((- 2 * xi * (1 + eta) * (ele_coords(3,1) - ele_coords(4,1)) * (ele_coords(3,2) - ele_coords(4,2))) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)) ...
                                         - (((1 - eta^2) * (ele_coords(4,1) - ele_coords(1,1)) * (ele_coords(4,2) - ele_coords(1,2))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)));
 
-            Psi_Diff_Par(1,12) = 0.25 * ((xi - 1) * (eta + 1) + (eta + 1) * (eta - xi + 1)) ... 
-                                        + ((xi * (1 + eta) * (0.25 * (ele_coords(3,1) - ele_coords(4,1))^2 - 0.5 * (ele_coords(3,2) - ele_coords(4,2))^2  )) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)) ...
+%                                     -0.25 * ((xi - 1) * (eta + 1) + (eta + 1) * (eta - xi + 1)) ... 
+            Psi_Diff_Par(1,12) = -0.25 * (eta - 2*eta*xi + eta^2 - 2*xi) + ...
+                                        + (xi * (1 + eta) * (0.25 * (ele_coords(3,1) - ele_coords(4,1))^2 - 0.5 * (ele_coords(3,2) - ele_coords(4,2))^2 ) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)) ...
                                             + 0.5 * ( ((1- eta^2) * (0.25 * (ele_coords(1,1) - ele_coords(4,1))^2 - 0.5 * (ele_coords(1,2) - ele_coords(4,2))^2  )) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)); 
 
             Psi_Diff_Par(2,1) = 0.75 * ((((1 - xi^2) * (ele_coords(1,1) - ele_coords(2,1))) / ((ele_coords(1,1) - ele_coords(2,1))^2 + (ele_coords(1,2) - ele_coords(2,2))^2  )) ...
@@ -388,14 +389,26 @@ classdef ShellElement3d4n < QuadrilateralElement
             
             lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * computeLength(ele_coords(1,:), ele_coords(2,:));
             nodalMass = 0.25 * density * thickness * lumpArea; 
-            index = 1; 
-            for i = 1 : 3
-                
-               massMatrix(index,index) = nodalMass; 
-               massMatrix(index+1,index+1) = nodalMass; 
-               massMatrix(index+2,index+2) = nodalMass; 
-               index = i * 6;
-            end
+            massMatrix(1,1) = nodalMass;
+            massMatrix(2,2) = nodalMass;
+            massMatrix(3,3) = nodalMass;
+            massMatrix(7,7) = nodalMass;
+            massMatrix(8,8) = nodalMass;
+            massMatrix(9,9) = nodalMass;
+            massMatrix(13,13) = nodalMass;
+            massMatrix(14,14) = nodalMass;
+            massMatrix(15,15) = nodalMass;
+            massMatrix(19,19) = nodalMass;
+            massMatrix(20,20) = nodalMass;
+            massMatrix(21,21) = nodalMass;
+%             index = 1; 
+%             for i = 1 : 3
+%                 
+%                massMatrix(index,index) = nodalMass; 
+%                massMatrix(index+1,index+1) = nodalMass; 
+%                massMatrix(index+2,index+2) = nodalMass; 
+%                index = i * 6;
+%             end
            
         end
         
