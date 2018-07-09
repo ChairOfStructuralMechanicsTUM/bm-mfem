@@ -187,7 +187,6 @@ classdef EigensolverStrategy < Solver
             if ~ eigensolver.femModel.isInitialized()
                 eigensolver.femModel.initialize;
             end
-            eigensolver.femModel.initialize;
             
             % assemble and reduce matrices
             eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);

@@ -27,8 +27,6 @@ classdef BeamElement3d2n < LinearElement
             beamElement@LinearElement(super_args{:});
             beamElement.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
                 "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
-            
-            warning('using the experimental beam element')
         end
         
         function initialize(element)
@@ -188,8 +186,8 @@ classdef BeamElement3d2n < LinearElement
             eProperties = element.getProperties;
             if (eProperties.hasValue('RAYLEIGH_ALPHA')) ...
                     && (eProperties.hasValue('RAYLEIGH_BETA'))
-                dampingMatrix = ePropertes.getValue('RAYLEIGH_ALPHA') * element.computeMassMatrix ...
-                    + ePropertes.getValue('RAYLEIGH_BETA') * element.computeStiffnessMatrix;
+                dampingMatrix = eProperties.getValue('RAYLEIGH_ALPHA') * element.computeLocalMassMatrix ...
+                    + eProperties.getValue('RAYLEIGH_BETA') * element.computeLocalStiffnessMatrix;
             else
                 dampingMatrix = sparse(12,12);
             end          

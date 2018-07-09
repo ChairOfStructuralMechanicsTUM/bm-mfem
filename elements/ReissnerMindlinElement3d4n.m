@@ -30,14 +30,19 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         %Initialization
-        function initialize(reissnerMindlinElement3d4n)
-            reissnerMindlinElement3d4n.lengthX = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                reissnerMindlinElement3d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
             
-            reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                reissnerMindlinElement3d4n.nodeArray(4).getCoords);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
             
-            checkConvexity(reissnerMindlinElement3d4n);
+            if ~checkConvexity(obj)
+                msg = ['QuaadrilateralElement2d4n: Element ', ...
+                    num2str(obj.getId), ' is not convex.'];
+                e = MException('MATLAB:bm_mfem:elementNotConvex',msg);
+                throw(e);
+            end
         end
         
         function responseDoF = getResponseDofArray(reissnerMindlinElement, step)
@@ -227,6 +232,10 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             [~, ~, vals([1 4 7 10])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
             [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
             [~, ~, vals([3 6 9 12])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+        end
+        
+        function F = computeLocalForceVector(quadrilateralElement)
+            F = zeros(1,12);
         end
    
     end

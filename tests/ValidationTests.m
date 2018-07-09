@@ -12,13 +12,13 @@ classdef ValidationTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
 
-            io = ModelIO('validation_bridge_input.msh');
+            io = GmshInput('validation_bridge_input.msh');
             model = io.readModel;
             
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_X');
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_Y');
-            model.getModelPart('roller_support').fixDof('DISPLACEMENT_Y');
+            model.getModelPart('fixed_support').nodes.fixDof('DISPLACEMENT_X');
+            model.getModelPart('fixed_support').nodes.fixDof('DISPLACEMENT_Y');
+            model.getModelPart('roller_support').nodes.fixDof('DISPLACEMENT_Y');
             model.getAllNodes.fixDof('DISPLACEMENT_Z');
             
             addPointLoad(model.getNodes([3 5 9 11]),10,[0 -1 0]);
