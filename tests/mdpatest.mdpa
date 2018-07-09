@@ -4,6 +4,9 @@ End ModelPartData
 
 Begin Properties 2
     DENSITY 1239
+	THICKNESS 0.01
+	POISSON_RATIO 0.3
+	//POISSON_RATIO 1234
 End Properties
 Begin Properties 1
     CROSS_SECTION 0.01
@@ -27,6 +30,9 @@ Begin Nodes
    9        0.800        0.00000        0.00000   
    10       0.900        0.00000        0.00000   
    11       1.000        0.00000        0.00000   
+    12      1.0         1.0             0.0
+    13      2.0         1.0             0.0
+    14      2.213         0.0             0.0
 End Nodes
 
 
@@ -43,9 +49,9 @@ Begin Elements BeamElement3d2n// GUI group identifier: structure
          10          1        10 			11           
 End Elements
 
-Begin Conditions PointLoadCondition3D1N// GUI group identifier: neumann
-1 0 11
-End Conditions
+Begin Elements ReissnerMindlinElement3d4n
+    11 2  11 12 13 14
+End Elements
 
 Begin SubModelPart Parts_structure // Group structure // Subtree Parts
     Begin SubModelPartNodes
@@ -73,42 +79,26 @@ Begin SubModelPart Parts_structure // Group structure // Subtree Parts
          9
          10
     End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart DISPLACEMENT_dirichletXYZ // Group dirichletXYZ // Subtree DISPLACEMENT
+Begin SubModelPart DISPLACEMENT 
     Begin SubModelPartNodes
         1
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart ROTATION_dirrot // Group dirrot // Subtree ROTATION
+Begin SubModelPart ROTATION 
     Begin SubModelPartNodes
     1
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart ROTATION_dirrotX // Group dirrot // Subtree ROTATION
+Begin SubModelPart empty
     Begin SubModelPartNodes
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
-End SubModelPart
-Begin SubModelPart DISPLACEMENT_dirichletYZ // Group dirichletYZ // Subtree DISPLACEMENT
-    Begin SubModelPartNodes
-    End SubModelPartNodes
-    Begin SubModelPartElements
-    End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
 End SubModelPart
 Begin SubModelPart DISPLACEMENT_allnodes // Group allnodes // Subtree DISPLACEMENT
     Begin SubModelPartNodes
@@ -126,16 +116,11 @@ Begin SubModelPart DISPLACEMENT_allnodes // Group allnodes // Subtree DISPLACEME
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
-    Begin SubModelPartConditions
-    End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart PointLoad3D_neumann // Group neumann // Subtree PointLoad3D
+Begin SubModelPart PointLoad // Group neumann // Subtree PointLoad3D
     Begin SubModelPartNodes
        11
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
-    Begin SubModelPartConditions
-         1
-    End SubModelPartConditions
 End SubModelPart
