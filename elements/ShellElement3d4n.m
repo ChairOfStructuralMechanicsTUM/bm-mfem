@@ -26,28 +26,27 @@ classdef ShellElement3d4n < QuadrilateralElement
             % call the super class contructor
             shellElement3d4n@QuadrilateralElement(super_args{:});
             shellElement3d4n.dofNames = cellstr([ ...
-                "DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", "ROTATION_X",  "ROTATION_Y",  "ROTATION_Z"]);
-%                 "DISPLACEMENT_X", "DISPLACEMENT_Y",  "ROTATION_Z"]);
-%                 "DISPLACEMENT_Z", "ROTATION_X",  "ROTATION_Y"]);
+                "DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X",  "ROTATION_Y",  "ROTATION_Z"]);
         
         end
         
         %Initialization
-        function initialize(shellElement3d4n)
-            shellElement3d4n.lengthX = computeLength(shellElement3d4n.nodeArray(1).getCoords, ...
-                shellElement3d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
             
-            shellElement3d4n.lengthY = computeLength(shellElement3d4n.nodeArray(1).getCoords, ...
-                shellElement3d4n.nodeArray(4).getCoords);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
             
-            checkConvexity(shellElement3d4n);
+            checkConvexity(obj);
         end
         
-        function responseDoF = getResponseDofArray(shellElement3d4n, step)
+        function responseDoF = getResponseDofArray(obj, step)
            
             responseDoF = zeros(24,1);
             for itNodes = 1:1:6
-                nodalDof = shellElement3d4n.nodeArray(itNodes).getDofArray;
+                nodalDof = obj.nodeArray(itNodes).getDofArray;
                 nodalDof = nodalDof.';
                 
                 for itDof = 3:(-1):1
@@ -77,14 +76,9 @@ classdef ShellElement3d4n < QuadrilateralElement
             J = N_Diff_Par * ele_coords;
             inv_J = inv(J);
             inv_J_TR = [inv_J, zeros(2,2); zeros(2,2), inv_J]; 
-                   
-            MN_Diff_Par= [ - eta^3/8 + (3*eta)/8 - 1/4,                                 0, - eta^3/8 + eta^2/8 + eta/8 - 1/8,                                       0, eta^3/8 - (3*eta)/8 + 1/4,                                0, - eta^3/8 + eta^2/8 + eta/8 - 1/8,                                        0, - eta^3/8 + (3*eta)/8 + 1/4,                                 0, - eta^3/8 - eta^2/8 + eta/8 + 1/8,                                       0, eta^3/8 - (3*eta)/8 - 1/4,                                0, - eta^3/8 - eta^2/8 + eta/8 + 1/8,                                        0;
-                                    -(xi/2 - 1/2)*((3*eta^2)/4 - 3/4),                         0, (xi/2 - 1/2)*(eta/2 - (3*eta^2)/4 + 1/4),                              0, (xi/2 + 1/2)*((3*eta^2)/4 - 3/4),                       0, (xi/2 + 1/2)*(eta/2 - (3*eta^2)/4 + 1/4),                              0, -(xi/2 + 1/2)*((3*eta^2)/4 - 3/4),                         0, -(xi/2 + 1/2)*((3*eta^2)/4 + eta/2 - 1/4),                            0, (xi/2 - 1/2)*((3*eta^2)/4 - 3/4),                       0, -(xi/2 - 1/2)*((3*eta^2)/4 + eta/2 - 1/4),                            0;
-                                    0, -(eta/2 - 1/2)*((3*xi^2)/4 - 3/4),                                 0, (eta/2 - 1/2)*(xi/2 - (3*xi^2)/4 + 1/4),                         0, (eta/2 - 1/2)*((3*xi^2)/4 - 3/4),                                 0, -(eta/2 - 1/2)*((3*xi^2)/4 + xi/2 - 1/4),                           0, -(eta/2 + 1/2)*((3*xi^2)/4 - 3/4),                                 0, (eta/2 + 1/2)*((3*xi^2)/4 + xi/2 - 1/4),                         0, (eta/2 + 1/2)*((3*xi^2)/4 - 3/4),                                 0, -(eta/2 + 1/2)*(xi/2 - (3*xi^2)/4 + 1/4);
-                                    0, - xi^3/8 + (3*xi)/8 - 1/4,                                        0, - xi^3/8 + xi^2/8 + xi/8 - 1/8,                                0, xi^3/8 - (3*xi)/8 - 1/4,                                        0, - xi^3/8 - xi^2/8 + xi/8 + 1/8,                                 0, - xi^3/8 + (3*xi)/8 + 1/4,                                         0, xi^3/8 + xi^2/8 - xi/8 - 1/8,                                0, xi^3/8 - (3*xi)/8 + 1/4,                                         0, xi^3/8 - xi^2/8 - xi/8 + 1/8]; 
-                                      
-            MN_Diff_2 = zeros(4,16);
-            MN_Diff_2(1,:) = [obj.dM_dx(1)*obj.Nx(1,eta) 0 ...
+            
+            MN_Diff_Par = zeros(4,16);
+            MN_Diff_Par(1,:) = [obj.dM_dx(1)*obj.Nx(1,eta) 0 ...
                 obj.dM_dx(1) * -1*obj.Nx(2,eta) 0 ...
                 obj.dM_dx(2) * obj.Nx(1,eta) 0 ...
                 obj.dM_dx(2) * -1*obj.Nx(2,eta) 0 ...
@@ -92,7 +86,7 @@ classdef ShellElement3d4n < QuadrilateralElement
                 obj.dM_dx(2) * -1*obj.Nx(4,eta) 0 ...
                 obj.dM_dx(1) * obj.Nx(3,eta) 0 ...
                 obj.dM_dx(1) * -1*obj.Nx(4,eta) 0 ];
-            MN_Diff_2(2,:) = [obj.Mx(1,xi)*obj.dNx_dx(1,eta) 0 ...
+            MN_Diff_Par(2,:) = [obj.Mx(1,xi)*obj.dNx_dx(1,eta) 0 ...
                 obj.Mx(1,xi) * -1*obj.dNx_dx(2,eta) 0 ...
                 obj.Mx(2,xi) * obj.dNx_dx(1,eta) 0 ...
                 obj.Mx(2,xi) * -1*obj.dNx_dx(2,eta) 0 ...
@@ -100,24 +94,22 @@ classdef ShellElement3d4n < QuadrilateralElement
                 obj.Mx(2,xi) * -1*obj.dNx_dx(4,eta) 0 ...
                 obj.Mx(1,xi) * obj.dNx_dx(3,eta) 0 ...
                 obj.Mx(1,xi) * -1*obj.dNx_dx(4,eta) 0 ];
-            MN_Diff_2(3,:) = [ 0 obj.Mx(1,eta) * obj.dNx_dx(1,xi) ...
+            MN_Diff_Par(3,:) = [ 0 obj.Mx(1,eta) * obj.dNx_dx(1,xi) ...
                 0 obj.Mx(1,eta) * obj.dNx_dx(2,xi) ...
                 0 obj.Mx(1,eta) * obj.dNx_dx(3,xi) ...
                 0 obj.Mx(1,eta) * obj.dNx_dx(4,xi) ...
                 0 obj.Mx(2,eta) * obj.dNx_dx(3,xi) ...
                 0 obj.Mx(2,eta) * obj.dNx_dx(4,xi) ...
                 0 obj.Mx(2,eta) * obj.dNx_dx(1,xi) ...
-                0 obj.Mx(2,eta) * obj.dNx_dx(2,xi) ...
-            ];
-            MN_Diff_2(4,:) = [ 0 obj.dM_dx(1) * obj.Nx(1,xi) ...
+                0 obj.Mx(2,eta) * obj.dNx_dx(2,xi) ];
+            MN_Diff_Par(4,:) = [ 0 obj.dM_dx(1) * obj.Nx(1,xi) ...
                 0 obj.dM_dx(1) * obj.Nx(2,xi) ...
                 0 obj.dM_dx(1) * obj.Nx(3,xi) ...
                 0 obj.dM_dx(1) * obj.Nx(4,xi) ...
                 0 obj.dM_dx(2) * obj.Nx(3,xi) ...
                 0 obj.dM_dx(2) * obj.Nx(4,xi) ...
                 0 obj.dM_dx(2) * obj.Nx(1,xi) ...
-                0 obj.dM_dx(2) * obj.Nx(2,xi) ...
-            ];
+                0 obj.dM_dx(2) * obj.Nx(2,xi) ];
                                 
             % Displacement Transformation Matrix
             Tr = sparse(16,12); 
@@ -146,9 +138,10 @@ classdef ShellElement3d4n < QuadrilateralElement
             
             % Computing the B_Membrane Matrix with a drilling dof
             B_mem = A * inv_J_TR * MN_Diff_Par * Tr; 
-            B_mem = A * inv_J_TR * MN_Diff_2 * Tr; 
 
             % Assembling the Discrete Kirchhoff Shape Function Matrix
+            % TODO: move the computation to functions for better
+            % readability
             Psi_Diff_Par = zeros(4,12); 
 
             Psi_Diff_Par(1,1) = 0.75 * ((( 2 * xi * (1 - eta) * (ele_coords(1,1) - ele_coords(2,1))) / ( (ele_coords(1,1) - ele_coords(2,1))^2 + (ele_coords(1,2) - ele_coords(2,2))^2)) ...
@@ -312,18 +305,18 @@ classdef ShellElement3d4n < QuadrilateralElement
             Psi_Diff_Par(4,12) = 0.375 * (((2 * eta * (1 - xi) * (ele_coords(4,1) - ele_coords(1,1)) * (ele_coords(4,2) - ele_coords(1,2))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)) ...
                                         - (((1 - xi^2) * (ele_coords(3,1) - ele_coords(4,1)) * (ele_coords(3,2) - ele_coords(4,2))) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)));
             
-           % Computing the B_Bending Matrix
+           % Compute the B_Bending Matrix
             B_b = A * inv_J_TR * Psi_Diff_Par; 
         end
         
         
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix(shellElement3d4n)
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
             
-            EModul = shellElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            prxy = shellElement3d4n.getPropertyValue('POISSON_RATIO');
-            nr_gauss_points = shellElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            thickness = shellElement3d4n.getPropertyValue('THICKNESS');
+            EModul = obj.getPropertyValue('YOUNGS_MODULUS');
+            prxy = obj.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            thickness = obj.getPropertyValue('THICKNESS');
         
             % Plane Stress Matrix
             D_mem = (EModul/(1-prxy^2))* [1  prxy  0; prxy  1  0 ; 0  0  (1-prxy)/2]; 
@@ -333,147 +326,100 @@ classdef ShellElement3d4n < QuadrilateralElement
            
             [w,g] = returnGaussPoint(nr_gauss_points);
             
-            stiffnessMatrixMemb = zeros (12,12);
-            stiffnessMatrixBend = zeros (12,12);
-            stiffnessMatrix = zeros(24,24);
+            stiffnessMatrixMemb = sparse(12,12);
+            stiffnessMatrixBend = sparse(12,12);
+            stiffnessMatrix = sparse(24,24);
 
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                [J, B_mem, B_b] = computeShapeFunction(shellElement3d4n,g(xi),g(eta));
+                [J, B_mem, B_b] = computeShapeFunction(obj,g(xi),g(eta));
 
                 
-                    stiffnessMatrixMemb = stiffnessMatrixMemb +             ...
-                                                thickness.* B_mem' * D_mem * B_mem * det(J) * w(xi) * w(eta);
+                    stiffnessMatrixMemb = stiffnessMatrixMemb + ...
+                        thickness.* B_mem' * D_mem * B_mem * det(J) * w(xi) * w(eta);
                            
-                    stiffnessMatrixBend = stiffnessMatrixBend +             ...
-                                                B_b' * D_b * B_b * det(J) * w(xi) * w(eta);       
+                    stiffnessMatrixBend = stiffnessMatrixBend + ...
+                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta);       
                 
                 end
             end
-%             stiffnessMatrix = sparse([stiffnessMatrixMemb, zeros(12,12); zeros(12,12), stiffnessMatrixBend]);
-            % assemble stiffness matrices
-            stiffnessMatrix([1 2 6 7 8 12 13 14 18 19 20 24],[1 2 6 7 8 12 13 14 18 19 20 24]) = stiffnessMatrixMemb;
-            stiffnessMatrix([3 4 5 9 10 11 15 16 17 21 22 23],[3 4 5 9 10 11 15 16 17 21 22 23]) = stiffnessMatrixBend;
-%             stiffnessMatrix2(:,1) = stiffnessMatrixMemb(:,1);
-
-%             stiffnessMatrix = stiffnessMatrixMemb;
-%             for xi = 1 : nr_gauss_points
-%                     for eta = 1 : nr_gauss_points
-%                          [J, ~, B_b] = computeShapeFunction(shellElement3d4n,g(xi),g(eta));
-% 
-%                          stiffnessMatrixBend = stiffnessMatrixBend +             ...
-%                                                     B_b' * D_b * B_b * det(J) * w(xi) * w(eta);               
-%                     end
-%             end
-%               
-%             stiffnessMatrix = stiffnessMatrixBend;
+            
+            % assemble stiffness matrix:
+            % membrane part: ux, uy, phiz
+            % bending part: uz, phix, phiy
+            stiffnessMatrix([1 2 6 7 8 12 13 14 18 19 20 24],...
+                [1 2 6 7 8 12 13 14 18 19 20 24]) = stiffnessMatrixMemb;
+            stiffnessMatrix([3 4 5 9 10 11 15 16 17 21 22 23],...
+                [3 4 5 9 10 11 15 16 17 21 22 23]) = stiffnessMatrixBend;
             
         end
         
         
-        function massMatrix = computeLocalMassMatrix(shellElement3d4n)
-            density = shellElement3d4n.getPropertyValue('DENSITY');
-            thickness = shellElement3d4n.getPropertyValue('THICKNESS');
-            nr_gauss_points = shellElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            
-            
-            massMatrix = zeros(24,24); 
+        function massMatrix = computeLocalMassMatrix(obj)
+            %TODO: add consistent mass matrix
+            %TODO: lump area computation for all kinds of quads: A=(1/2)|[(x3-x1)(y4-y2) +(x4-x2)(y1-y3)]|.
+            density = obj.getPropertyValue('DENSITY');
+            thickness = obj.getPropertyValue('THICKNESS');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(4,2); 
             for i=1:4
-                ele_coords(i,1) = shellElement3d4n.nodeArray(i).getX;
-                ele_coords(i,2) = shellElement3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
-            
-            lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * computeLength(ele_coords(1,:), ele_coords(2,:));
+            lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * ...
+                computeLength(ele_coords(1,:), ele_coords(2,:));
             nodalMass = 0.25 * density * thickness * lumpArea; 
-            massMatrix(1,1) = nodalMass;
-            massMatrix(2,2) = nodalMass;
-            massMatrix(3,3) = nodalMass;
-            massMatrix(7,7) = nodalMass;
-            massMatrix(8,8) = nodalMass;
-            massMatrix(9,9) = nodalMass;
-            massMatrix(13,13) = nodalMass;
-            massMatrix(14,14) = nodalMass;
-            massMatrix(15,15) = nodalMass;
-            massMatrix(19,19) = nodalMass;
-            massMatrix(20,20) = nodalMass;
-            massMatrix(21,21) = nodalMass;
-%             index = 1; 
-%             for i = 1 : 3
-%                 
-%                massMatrix(index,index) = nodalMass; 
-%                massMatrix(index+1,index+1) = nodalMass; 
-%                massMatrix(index+2,index+2) = nodalMass; 
-%                index = i * 6;
-%             end
-           
+            i = [1 2 3 7 8 9 13 14 15 19 20 21];
+            
+            massMatrix = sparse(i,i,nodalMass*ones(1,12),24,24);
+
         end
         
-        function dampingMatrix=computeLocalDampingMatrix(element)
-        dampingMatrix = zeros(24,24); 
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            props = obj.getProperties;
+            
+            if props.hasValue('RAYLEIGH_ALPHA') && props.hasValue('RAYLEIGH_BETA')
+                alpha = props.getValue('RAYLEIGH_ALPHA');
+                beta = props.getValue('RAYLEIGH_BETA');
+                dampingMatrix = alpha * obj.computeLocalMassMatrix + ...
+                    beta * obj.computeLocalStiffnessMatrix;
+            else
+                dampingMatrix = sparse(12,12);
+            end
+            
         end
         
-        function dofs = getDofList(element)
-            dofs([1  7  13 19]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2  8  14 20]) = element.nodeArray.getDof('DISPLACEMENT_Y');
-            dofs([3  9  15 21]) = element.nodeArray.getDof('DISPLACEMENT_Z');
-            dofs([4 10 16 22]) = element.nodeArray.getDof('ROTATION_X');
-            dofs([5 11 17 23]) = element.nodeArray.getDof('ROTATION_Y');
-            dofs([6 12 18 24]) = element.nodeArray.getDof('ROTATION_Z');
+        function f=computeLocalForceVector(obj)
+            f = zeros(1,24); 
+        end
+        
+        function dofs = getDofList(obj)
+            dofs([1  7  13 19]) = obj.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2  8  14 20]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([3  9  15 21]) = obj.nodeArray.getDof('DISPLACEMENT_Z');
+            dofs([4 10 16 22]) = obj.nodeArray.getDof('ROTATION_X');
+            dofs([5 11 17 23]) = obj.nodeArray.getDof('ROTATION_Y');
+            dofs([6 12 18 24]) = obj.nodeArray.getDof('ROTATION_Z');
             
 
         end
-%         
-%         function vals = getValuesVector(element, step)
-%             vals = zeros(1,24);
-%             vals([1  7  13 19]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-%             vals([2  8  14 20]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-%             vals([4 10 16 22]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
-%             vals([5 11 17 23]) = element.nodeArray.getDofValue('ROTATION_X',step);
-%             vals([6 12 18 24]) = element.nodeArray.getDofValue('ROTATION_Y',step);
-%             vals([3  9  15 21]) = element.nodeArray.getDofValue('ROTATION_Z',step);
-%         end
         
-%          function dofs = getDofList(element)
-%              dofs([1 7 13 19]) = element.nodeArray.getDof('DISPLACEMENT_X');
-%              dofs([2 8 14 20]) = element.nodeArray.getDof('DISPLACEMENT_Y');
-%              dofs([3 9 15 21]) = element.nodeArray.getDof('ROTATION_Z');
-%              dofs([4 10 16 22]) = element.nodeArray.getDof('DISPLACEMENT_Z');
-%              dofs([5 11 17 23]) = element.nodeArray.getDof('ROTATION_Y');
-%              dofs([6 12 18 24]) = element.nodeArray.getDof('ROTATION_X');
-%          end
-        
-%          function dofs = getDofList(element)
-%             dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_Z');
-%             dofs([2 5 8 11]) = element.nodeArray.getDof('ROTATION_X');
-%             dofs([3 6 9 12]) = element.nodeArray.getDof('ROTATION_Y');
-% end
-
-%          function dofs = getDofList(element)
-%             dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_X');
-%             dofs([2 5 8 11]) = element.nodeArray.getDof('DISPLACEMENT_Y');
-%             dofs([3 6 9 12]) = element.nodeArray.getDof('ROTATION_Z');
-% end
-        
-        function vals = getValuesVector(element, step)
-            vals = zeros(1,12);
-            
-%             vals([1 4 7 10]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
-%             vals([2 5 8 11]) = element.nodeArray.getDofValue('ROTATION_X',step);
-%             vals([3 6 9 12]) = element.nodeArray.getDofValue('ROTATION_Y',step);
+        function vals = getValuesVector(obj, step)
+            vals = zeros(1,24);
+            vals([1  7  13 19]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2  8  14 20]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([4 10 16 22]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([5 11 17 23]) = obj.nodeArray.getDofValue('ROTATION_X',step);
+            vals([6 12 18 24]) = obj.nodeArray.getDofValue('ROTATION_Y',step);
+            vals([3  9  15 21]) = obj.nodeArray.getDofValue('ROTATION_Z',step);
         end
+        
     end
     
     methods (Access = private, Static = true)
-        
-%         function dMN_dxi(r,s,xi,eta)
-%             if (r == 1) && (s == 1)
-%                 
-%             end
-%         end
         
         function res = Mx(i,x)
             switch i
