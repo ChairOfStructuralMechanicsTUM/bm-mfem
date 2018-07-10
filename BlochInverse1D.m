@@ -92,6 +92,14 @@ classdef BlochInverse1D < Solver
        end
              
             
+       function [leftDofs,rightDofs] = getLeftRightDofIds(obj)
+            nodeArray = obj.femModel.getAllNodes;
+            leftNodes = getNodes(obj.femModel, nodeIdsLeft);
+            rightNodes = getNodes(obj.femModel, nodeIdsRight);
+            
+            
+            
+        end
             
         
         function initialize(obj)
@@ -151,7 +159,16 @@ classdef BlochInverse1D < Solver
                 end
             end
                 
-%             dofIds = Dof.getId;      %%%oder femModel.getId? erst mit femModel "objekt erstellen" zb femmodel.getarray
+
+
+        end %end initialize
+        
+        
+      
+        
+      
+        
+      %             dofIds = Dof.getId;      %%%oder femModel.getId? erst mit femModel "objekt erstellen" zb femmodel.getarray
 %             %nodeIds = Node.getId;    nur von 1 Knoten
 %             %nodeCoords = node.getCoords   nur von 1 Knoten...
 %             x = Node.getX;
@@ -211,20 +228,6 @@ classdef BlochInverse1D < Solver
 %                     end 
 %                 end
 %           end
-
-        end %end initialize
-        
-        
-        function [leftDofs,rightDofs] = getLeftRightDofIds(obj)
-            nodeArray = obj.femModel.getAllNodes;
-            leftNodes = getNodes(obj.femModel, nodeIdsLeft);
-            rightNodes = getNodes(obj.femModel, nodeIdsRight);
-            
-        end
-        
-      
-        
-      
         
     end %end methods
     

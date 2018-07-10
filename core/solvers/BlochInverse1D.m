@@ -15,7 +15,7 @@ classdef BlochInverse1D < Solver
     end
     
     methods
-        function obj=BlochInverse1D(femModel,leftNodes,rightNodes)
+        function obj = BlochInverse1D(femModel,leftNodes,rightNodes)
             if nargin > 0 
                 obj.femModel = femModel;
                 obj.assembler = SimpleAssembler(femModel);
@@ -23,8 +23,8 @@ classdef BlochInverse1D < Solver
             else
                 error('Error (BlochInverse1D): no fem model defined!')
             end        
-            obj.leftNodes=leftNodes;
-            obj.rightNodes=rightNodes;
+            obj.leftNodes = leftNodes;
+            obj.rightNodes = rightNodes;
         end %blochInverse1D
         
         function solve(obj, ~)
