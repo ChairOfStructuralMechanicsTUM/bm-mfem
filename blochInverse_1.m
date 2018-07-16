@@ -1,5 +1,5 @@
 clear;
-
+1
 node01 = Node(1,0,0);
 node02 = Node(2,2,0);
 node03 = Node(3,4,0);
