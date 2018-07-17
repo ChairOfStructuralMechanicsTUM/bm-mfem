@@ -44,6 +44,7 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 initialize(obj);
 
 
+
 %solver = SimpleSolvingStrategy(model);
 %x = solver.solve();
 % 
