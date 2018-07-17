@@ -44,16 +44,14 @@ classdef BlochInverse1D < Solver
             nodeXcoords = arrayfun(@(node) node.getX, nodeArray);
            
             sortedX = sort(nodeXcoords);
-            minX = sortedX(1);
-            
-            
+            minX = sortedX(1);       
             n=0;         
             for i=1:length(nodeXcoords)
                 if nodeXcoords(i) == minX
                     n = n+1;
                     nodeIdsLeft(n) = nodeIds(i);        %Iterative Vergrößerung schlimm? 
                     
-                    obj.leftNodes(n) = nodeIds(i);
+%                     obj.leftNodes(n) = nodeIds(i);
                     
                 end
             end
@@ -62,7 +60,7 @@ classdef BlochInverse1D < Solver
         end
             
        function [nodeIdsRight] = findRightNodes(obj) 
-           %function [rightNodes] = findRightNodes(obj)    
+             
             nodeArray = obj.femModel.getAllNodes;
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             nodeXcoords = arrayfun(@(node) node.getX, nodeArray);
@@ -75,12 +73,11 @@ classdef BlochInverse1D < Solver
                     n = n+1;
                     nodeIdsRight(n) = nodeIds(i);
                     
-                    
-                    
-                    obj.rightNodes = nodeIds(i);
+   
+%                     obj.rightNodes = nodeIds(i);
                 end
             end
-%             rightNodes = [nodeIds;nodeXcoordsRight];
+%          
             fprintf('Number of right boundary nodes is %s. \n', num2str(n))
        end
              
@@ -97,8 +94,6 @@ classdef BlochInverse1D < Solver
             for ii = 1:length(dofArray)
                 dofArray(ii).setId(ii);
             end 
-            
-            
             
             if length(dofArray1{1,1}) == 2
                 disp('2 degrees of freedom')
@@ -156,12 +151,16 @@ classdef BlochInverse1D < Solver
             obj.stiffnessMatrix = obj.assembler.assembleGlobalStiffnessMatrix(obj.femModel);
             
             %%% suche nach weiteren Fehlern einfügen
-            nodeArray = obj.femModel.getAllNodes;
-            nodeIdsLeft = obj.findLeftNodes;
             
-            %nodeIdsRight = findRightNodes(obj)
+            %nodeArray = obj.femModel.getAllNodes; 
+            %momentan auch in"findright/left Nodes/Dofs"
+            
+            nodeIdsLeft = obj.findLeftNodes;            
+            %nodeIdsRight = findRightNodes(obj);
             nodeIdsRight = obj.findRightNodes;
             
+            obj.leftNodes = nodeIdsLeft; %auch in Funktionen möglich
+            obj.rightNodes = nodeIdsRight;
             
             leftNodes = getNodes(obj.femModel, nodeIdsLeft); 
             rightNodes = getNodes(obj.femModel, nodeIdsRight);
@@ -171,16 +170,17 @@ classdef BlochInverse1D < Solver
             rightNodeX = getX(rightNodes);
             rightNodeY = getY(rightNodes);
             
-%             disp('left Nodes: [id,x,y]')
-%             X=[nodeIdsLeft.' leftNodeX.' leftNodeY.'];
-%             disp(X)
-%             
-%             disp('right Nodes: [id,x,y]')
-%             Y=[nodeIdsRight.' rightNodeX.' rightNodeY.'];
-%             disp(Y)
+            
+            disp('left Nodes: [id,x,y]')
+            X=[nodeIdsLeft.' leftNodeX.' leftNodeY.'];
+            disp(X)
+            
+            disp('right Nodes: [id,x,y]')
+            Y=[nodeIdsRight.' rightNodeX.' rightNodeY.'];
+            disp(Y)
             
             
-            [leftDofs,rightDofs] = getLeftRightDofIds(obj)
+            [leftDofs,rightDofs] = getLeftRightDofIds(obj);
 %             [leftDofs2,rightDofs2] = obj.getLeftRightDofIds
             
             
