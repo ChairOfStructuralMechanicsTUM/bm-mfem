@@ -24,11 +24,16 @@ ele02 = HexahedronElement3d8n(2,[node05 node06 node07 node08 node09 node10 node1
 
 elementArray = [ele01 ele02];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',32);
-elementArray.setPropertyValue('POISSON_RATIO',1/3);
-elementArray.setPropertyValue('NUMBER_GAUSS_POINT',3);
-elementArray.setPropertyValue('DENSITY',7860);
+% Generating sturcture that consits out of different materials
+ele01.setPropertyValue('YOUNGS_MODULUS',32);
+ele01.setPropertyValue('POISSON_RATIO',1/3);
+ele01.setPropertyValue('NUMBER_GAUSS_POINT',3);
+ele01.setPropertyValue('DENSITY',7860);
 
+ele02.setPropertyValue('YOUNGS_MODULUS',32000);
+ele02.setPropertyValue('POISSON_RATIO',1/3);
+ele02.setPropertyValue('NUMBER_GAUSS_POINT',3);
+ele02.setPropertyValue('DENSITY',7860);
 
 node01.fixDof('DISPLACEMENT_X');
 node01.fixDof('DISPLACEMENT_Y');

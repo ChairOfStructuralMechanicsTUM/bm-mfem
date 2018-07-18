@@ -200,6 +200,8 @@ classdef FemModel < handle
                     element = HexahedronElement3d8n(id, nodes);
                 case 'PorousElement3d8n'
                     element = PorousElement3d8n(id, nodes);
+                case 'MixedPorousElement3d8n'
+                    element = MixedPorousElement3d8n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
