@@ -8,10 +8,10 @@ node04 = Node(4,-1,1);
 
 nodeArray = [node01 node02 node03 node04];
 
-nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y','DISPLACEMENT_FLUID_X', 'DISPLACEMENT_FLUID_Y'});
+nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y','PRESSURE_FLUID'});
 
-ele01 = BiotElement2d4n(1,[node01 node02 node03 node04]);
-% ele02 = PorousElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
+ele01 = MixedFormulationElement2d4n(1,[node01 node02 node03 node04]);
+
 
 elementArray = ele01;
 
@@ -42,11 +42,8 @@ node04.fixDof('DISPLACEMENT_SOLID_X');
 node04.fixDof('DISPLACEMENT_SOLID_Y');
 
 
-node01.fixDof('DISPLACEMENT_FLUID_X');
-node01.fixDof('DISPLACEMENT_FLUID_Y');
-node04.fixDof('DISPLACEMENT_FLUID_X');
-node04.fixDof('DISPLACEMENT_FLUID_Y');
-
+node01.fixDof('PRESSURE_FLUID');
+node04.fixDof('PRESSURE_FLUID');
 
 addPointLoadPorous(node03,10000,[0 -1]);
 
@@ -54,8 +51,11 @@ addPointLoadPorous(node03,10000,[0 -1]);
 model = FemModel(nodeArray, elementArray);
 
 assembling = SimpleAssembler(model);
+
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
+
+
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 
