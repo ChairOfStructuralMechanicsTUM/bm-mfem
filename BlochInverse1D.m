@@ -72,10 +72,7 @@ classdef BlochInverse1D < Solver
             for i=1:length(nodeXcoords)
                 if nodeXcoords(i) == maxX
                     n = n+1;
-                    nodeIdsRight(n) = nodeIds(i);
-                    
-   
-%                     obj.rightNodes = nodeIds(i);
+                    nodeIdsRight(n) = nodeIds(i);                     
                 end
             end
 %          
@@ -109,9 +106,34 @@ classdef BlochInverse1D < Solver
                 end
             end
                                         
-        end
-            
+       end
+       
+       
+       function [miu,kx] = propConst(obj)
+           kx = linspace(1e-6,pi,15);    %15 ist viel zu wenig
+           miu = exp(i*kx);
+       end
+           
         
+       function R = transformationMatrix(obj,miu,index)
+           nodeIdsRight = obj.rightNodes;
+           nodeIdsLeft = obj.leftNodes; 
+           leftDofs = obj.leftDofs;
+           rightDofs = obj.rightDofs;
+           M = obj.massMatrix;
+           R = [eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs)); ...
+               zeros(length(M)-2*length(leftDofs),length(leftDofs)), eye(length(M)-2*length(leftDofs));...
+               miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs))];
+       end          
+     
+       function [Kred,Mred] = reducedStiffnesAndMass (K,M,obj)
+            [miu,kx] = propConst(obj);
+            
+            R = transformationMatrix(obj,miu,7);
+            
+            Kred = conj(R)'*K*R;
+            Mred = conj(R)'*M*R;
+       end
         
         function initialize(obj)
             if ~ obj.femModel.isInitialized()

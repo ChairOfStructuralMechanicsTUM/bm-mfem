@@ -50,6 +50,10 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 
 initialize(obj)
+% [miu,kx] = propConst(obj);
+% R = transformationMatrix(obj,miu);
+% R_dach=conj(R);
+% Kred = R_dach'*stiffnessMatrix*R;
 
 
 %solver = SimpleSolvingStrategy(model);
