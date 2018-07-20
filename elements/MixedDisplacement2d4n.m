@@ -1,4 +1,4 @@
-classdef BiotElement2d4n < QuadrilateralElement
+classdef MixedFormulationElement2d4n < QuadrilateralElement
         
     properties (Access = private)
 
@@ -8,16 +8,16 @@ classdef BiotElement2d4n < QuadrilateralElement
 
     
     methods
-         
+%%         
     % Constructor
-function biot2d4n = BiotElement2d4n(id,nodeArray)
+function mixed2d4n = MixedFormulationElement2d4n(id,nodeArray)
             
     requiredPropertyNames = cellstr(["OMEGA","NUMBER_GAUSS_POINT", "LAMBDA", ...
                 "MU","ETA_S","DENSITY_S","DENSITY_F","ETA_F","PRESSURE_0","HEAT_CAPACITY_RATIO",...
                  "PRANDL_NUMBER","POROSITY","TORTUOSITY","STATIC_FLOW_RESISTIVITY",...
                 "VISCOUS_CHARACT_LENGTH","THERMAL_CHARACT_LENGTH"]);
             
-    % define the arguments for the super class constructor call
+    % Define the arguments for the super class constructor call
     if nargin == 0
         super_args = {};
         elseif nargin == 2
@@ -27,24 +27,26 @@ function biot2d4n = BiotElement2d4n(id,nodeArray)
             super_args = {id, nodeArray, requiredPropertyNames};
     end
             
-    % call the super class contructor
-    biot2d4n@QuadrilateralElement(super_args{:});
-    biot2d4n.dofNames = cellstr(["DISPLACEMENT_SOLID_X", "DISPLACEMENT_SOLID_Y", ...
-               "DISPLACEMENT_FLUID_X", "DISPLACEMENT_FLUID_Y"]);
+    % Call the super class contructor
+    mixed2d4n@QuadrilateralElement(super_args{:});
+    mixed2d4n.dofNames = cellstr(["DISPLACEMENT_SOLID_X", "DISPLACEMENT_SOLID_Y", ...
+               "PRESSURE_FLUID"]);
 end
-    
-    
-    %Initialization
-function initialize(biot2d4n)
-    biot2d4n.lengthX = computeLength(biot2d4n.nodeArray(1).getCoords, ...
-    biot2d4n.nodeArray(2).getCoords);        
-    biot2d4n.lengthY = computeLength(biot2d4n.nodeArray(1).getCoords, ...
-    biot2d4n.nodeArray(4).getCoords);
+%%   
+
+
+    % Initialization
+function initialize(mixed2d4n)
+    mixed2d4n.lengthX = computeLength(mixed2d4n.nodeArray(1).getCoords, ...
+    mixed2d4n.nodeArray(2).getCoords);        
+    mixed2d4n.lengthY = computeLength(mixed2d4n.nodeArray(1).getCoords, ...
+    mixed2d4n.nodeArray(4).getCoords);
             
-    checkConvexity(biot2d4n);
+    checkConvexity(mixed2d4n);
 end
-        
-       
+%%    
+
+
 function responseDoF = getResponseDofArray(element, step)
             
     responseDoF = zeros(12,1);
@@ -58,15 +60,16 @@ function responseDoF = getResponseDofArray(element, step)
         end
         
     end
-end
-           
-        
+end          
+%%    
+
+
     % Shape Function and Derivatives     
-function [N_mat, N, B_b, J] = computeShapeFunction(biot2d4n,xi,eta)
+function [N_mat, N, B_b, J] = computeShapeFunction(mixed2d4n,xi,eta)
 
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             
-            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4 
                 -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
             
             N_mat = sparse(2,8);
@@ -76,46 +79,58 @@ function [N_mat, N, B_b, J] = computeShapeFunction(biot2d4n,xi,eta)
     % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
             for i=1:4
-                ele_coords(i,1) = biot2d4n.nodeArray(i).getX;
-                ele_coords(i,2) = biot2d4n.nodeArray(i).getY;
+                ele_coords(i,1) = mixed2d4n.nodeArray(i).getX;
+                ele_coords(i,2) = mixed2d4n.nodeArray(i).getY;
             end
             
              
     % Jacobian
             J = N_Diff_Par * ele_coords;
             
-    % Calculation of B-Matrix
-            B=J\N_Diff_Par;%/Jdet;
-            Bx=B(1,1:4);
-            By=B(2,1:4);
+    % Calculation of B-Matrix for Solid Phase
+            B = J\N_Diff_Par; 
+            Bx = B(1,1:4);
+            By = B(2,1:4);
+            %%%% [8x8] = [8x3]*[3x3]*[3x8]
+            B_s = [Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
+            0,By(1),0,By(2),0,By(3),0,By(4);
+            By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+    
+    %%%% Q:How to set up the other B-Matrices?
+            %%%% [8x4] = [8x3]*[3x3]*[3x4]
+            B_sf1 = zeros(8,3);
+            B_sf2 = zeros(3,4);
             
-    % Calculation of B-Matrix
-            %B_b = sparse(3,8);
-            B_b=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
-                0,By(1),0,By(2),0,By(3),0,By(4);
-                By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
-            
+            %%%% [4x8] = [4x3]*[3x3]*[3x8]
+            B_fs1 = zeros(4,3);
+            B_fs2 = zeros(3,8);
 
+            %%%% [4x4] = [4x3]*[3x3]*[3x4]
+            B_f = zeros(3,4);
+            
+            
 end
+%%
 
-function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(biot2d4n)
+
+function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(mixed2d4n)
      
 
-    ETA_S = biot2d4n.getPropertyValue('ETA_S');
-    LAMBDA = biot2d4n.getPropertyValue('LAMBDA');
-    MU = biot2d4n.getPropertyValue('MU');
-    OMEGA = biot2d4n.getPropertyValue('OMEGA');
-    POROSITY = biot2d4n.getPropertyValue('POROSITY');
+    ETA_S = mixed2d4n.getPropertyValue('ETA_S');
+    LAMBDA = mixed2d4n.getPropertyValue('LAMBDA');
+    MU = mixed2d4n.getPropertyValue('MU');
+    OMEGA = mixed2d4n.getPropertyValue('OMEGA');
+    POROSITY = mixed2d4n.getPropertyValue('POROSITY');
             
         
-    HEAT_CAPACITY_RATIO= biot2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
-    PRESSURE_0 = biot2d4n.getPropertyValue('PRESSURE_0');
-    ETA_F = biot2d4n.getPropertyValue('ETA_F');
-    PRANDL_NUMBER = biot2d4n.getPropertyValue('PRANDL_NUMBER');
-    THERMAL_CHARACT_LENGTH = biot2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
-    DENSITY_F = biot2d4n.getPropertyValue('DENSITY_F');
+    HEAT_CAPACITY_RATIO= mixed2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
+    PRESSURE_0 = mixed2d4n.getPropertyValue('PRESSURE_0');
+    ETA_F = mixed2d4n.getPropertyValue('ETA_F');
+    PRANDL_NUMBER = mixed2d4n.getPropertyValue('PRANDL_NUMBER');
+    THERMAL_CHARACT_LENGTH = mixed2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
+    DENSITY_F = mixed2d4n.getPropertyValue('DENSITY_F');
            
-    p = biot2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
          
     % Calculate Bulk-Modulus K_f:
     K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
@@ -134,10 +149,12 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(biot2d4n)
             
             
     % Elasticity Tensors:
-    D_s = [A+2*MU,A,0;A,A+2*MU,0;0,0,MU];
-    D_sf = [Q,Q,0;Q,Q,0;0,0,0];
-    D_f = [R,R,0;R,R,0;0,0,0];
-                  
+    D_s = [LameCoeff+2*ShearModulus,LameCoeff,0;LameCoeff,LameCoeff+2*ShearModulus,0;0,0,ShearModulus];
+    D_sf = -POROSITY*Q/R*eye(3);
+    D_f = -POROSITY*eye(3);
+    
+    %%%% No coupling-term in fluid stress-strain relation
+    D_fs = zeros(3);
             
  
     % Get gauss integration factors:
@@ -146,53 +163,59 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(biot2d4n)
             
     % Generate empty partial stiffness-matrices:
     stiffnessMatrix_s=sparse(8,8);
-    stiffnessMatrix_f=sparse(8,8);
-    stiffnessMatrix_sf = sparse(8,8);
-          
+    stiffnessMatrix_f=sparse(4,4);
+    stiffnessMatrix_sf = sparse(8,4);
+    stiffnessMatrix_fs = sparse(4,8);
             
     % Execute full Gauss-Integration to obtain partial
     % stiffness-matrices for solid, fluid and coupling phases:
     for xi = 1 : p
         for eta = 1 : p
-        [~, ~,B_b, J] = computeShapeFunction(biot2d4n,g(xi),g(eta));
+        [~, ~, B_s, B_f, B_sf1, B_sf2, B_fs1, B_fs2, J] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
 
         stiffnessMatrix_s = stiffnessMatrix_s +...
-        B_b' * D_s * B_b * det(J) * w(xi) * w(eta);
+        B_s' * D_s * B_s * det(J) * w(xi) * w(eta);
            
         stiffnessMatrix_f = stiffnessMatrix_f +             ...
-        B_b' * D_f * B_b * det(J) * w(xi) * w(eta);
-                        
+        B_f' * D_f * B_f * det(J) * w(xi) * w(eta);
+              
+     %%%% [8x4] = [8x3]*[3x3]*[3x4]
         stiffnessMatrix_sf = stiffnessMatrix_sf +             ...
-        B_b' * D_sf * B_b * det(J) * w(xi) * w(eta); 
+        B_sf1 * D_sf * B_sf2 * det(J) * w(xi) * w(eta); 
                         
+    %%%% [4x8] = [4x3]*[3x3]*[3x8] = zeros(4,8)
+        stiffnessMatrix_fs = stiffnessMatrix_fs +             ...
+        B_fs1 * D_fs * B_fs2 * det(J) * w(xi) * w(eta); 
+    
         end
     end
             
             
             
     % Generate empty total element stiffness matrix
-    totalElementStiffnessMatrix = zeros(16,16);
+    totalElementStiffnessMatrix = zeros(12,12);
             
     % Assemble total element stiffness matrix:
     totalElementStiffnessMatrix = [stiffnessMatrix_s, stiffnessMatrix_sf;...
-    stiffnessMatrix_sf,stiffnessMatrix_f]
+    stiffnessMatrix_fs,stiffnessMatrix_f];
        
      
     
 end    
+%%
 
 
-function [totalElementMassMatrix] = computeLocalMassMatrix(biot2d4n)
+function [totalElementMassMatrix] = computeLocalMassMatrix(mixed2d4n)
 
-    STATIC_FLOW_RESISTIVITY = biot2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
-    POROSITY = biot2d4n.getPropertyValue('POROSITY');
-    OMEGA = biot2d4n.getPropertyValue('OMEGA');
-    TORTUOSITY = biot2d4n.getPropertyValue('TORTUOSITY');
-    ETA_F = biot2d4n.getPropertyValue('ETA_F');
-    DENSITY_F = biot2d4n.getPropertyValue('DENSITY_F');
-    DENSITY_S = biot2d4n.getPropertyValue('DENSITY_S');
-    VISCOUS_CHARACT_LENGTH = biot2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
-    p = biot2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+    STATIC_FLOW_RESISTIVITY = mixed2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
+    POROSITY = mixed2d4n.getPropertyValue('POROSITY');
+    OMEGA = mixed2d4n.getPropertyValue('OMEGA');
+    TORTUOSITY = mixed2d4n.getPropertyValue('TORTUOSITY');
+    ETA_F = mixed2d4n.getPropertyValue('ETA_F');
+    DENSITY_F = mixed2d4n.getPropertyValue('DENSITY_F');
+    DENSITY_S = mixed2d4n.getPropertyValue('DENSITY_S');
+    VISCOUS_CHARACT_LENGTH = mixed2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
+    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             
     % G_J(OMEGA) = flow resistivity of air particles in the pores:
     AirFlowResistivity = (1+(4*1i*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
@@ -213,9 +236,13 @@ function [totalElementMassMatrix] = computeLocalMassMatrix(biot2d4n)
     Rho_s = (1-POROSITY)*DENSITY_S-Rho_sf;
     Rho_f = POROSITY*DENSITY_F-Rho_sf;
             
-    % Generate empty mass-matrices:
-    M=zeros(8,8);
-    totalElementMassMatrix = zeros(16,16);
+    %%%% Generate empty mass-matrices:
+    M_s = zeros(8,8);
+    M_sf = zeros(8,4);
+    M_fs = zeros(4,8);
+    M_f = zeros(4,4);
+    
+    totalElementMassMatrix = zeros(12,12);
 
     % Calculate geometric-only mass matrix:
     [w,g]=returnGaussPoint(p);
@@ -224,7 +251,7 @@ function [totalElementMassMatrix] = computeLocalMassMatrix(biot2d4n)
     xi=g(n);
         for m=1:p
         eta=g(m);            
-        [N_mat, ~, ~, J] = computeShapeFunction(biot2d4n,xi,eta);        
+        [N_mat, ~, ~, J] = computeShapeFunction(mixed2d4n,xi,eta);        
         M = M + (w(n)*w(m)*transpose(N_mat)*N_mat*det(J));
                     
         end
@@ -233,24 +260,32 @@ function [totalElementMassMatrix] = computeLocalMassMatrix(biot2d4n)
             
     % Calculate solid-, fluid- and coupling-mass matrices:
     M_s = Rho_s*M;
+    
+    
+    %%%%
     M_f = Rho_f*M;
-    M_sf = Rho_sf*M;
-            
+    Msf = Rho_sf*M;
+    Mfs = Rho_sf*M;
+    
     % Assemble total element mass matrix:
-    totalElementMassMatrix = [M_s,M_sf;M_sf,M_f]
+    totalElementMassMatrix = [M_s,M_sf;M_fs,M_f];
          
              
 end
-        
+%%  
+
+
     % Define possible DOF in the node-array:
 function dofs = getDofList(element)
             dofs([1 3 5 7])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
             dofs([2 4 6 8])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');
             dofs([9 11 13 15])  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
             dofs([10 12 14 16]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
-end
-        
-        
+
+end     
+%%        
+
+
 function vals = getValuesVector(element, step)
             vals = zeros(1,16);
             
@@ -258,9 +293,11 @@ function vals = getValuesVector(element, step)
             vals([2 4 6 8])     = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Y',step);
             vals([9 11 13 15])  = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
             vals([10 12 14 16]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
-end
-             
-             
+
+end           
+%%     
+
+
 function vals = getFirstDerivativesVector(element, step)
             vals = zeros(1,16);
             
@@ -268,9 +305,12 @@ function vals = getFirstDerivativesVector(element, step)
             [~, vals([2 4 6 8]), ~]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
             [~, vals([9 11 13 15]), ~]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
             [~, vals([10 12 14 16]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+
             
 end
-        
+%%    
+
+
 function vals = getSecondDerivativesVector(element, step)
             vals = zeros(1,16);
             
@@ -280,16 +320,16 @@ function vals = getSecondDerivativesVector(element, step)
             [~, ~, vals([10 12 14 16])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
           
 end
-       
-function [totalElementDampingMatrix] = computeLocalDampingMatrix(biot2d4n)
+%% 
+
+
+function [totalElementDampingMatrix] = computeLocalDampingMatrix(mixed2d4n)
             totalElementDampingMatrix = zeros(16,16);
 end
-        
- 
-        %function update(biot2d4n)
-        %end
-        
-function F = computeLocalForceVector(biot2d4n)
+%% 
+
+
+function F = computeLocalForceVector(mixed2d4n)
             F = zeros(1,16);
 end
         
