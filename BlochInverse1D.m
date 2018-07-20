@@ -26,14 +26,15 @@ classdef BlochInverse1D < Solver
 %             obj.leftNodes = obj.findLeftNodes();
 %             
 %             obj.rightNodes = obj.findRightNodes();
-        end %blochInverse1D
+        end 
         
         function solve(obj, ~)
             if ~ obj.isInitialized
                 obj.initialize();
-            end
-            
+            end            
             %rest von solve fehlt (mit Blochtheorem)
+            
+            
         end
        
         
@@ -49,9 +50,9 @@ classdef BlochInverse1D < Solver
             for i=1:length(nodeXcoords)
                 if nodeXcoords(i) == minX
                     n = n+1;
-                    nodeIdsLeft(n) = nodeIds(i);        %Iterative Vergrößerung schlimm? 
+                    nodeIdsLeft(n) = nodeIds(i);        
                     
-%                     obj.leftNodes(n) = nodeIds(i);
+%                    
                     
                 end
             end
@@ -82,10 +83,10 @@ classdef BlochInverse1D < Solver
        end
              
             
-       function [leftDofs,rightDofs] = getLeftRightDofIds(obj)
+       function [leftDofs,rightDofs] = getLeftRightDofIds(obj)  %right and left nodes are requiered
             nodeArray = obj.femModel.getAllNodes;
-            nodeIdsRight = findRightNodes(obj);
-            nodeIdsLeft = findLeftNodes(obj);
+            nodeIdsRight = obj.rightNodes;
+            nodeIdsLeft = obj.leftNodes;      
 
             dofArray1 = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false)';  %dof Array1=[(2Spaltex1Zeile);(2x1);(2x1)...],  2=x und y FG
             %a=dofArray1{2,1}(1,2) works here        
@@ -93,50 +94,21 @@ classdef BlochInverse1D < Solver
 %             femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
             for ii = 1:length(dofArray)
                 dofArray(ii).setId(ii);
-            end 
-            
-            if length(dofArray1{1,1}) == 2
-                disp('2 degrees of freedom')
-                leftDofs = zeros(1,length(nodeIdsLeft)*2);
-                rightDofs = zeros(1,length(nodeIdsRight)*2);
-                x=0;
-                for i=1:(length(nodeIdsLeft))
-                    for j=1:2
-                        x=x+1;
-                        leftDofs(x) = getId(dofArray(nodeIdsLeft(i)*2-2+j));
-                        rightDofs(x) = getId(dofArray(nodeIdsRight(i)*2-2+j));
-                    end 
+            end           
+
+            n = length(dofArray1{1,1});
+            fprintf('%s degrees of freedom',num2str(n))
+            leftDofs = zeros(1,length(nodeIdsLeft)*n);
+            rightDofs = zeros(1,length(nodeIdsRight)*n);
+            x=0;
+            for i=1:(length(nodeIdsLeft))
+                for j=1:n
+                    x=x+1;
+                    leftDofs(x) = getId(dofArray(nodeIdsLeft(i)*n-n+j));
+                    rightDofs(x) = getId(dofArray(nodeIdsRight(i)*n-n+j));
                 end
-            elseif length(dofArray1{1,1}) == 3
-                disp('3 degrees of freedom')
-                leftDofs = zeros(1,length(nodeIdsLeft)*3);
-                rightDofs = zeros(1,length(nodeIdsRight)*3);
-                x=0;
-                for i=1:(length(nodeIdsLeft))
-                    for j=1:3
-                        x=x+1;
-                        leftDofs(x) = getId(dofArray(nodeIdsLeft(i)*3-3+j));
-                        rightDofs(x) = getId(dofArray(nodeIdsRight(i)*3-3+j));
-                    end
-                    
-                end
-%             else 
-%                 n = length(dofArray1{1,1});
-%                 fprintf('%s degrees of freedom',n)
-%                 leftDofs = zeros(1,length(nodeIdsLeft)*n);
-%                 rightDofs = zeros(1,length(nodeIdsRight)*n);
-%                 x=0;
-%                 for i=1:(length(nodeIdsLeft))
-%                     for j=1:n
-%                         x=x+1;
-%                         leftDofs(x) = getId(dofArray(nodeIdsLeft(i)*n-n+j));
-%                         rightDofs(x) = getId(dofArray(nodeIdsRight(i)*n-n+j));
-%                     end
-%                     
-%                 end
-                
-                
             end
+                                        
         end
             
         
@@ -180,11 +152,11 @@ classdef BlochInverse1D < Solver
             disp(Y)
             
             
-            [leftDofs,rightDofs] = getLeftRightDofIds(obj);
+            [leftDofs,rightDofs] = getLeftRightDofIds(obj)
 %             [leftDofs2,rightDofs2] = obj.getLeftRightDofIds
-            
-            
-            
+                        
+            obj.leftDofs = leftDofs;
+            obj.rightDofs = rightDofs;
             
             
             

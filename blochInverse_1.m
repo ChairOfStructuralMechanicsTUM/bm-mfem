@@ -15,13 +15,10 @@ nodeArray = [node01 node02 node03 node04 node05 ...
 
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 
-
-
 ele01 = QuadrilateralElement2d4n(1,[node01 node02 node05 node04]);
 ele02 = QuadrilateralElement2d4n(2,[node02 node03 node06 node05]);
 ele03 = QuadrilateralElement2d4n(3,[node04 node05 node08 node07]);
 ele04 = QuadrilateralElement2d4n(4,[node05 node06 node09 node08]);
-
 
 elementArray = [ele01 ele02 ele03 ele04];
 
@@ -41,7 +38,10 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 
-initialize(obj);
+initialize(obj)
+
+% x = obj.solve();
+
 
 
 
