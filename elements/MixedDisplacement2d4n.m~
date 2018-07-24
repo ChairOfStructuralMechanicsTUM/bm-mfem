@@ -1,4 +1,4 @@
-classdef MixedDisplacementElement2d4n < QuadrilateralElement
+classdef MixedFormulationElement2d4n < QuadrilateralElement
         
     properties (Access = private)
 
