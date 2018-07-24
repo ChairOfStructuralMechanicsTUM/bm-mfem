@@ -10,7 +10,7 @@ nodeArray = [node01 node02 node03 node04];
 
 nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y','PRESSURE_FLUID'});
 
-ele01 = MixedFormulationElement2d4n(1,[node01 node02 node03 node04]);
+ele01 = MixedDisplacementElement2d4n(1,[node01 node02 node03 node04]);
 
 
 elementArray = ele01;
