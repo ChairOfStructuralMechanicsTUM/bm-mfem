@@ -53,9 +53,6 @@ model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler(model);
 
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-            
-
-
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 

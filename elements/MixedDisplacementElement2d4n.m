@@ -65,16 +65,18 @@ end
 
 
     % Shape Function and Derivatives     
-function [N_mat, N, B_s, B, J] = computeShapeFunction(mixed2d4n,xi,eta)
+    
 
-            N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
+function [N, Nf, B_b, B, J_det] = computeShapeFunction(mixed2d4n,xi,eta)
+
+            Nf = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             
-            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4 
-                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            dN_xi  = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4]; 
+            dN_eta = [-(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
             
-            N_mat = sparse(2,8);
-            N_mat(1,1:2:end) = N(:);
-            N_mat(2,2:2:end) = N(:);
+            N = sparse(2,8);
+            N(1,1:2:end) = Nf(:);
+            N(2,2:2:end) = Nf(:);
             
     % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
@@ -85,29 +87,22 @@ function [N_mat, N, B_s, B, J] = computeShapeFunction(mixed2d4n,xi,eta)
             
              
     % Jacobian
-            J = N_Diff_Par * ele_coords;
+            J = [dN_xi * ele_coords(:,1); ...
+             dN_eta * ele_coords(:,2)];
+            J_det = det(J);
             
     % Calculation of B-Matrix for Solid Phase
-            B = J\N_Diff_Par; 
-            Bx = B(1,1:4);
-            By = B(2,1:4);
-%             %%%% [8x8] = [8x3]*[3x3]*[3x8]
-             B_s = [Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
-             0,By(1),0,By(2),0,By(3),0,By(4);
-             By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
 %     
-%     %%%% Q:How to set up the other B-Matrices?
-%             %%%% [8x4] = [8x3]*[3x3]*[3x4]
-%             B_sf1 = zeros(8,3);
-%             B_sf2 = zeros(3,4);
-%             
-%             %%%% [4x8] = [4x3]*[3x3]*[3x8]
-%             B_fs1 = zeros(4,3);
-%             B_fs2 = zeros(3,8);
-% 
-%             %%%% [4x4] = [4x3]*[3x3]*[3x4]
-%             B_f = zeros(3,4);
-%             
+            Bx = J(1,:)\dN_xi;
+            By = J(2,:)\dN_eta;
+            B = [Bx;By];
+  
+            B_b = [Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
+            0,By(1),0,By(2),0,By(3),0,By(4);
+            By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+    
+
+            
             
 end
 %%
@@ -118,7 +113,7 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(mixed2d4n)
 
     ETA_S = mixed2d4n.getPropertyValue('ETA_S');
     LAMBDA = mixed2d4n.getPropertyValue('LAMBDA');
-    MU = mixed2d4n.getPropertyValue('MU');
+    MUE = mixed2d4n.getPropertyValue('MU');
     OMEGA = mixed2d4n.getPropertyValue('OMEGA');
     POROSITY = mixed2d4n.getPropertyValue('POROSITY');
             
@@ -130,147 +125,147 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(mixed2d4n)
     THERMAL_CHARACT_LENGTH = mixed2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
     DENSITY_F = mixed2d4n.getPropertyValue('DENSITY_F');
            
-    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-         
+    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');   
+ 
+    STATIC_FLOW_RESISTIVITY = mixed2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
+    TORTUOSITY = mixed2d4n.getPropertyValue('TORTUOSITY');
+    VISCOUS_CHARACT_LENGTH = mixed2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
+     % Determine relevant densities
+            
+    VISCOUS_DRAG = STATIC_FLOW_RESISTIVITY * POROSITY^2 * (1 + ...
+    4 * 1i * TORTUOSITY^2 * ETA_F * DENSITY_F / (STATIC_FLOW_RESISTIVITY^2 * VISCOUS_CHARACT_LENGTH^2 * POROSITY^2));
+
+    % Inertial coupling term, related to the tortuosity, increases the fluid density  to model the motion
+    % of fluid particles vibrating around the structural frame:
+    DENSITY_A = POROSITY * DENSITY_F * (TORTUOSITY -1);
+            
+    % Equivalent densities for expressing the elastodynamic coupled equations in condensed form:
+    EQ_DENSITY_SF = (-1) * DENSITY_A + 1i * VISCOUS_DRAG / OMEGA;
+    EQ_DENSITY_F = POROSITY * DENSITY_F - EQ_DENSITY_SF;
+%     EQ_DENSITY_S = (1 - POROSITY) * DENSITY_S - EQ_DENSITY_SF;
+%     EQ_DENSITY_TOTAL = EQ_DENSITY_S - EQ_DENSITY_SF^2/EQ_DENSITY_F; 
+                       
+    % Determine Coefficients for EMat
+    % Hysteretic proportional damping model:
+    LAME_COEFF = (1+1i*ETA_S)*LAMBDA;
+    SHEAR_MODULUS = (1+1i*ETA_S)*MUE;
+                                 
     % Calculate Bulk-Modulus K_f:
     K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
-    (1+(8*ETA_F)/(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
-    (1+(i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
-        
-    % Hysteretic proportional damping model:
-    LameCoeff = (1+i*ETA_S)*LAMBDA;
-    ShearModulus = (1+i*ETA_S)*MU;
+            (1+(8*ETA_F)/(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
+            (1+(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
+      
+    R = POROSITY * K_f;
+    Q = (1 - POROSITY) * K_f;
+    GAMMA = POROSITY * ((EQ_DENSITY_SF /EQ_DENSITY_F) - (Q/R)) ;
             
+    % Stress-strain relation for solid phase
+    D = [LAME_COEFF + 2 * SHEAR_MODULUS,LAME_COEFF,0,; ...
+        LAME_COEFF, LAME_COEFF + 2 * SHEAR_MODULUS,0,; ...
+        0,0,SHEAR_MODULUS];
             
-    % Biot's Elasticity Coefficients:
-    R = POROSITY*K_f;
-    Q = (1-POROSITY)*K_f;
-    A = LameCoeff+(1-POROSITY)^2/POROSITY*K_f;
+    K_Matrix = zeros(12,12);
+    M_Matrix = zeros(12,12);
+    C_Matrix = zeros(12,4);
+    H_Matrix = zeros(4,12);
+    Q_Matrix = zeros(4,4);
             
-            
-    % Elasticity Tensors:
-    D_s = [LameCoeff+2*ShearModulus,LameCoeff,0;LameCoeff,LameCoeff+2*ShearModulus,0;0,0,ShearModulus];
-    D_sf = -POROSITY*Q/R*eye(3);
-    D_f = -POROSITY*eye(3);
-    
-    %%%% No coupling-term in fluid stress-strain relation
-    D_fs = zeros(3);
-            
- 
-    % Get gauss integration factors:
     [w,g]=returnGaussPoint(p);
-           
             
-    % Generate empty partial stiffness-matrices:
-    stiffnessMatrix_s=sparse(8,8);
-    stiffnessMatrix_f=sparse(4,4);
-    stiffnessMatrix_sf = sparse(8,4);
-    stiffnessMatrix_fs = sparse(4,8);
-            
-    % Execute full Gauss-Integration to obtain partial
-    % stiffness-matrices for solid, fluid and coupling phases:
-    for xi = 1 : p
-        for eta = 1 : p
-        [N_mat, N, B_s, B, J] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
-
-        stiffnessMatrix_s = stiffnessMatrix_s +...
-        B_s' * D_s * B_s * det(J) * w(xi) * w(eta);
-           
-        stiffnessMatrix_f = stiffnessMatrix_f +             ...
-        B'*B - N'*N * det(J) * w(xi) * w(eta);
-
-         stiffnessMatrix_sf = stiffnessMatrix_sf +             ...
-         B_sf1 * D_sf * B_sf2 * det(J) * w(xi) * w(eta); 
-%                         
-%     %%%% [4x8] = [4x3]*[3x3]*[3x8] = zeros(4,8)
-%         stiffnessMatrix_fs = stiffnessMatrix_fs +             ...
-%         B_fs1 * D_fs * B_fs2 * det(J) * w(xi) * w(eta); 
     
+     for i=1:p
+        xi=g(i);
+        for j=1:p
+            eta=g(j);
+            % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
+            [N, Nf, B_b, B, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
+           
+            % K = B_b'*B_b = 8x3 * 3x8 = 8x8
+            K_Matrix = K_Matrix + (w(i) * w(j) * Jdet * B_b' * D * B_b);
+            % C = N'*B = 8x2 * 2x4 = 8x4
+            C_Matrix = C_Matrix + (w(i) * w(j) * Jdet * GAMMA * N' * B);
+            % H = B'*B = 4x2 * 2x4 = 4x4
+            H_Matrix = H_Matrix + (w(i) * w(j) * (POROSITY^2/EQ_DENSITY_F) * Jdet * B' * B);
+            
+%           % M = N'*N = 8x2 * 2x8 = 8x8
+%           M_Matrix = M_Matrix + (w(i) * w(j) * EQ_DENSITY_TOTAL * Jdet * N' * N);            
+%           % Q = Nf'*Nf = 4x1 * 1x4 = 4x4
+%           Q_Matrix = Q_Matrix + (w(i) * w(j) * (POROSITY^2/R) * Jdet * Nf' * (Nf));
+                  
         end
-    end
+     end
             
-            
-            
-    % Generate empty total element stiffness matrix
-    totalElementStiffnessMatrix = zeros(12,12);
-            
-    % Assemble total element stiffness matrix:
-    totalElementStiffnessMatrix = [stiffnessMatrix_s, stiffnessMatrix_sf;...
-    stiffnessMatrix_fs,stiffnessMatrix_f];
-       
-     
+%    totalElementStiffnessMatrix = [K_Matrix - OMEGA^2 * M_Matrix, - C_Matrix; - OMEGA^2 * C_Matrix'; H_Matrix - OMEGA^2 * Q_Matrix];
+     empty= zeros(4,8);
+     totalElementStiffnessMatrix = [K_Matrix, - C_Matrix; empty ; H_Matrix];
+
+
+  
     
 end    
 %%
 
-
 function [totalElementMassMatrix] = computeLocalMassMatrix(mixed2d4n)
 
-    STATIC_FLOW_RESISTIVITY = mixed2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
-    POROSITY = mixed2d4n.getPropertyValue('POROSITY');
+
+%     ETA_S = mixed2d4n.getPropertyValue('ETA_S');
+%     LAMBDA = mixed2d4n.getPropertyValue('LAMBDA');
+%     MUE = mixed2d4n.getPropertyValue('MU');
     OMEGA = mixed2d4n.getPropertyValue('OMEGA');
-    TORTUOSITY = mixed2d4n.getPropertyValue('TORTUOSITY');
+    POROSITY = mixed2d4n.getPropertyValue('POROSITY');
+            
+%         
+%     HEAT_CAPACITY_RATIO= mixed2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
+%     PRESSURE_0 = mixed2d4n.getPropertyValue('PRESSURE_0');
     ETA_F = mixed2d4n.getPropertyValue('ETA_F');
+%     PRANDL_NUMBER = mixed2d4n.getPropertyValue('PRANDL_NUMBER');
+%     THERMAL_CHARACT_LENGTH = mixed2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
     DENSITY_F = mixed2d4n.getPropertyValue('DENSITY_F');
-    DENSITY_S = mixed2d4n.getPropertyValue('DENSITY_S');
+           
+    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');   
+ 
+    STATIC_FLOW_RESISTIVITY = mixed2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
+    TORTUOSITY = mixed2d4n.getPropertyValue('TORTUOSITY');
     VISCOUS_CHARACT_LENGTH = mixed2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
-    p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            
-    % G_J(OMEGA) = flow resistivity of air particles in the pores:
-    AirFlowResistivity = (1+(4*1i*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
-    (STATIC_FLOW_RESISTIVITY^2*VISCOUS_CHARACT_LENGTH^2*POROSITY^2))^(0.5);
-            
-            
-    % Viscous Drag accounts for viscous body forces interacting between solid and fluid phases, 
-    % proportional to the relative velocity:
-    ViscousDrag = STATIC_FLOW_RESISTIVITY*POROSITY^2*AirFlowResistivity;
-            
+    
+    % Determine relevant densities        
+    VISCOUS_DRAG = STATIC_FLOW_RESISTIVITY * POROSITY^2 * (1 + ...
+    4 * 1i * TORTUOSITY^2 * ETA_F * DENSITY_F / (STATIC_FLOW_RESISTIVITY^2 * VISCOUS_CHARACT_LENGTH^2 * POROSITY^2));
 
     % Inertial coupling term, related to the tortuosity, increases the fluid density  to model the motion
     % of fluid particles vibrating around the structural frame:
-    Rho_a = POROSITY*DENSITY_F*(TORTUOSITY-1);
+    DENSITY_A = POROSITY * DENSITY_F * (TORTUOSITY -1);
             
     % Equivalent densities for expressing the elastodynamic coupled equations in condensed form:
-    Rho_sf = -Rho_a+1i*(ViscousDrag)/(OMEGA);
-    Rho_s = (1-POROSITY)*DENSITY_S-Rho_sf;
-    Rho_f = POROSITY*DENSITY_F-Rho_sf;
+    EQ_DENSITY_SF = (-1) * DENSITY_A + 1i * VISCOUS_DRAG / OMEGA;
+    EQ_DENSITY_F = POROSITY * DENSITY_F - EQ_DENSITY_SF;
+    EQ_DENSITY_S = (1 - POROSITY) * DENSITY_S - EQ_DENSITY_SF;
+    EQ_DENSITY_TOTAL = EQ_DENSITY_S - EQ_DENSITY_SF^2/EQ_DENSITY_F; 
+   
+    M_Matrix = zeros(12,12);
+    Q_Matrix = zeros(4,4);
             
-    %%%% Generate empty mass-matrices:
-    M_s = zeros(8,8);
-    M_sf = zeros(8,4);
-    M_fs = zeros(4,8);
-    M_f = zeros(4,4);
-    
-    totalElementMassMatrix = zeros(12,12);
-
-    % Calculate geometric-only mass matrix:
     [w,g]=returnGaussPoint(p);
             
-    for n=1:p
-    xi=g(n);
-        for m=1:p
-        eta=g(m);            
-        [N_mat, ~, ~, J] = computeShapeFunction(mixed2d4n,xi,eta);        
-        M = M + (w(n)*w(m)*transpose(N_mat)*N_mat*det(J));
-                    
+    
+     for i=1:p
+        xi=g(i);
+        for j=1:p
+            eta=g(j);
+            % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
+            [N, Nf, ~, ~, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
+            % M = N'*N = 8x2 * 2x8 = 8x8
+            M_Matrix = M_Matrix + (w(i) * w(j) * EQ_DENSITY_TOTAL * Jdet * N' * N);            
+            % Q = Nf'*Nf = 4x1 * 1x4 = 4x4
+            Q_Matrix = Q_Matrix + (w(i) * w(j) * (POROSITY^2/R) * Jdet * Nf' * (Nf));
+                  
         end
-    end
+     end
             
-            
-    % Calculate solid-, fluid- and coupling-mass matrices:
-    M_s = Rho_s*M;
-    
-    
-    %%%%
-    M_f = Rho_f*M;
-    Msf = Rho_sf*M;
-    Mfs = Rho_sf*M;
-    
-    % Assemble total element mass matrix:
-    totalElementMassMatrix = [M_s,M_sf;M_fs,M_f];
-         
+     empty = zeros(4,8);
+     totalElementMassMatrix = [- OMEGA^2 * M_Matrix, empty'; - OMEGA^2 * C_Matrix',  - OMEGA^2 * Q_Matrix];     
              
-end
+ end
 %%  
 
 
@@ -278,32 +273,35 @@ end
 function dofs = getDofList(element)
             dofs([1 3 5 7])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X');
             dofs([2 4 6 8])     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y');
-            dofs([9 11 13 15])  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
-            dofs([10 12 14 16]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
+            dofs([9 10 11 12])  = element.nodeArray.getDof('PRESSURE_FLUID');            
+%             dofs([9 11 13 15])  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X');
+%             dofs([10 12 14 16]) = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y');
 
 end     
 %%        
 
 
 function vals = getValuesVector(element, step)
-            vals = zeros(1,16);
+            vals = zeros(1,12);
             
             vals([1 3 5 7])     = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_X',step);
             vals([2 4 6 8])     = element.nodeArray.getDofValue('DISPLACEMENT_SOLID_Y',step);
-            vals([9 11 13 15])  = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
-            vals([10 12 14 16]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
+            vals([9 10 11 12])     = element.nodeArray.getDofValue('PRESSURE _FLUID',step);            
+%             vals([9 11 13 15])  = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_X',step);
+%             vals([10 12 14 16]) = element.nodeArray.getDofValue('DISPLACEMENT_FLUID_Y',step);
 
 end           
 %%     
 
 
 function vals = getFirstDerivativesVector(element, step)
-            vals = zeros(1,16);
+            vals = zeros(1,12);
             
             [~, vals([1 3 5 7]), ~]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
             [~, vals([2 4 6 8]), ~]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
-            [~, vals([9 11 13 15]), ~]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
-            [~, vals([10 12 14 16]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+            [~, vals([9 10 11 12]), ~]     = element.nodeArray.getDof('PRESSURE_FLUID').getAllValues(step);
+%             [~, vals([9 11 13 15]), ~]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+%             [~, vals([10 12 14 16]), ~] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
 
             
 end
@@ -311,25 +309,26 @@ end
 
 
 function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,16);
+            vals = zeros(1,12);
             
             [~, ~, vals([1 3 5 7])]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_X').getAllValues(step);
             [~, ~, vals([2 4 6 8])]     = element.nodeArray.getDof('DISPLACEMENT_SOLID_Y').getAllValues(step);
-            [~, ~, vals([9 11 13 15])]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
-            [~, ~, vals([10 12 14 16])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
+            [~, ~, vals([9 10 11 12])]     = element.nodeArray.getDof('PRESSURE_FLUID').getAllValues(step);            
+%             [~, ~, vals([9 11 13 15])]  = element.nodeArray.getDof('DISPLACEMENT_FLUID_X').getAllValues(step);
+%             [~, ~, vals([10 12 14 16])] = element.nodeArray.getDof('DISPLACEMENT_FLUID_Y').getAllValues(step);
           
 end
 %% 
 
 
 function [totalElementDampingMatrix] = computeLocalDampingMatrix(mixed2d4n)
-            totalElementDampingMatrix = zeros(16,16);
+            totalElementDampingMatrix = zeros(12,12);
 end
 %% 
 
 
 function F = computeLocalForceVector(mixed2d4n)
-            F = zeros(1,16);
+            F = zeros(1,12);
 end
         
     end
