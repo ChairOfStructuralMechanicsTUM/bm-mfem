@@ -109,8 +109,8 @@ classdef BlochInverse1D < Solver
        end
        
        
-       function [miu,kx] = propConst(obj)
-           kx = linspace(1e-6,pi,15);    %15 ist viel zu wenig
+       function [kx,miu] = propConst(obj,numberOfWaveNumbers)
+           kx = linspace(1e-6,pi,numberOfWaveNumbers);    %15 ist viel zu wenig
            miu = exp(i*kx);
        end
            
@@ -127,7 +127,8 @@ classdef BlochInverse1D < Solver
        end          
      
        function [Kred,Mred] = reducedStiffnesAndMass (K,M,obj)
-            [miu,kx] = propConst(obj);
+            [kx,miu] = propConst(obj,100);
+            
             
             R = transformationMatrix(obj,miu,7);
             
@@ -135,6 +136,11 @@ classdef BlochInverse1D < Solver
             Mred = conj(R)'*M*R;
        end
         
+       function omega = calcOmega(Kred,Mred)
+           omega2 = eigs(Kred,Mred,5,'sm');
+           omega = sqrt(abs(omega2));          
+       end
+       
         function initialize(obj)
             if ~ obj.femModel.isInitialized()
                 obj.femModel.initialize;
@@ -174,7 +180,7 @@ classdef BlochInverse1D < Solver
             disp(Y)
             
             
-            [leftDofs,rightDofs] = getLeftRightDofIds(obj)
+            [leftDofs,rightDofs] = getLeftRightDofIds(obj);
 %             [leftDofs2,rightDofs2] = obj.getLeftRightDofIds
                         
             obj.leftDofs = leftDofs;

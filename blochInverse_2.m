@@ -48,8 +48,12 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 
 initialize(obj)
+
+
 [Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,obj)
 
+omega = calcOmega(Kred,Mred)
+  
 
 %solver = SimpleSolvingStrategy(model);
 %x = solver.solve();
