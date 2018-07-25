@@ -127,13 +127,18 @@ classdef BlochInverse1D < Solver
        end          
      
        function [Kred,Mred] = reducedStiffnesAndMass (K,M,obj)
-            [kx,miu] = propConst(obj,100);
+           numberOfWaveNumbers = 100;
+            
+           [kx,miu] = propConst(obj,numberOfWaveNumbers);
+            Kred = cell(numberOfWaveNumbers,1);
+            Mred = cell(numberOfWaveNumbers,1);
             
             
-            R = transformationMatrix(obj,miu,7);
-            
-            Kred = conj(R)'*K*R;
-            Mred = conj(R)'*M*R;
+            for i=1:numberOfWaveNumbers
+            R = transformationMatrix(obj,miu,i);    
+            Kred{i,1} = conj(R)'*K*R;
+            Mred{i,1} = conj(R)'*M*R;
+            end
        end
         
        function omega = calcOmega(Kred,Mred)

@@ -50,9 +50,11 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 initialize(obj)
 
 
-[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,obj)
+[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,obj);
+Ktest = Kred{5,1}
+Mtest = Mred{5,1}
 
-omega = calcOmega(Kred,Mred)
+omega = calcOmega(Ktest,Mtest)
   
 
 %solver = SimpleSolvingStrategy(model);
