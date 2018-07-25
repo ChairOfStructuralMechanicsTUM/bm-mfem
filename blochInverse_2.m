@@ -51,11 +51,14 @@ initialize(obj)
 
 
 [Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,obj);
-Ktest = Kred{5,1}
-Mtest = Mred{5,1}
+Ktest = Kred{5,1};
+Mtest = Mred{5,1};
 
-omega = calcOmega(Ktest,Mtest)
-  
+omega_test = calcOmega(Ktest,Mtest)
+% for i = 1:100
+%     omega{i,1} = calcOmega(Kred{i,1},Mred{i,1})
+% end
+
 
 %solver = SimpleSolvingStrategy(model);
 %x = solver.solve();

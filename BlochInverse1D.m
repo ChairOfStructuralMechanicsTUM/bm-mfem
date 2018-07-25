@@ -155,7 +155,6 @@ classdef BlochInverse1D < Solver
             obj.massMatrix = obj.assembler.assembleGlobalMassMatrix(obj.femModel);
             obj.stiffnessMatrix = obj.assembler.assembleGlobalStiffnessMatrix(obj.femModel);
             
-            %%% suche nach weiteren Fehlern einfügen
             
             %nodeArray = obj.femModel.getAllNodes; 
             %momentan auch in"findright/left Nodes/Dofs"
