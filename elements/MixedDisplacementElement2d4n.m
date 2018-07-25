@@ -71,8 +71,12 @@ function [N, Nf, B_b, B, J_det] = computeShapeFunction(mixed2d4n,xi,eta)
 
             Nf = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             
+
+            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            
             dN_xi  = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4]; 
-            dN_eta = [-(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            dN_eta = [-(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4]; 
             
             N = sparse(2,8);
             N(1,1:2:end) = Nf(:);
@@ -87,15 +91,15 @@ function [N, Nf, B_b, B, J_det] = computeShapeFunction(mixed2d4n,xi,eta)
             
              
     % Jacobian
-            J = [dN_xi * ele_coords(:,1); ...
-             dN_eta * ele_coords(:,2)];
+            J = [dN_xi;dN_eta] * ele_coords;
             J_det = det(J);
             
     % Calculation of B-Matrix for Solid Phase
 %     
-            Bx = J(1,:)\dN_xi;
-            By = J(2,:)\dN_eta;
-            B = [Bx;By];
+            B=J\N_Diff_Par;
+            Bx=B(1,1:4);
+            By=B(2,1:4);
+            
   
             B_b = [Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
             0,By(1),0,By(2),0,By(3),0,By(4);
@@ -164,28 +168,28 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(mixed2d4n)
         LAME_COEFF, LAME_COEFF + 2 * SHEAR_MODULUS,0,; ...
         0,0,SHEAR_MODULUS];
             
-    K_Matrix = zeros(12,12);
-    M_Matrix = zeros(12,12);
-    C_Matrix = zeros(12,4);
-    H_Matrix = zeros(4,12);
+    K_Matrix = zeros(8,8);
+    M_Matrix = zeros(8,8);
+    C_Matrix = zeros(8,4);
+    H_Matrix = zeros(4,4);
     Q_Matrix = zeros(4,4);
             
     [w,g]=returnGaussPoint(p);
             
     
-     for i=1:p
-        xi=g(i);
-        for j=1:p
-            eta=g(j);
+     for xi=1:p
+        %xi=g(xi);
+        for eta=1:p
+            %eta=g(eta);
             % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
-            [N, Nf, B_b, B, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
+            [N, ~ , B_b, B, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
            
             % K = B_b'*B_b = 8x3 * 3x8 = 8x8
-            K_Matrix = K_Matrix + (w(i) * w(j) * Jdet * B_b' * D * B_b);
+            K_Matrix = K_Matrix + (w(xi) * w(eta) * Jdet * B_b' * D * B_b);
             % C = N'*B = 8x2 * 2x4 = 8x4
-            C_Matrix = C_Matrix + (w(i) * w(j) * Jdet * GAMMA * N' * B);
+            C_Matrix = C_Matrix + (w(xi) * w(eta) * Jdet * GAMMA * N' * B);
             % H = B'*B = 4x2 * 2x4 = 4x4
-            H_Matrix = H_Matrix + (w(i) * w(j) * (POROSITY^2/EQ_DENSITY_F) * Jdet * B' * B);
+            H_Matrix = H_Matrix + (w(xi) * w(eta) * (POROSITY^2/EQ_DENSITY_F) * Jdet * B' * B);
             
 %           % M = N'*N = 8x2 * 2x8 = 8x8
 %           M_Matrix = M_Matrix + (w(i) * w(j) * EQ_DENSITY_TOTAL * Jdet * N' * N);            
@@ -195,9 +199,9 @@ function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(mixed2d4n)
         end
      end
             
-%    totalElementStiffnessMatrix = [K_Matrix - OMEGA^2 * M_Matrix, - C_Matrix; - OMEGA^2 * C_Matrix'; H_Matrix - OMEGA^2 * Q_Matrix];
-     empty= zeros(4,8);
-     totalElementStiffnessMatrix = [K_Matrix, - C_Matrix; empty ; H_Matrix];
+    totalElementStiffnessMatrix = zeros(12,12);
+    empty= zeros(4,8);
+    totalElementStiffnessMatrix = [K_Matrix, - C_Matrix; empty, H_Matrix];
 
 
   
@@ -215,13 +219,13 @@ function [totalElementMassMatrix] = computeLocalMassMatrix(mixed2d4n)
     POROSITY = mixed2d4n.getPropertyValue('POROSITY');
             
 %         
-%     HEAT_CAPACITY_RATIO= mixed2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
-%     PRESSURE_0 = mixed2d4n.getPropertyValue('PRESSURE_0');
+    HEAT_CAPACITY_RATIO= mixed2d4n.getPropertyValue('HEAT_CAPACITY_RATIO');    
+    PRESSURE_0 = mixed2d4n.getPropertyValue('PRESSURE_0');
     ETA_F = mixed2d4n.getPropertyValue('ETA_F');
-%     PRANDL_NUMBER = mixed2d4n.getPropertyValue('PRANDL_NUMBER');
-%     THERMAL_CHARACT_LENGTH = mixed2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
+    PRANDL_NUMBER = mixed2d4n.getPropertyValue('PRANDL_NUMBER');
+    THERMAL_CHARACT_LENGTH = mixed2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
     DENSITY_F = mixed2d4n.getPropertyValue('DENSITY_F');
-           
+    DENSITY_S = mixed2d4n.getPropertyValue('DENSITY_S');          
     p = mixed2d4n.getPropertyValue('NUMBER_GAUSS_POINT');   
  
     STATIC_FLOW_RESISTIVITY = mixed2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
@@ -242,22 +246,35 @@ function [totalElementMassMatrix] = computeLocalMassMatrix(mixed2d4n)
     EQ_DENSITY_S = (1 - POROSITY) * DENSITY_S - EQ_DENSITY_SF;
     EQ_DENSITY_TOTAL = EQ_DENSITY_S - EQ_DENSITY_SF^2/EQ_DENSITY_F; 
    
-    M_Matrix = zeros(12,12);
+    % Calculate Bulk-Modulus K_f:
+    K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
+            (1+(8*ETA_F)/(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
+            (1+(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
+      
+    R = POROSITY * K_f;
+    Q = (1 - POROSITY) * K_f;
+    GAMMA = POROSITY * ((EQ_DENSITY_SF /EQ_DENSITY_F) - (Q/R)) ;
+    
+    
+    M_Matrix = zeros(8,8);
     Q_Matrix = zeros(4,4);
-            
+    C_Matrix = zeros(8,4);
+    
     [w,g]=returnGaussPoint(p);
             
     
-     for i=1:p
-        xi=g(i);
-        for j=1:p
-            eta=g(j);
+     for xi=1:p
+        %xi=g(xi);
+        for eta=1:p
+            %eta=g(eta);
             % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
-            [N, Nf, ~, ~, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
+            [N, Nf, ~, B, Jdet] = computeShapeFunction(mixed2d4n,g(xi),g(eta));
             % M = N'*N = 8x2 * 2x8 = 8x8
-            M_Matrix = M_Matrix + (w(i) * w(j) * EQ_DENSITY_TOTAL * Jdet * N' * N);            
+            M_Matrix = M_Matrix + (w(xi) * w(eta) * EQ_DENSITY_TOTAL * Jdet * N' * N);            
             % Q = Nf'*Nf = 4x1 * 1x4 = 4x4
-            Q_Matrix = Q_Matrix + (w(i) * w(j) * (POROSITY^2/R) * Jdet * Nf' * (Nf));
+            Q_Matrix = Q_Matrix + (w(xi) * w(eta) * (POROSITY^2/R) * Jdet * Nf' * (Nf));
+            % C = N'*B = 8x2 * 2x4 = 8x4
+            C_Matrix = C_Matrix + (w(xi) * w(eta) * Jdet * GAMMA * N' * B);
                   
         end
      end
