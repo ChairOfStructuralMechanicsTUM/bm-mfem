@@ -50,15 +50,39 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 initialize(solver)
 
 
-[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,solver);
+[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,solver);  %wieso muss das nicht statisch sein?
 Ktest = Kred{5,1};
 Mtest = Mred{5,1};
 
-omega_test = solver.calcOmega(Ktest,Mtest)
-% for i = 1:100
-%     omega{i,1} = calcOmega(Kred{i,1},Mred{i,1})
-% end
+omega_test = solver.calcOmega(Ktest,Mtest);
+omega = cell(100,1);
+f=zeros(1,100);
+f_2=zeros(1,100);
+f_3=zeros(1,100);
+f_4=zeros(1,100);
+f_5=zeros(1,100);
+for i = 1:100
+    omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1});
+    f(i) = omega{i,1}(1,1)/(2*pi);
+    f_2(i) =omega{i,1}(2,1)/(2*pi);
+    f_3(i) =omega{i,1}(3,1)/(2*pi);
+    f_4(i) =omega{i,1}(4,1)/(2*pi);
+    f_5(i) =omega{i,1}(5,1)/(2*pi);
+end
 
+
+[kx,miu]=propConst(solver,100);
+
+figure(1);
+plot(kx,f,'b.-')
+figure(2);
+plot(kx,f_2,'b.')
+figure(3);
+plot(kx,f_3,'b.')
+figure(4);
+plot(kx,f_4,'b.')
+figure(5);
+plot(kx,f_5,'b.')
 
 %solver = SimpleSolvingStrategy(model);
 %x = solver.solve();
