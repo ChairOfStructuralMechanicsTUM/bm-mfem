@@ -109,7 +109,7 @@ classdef BlochInverse1D < Solver
        end
        
        
-       function [kx,miu] = propConst(obj,numberOfWaveNumbers)
+       function [kx,miu] = propConst(obj,numberOfWaveNumbers) %obj kann auch entfernt werden
            kx = linspace(1e-6,pi,numberOfWaveNumbers);    %15 ist viel zu wenig
            miu = exp(i*kx);
        end
