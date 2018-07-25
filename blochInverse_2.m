@@ -39,7 +39,7 @@ elementArray.setPropertyValue('DENSITY',7860);
 
 model = FemModel(nodeArray, elementArray);
 
-obj = BlochInverse1D(model);
+solver = BlochInverse1D(model);
 assembling = SimpleAssembler(model);
 
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
@@ -47,14 +47,14 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 
-initialize(obj)
+initialize(solver)
 
 
-[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,obj);
+[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,solver);
 Ktest = Kred{5,1};
 Mtest = Mred{5,1};
 
-omega_test = calcOmega(Ktest,Mtest)
+omega_test = solver.calcOmega(Ktest,Mtest)
 % for i = 1:100
 %     omega{i,1} = calcOmega(Kred{i,1},Mred{i,1})
 % end

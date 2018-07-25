@@ -109,7 +109,7 @@ classdef BlochInverse1D < Solver
        end
        
        
-       function [kx,miu] = propConst(obj,numberOfWaveNumbers) %obj kann auch entfernt werden
+       function [kx,miu] = propConst(obj,numberOfWaveNumbers) %obj kann auch entfernt werden -> dann muss die Funktion aber statisch sein!
            kx = linspace(1e-6,pi,numberOfWaveNumbers);    %15 ist viel zu wenig
            miu = exp(i*kx);
        end
@@ -139,11 +139,6 @@ classdef BlochInverse1D < Solver
             Kred{i,1} = conj(R)'*K*R;
             Mred{i,1} = conj(R)'*M*R;
             end
-       end
-        
-       function omega = calcOmega(Kred,Mred)
-           omega2 = eigs(Kred,Mred,5,'sm');
-           omega = sqrt(abs(omega2));          
        end
        
         function initialize(obj)
@@ -282,5 +277,14 @@ classdef BlochInverse1D < Solver
 %           end
         
     end %end methods
+    
+    methods (Static)
+        
+       function omega = calcOmega(Kred,Mred)
+           omega2 = eigs(Kred,Mred,5,'sm');
+           omega = sqrt(abs(omega2));          
+       end
+       
+    end
     
 end
