@@ -1,17 +1,31 @@
 classdef ShellElement3d4n < QuadrilateralElement 
-    %SHELLELEMENT3D4N A quadrilateral shell element
-    %   Detailed explanation goes here
+    %SHELLELEMENT3D4N A quadrilateral shell element with 6 dofs per node
+    %   currently only rectangular shells in the x-y plane are supported
+    %
+    %   TODO: extend to shells other than in the x-y plane
+    %   TODO: validate for skewed elements
+    %   TODO: move the DKQ computation to functions for better readability
+    %   TODO: add consistent mass matrix
+    %   TODO: lump area computation for all kinds of quads: 
+    %       A=(1/2)|[(x3-x1)(y4-y2) +(x4-x2)(y1-y3)]|.
+    %
+    %   Based on Barrales, F. R. (2012): Development of a nonlinear quadrilateral 
+    %       layered membrane element with drilling degrees of freedom and a 
+    %       nonlinear quadrilateral thin flat layered shell element for the 
+    %       modeling of reinforced concrete walls 
+    %   Membrane part: Plane stress with rotational dof
+    %   Bending part: Discrete Kirchhoff quadrilateral element
     
     properties (Access = private)
     end 
     
     methods
         % Constructor
-        function shellElement3d4n = ShellElement3d4n(id,nodeArray)
+        function obj = ShellElement3d4n(id,nodeArray)
             
-            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
-                                             "THICKNESS", "NUMBER_GAUSS_POINT", ...
-                                             "DENSITY", "SHEAR_CORRECTION_FACTOR"]);
+            requiredPropertyNames = ["YOUNGS_MODULUS", "POISSON_RATIO", ...
+                "THICKNESS", "NUMBER_GAUSS_POINT", ...
+                "DENSITY", "SHEAR_CORRECTION_FACTOR"];
                                          
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -24,10 +38,9 @@ classdef ShellElement3d4n < QuadrilateralElement
             end
             
             % call the super class contructor
-            shellElement3d4n@QuadrilateralElement(super_args{:});
-            shellElement3d4n.dofNames = cellstr([ ...
-                "DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
-                "ROTATION_X",  "ROTATION_Y",  "ROTATION_Z"]);
+            obj@QuadrilateralElement(super_args{:});
+            obj.dofNames = ["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X",  "ROTATION_Y",  "ROTATION_Z"];
         
         end
         
@@ -42,31 +55,24 @@ classdef ShellElement3d4n < QuadrilateralElement
             checkConvexity(obj);
         end
         
-        function responseDoF = getResponseDofArray(obj, step)
-           
-            responseDoF = zeros(24,1);
-            for itNodes = 1:1:6
-                nodalDof = obj.nodeArray(itNodes).getDofArray;
-                nodalDof = nodalDof.';
-                
-                for itDof = 3:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
-                end
+        function check(obj)
+            if obj.getPropertyValue('NUMBER_GAUSS_POINT') < 2
+                obj.setPropertyValue('NUMBER_GAUSS_POINT', 2);
             end
+            
+            check@Element(obj);
         end
-        
-        
         
         function [J, B_mem, B_b] = computeShapeFunction(obj, xi, eta)
             
-%             % Shape Function and Derivatives                    
-%             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];  
+            % Shape Function and Derivatives
+            %N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
 
             N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
-                                  -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
-
-            % Coordinates of the nodes forming one element 
-            ele_coords = zeros(4,2); 
+                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            
+            % Coordinates of the nodes forming one element
+            ele_coords = zeros(4,2);
             for i=1:4
                 ele_coords(i,1) = obj.nodeArray(i).getX;
                 ele_coords(i,2) = obj.nodeArray(i).getY;
@@ -140,8 +146,6 @@ classdef ShellElement3d4n < QuadrilateralElement
             B_mem = A * inv_J_TR * MN_Diff_Par * Tr; 
 
             % Assembling the Discrete Kirchhoff Shape Function Matrix
-            % TODO: move the computation to functions for better
-            % readability
             Psi_Diff_Par = zeros(4,12); 
 
             Psi_Diff_Par(1,1) = 0.75 * ((( 2 * xi * (1 - eta) * (ele_coords(1,1) - ele_coords(2,1))) / ( (ele_coords(1,1) - ele_coords(2,1))^2 + (ele_coords(1,2) - ele_coords(2,2))^2)) ...
@@ -180,7 +184,6 @@ classdef ShellElement3d4n < QuadrilateralElement
             Psi_Diff_Par(1,11) = 0.375 * (((- 2 * xi * (1 + eta) * (ele_coords(3,1) - ele_coords(4,1)) * (ele_coords(3,2) - ele_coords(4,2))) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)) ...
                                         - (((1 - eta^2) * (ele_coords(4,1) - ele_coords(1,1)) * (ele_coords(4,2) - ele_coords(1,2))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)));
 
-%                                     -0.25 * ((xi - 1) * (eta + 1) + (eta + 1) * (eta - xi + 1)) ... 
             Psi_Diff_Par(1,12) = -0.25 * (eta - 2*eta*xi + eta^2 - 2*xi) + ...
                                         + (xi * (1 + eta) * (0.25 * (ele_coords(3,1) - ele_coords(4,1))^2 - 0.5 * (ele_coords(3,2) - ele_coords(4,2))^2 ) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)) ...
                                             + 0.5 * ( ((1- eta^2) * (0.25 * (ele_coords(1,1) - ele_coords(4,1))^2 - 0.5 * (ele_coords(1,2) - ele_coords(4,2))^2  )) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)); 
@@ -317,30 +320,32 @@ classdef ShellElement3d4n < QuadrilateralElement
             prxy = obj.getPropertyValue('POISSON_RATIO');
             nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             thickness = obj.getPropertyValue('THICKNESS');
-        
+            
             % Plane Stress Matrix
-            D_mem = (EModul/(1-prxy^2))* [1  prxy  0; prxy  1  0 ; 0  0  (1-prxy)/2]; 
+            D_mem = (EModul/(1-prxy^2)) * ...
+                [1  prxy  0; prxy  1  0 ; 0  0  (1-prxy)/2];
             
             % Material Bending Matrix D_b
-            D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
-           
+            D_b = [1    prxy    0; ...
+                prxy     1   0; ...
+                0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
+            
             [w,g] = returnGaussPoint(nr_gauss_points);
             
-            stiffnessMatrixMemb = sparse(12,12);
-            stiffnessMatrixBend = sparse(12,12);
+            stiffnessMatrixMemb = zeros(12,12);
+            stiffnessMatrixBend = zeros(12,12);
             stiffnessMatrix = sparse(24,24);
-
+            
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                [J, B_mem, B_b] = computeShapeFunction(obj,g(xi),g(eta));
-
-                
+                    [J, B_mem, B_b] = computeShapeFunction(obj,g(xi),g(eta));
+                    
                     stiffnessMatrixMemb = stiffnessMatrixMemb + ...
                         thickness.* B_mem' * D_mem * B_mem * det(J) * w(xi) * w(eta);
-                           
+                    
                     stiffnessMatrixBend = stiffnessMatrixBend + ...
-                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta);       
-                
+                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
+                    
                 end
             end
             
@@ -356,11 +361,9 @@ classdef ShellElement3d4n < QuadrilateralElement
         
         
         function massMatrix = computeLocalMassMatrix(obj)
-            %TODO: add consistent mass matrix
-            %TODO: lump area computation for all kinds of quads: A=(1/2)|[(x3-x1)(y4-y2) +(x4-x2)(y1-y3)]|.
             density = obj.getPropertyValue('DENSITY');
             thickness = obj.getPropertyValue('THICKNESS');
-            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            %nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(4,2); 
@@ -403,18 +406,36 @@ classdef ShellElement3d4n < QuadrilateralElement
             dofs([4 10 16 22]) = obj.nodeArray.getDof('ROTATION_X');
             dofs([5 11 17 23]) = obj.nodeArray.getDof('ROTATION_Y');
             dofs([6 12 18 24]) = obj.nodeArray.getDof('ROTATION_Z');
-            
-
         end
         
         function vals = getValuesVector(obj, step)
             vals = zeros(1,24);
-            vals([1  7  13 19]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2  8  14 20]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-            vals([4 10 16 22]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([1  7 13 19]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2  8 14 20]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3  9 15 21]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([4 10 16 22]) = obj.nodeArray.getDofValue('ROTATION_Z',step);
             vals([5 11 17 23]) = obj.nodeArray.getDofValue('ROTATION_X',step);
             vals([6 12 18 24]) = obj.nodeArray.getDofValue('ROTATION_Y',step);
-            vals([3  9  15 21]) = obj.nodeArray.getDofValue('ROTATION_Z',step);
+        end
+        
+        function vals = getFirstDerivativesVector(obj, step)
+            vals = zeros(1,24);
+            [~, vals([1  7 13 19]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2  8 14 20]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3  9 15 21]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([4 10 16 22]), ~] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, vals([5 11 17 23]), ~] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, vals([6 12 18 24]), ~] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+        end
+        
+        function vals = getSecondDerivativesVector(obj, step)
+            vals = zeros(1,24);
+            [~, ~, vals([1  7 13 19])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2  8 14 20])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3  9 15 21])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([4 10 16 22])] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, ~, vals([5 11 17 23])] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, ~, vals([6 12 18 24])] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
         end
         
     end
