@@ -99,4 +99,8 @@ n01d = node01.getDofArray;
 n01d(1).getValueType;
 n01d(1).getValue(step);
 
+v = Visualization(model);
+v.setScaling(10000000);
+v.plotUndeformed
+v.plotDeformed
 
