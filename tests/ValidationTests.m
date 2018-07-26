@@ -212,6 +212,37 @@ classdef ValidationTests <  matlab.unittest.TestCase
             
         end
         
+        function shellElement3d4nLargeTest(testCase)
+            %SHELLELEMENT3D4NLARGETEST plane shell consisting out of 100
+            %   elements under static loading at the middle node
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 10, 10, 'elementType', 'ShellElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
+            
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+            
+            model.getNode(61).setDofLoad('DISPLACEMENT_Z',2500);
+            addPointLoad(model.getNode(61),
+            
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+            
+            actualDisplacement = model.getNode(61).getDofValue('DISPLACEMENT_Z');
+            expectedDisplacement = 0.006040637455055775;
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-7)))
+        end
+        
         function externalScriptsTest(testCase)
             bridge;
             Bridge_with_inputFile;
