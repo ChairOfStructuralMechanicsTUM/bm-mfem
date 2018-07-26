@@ -50,10 +50,7 @@ classdef BlochInverse1D < Solver
             for i=1:length(nodeXcoords)
                 if nodeXcoords(i) == minX
                     n = n+1;
-                    nodeIdsLeft(n) = nodeIds(i);        
-                    
-%                    
-                    
+                    nodeIdsLeft(n) = nodeIds(i);                     
                 end
             end
             fprintf('Number of left boundary nodes is %s. \n', num2str(n))
@@ -127,7 +124,7 @@ classdef BlochInverse1D < Solver
        end          
      
        function [Kred,Mred] = reducedStiffnesAndMass (K,M,obj)
-           numberOfWaveNumbers = 100;
+           numberOfWaveNumbers = 10000;
             
            [kx,miu] = propConst(obj,numberOfWaveNumbers);
             Kred = cell(numberOfWaveNumbers,1);
