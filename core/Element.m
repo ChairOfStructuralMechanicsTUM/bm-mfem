@@ -94,42 +94,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                 elements(ii).eProperties.addValue(valueName, value);
             end
         end
-            
-        
-        function check(element)
-        %CHECK checks, if all dofs and properties required by the element
-        %are available. If a property is missing, it will be initialized
-        %with 0.
-            
-            %check the dofs
-            for iNode = 1:length(element.nodeArray)
-                cNode = element.nodeArray(iNode);
-                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
-                diff = setxor(element.dofNames', availableDofNames);
-                if ~ isempty(diff)
-                    missingDofs = setdiff(element.dofNames', availableDofNames);
-                    unknownDofs = setdiff(availableDofNames, element.dofNames');
-                    
-                    error('the following dofs are missing at node %d: %s\nthe following dofs at node %d are not defined for the element %s: %s\n', ...
-                        cNode.getId, ...
-                        strjoin(missingDofs,', '), ...
-                        cNode.getId, ...
-                        class(element), ...
-                        strjoin(unknownDofs,', '))
-                end
-            end
-            
-            %check the properties
-            valsToCheck = element.requiredPropertyNames;
-            properties = element.getProperties;
-            availableValueNames = properties.getValueNames;
-            for ii = 1:length(valsToCheck)
-                if ~ any(ismember(valsToCheck(ii), availableValueNames))
-%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
-                end
-            end
-        end
         
     end
     
@@ -163,6 +127,52 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     end
     
     methods
+        
+        function check(element)
+        %CHECK checks, if all dofs and properties required by the element
+        %   are available. If a property is missing, it will be initialized
+        %   with 0.
+            
+            %check the dofs
+            for iNode = 1:length(element.nodeArray)
+                cNode = element.nodeArray(iNode);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
+                diff = setxor(element.dofNames', availableDofNames);
+                if ~ isempty(diff)
+                    missingDofs = setdiff(element.dofNames', availableDofNames);
+                    unknownDofs = setdiff(availableDofNames, element.dofNames');
+                    
+                    if ~isempty(missingDofs)
+                        msg = ['Element: The following dofs are missing', ...
+                            ' at node ', num2str(cNode.getId), ': ', ...
+                            char(strjoin(missingDofs,', '))];
+                        e = MException('MATLAB:bm_mfem:elementalDofMissing',msg);
+                        throw(e);
+                    end
+                    
+                    if ~isempty(unknownDofs)
+                        msg = ['Element: The following dofs at node ', ...
+                            num2str(cNode.getId), ' are not defined for ', ...
+                            class(element), ': ', ...
+                            char(strjoin(unknownDofs,', '))];
+                        e = MException('MATLAB:bm_mfem:unknownElementalDof',msg);
+                        throw(e);
+                    end
+                end
+            end
+            
+            %check the properties
+            valsToCheck = element.requiredPropertyNames;
+            properties = element.getProperties;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck)
+                if ~ any(ismember(valsToCheck(ii), availableValueNames))
+%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
+                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
+                end
+            end
+        end
+        
         
         function overwriteNode(element, oldNode, newNode)
             if ~isa(newNode,'Node')
