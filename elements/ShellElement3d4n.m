@@ -390,7 +390,7 @@ classdef ShellElement3d4n < QuadrilateralElement
                 dampingMatrix = alpha * obj.computeLocalMassMatrix + ...
                     beta * obj.computeLocalStiffnessMatrix;
             else
-                dampingMatrix = sparse(12,12);
+                dampingMatrix = sparse(24,24);
             end
             
         end
