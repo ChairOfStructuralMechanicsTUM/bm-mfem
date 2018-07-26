@@ -37,8 +37,8 @@ classdef Node < handle & matlab.mixin.Copyable
                 otherwise
                     error('Wrong number of arguments')
             end
-            node.dofMap = containers.Map;
-            node.nProperties = PropertyContainer();
+            node.dofMap = containers.Map;  %creates empty map object
+            node.nProperties = PropertyContainer();  %creates empty PropertyContainer Object
         end
         
         
@@ -86,7 +86,7 @@ classdef Node < handle & matlab.mixin.Copyable
         
         function dofs = getDofArray(node)
             dofs = node.dofMap.values;
-            dofs = [dofs{:}];
+            dofs = [dofs{:}];  %konvertiert cell zu array: cell:{}
         end
         
         function dofs = getDofMap(node)
