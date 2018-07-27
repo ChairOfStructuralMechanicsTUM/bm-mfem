@@ -15,7 +15,6 @@ classdef (Abstract) QuadrilateralElement < Element
             elseif nargin == 3
                 super_args = {id, nodeArray, requiredProperties};
             end
-            
             quadrilateralElement@Element(super_args{:});
         end
  

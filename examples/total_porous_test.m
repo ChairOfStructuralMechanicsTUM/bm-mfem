@@ -17,9 +17,9 @@ node08 = Node(8,-1,1,1);
 % nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 node10 node11 node12];
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 ];
 
-nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z','DISPLACEMENT_FLUID_X', 'DISPLACEMENT_FLUID_Y', 'DISPLACEMENT_FLUID_Z'});
+nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z','DISPLACEMENT_TOTAL_X', 'DISPLACEMENT_TOTAL_Y', 'DISPLACEMENT_TOTAL_Z'});
 
-ele01 = ClassicalPorousElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
+ele01 = TotalPorousElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
 % ele02 = PorousElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
 
 % elementArray = [ele01 ele02];
@@ -58,18 +58,18 @@ node08.fixDof('DISPLACEMENT_SOLID_X');
 node08.fixDof('DISPLACEMENT_SOLID_Y');
 node08.fixDof('DISPLACEMENT_SOLID_Z');
 
-% node01.fixDof('DISPLACEMENT_FLUID_X');
-% node01.fixDof('DISPLACEMENT_FLUID_Y');
-% node01.fixDof('DISPLACEMENT_FLUID_Z');
-% node04.fixDof('DISPLACEMENT_FLUID_X');
-% node04.fixDof('DISPLACEMENT_FLUID_Y');
-% node04.fixDof('DISPLACEMENT_FLUID_Z');
-% node05.fixDof('DISPLACEMENT_FLUID_X');
-% node05.fixDof('DISPLACEMENT_FLUID_Y');
-% node05.fixDof('DISPLACEMENT_FLUID_Z');
-% node08.fixDof('DISPLACEMENT_FLUID_X');
-% node08.fixDof('DISPLACEMENT_FLUID_Y');
-% node08.fixDof('DISPLACEMENT_FLUID_Z');
+% node01.fixDof('DISPLACEMENT_TOTAL_X');
+% node01.fixDof('DISPLACEMENT_TOTAL_Y');
+% node01.fixDof('DISPLACEMENT_TOTAL_Z');
+% node04.fixDof('DISPLACEMENT_TOTAL_X');
+% node04.fixDof('DISPLACEMENT_TOTAL_Y');
+% node04.fixDof('DISPLACEMENT_TOTAL_Z');
+% node05.fixDof('DISPLACEMENT_TOTAL_X');
+% node05.fixDof('DISPLACEMENT_TOTAL_Y');
+% node05.fixDof('DISPLACEMENT_TOTAL_Z');
+% node08.fixDof('DISPLACEMENT_TOTAL_X');
+% node08.fixDof('DISPLACEMENT_TOTAL_Y');
+% node08.fixDof('DISPLACEMENT_TOTAL_Z');
 
 addPointLoadPorous(node02,1,[1 0 0]);
 %addPointLoadPorous(node03,2,[0 -1 0]);

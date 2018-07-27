@@ -4,13 +4,13 @@ clc;
 clear all;
 
 % Dimension of the structure
-Lx=1;
-Ly=1;
+Lx=5;
+Ly=5;
 Lz=0.25;
 
 % Number of elements in specific directions
-nx=3;
-ny=3;
+nx=20;
+ny=20;
 nz=1;
 
 % Calculation of the dimension of the elements (defined via L and n)
@@ -36,7 +36,7 @@ for k=1:(ny + 1)
 end
 
 % Assignment DOFs
-model.getAllNodes.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z', 'PRESSURE'});
+model.getAllNodes.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z', 'PORE_PRESSURE'});
 
 % Generation of elements
 id = 0;
@@ -46,10 +46,11 @@ for k=1:ny
         for i=1:nx
             id=id+1;
             a = i + (j-1)*(nx+1) + (k-1)*(nx+1)*(nz+1);
-            model.addNewElement('MixedPorousElement3d8n',id,[a, a+1, a+1+(nx+1)*(nz+1),  a+(nx+1)*(nz+1), a+(nx+1), a+1+(nx+1), a+1+(nx+1)*(nz+1)+(nx+1), a+(nx+1)*(nz+1)+(nx+1) ]);
+            model.addNewElement('MixedPorousElement3d8n',id,[a, a+1, a+1+(nx+1)*(nz+1), a+(nx+1)*(nz+1), a+(nx+1), a+1+(nx+1), a+1+(nx+1)*(nz+1)+(nx+1), a+(nx+1)*(nz+1)+(nx+1)]);
         end
     end
 end
+
 
 % assignment of material properties
 model.getAllElements.setPropertyValue('DENSITY_SOLID',30);
@@ -69,7 +70,7 @@ model.getAllElements.setPropertyValue('FLOW_RESISTIVITY',32e3);
 model.getAllElements.setPropertyValue('VISCOUS_LENGHT',90);
 model.getAllElements.setPropertyValue('THERMAL_LENGTH',165);
 
-model.getAllElements.setPropertyValue('FREQUENCY',10);
+model.getAllElements.setPropertyValue('FREQUENCY',100);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 
 % Definition of BCs
@@ -77,14 +78,12 @@ for i=1:(nx+1)*2
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_X');
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_Y');
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_Z');
-    model.getNode(i).fixDof('PRESSURE');
 end
 
 for i=((nx+1)*(nz+1)*ny)+1 :numnodes
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_X');
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_Y');
     model.getNode(i).fixDof('DISPLACEMENT_SOLID_Z');
-    model.getNode(i).fixDof('PRESSURE');
 end
 
 % Definition of loading
@@ -97,8 +96,8 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 %massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 % Solving
-solver = SimpleSolvingStrategy(model);
-%solver = SimpleHarmonicSolvingStrategy(model,10);
+%solver = SimpleSolvingStrategy(model);
+solver = SimpleHarmonicSolvingStrategy(model,100);
 x = solver.solve();
 step = 1;
 VerschiebungDofs = model.getDofArray.getValue(step);
@@ -106,6 +105,6 @@ nodalForces = solver.getNodalForces(step);
 
 % Visualisierung der Lösung
 v = Visualization(model);
-v.setScaling(10000);
-%v.plotUndeformed
+v.setScaling(100000);
+% v.plotUndeformed
 v.plotDeformed

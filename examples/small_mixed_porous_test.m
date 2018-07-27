@@ -9,20 +9,13 @@ node05 = Node(5,-1,-1,1);
 node06 = Node(6,1,-1,1);
 node07 = Node(7,1,1,1);
 node08 = Node(8,-1,1,1);
-% node09 = Node(9,-1,-1,2);
-% node10 = Node(10,1,-1,2);
-% node11 = Node(11,1,1,2);
-% node12 = Node(12,-1,1,2);
 
-% nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 node10 node11 node12];
-nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 ];
+nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08];
 
-nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z','DISPLACEMENT_FLUID_X', 'DISPLACEMENT_FLUID_Y', 'DISPLACEMENT_FLUID_Z'});
+nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y', 'DISPLACEMENT_SOLID_Z', 'PORE_PRESSURE_FLUIDS'});
 
-ele01 = ClassicalPorousElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
-% ele02 = PorousElement3d8n(2,[node05 node06 node07 node08 node09 node10 node11 node12]);
+ele01 = MixedPorousElement3d8n(1,[node01 node02 node03 node04 node05 node06 node07 node08]);
 
-% elementArray = [ele01 ele02];
 elementArray = [ele01];
 
 elementArray.setPropertyValue('DENSITY_SOLID',30);
@@ -58,21 +51,13 @@ node08.fixDof('DISPLACEMENT_SOLID_X');
 node08.fixDof('DISPLACEMENT_SOLID_Y');
 node08.fixDof('DISPLACEMENT_SOLID_Z');
 
-% node01.fixDof('DISPLACEMENT_FLUID_X');
-% node01.fixDof('DISPLACEMENT_FLUID_Y');
-% node01.fixDof('DISPLACEMENT_FLUID_Z');
-% node04.fixDof('DISPLACEMENT_FLUID_X');
-% node04.fixDof('DISPLACEMENT_FLUID_Y');
-% node04.fixDof('DISPLACEMENT_FLUID_Z');
-% node05.fixDof('DISPLACEMENT_FLUID_X');
-% node05.fixDof('DISPLACEMENT_FLUID_Y');
-% node05.fixDof('DISPLACEMENT_FLUID_Z');
-% node08.fixDof('DISPLACEMENT_FLUID_X');
-% node08.fixDof('DISPLACEMENT_FLUID_Y');
-% node08.fixDof('DISPLACEMENT_FLUID_Z');
+node01.fixDof('PORE_PRESSURE_FLUIDS');
+node04.fixDof('PORE_PRESSURE_FLUIDS');
+node05.fixDof('PORE_PRESSURE_FLUIDS');
+node08.fixDof('PORE_PRESSURE_FLUIDS');
+
 
 addPointLoadPorous(node02,1,[1 0 0]);
-%addPointLoadPorous(node03,2,[0 -1 0]);
 % addPointLoadPorous(node07,1,[0 0 -1]);
 
 model = FemModel(nodeArray, elementArray);
@@ -82,8 +67,7 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
             
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-%solver = SimpleSolvingStrategy(model);
-solver = SimpleHarmonicSolvingStrategy(model,100);
+solver = SimpleSolvingStrategy(model);
 x = solver.solve();
 
 step = 1;

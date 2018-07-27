@@ -69,7 +69,7 @@ model.getAllElements.setPropertyValue('FLOW_RESISTIVITY',32e3);
 model.getAllElements.setPropertyValue('VISCOUS_LENGHT',90);
 model.getAllElements.setPropertyValue('THERMAL_LENGTH',165);
 
-model.getAllElements.setPropertyValue('FREQUENCY',10);
+model.getAllElements.setPropertyValue('FREQUENCY',100);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 
 % Definition of BCs
@@ -102,7 +102,7 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 % Solving
 %solver = SimpleSolvingStrategy(model);
-solver = SimpleHarmonicSolvingStrategy(model,10);
+solver = SimpleHarmonicSolvingStrategy(model,100);
 x = solver.solve();
 step = 1;
 VerschiebungDofs = model.getDofArray.getValue(step);

@@ -198,10 +198,18 @@ classdef FemModel < handle
                     element = QuadrilateralElement2d4n(id, nodes);
                 case 'HexahedronElement3d8n'
                     element = HexahedronElement3d8n(id, nodes);
-                case 'PorousElement3d8n'
-                    element = PorousElement3d8n(id, nodes);
+                case 'ClassicalPorousElement3d8n'
+                    element = ClassicalPorousElement3d8n(id, nodes);
                 case 'MixedPorousElement3d8n'
                     element = MixedPorousElement3d8n(id, nodes);
+                case 'TotalPorousElement3d8n'
+                    element = TotalPorousElement3d8n(id, nodes);
+                case 'ClassicalPorousElement2d4n'
+                    element = ClassicalPorousElement2d4n(id, nodes);
+                case 'MixedPorousElement2d4n'
+                    element = MixedPorousElement2d4n(id, nodes);
+                case 'TotalPorousElement2d4n'
+                    element = TotalPorousElement2d4n(id, nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)
