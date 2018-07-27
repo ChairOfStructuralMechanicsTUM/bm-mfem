@@ -19,14 +19,12 @@ classdef PropertyContainer < handle
         end
         
         % member functions
-        function addValue(propertyContainer, name, value)
+        function addValue(obj, name, value)
            %ADDVALUE adds a value NAME and initializes it with the given
            %VALUE, if specified. Otherwise it is initialized with 0 for 1d
            %variables or [0,0,0] for 3d variables.           
-           try 
-               propertyContainer.propertyMap(name)
-               error('A property with name \"%s\" already exists in the container!')
-           catch
+           if obj.hasValue(name)
+               error('The property \"%s\" already exists in the container!', name)
            end
            
            type = checkPropertyName(name);
@@ -38,7 +36,7 @@ classdef PropertyContainer < handle
                if length(value) ~= 1
                    error('The value for property \"%s\" must be a single number.', name)
                end
-               propertyContainer.propertyMap(name) = value;
+               obj.propertyMap(name) = value;
                
            elseif strcmp(type,'variable3d')
                if nargin == 2
@@ -47,13 +45,13 @@ classdef PropertyContainer < handle
                if length(value) ~= 3
                    error('The value for property \"%s\" must be a vector of length 3.', name)
                end
-               propertyContainer.propertyMap(name) = value;
+               obj.propertyMap(name) = value;
            
            elseif strcmp(type, 'flag')
               if nargin == 2
                   value = false; 
               end
-              propertyContainer.propertyMap(name) = value;
+              obj.propertyMap(name) = value;
               
            else
                error('A property with name \"%s\" is not defined in mfem!', name)
