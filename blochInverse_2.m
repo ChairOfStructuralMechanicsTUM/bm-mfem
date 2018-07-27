@@ -74,24 +74,16 @@ end
 
 [kx,miu] = propConst(solver,10000);
 
-% figure(1);
-% plot(kx,f,kx,f_2)
-% title('Dispersion curves')
-% xlabel('Wavenumber k')
-% ylabel('frequenzy f')
-% xlim([0 pi])
+figure(1);
+plot(kx,f,kx,f_2)
+title('Dispersion curves')
+xlabel('Wavenumber k')
+ylabel('frequenzy f')
+xlim([0 pi])
+legend({'1stBand','2ndBand'},'Location','EastOutside')
 
-figure(2);
-plot(miu,f)
-miureal = cos(kx);
-% figure(3);
-% plot(realmiu),f);
 
-% for i = 1:length(miu)
-%     if real(miu)~=miureal
-%         fprintf('miu ungleich miureal an Stelle %s',num2str(i))
-%     end
-% end
+
 
 % figure(3);
 % plot(kx,f_3,'b.')
@@ -100,16 +92,3 @@ miureal = cos(kx);
 % figure(5);
 % plot(kx,f_5,'b.')
 
-%solver = SimpleSolvingStrategy(model);
-%x = solver.solve();
-% 
-% step = 1;
-% 
-% VerschiebungDofs = model.getDofArray.getValue(step);
-% 
-% nodalForces = solver.getNodalForces(step);
-% 
-% v = Visualization(model);
-% v.setScaling(1);
-% v.plotUndeformed
-% v.plotDeformed
