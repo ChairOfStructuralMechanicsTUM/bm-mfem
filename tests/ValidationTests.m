@@ -231,7 +231,6 @@ classdef ValidationTests <  matlab.unittest.TestCase
             support.fixAllDofs();
             
             model.getNode(61).setDofLoad('DISPLACEMENT_Z',2500);
-            addPointLoad(model.getNode(61),
             
             solver = SimpleSolvingStrategy(model);
             solver.solve();
