@@ -50,10 +50,11 @@ classdef PropertyContainer < handle
                propertyContainer.propertyMap(name) = value;
            
            elseif strcmp(type, 'flag')
-              if nargin == 1
-                  value = true; 
+              if nargin == 2
+                  value = false; 
               end
               propertyContainer.propertyMap(name) = value;
+              
            else
                error('A property with name \"%s\" is not defined in mfem!', name)
            end
