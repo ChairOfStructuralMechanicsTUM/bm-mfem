@@ -542,6 +542,50 @@ classdef ElementTests < matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
         end
         
+        function testShellElement3d4nDynamic(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            % Model
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
+                'elementType', 'ShellElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
+            model.getNode(13).setDofLoad('DISPLACEMENT_Z', 1);
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+            
+            % Properties
+            model.getAllElements.setPropertyValue('USE_CONSISTENT_MASS_MATRIX',1);
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            model.getAllElements.addProperty('RAYLEIGH_ALPHA',3);
+            model.getAllElements.addProperty('RAYLEIGH_BETA',4e-4);
+            
+            % Solver
+            dt = .001;
+            time = 0;
+            endTime = .01;
+            solver = NewmarkSolvingStrategy(model, dt);
+            
+            while time < endTime
+                solver.solve();
+                time = time + dt;
+            end
+            
+            % Assertion
+            actualDisplacementZ = model.getNode(13).getDofValue('DISPLACEMENT_Z','all');
+            expectedDisplacementZ = [0,3.21524973685890e-07,...
+                9.13911217812143e-07,1.37016296186340e-06,1.75612069115088e-06,...
+                2.21377040123328e-06,2.77107997383805e-06,3.36779398166601e-06,...
+                3.89553037963957e-06,4.26061622283949e-06,4.44264794892829e-06];
+            testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+                'Within', RelativeTolerance(1e-7)))
+            
+        end
+        
         function testShellElement3d4nEigen(testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance

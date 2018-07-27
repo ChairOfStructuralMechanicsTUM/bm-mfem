@@ -22,7 +22,8 @@ availableProperties = ["ELEMENTAL_STIFFNESS", ...
 
 available3dProperties = ["VOLUME_ACCELERATION"];
 
-availableFlags = ["FULL_INTEGRATION"];
+availableFlags = ["FULL_INTEGRATION", ...
+    "USE_CONSISTENT_MASS_MATRIX"];
 
 if any(ismember(name, availableProperties))
     type = 'variable1d';
