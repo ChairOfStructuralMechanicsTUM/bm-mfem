@@ -5,7 +5,8 @@ classdef ShellElement3d4n < QuadrilateralElement
     %   TODO: extend to shells other than in the x-y plane
     %   TODO: validate for skewed elements
     %   TODO: move the DKQ computation to functions for better readability
-    %   TODO: add consistent mass matrix
+    %   TODO: add consistent mass matrix (dynamic calculations are not
+    %       possible until then. Perhaps add a corotational formulation)
     %   TODO: lump area computation for all kinds of quads: 
     %       A=(1/2)|[(x3-x1)(y4-y2) +(x4-x2)(y1-y3)]|.
     %
@@ -418,25 +419,25 @@ classdef ShellElement3d4n < QuadrilateralElement
             vals([6 12 18 24]) = obj.nodeArray.getDofValue('ROTATION_Y',step);
         end
         
-        function vals = getFirstDerivativesVector(obj, step)
-            vals = zeros(1,24);
-            [~, vals([1  7 13 19]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([2  8 14 20]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, vals([3  9 15 21]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
-            [~, vals([4 10 16 22]), ~] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, vals([5 11 17 23]), ~] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
-            [~, vals([6 12 18 24]), ~] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
-        end
-        
-        function vals = getSecondDerivativesVector(obj, step)
-            vals = zeros(1,24);
-            [~, ~, vals([1  7 13 19])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([2  8 14 20])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, ~, vals([3  9 15 21])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
-            [~, ~, vals([4 10 16 22])] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, ~, vals([5 11 17 23])] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
-            [~, ~, vals([6 12 18 24])] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
-        end
+%         function vals = getFirstDerivativesVector(obj, step)
+%             vals = zeros(1,24);
+%             [~, vals([1  7 13 19]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+%             [~, vals([2  8 14 20]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+%             [~, vals([3  9 15 21]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+%             [~, vals([4 10 16 22]), ~] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+%             [~, vals([5 11 17 23]), ~] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+%             [~, vals([6 12 18 24]), ~] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+%         end
+%         
+%         function vals = getSecondDerivativesVector(obj, step)
+%             vals = zeros(1,24);
+%             [~, ~, vals([1  7 13 19])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+%             [~, ~, vals([2  8 14 20])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+%             [~, ~, vals([3  9 15 21])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+%             [~, ~, vals([4 10 16 22])] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+%             [~, ~, vals([5 11 17 23])] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+%             [~, ~, vals([6 12 18 24])] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+%         end
         
     end
     
