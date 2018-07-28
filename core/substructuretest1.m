@@ -6,8 +6,8 @@ function [Kmatrix]=substructuretest1 (N)
 %Benennung von K: Kik: Festhaltekraft am Freiheitsgrad(dof)
 %i infolge Einheitsverschiebung Dk=1
 
-Kmatrix=[K11 K12  K13;
-         K21 K22  K23
-         K31 K32  K33];
+
+%Kmatrix= globale Systemsteifigkeitsmatrix
+Kmatrix=[];
 
 end
