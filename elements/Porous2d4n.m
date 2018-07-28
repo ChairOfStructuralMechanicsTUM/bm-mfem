@@ -7,7 +7,7 @@ classdef Porous2d4n < QuadrilateralElement
         function PorousElement = Porous2d4n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["FRAME_DENSITY", "FRAME_LAME_PARAMETER_LAMBDA","FRAME_LAME_PARAMETER_MU" ...
-                "AMBIENT_FLUID_DENSITY", "AMBIENT_FLUID_VISCOSITY", "AMBIENT_FLUID_PRESSURE", "HEAT_CAPACITY_RATIO", "PRANDTL_NUMBER" ...
+                "AMBIENT_FLUID_DENSITY", "AMBIENT_FLUID_VISCOSITY", "AMBIENT_FLUID_STANDARD_PRESSURE", "HEAT_CAPACITY_RATIO", "PRANDTL_NUMBER" ...
                 "POROSITY", "TORTUOSITY", "STATIC_FLOW_RESISTIVITY", "VISCOUS_CHAR_LENGTH", "THERMAL_CHAR_LENGTH",...
                 "NUMBER_GAUSS_POINT","FREQUENCY"]);
             
@@ -23,24 +23,27 @@ classdef Porous2d4n < QuadrilateralElement
             
             % call the super class constructor
             PorousElement@QuadrilateralElement(super_args{:});
-            PorousElement.dofNames = cellstr(["FRAME_DISPLACEMENT_X", "FRAME_DISPLACEMENT_Y",
-                "FLUID_DISPLACEMENT_X", "FLUID_DISPLACEMENT_Y"]);
+            PorousElement.dofNames = cellstr(["FRAME_DISPLACEMENT_X",...
+                "FRAME_DISPLACEMENT_Y", "FLUID_DISPLACEMENT_X",...
+                "FLUID_DISPLACEMENT_Y"]);
         end
         
         % Getter functions
         
         function dofs = getDofList(element)
-%             dofs([1 5 9 13]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_X');
-%             dofs([2 6 10 14]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_Y');
-%             dofs([3 7 11 15]) = element.nodeArray.getDof('FLUID_DISPLACEMENT_X');
-%             dofs([4 8 12 16]) = element.nodeArray.getDof('FLUID_DISPLACEMENT_Y');
+            dofs([1 3 5 7]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_X');
+            dofs([2 4 6 8]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_Y');
+            dofs([9 11 13 15]) = element.nodeArray.getDof('FLUID_DISPLACEMENT_X');
+            dofs([10 12 14 16]) = element.nodeArray.getDof('FLUID_DISPLACEMENT_Y');
         end
         
         function vals = getValuesVector(element, step)
-%             vals = zeros(1,8);
-%             
-%             vals([1 3 5 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-%             vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals = zeros(1,16);
+            
+            vals([1 3 5 7]) = element.nodeArray.getDofValue('FRAME_DISPLACEMENT_X',step);
+            vals([2 4 6 8]) = element.nodeArray.getDofValue('FRAME_DISPLACEMENT_Y',step);
+            vals([9 11 13 15]) = element.nodeArray.getDofValue('FLUID_DISPLACEMENT_X',step);
+            vals([10 12 14 16]) = element.nodeArray.getDofValue('FLUID_DISPLACEMENT_Y',step);
         end
         
         %Initialization
@@ -87,14 +90,14 @@ classdef Porous2d4n < QuadrilateralElement
                 By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
         end
         
-        function [K_ss,K_sf,K_fs,K_ff] = computeLocalStiffnessMatrix(porousElement)
+        function [K] = computeLocalStiffnessMatrix(porousElement)
             omega = porousElement.getPropertyValue('FREQUENCY');
             %Frame
             lambda = porousElement.getPropertyValue('FRAME_LAME_PARAMETER_LAMBDA');
             mu = porousElement.getPropertyValue('FRAME_LAME_PARAMETER_MU');
             %Fluid
             gamma = porousElement.getPropertyValue('HEAT_CAPACITY_RATIO');
-            P_0 = porousElement.getPropertyValue('AMBIENT_FLUID_PRESSURE');
+            P_0 = porousElement.getPropertyValue('AMBIENT_FLUID_STANDARD_PRESSURE');
             eta = porousElement.getPropertyValue('AMBIENT_FLUID_VISCOSITY');
             roh_f = porousElement.getPropertyValue('AMBIENT_FLUID_DENSITY');
             Pr = porousElement.getPropertyValue('PRANDTL_NUMBER');
@@ -123,10 +126,9 @@ classdef Porous2d4n < QuadrilateralElement
                     0, 0, 0];
                 
             p = porousElement.getPropertyValue('NUMBER_GAUSS_POINT');    
-            K_ss = zeros(8,8);
-            K_sf = K_ss;
-            K_fs = K_ss;
-            K_ff = K_ss;
+            K_ss = zeros(8);
+            K_sf = zeros(8);
+            K_ff = zeros(8);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
@@ -136,16 +138,17 @@ classdef Porous2d4n < QuadrilateralElement
                     [~, ~, B, J] = computeShapeFunction(porousElement, xi, eta);
                     K_ss = K_ss+(w(i)*w(j)*det(J)*transpose(B)*(D_s*B));
                     K_sf = K_sf+(w(i)*w(j)*det(J)*transpose(B)*(D_sf*B));
-                    K_fs = K_sf;
                     K_ff = K_ff+(w(i)*w(j)*det(J)*transpose(B)*(D_f*B));
                 end
             end     
+            K_fs=K_sf;
+            K = [K_ss,K_sf;K_fs,K_ff];
         end
         
-        function [M_ss,M_sf,M_fs,M_ff] = computeLocalMassMatrix(porousElement)
+        function [M] = computeLocalMassMatrix(porousElement)
             omega = porousElement.getPropertyValue('FREQUENCY');
             roh_s = porousElement.getPropertyValue('FRAME_DENSITY');
-            alpha_infinity  = porousElement.getPropertyValue('TORTUOSITY');
+            alpha_infinity = porousElement.getPropertyValue('TORTUOSITY');
             eta = porousElement.getPropertyValue('AMBIENT_FLUID_VISCOSITY');
             roh_f = porousElement.getPropertyValue('AMBIENT_FLUID_DENSITY');
             sigma = porousElement.getPropertyValue('STATIC_FLOW_RESISTIVITY');
@@ -161,10 +164,7 @@ classdef Porous2d4n < QuadrilateralElement
             roh_s_complex = (1-phi)*roh_s - roh_sf_complex;
             
             p = porousElement.getPropertyValue('NUMBER_GAUSS_POINT');
-            M_ss=zeros(8,8);
-            M_sf=M_ss;
-            M_fs=M_ss;
-            M_ff=M_ss;
+            M_temp = zeros(8);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
@@ -172,12 +172,14 @@ classdef Porous2d4n < QuadrilateralElement
                 for j=1:p
                     eta=g(j);
                     [N_mat, ~, ~, J] = computeShapeFunction(porousElement,xi,eta);
-                    M_ss = M_ss + (w(i)*w(j)*roh_s_complex*transpose(N_mat)*N_mat*det(J));
-                    M_sf = M_sf + (w(i)*w(j)*roh_sf_complex*transpose(N_mat)*N_mat*det(J));
-                    M_fs = M_sf;
-                    M_ff = M_ff + (w(i)*w(j)*roh_f_complex*transpose(N_mat)*N_mat*det(J));
+                    M_temp = M_temp + (w(i)*w(j)*transpose(N_mat)*N_mat*det(J));
                 end
-            end     
+            end 
+            M_ss = M_temp *roh_s_complex;
+            M_sf = M_temp *roh_sf_complex;
+            M_fs = M_sf;
+            M_ff = M_temp *roh_f_complex; 
+            M = [M_ss,M_sf;M_fs,M_ff];
         end
         
         function F = computeLocalForceVector(quadrilateralElement)
