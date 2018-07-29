@@ -7,7 +7,9 @@ function [Kmatrix]=substructuretest1 (N)
 %i infolge Einheitsverschiebung Dk=1
 
 
-%Kmatrix= globale Systemsteifigkeitsmatrix
+%Kmatrix= globale Systemsteifigkeitsmatrix, lokale Elemente bereits
+%assembliert
+%System: Fachwerk mit Grundelement 1; 7 Elemente 6 Knoten
 Kmatrix=[];
 
 end
