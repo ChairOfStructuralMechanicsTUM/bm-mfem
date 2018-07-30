@@ -98,6 +98,8 @@ classdef FemModel < handle
         end
         
         function modelPart = getModelPart(femModel, name)
+        %GETMODELPART returns the model part NAME
+        %   The model part is a struct with fields 'nodes' and 'elements'
             modelPart = femModel.femModelParts(name);
         end
         
@@ -106,8 +108,19 @@ classdef FemModel < handle
         end
         
         % setter functions
-        function addModelPart(femModel, name, entityArray)
-            femModel.femModelParts(name) = entityArray;
+        function addNewModelPart(femModel, name, nodeIds, elementIds)
+        %ADDMODELPART adds a new model part NAME to the FEMMODEL containing
+        %nodes with NODEIDS and/or elements with ELEMENTIDS. 
+        %   The model part is stored as a struct with the fields 'nodes' 
+        %   and 'elements' containing the nodes and elements as objects.
+            if ~ nodeIds; nodeIds = []; end
+            if ~ elementIds; elementIds = []; end
+            
+            nodes = femModel.getNodes(nodeIds);
+            elements = femModel.getElements(elementIds);
+            
+            femModel.femModelParts(name) = struct('nodes',nodes,...
+                'elements',elements);
         end
         
         % member functions
@@ -169,7 +182,7 @@ classdef FemModel < handle
             end
         end
         
-        function element = addNewElement(femModel, elementName, id, nodes)
+        function element = addNewElement(femModel, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
         %elementName, id, and an array of nodes
             elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
@@ -194,6 +207,10 @@ classdef FemModel < handle
                     element = SpringDamperElement3d2n(id, nodes);
                 case 'ReissnerMindlinElement3d4n'
                     element = ReissnerMindlinElement3d4n(id, nodes);
+                case 'ShellElement3d4n'
+                    element = ShellElement3d4n(id, nodes);
+                case 'DiscreteKirchhoffElement3d4n'
+                    element = DiscreteKirchhoffElement3d4n(id, nodes);
                 case 'QuadrilateralElement2d4n'
                     element = QuadrilateralElement2d4n(id, nodes);
                 case 'HexahedronElement3d8n'
@@ -202,6 +219,10 @@ classdef FemModel < handle
                 otherwise
                     error('unknown element %s',elementName)
             end %switch
+            
+            if nargin == 5
+                element.setProperties(props);
+            end
             
             femModel.elementArray(id) = element;
             

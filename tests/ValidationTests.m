@@ -12,13 +12,13 @@ classdef ValidationTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
 
-            io = ModelIO('validation_bridge_input.msh');
+            io = GmshInput('validation_bridge_input.msh');
             model = io.readModel;
             
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_X');
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_Y');
-            model.getModelPart('roller_support').fixDof('DISPLACEMENT_Y');
+            model.getModelPart('fixed_support').nodes.fixDof('DISPLACEMENT_X');
+            model.getModelPart('fixed_support').nodes.fixDof('DISPLACEMENT_Y');
+            model.getModelPart('roller_support').nodes.fixDof('DISPLACEMENT_Y');
             model.getAllNodes.fixDof('DISPLACEMENT_Z');
             
             addPointLoad(model.getNodes([3 5 9 11]),10,[0 -1 0]);
@@ -210,6 +210,36 @@ classdef ValidationTests <  matlab.unittest.TestCase
             testCase.assertThat(Rd12_actual, IsEqualTo(abs(Rd12_expected) / stiffness^2, ...
                 'Within', AbsoluteTolerance(1e-7)))
             
+        end
+        
+        function shellElement3d4nLargeTest(testCase)
+            %SHELLELEMENT3D4NLARGETEST plane shell consisting out of 100
+            %   elements under static loading at the middle node
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 10, 10, 'elementType', 'ShellElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
+            
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+            
+            model.getNode(61).setDofLoad('DISPLACEMENT_Z',2500);
+            
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+            
+            actualDisplacement = model.getNode(61).getDofValue('DISPLACEMENT_Z');
+            expectedDisplacement = 0.006040637455055775;
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-7)))
         end
         
         function externalScriptsTest(testCase)
