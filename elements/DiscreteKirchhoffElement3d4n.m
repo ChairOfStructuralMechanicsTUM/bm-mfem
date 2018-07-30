@@ -1,18 +1,20 @@
 classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement 
-    %DISCRETEKIRCHHOFFELEMENT3D4N  A quadrilateral plate element
-    %   Detailed explanation goes here
+    %DISCRETEKIRCHHOFFELEMENT3D4N  A quadrilateral plate element based on
+    %   the DKQ formulation
+    %   
+    %   see also SHELLELEMENT3D4N
     
     properties (Access = private)
-    end 
+    end
     
     methods
+        eig
         % Constructor
-        
-        function discreteKirchhoffElement3d4n = DiscreteKirchhoffElement3d4n(id,nodeArray)
+        function obj = DiscreteKirchhoffElement3d4n(id,nodeArray)
             
-            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
-                                             "THICKNESS", "NUMBER_GAUSS_POINT", ...
-                                             "DENSITY", "SHEAR_CORRECTION_FACTOR"]);
+            requiredPropertyNames = ["YOUNGS_MODULUS", "POISSON_RATIO", ...
+                "THICKNESS", "NUMBER_GAUSS_POINT", "DENSITY", ...
+                "SHEAR_CORRECTION_FACTOR"];
                                          
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -25,48 +27,62 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
             end
             
             % call the super class contructor
-            discreteKirchhoffElement3d4n@QuadrilateralElement(super_args{:});
-            discreteKirchhoffElement3d4n.dofNames = cellstr(["DISPLACEMENT_Z", ...
-                                                "ROTATION_X", "ROTATION_Y"]);
+            obj@QuadrilateralElement(super_args{:});
+            obj.dofNames = ["DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y"];
         end
         
         %Initialization
-        function initialize(discreteKirchhoffElement3d4n)
-            discreteKirchhoffElement3d4n.lengthX = computeLength(discreteKirchhoffElement3d4n.nodeArray(1).getCoords, ...
-                discreteKirchhoffElement3d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
             
-            discreteKirchhoffElement3d4n.lengthY = computeLength(discreteKirchhoffElement3d4n.nodeArray(1).getCoords, ...
-                discreteKirchhoffElement3d4n.nodeArray(4).getCoords);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
             
-            checkConvexity(discreteKirchhoffElement3d4n);
+            checkConvexity(obj);
         end
         
-        function responseDoF = getResponseDofArray(discreteKirchhoffElement3d4n, step)
-           
-            responseDoF = zeros(12,1);
-            for itNodes = 1:1:4
-                nodalDof = discreteKirchhoffElement3d4n.nodeArray(itNodes).getDofArray;
-                nodalDof = nodalDof.';
-                
-                for itDof = 3:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
-                end
+        function check(obj)
+            if obj.getPropertyValue('NUMBER_GAUSS_POINT') < 2
+                obj.setPropertyValue('NUMBER_GAUSS_POINT', 2);
             end
+            
+            check@Element(obj);
+        end
+        
+        function [N, N_mat, J] = computeShapeFunction(obj, xi, eta)
+            % Shape Function and Derivatives
+            N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
+            N_mat = zeros(3,12);
+            N_mat(1,1:3:end) = N(:);
+            N_mat(2,2:3:end) = N(:);
+            N_mat(3,3:3:end) = N(:);
+
+            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            
+            % Coordinates of the nodes forming one element
+            ele_coords = zeros(4,2);
+            for i=1:4
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
+            end
+            
+            % Jacobian 
+            J = N_Diff_Par * ele_coords;
         end
 
-        function [B_b, J] = computeShapeFunction(discreteKirchhoffElement3d4n,xi,eta)
-            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
-                          -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+        function B_b = computeBMatrix(obj, xi, eta, J)
 
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(4,2); 
             for i=1:4
-                ele_coords(i,1) = discreteKirchhoffElement3d4n.nodeArray(i).getX;
-                ele_coords(i,2) = discreteKirchhoffElement3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
-            % Jacobian and inverse Jacobian
-            J = N_Diff_Par * ele_coords;
+            % Inverse Jacobian
             inv_J = inv(J);
             inv_J_TR = [inv_J, zeros(2,2); zeros(2,2), inv_J]; 
             
@@ -238,80 +254,104 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
             A(3,2) = 1; 
             A(3,3) = 1;
             
-
-            
             % Computing the B_Bending Matrix
             B_b = A * inv_J_TR * Psi_Diff_Par; 
         end
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix(discreteKirchhoffElement3d4n)            
-            EModul = discreteKirchhoffElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            prxy = discreteKirchhoffElement3d4n.getPropertyValue('POISSON_RATIO');
-            nr_gauss_points = discreteKirchhoffElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            thickness = discreteKirchhoffElement3d4n.getPropertyValue('THICKNESS');
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+            EModul = obj.getPropertyValue('YOUNGS_MODULUS');
+            prxy = obj.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            thickness = obj.getPropertyValue('THICKNESS');
             
             % Material Bending Matrix D_b
-            D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
-           
+            D_b = [1    prxy    0; prxy     1   0; ...
+                0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
+            
             [w,g] = returnGaussPoint(nr_gauss_points);
             stiffnessMatrix = sparse(12,12);
             
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                        [B_b, J] = computeShapeFunction(discreteKirchhoffElement3d4n,g(xi),g(eta));
-
-                        stiffnessMatrix = stiffnessMatrix +             ...
-                            B_b' * D_b * B_b * det(J) * w(xi) * w(eta);                       
+                    [~,~,J] = obj.computeShapeFunction(g(xi), g(eta));
+                    B_b = obj.computeBMatrix(g(xi), g(eta), J);
+                    
+                    stiffnessMatrix = stiffnessMatrix + ...
+                        B_b' * D_b * B_b * det(J) * w(xi) * w(eta);
                 end
             end
         end
+        
+        function massMatrix = computeLocalMassMatrix(obj)
+            density = obj.getPropertyValue('DENSITY');
+            thickness = obj.getPropertyValue('THICKNESS');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            
+            % Coordinates of the nodes forming one element
+            ele_coords = zeros(4,2);
+            for i=1:4
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
+            end
+            
+            inertia = density*thickness;
+            rot_inertia = density*thickness^3/12;
+            dens_mat = sparse(1:3,1:3,[inertia rot_inertia*ones(1,2)]);
+            
+            [w,g] = returnGaussPoint(nr_gauss_points);
+            massMatrix = sparse(12,12);
+            for xi = 1 : nr_gauss_points
+                for eta = 1 : nr_gauss_points
+                    [~, N_mat, J] = computeShapeFunction(obj, g(xi), g(eta));
+                    massMatrix = massMatrix + N_mat' * dens_mat * N_mat * det(J) * w(xi) * w(eta) ;
+                end
+            end
+
+        end
                 
-        function pl = drawDeformed(discreteKirchhoffElement3d4n, step, scaling)
-            x = [discreteKirchhoffElement3d4n.nodeArray(1).getX, discreteKirchhoffElement3d4n.nodeArray(2).getX, ...
-                 discreteKirchhoffElement3d4n.nodeArray(3).getX, discreteKirchhoffElement3d4n.nodeArray(4).getX, ...
-                 discreteKirchhoffElement3d4n.nodeArray(1).getX];
+        function pl = drawDeformed(obj, step, scaling)
+            x = [obj.nodeArray(1).getX, obj.nodeArray(2).getX, ...
+                 obj.nodeArray(3).getX, obj.nodeArray(4).getX, ...
+                 obj.nodeArray(1).getX];
              
-            y = [discreteKirchhoffElement3d4n.nodeArray(1).getY, discreteKirchhoffElement3d4n.nodeArray(2).getY, ... 
-                 discreteKirchhoffElement3d4n.nodeArray(3).getY, discreteKirchhoffElement3d4n.nodeArray(4).getY, ...
-                 discreteKirchhoffElement3d4n.nodeArray(1).getY];
+            y = [obj.nodeArray(1).getY, obj.nodeArray(2).getY, ... 
+                 obj.nodeArray(3).getY, obj.nodeArray(4).getY, ...
+                 obj.nodeArray(1).getY];
              
-            z = [discreteKirchhoffElement3d4n.nodeArray(1).getZ + scaling * discreteKirchhoffElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Z', step), ... 
-                 discreteKirchhoffElement3d4n.nodeArray(2).getZ + scaling * discreteKirchhoffElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_Z', step), ... 
-                 discreteKirchhoffElement3d4n.nodeArray(3).getZ + scaling * discreteKirchhoffElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_Z', step), ...
-                 discreteKirchhoffElement3d4n.nodeArray(4).getZ + scaling * discreteKirchhoffElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_Z', step), ...
-                 discreteKirchhoffElement3d4n.nodeArray(1).getZ + scaling * discreteKirchhoffElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Z', step)];
+            z = [obj.nodeArray(1).getZ + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Z', step), ... 
+                 obj.nodeArray(2).getZ + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Z', step), ... 
+                 obj.nodeArray(3).getZ + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Z', step), ...
+                 obj.nodeArray(4).getZ + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Z', step), ...
+                 obj.nodeArray(1).getZ + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Z', step)];
             
             pl = line(x,y,z);
         end
         
-        function dofs = getDofList(element)
-            dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_Z');
-            dofs([2 5 8 11]) = element.nodeArray.getDof('ROTATION_X');
-            dofs([3 6 9 12]) = element.nodeArray.getDof('ROTATION_Y');
+        function dofs = getDofList(obj)
+            dofs([1 4 7 10]) = obj.nodeArray.getDof('DISPLACEMENT_Z');
+            dofs([2 5 8 11]) = obj.nodeArray.getDof('ROTATION_X');
+            dofs([3 6 9 12]) = obj.nodeArray.getDof('ROTATION_Y');
         end
         
-        function vals = getValuesVector(element, step)
+        function vals = getValuesVector(obj, step)
             vals = zeros(1,12);
-            
-            vals([1 4 7 10]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
-            vals([2 5 8 11]) = element.nodeArray.getDofValue('ROTATION_X',step);
-            vals([3 6 9 12]) = element.nodeArray.getDofValue('ROTATION_Y',step);
+            vals([1 4 7 10]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([2 5 8 11]) = obj.nodeArray.getDofValue('ROTATION_X',step);
+            vals([3 6 9 12]) = obj.nodeArray.getDofValue('ROTATION_Y',step);
         end
         
-        function vals = getFirstDerivativesVector(element, step)
+        function vals = getFirstDerivativesVector(obj, step)
             vals = zeros(1,12);
-            
-            [~, vals([1 4 7 10]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
-            [~, vals([2 5 8 11]), ~] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, vals([3 6 9 12]), ~] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, vals([1 4 7 10]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([2 5 8 11]), ~] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, vals([3 6 9 12]), ~] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
         end
         
-        function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,12);            
-            
-            [~, ~, vals([1 4 7 10])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
-            [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, ~, vals([3 6 9 12])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+        function vals = getSecondDerivativesVector(obj, step)
+            vals = zeros(1,12);
+            [~, ~, vals([1 4 7 10])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([2 5 8 11])] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, ~, vals([3 6 9 12])] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
         end
     end
 end

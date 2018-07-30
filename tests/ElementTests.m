@@ -616,6 +616,126 @@ classdef ElementTests < matlab.unittest.TestCase
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
         end
+        
+        function testDKQElement3d4nStatic (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+
+            % Model
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
+                'elementType', 'DiscreteKirchhoffElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y"]);
+            model.getNode(13).setDofLoad('DISPLACEMENT_Z', 2500);
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+
+            % Properties
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            
+            % Solver
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+
+            % Assertion
+            actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
+            actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
+            actualRotationY = model.getAllNodes.getDofValue('ROTATION_Y');
+            
+            expectedDisplacementZ = [0;0;0;0;0;0;0.00149797814601510;...
+                0.00291158986538897;0.00149797814601510;0;0;0.00291158986538897;...
+                0.00666684399719017;0.00291158986538897;0;0;0.00149797814601510;...
+                0.00291158986538897;0.00149797814601510;0;0;0;0;0;0];
+            expectedRotationX = [0;0;0;0;0;0;0.00882854312106295;...
+                0.0197154931962282;0.00882854312106307;0;0;4.27500171253438e-18;...
+                -8.45148379594905e-18;-2.64711902013052e-17;0;0;-0.00882854312106298;...
+                -0.0197154931962282;-0.00882854312106298;0;0;0;0;0;0];
+            expectedRotationY = [0;0;0;0;0;0;-0.00882854312106294;...
+                1.31064049521836e-17;0.00882854312106299;0;0;-0.0197154931962283;...
+                5.76855816486450e-17;0.0197154931962282;0;0;-0.00882854312106298;...
+                1.10572958824939e-17;0.00882854312106297;0;0;0;0;0;0];
+            
+            testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+                'Within', AbsoluteTolerance(1e-12)))
+            testCase.assertThat(actualRotationX, IsEqualTo(expectedRotationX, ...
+                'Within', AbsoluteTolerance(1e-12)))
+            testCase.assertThat(actualRotationY, IsEqualTo(expectedRotationY, ...
+                'Within', AbsoluteTolerance(1e-12)))
+        end
+        
+        function testDKQElement3d4nDynamic (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+
+            % Model
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
+                'elementType', 'DiscreteKirchhoffElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y"]);
+            model.getNode(13).setDofLoad('DISPLACEMENT_Z', 2500);
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+
+            % Properties
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            model.getAllElements.addProperty('RAYLEIGH_ALPHA',3);
+            model.getAllElements.addProperty('RAYLEIGH_BETA',4e-4);
+            
+            % Solver
+            dt = .001;
+            time = 0;
+            endTime = .005;
+            solver = NewmarkSolvingStrategy(model, dt);
+            
+            while time < endTime
+                solver.solve();
+                time = time + dt;
+            end
+            
+            % Assertion
+            actualDisplacementZ = model.getNode(13).getDofValue('DISPLACEMENT_Z','all');
+            expectedDisplacementZ = [0 0.000803812434214726 0.00228477804453036...
+                0.00342540740465850 0.00439030172787720 0.00553442600308321];
+            testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+                'Within', RelativeTolerance(1e-7)))
+        end
+        
+        function testDKQElement3d4nEigen(testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            % Model
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
+                'elementType', 'DiscreteKirchhoffElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y"]);
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+            
+            % Properties
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            
+            % Solver
+            solver = EigensolverStrategy(model);
+            solver.solve(5);
+            
+            % Assertion
+            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            expectedEigenfrequencies = [46.1882586911365;103.709269817444;...
+                103.709269817444;154.684851632199;197.188070901913];
+            
+            testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
+                'Within', RelativeTolerance(1e-7)))
+        end
     end
 end
 
