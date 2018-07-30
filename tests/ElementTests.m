@@ -255,7 +255,7 @@ classdef ElementTests < matlab.unittest.TestCase
         
         function testReissnerMindlinElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
-            import matlab.unittest.constraints.RelativeTolerance
+            import matlab.unittest.constraints.AbsoluteTolerance
 
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'ReissnerMindlinElement3d4n');
@@ -294,11 +294,11 @@ classdef ElementTests < matlab.unittest.TestCase
                         -0.00254235733839923;0;0;0;0;0;0];
             
             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualRotationX, IsEqualTo(expectedRotationX, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualRotationY, IsEqualTo(expectedRotationY, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
         end
         
         function testReissnerMindlinElement3d4nDynamic (testCase)
@@ -473,7 +473,7 @@ classdef ElementTests < matlab.unittest.TestCase
         
         function testShellElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
-            import matlab.unittest.constraints.RelativeTolerance
+            import matlab.unittest.constraints.AbsoluteTolerance
 
             % Model
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
@@ -529,17 +529,17 @@ classdef ElementTests < matlab.unittest.TestCase
                 1.34759401859884e-07;9.12139527139402e-23;0;0;0;0;0;0];
             
             testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualDisplacementY, IsEqualTo(expectedDisplacementY, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualRotationX, IsEqualTo(expectedRotationX, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualRotationY, IsEqualTo(expectedRotationY, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
             testCase.assertThat(actualRotationZ, IsEqualTo(expectedRotationZ, ...
-                'Within', RelativeTolerance(1e-7)))
+                'Within', AbsoluteTolerance(1e-12)))
         end
         
         function testShellElement3d4nDynamic(testCase)
