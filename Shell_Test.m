@@ -52,4 +52,4 @@ v =  VisualizationParaview(model, 'Test.vtk');
 v.vtkWrite();
 
 
-model.getNode(middle).getDofValue('DISPLACEMENT_Z')
+model.getNode(middle).getDofValue('DISPLACEMENT_Z','all')
