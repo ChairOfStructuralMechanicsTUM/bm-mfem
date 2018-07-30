@@ -422,21 +422,7 @@ classdef ShellElement3d4n < QuadrilateralElement
             end
 
         end
-        
-        function dampingMatrix = computeLocalDampingMatrix(obj)
-            props = obj.getProperties;
-            
-            if props.hasValue('RAYLEIGH_ALPHA') && props.hasValue('RAYLEIGH_BETA')
-                alpha = props.getValue('RAYLEIGH_ALPHA');
-                beta = props.getValue('RAYLEIGH_BETA');
-                dampingMatrix = alpha * obj.computeLocalMassMatrix + ...
-                    beta * obj.computeLocalStiffnessMatrix;
-            else
-                dampingMatrix = sparse(24,24);
-            end
-            
-        end
-        
+                
         function f=computeLocalForceVector(obj)
             f = zeros(1,24); 
         end

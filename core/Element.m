@@ -173,6 +173,22 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            %COMPUTELOCALDAMPINGMATRIX returns the damping matrix for
+            %   proportional (Rayleigh) damping
+            props = obj.getProperties;
+            
+            if props.hasValue('RAYLEIGH_ALPHA') && props.hasValue('RAYLEIGH_BETA')
+                alpha = props.getValue('RAYLEIGH_ALPHA');
+                beta = props.getValue('RAYLEIGH_BETA');
+                dampingMatrix = alpha * obj.computeLocalMassMatrix + ...
+                    beta * obj.computeLocalStiffnessMatrix;
+            else
+                nnodes = length(obj.nodeArray);
+                ndofs = length(obj.dofNames);
+                dampingMatrix = sparse(nnodes*ndofs, nnodes*ndofs);
+            end
+        end
         
         function overwriteNode(element, oldNode, newNode)
             if ~isa(newNode,'Node')
