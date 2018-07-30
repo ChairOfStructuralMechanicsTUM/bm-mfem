@@ -38,21 +38,21 @@ classdef Visualization < handle
             end
             
             % show element numbers
-            if(all(nodes.getDimension == 3))
-                for ii = 1:length(elements)
-                    c = elements(ii).barycenter;
-                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                    text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','center','FontSize',10)
-                end
-            else
-                for ii = 1:length(elements)
-                    c = elements(ii).barycenter;
-                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                    text(c(1), c(2), elemStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','center','FontSize',10)
-                end
-            end
+%             if(all(nodes.getDimension == 3))
+%                 for ii = 1:length(elements)
+%                     c = elements(ii).barycenter;
+%                     elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+%                     text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
+%                         'HorizontalAlignment','center','FontSize',10)
+%                 end
+%             else
+%                 for ii = 1:length(elements)
+%                     c = elements(ii).barycenter;
+%                     elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+%                     text(c(1), c(2), elemStr,'Interpreter','latex', ...
+%                         'HorizontalAlignment','center','FontSize',10)
+%                 end
+%             end
             
             % show node numbers
             if(all(nodes.getDimension == 3))
