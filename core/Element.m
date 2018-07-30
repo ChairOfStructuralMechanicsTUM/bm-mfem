@@ -40,7 +40,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
         computeLocalStiffnessMatrix(element)
-        computeLocalForceVector(element)
+%         computeLocalForceVector(element)
         getDofList(element)
         getValuesVector(element, step)
     end
