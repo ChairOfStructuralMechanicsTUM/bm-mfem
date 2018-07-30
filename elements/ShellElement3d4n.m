@@ -398,9 +398,6 @@ classdef ShellElement3d4n < QuadrilateralElement
                 ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
-            lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * ...
-                computeLength(ele_coords(1,:), ele_coords(2,:));
-            
             if use_cmm
                 inertia = density*thickness;
                 rot_inertia = density*thickness^3/12;
@@ -414,7 +411,10 @@ classdef ShellElement3d4n < QuadrilateralElement
                         massMatrix = massMatrix + N_mat' * dens_mat * N_mat * det(J) * w(xi) * w(eta) ;
                     end
                 end
+                
             else
+                lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * ...
+                    computeLength(ele_coords(1,:), ele_coords(2,:));
                 nodalMass = 0.25 * density * thickness * lumpArea;
                 i = [1 2 3 7 8 9 13 14 15 19 20 21];
                 
