@@ -14,14 +14,27 @@
 %assembliert
 %System: Fachwerk mit Grundelement 1; 12 Elemente 9 Knoten 18 globalen Dofs
 
-%%
-Kmatrix=string(ones(18));
+%% setup
+
+nodearray=string(zeros(9,1));
+u=string(zeros(18,1));
+Kmatrix=string(zeros(18));
+for i=1:18
+nodearray(i)=['n' num2str(i)];
+end
+
+for i=1:18
+    u(i)=['D' num2str(i)];
+end
+     
 for i=1:18
     for j=1:18
-        id=[i,j]
-        Kmatrix(i,j)=['K' num2str(id(1)) num2str(id(2))]
+        id=[i,j];
+        Kmatrix(i,j)=['K' num2str(id(1)) num2str(id(2))];
     end
 end
-%%
+
+%% substructuring
+substructure1(2)
 
 

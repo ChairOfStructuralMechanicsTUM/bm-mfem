@@ -1,6 +1,8 @@
-function [Kmatrix]=substructure1 (N)
+function [nodematrix]=substructure1(N,dim,nodearray)
 %N: Anzahl der gewünschten substructures
-%Test-steifigkeitsmatrix wird eingeführt um substrrukturierung testen zu
+%dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
+%nodeaaray habe!
+%Test-steifigkeitsmatrix wird eingeführt um substrrukturierung testen zusubstructure1 (N, nodearray, dofarray, Kmatrix, dim)
 %können
 %dof: [D1 D2 D3]^T werden an K ranmultipliziert: erste Spalte von K bezieht
 %sich auf D1... 
@@ -20,7 +22,12 @@ function [Kmatrix]=substructure1 (N)
 %     end
 % end
 
-%%
-
-
+%% nodearray-->nodematrix
+k=1
+for i=1:dim(2)
+    for j=1:dim(1)
+        nodematrix(j,i)=nodearray(k);
+        k=k+1;
+    end
 end
+%% nodematrix split in N substructures
