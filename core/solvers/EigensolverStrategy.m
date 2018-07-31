@@ -226,10 +226,22 @@ classdef EigensolverStrategy < Solver
             obj.isInitialized = true;
         end
         
-        function ef = getEigenfrequencies(obj)
-            %GETEIGENFREQUENCIES returns the eigenfrequencies in rad/s
-            %sorted from low to high
+        function ef = getEigenfrequencies(obj, unit)
+            %GETEIGENFREQUENCIES returns the eigenfrequencies sorted from low to high
+            %   UNIT can be 'Hz' or 'rad'. If UNIT is not specified, 'rad'
+            %   will be used.
             ef = obj.eigenfrequencies;
+            if nargin > 1
+                if strcmp(unit, 'Hz')
+                    ef = ef/(2*pi);
+                elseif strcmp(unit, 'rad')
+                    %nothing
+                else
+                    msg = 'GetEigenfrequenices: unit can only be Hz or rad.';
+                    e = MException('MATLAB:bm_mfem:unknownParameter',msg);
+                    throw(e);
+                end
+            end
         end
         
         function mm = getModalMatrix(obj)
