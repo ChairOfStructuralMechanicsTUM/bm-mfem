@@ -244,7 +244,8 @@ classdef ElementTests < matlab.unittest.TestCase
             solver = EigensolverStrategy(model);
             solver.solve(5);
             
-            actualEigenfrequenciesCantilever = sort(solver.getEigenfrequencies);
+            %eigenfrequencies in Hz
+            actualEigenfrequenciesCantilever = solver.getEigenfrequencies ./ (2*pi);
             expectedEigenfrequenciesCantilever = [0.915242085421142;5.73511288165053;16.0584347115302;31.4797553897702;52.0975276397135];
 
             testCase.assertThat(actualEigenfrequenciesCantilever, IsEqualTo(expectedEigenfrequenciesCantilever, ...
@@ -370,7 +371,8 @@ classdef ElementTests < matlab.unittest.TestCase
             solver = EigensolverStrategy(model);
             solver.solve(5);
             
-            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            %eigenfrequencies in Hz
+            actualEigenfrequencies = solver.getEigenfrequencies('Hz');
             expectedEigenfrequencies = [1.01402840311520;3.22165476249304;3.22165476249320;...
                 5.32248978160243;10.5674305646586];
             
@@ -609,7 +611,7 @@ classdef ElementTests < matlab.unittest.TestCase
             solver.solve(5);
             
             % Assertion
-            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            actualEigenfrequencies = solver.getEigenfrequencies('Hz');
             expectedEigenfrequencies = [41.3911366690480;80.2659687320295;...
                 80.2659687320296;103.127323365447;122.970895447928];
             
@@ -729,7 +731,7 @@ classdef ElementTests < matlab.unittest.TestCase
             solver.solve(5);
             
             % Assertion
-            actualEigenfrequencies = sort(solver.getEigenfrequencies);
+            actualEigenfrequencies = solver.getEigenfrequencies('Hz');
             expectedEigenfrequencies = [46.1882586911365;103.709269817444;...
                 103.709269817444;154.684851632199;197.188070901913];
             
