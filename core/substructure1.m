@@ -1,4 +1,4 @@
-function [nodematrix]=substructure1(N,dim,nodearray)
+function [submatrix]=substructure1(N,dim,nodearray)
 %N: Anzahl der gewünschten substructures
 %dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
 %nodeaaray habe!
@@ -23,6 +23,7 @@ function [nodematrix]=substructure1(N,dim,nodearray)
 % end
 
 %% nodearray-->nodematrix
+nodematrix=zeros(dim);
 k=1
 for i=1:dim(2)
     for j=1:dim(1)
@@ -31,3 +32,19 @@ for i=1:dim(2)
     end
 end
 %% nodematrix split in N substructures
+
+[left,right]=Matrixsplit(nodematrix)
+%submatrix=[left,right]
+l=1
+while l<N-1
+    if size(left,2)<size(right,2)
+        [left,right]=Matrixsplit(right)
+       
+    else
+        [left,right]=Matrixsplit(left)
+    end
+    l=l+1;
+    %submatrix=[left,right] %hier müsste eine merge funktion stehen!
+end
+
+
