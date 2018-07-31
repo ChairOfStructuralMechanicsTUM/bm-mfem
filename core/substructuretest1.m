@@ -9,7 +9,15 @@ function [Kmatrix]=substructuretest1 (N)
 
 %Kmatrix= globale Systemsteifigkeitsmatrix, lokale Elemente bereits
 %assembliert
-%System: Fachwerk mit Grundelement 1; 7 Elemente 6 Knoten
-Kmatrix=[];
+%System: Fachwerk mit Grundelement 1; 7 Elemente 6 Knoten 12 globalen Dofs
+Kmatrix=string(ones(12));
+%id=string();
+for i=1:12
+    for j=1:12
+        id=[i,j]
+        Kmatrix(i,j)=['K' num2str(id(1)) num2str(id(2))]
+    end
+end
+
 
 end
