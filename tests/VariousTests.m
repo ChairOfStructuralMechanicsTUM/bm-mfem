@@ -53,7 +53,7 @@ classdef VariousTests <  matlab.unittest.TestCase
             testCase.verifyEqual(model.getElement(9).getPropertyValue('DENSITY'),7850);
             testCase.verifyEqual(model.getElement(11).getPropertyValue('POISSON_RATIO'),0.3);
             testCase.verifyThat(isa(model.getElement(11),'ReissnerMindlinElement3d4n'),IsTrue);
-            testCase.verifyEqual(model.getModelPart('PointLoad').nodes.getId(),11);
+            testCase.verifyEqual(model.getModelPart('PointLoad').getNodes.getId(),11);
         end
     end
     

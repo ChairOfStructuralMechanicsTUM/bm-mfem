@@ -6,8 +6,8 @@ classdef FemModel < handle
     properties (Access = private)
         nodeArray = Node.empty
         elementArray = Element.empty
-        femModelParts = containers.Map
-        dofArray = {}
+        femModelParts
+        dofArray
         initialized = false
         fixedDofs
         freeDofs
@@ -16,7 +16,10 @@ classdef FemModel < handle
     
     methods
         % constructor
-        function femModel = FemModel(nodeArray, elementArray, femModelParts)
+        function obj = FemModel(nodeArray, elementArray, femModelParts)
+            
+            obj.mProperties = PropertyContainer();
+            obj.femModelParts = containers.Map;
             
             if nargin > 0
                 nodeIds = arrayfun(@(node) node.getId, nodeArray);
@@ -24,7 +27,7 @@ classdef FemModel < handle
                 if ~ isempty(duplicated_nodes)
                     error('multiple nodes with id %d exist',duplicated_nodes);
                 else
-                    femModel.nodeArray = nodeArray;
+                    obj.nodeArray = nodeArray;
                 end
                 
                 elementIds = arrayfun(@(element) element.getId, elementArray);
@@ -32,75 +35,78 @@ classdef FemModel < handle
                 if ~ isempty(duplicated_elements)
                     error('multiple elements with id %d exist',duplicated_elements);
                 else
-                    femModel.elementArray = elementArray;
+                    obj.elementArray = elementArray;
                 end
             end
             
             if nargin == 3
-                femModel.femModelParts = femModelParts;
+                obj.femModelParts = femModelParts;
             end
             
-            femModel.mProperties = PropertyContainer();
         end
         
         % getter functions
-        function init = isInitialized(femModel)
-            init = femModel.initialized;
+        function init = isInitialized(obj)
+            init = obj.initialized;
         end
         
-        function nodeArray = getAllNodes(femModel)
-            nodeArray = femModel.nodeArray;
+        function nodeArray = getAllNodes(obj)
+            nodeArray = obj.nodeArray;
         end
         
-        function elementArray = getAllElements(femModel)
-            elementArray = femModel.elementArray;
+        function elementArray = getAllElements(obj)
+            elementArray = obj.elementArray;
         end
         
-        function dofArray = getDofArray(femModel)
-            if ~ femModel.initialized
-                femModel.initialize;
-            end
-            dofArray = femModel.dofArray;
+        function dofArray = getDofArray(obj)
+            if ~ obj.initialized; obj.initialize; end
+            dofArray = obj.dofArray;
         end
         
-        function [freeDofs, fixedDofs] = getDofConstraints(femModel)
-            if ~femModel.initialized
-                femModel.initialize;
-            end
-            freeDofs = femModel.freeDofs;
-            fixedDofs = femModel.fixedDofs;
+        function [freeDofs, fixedDofs] = getDofConstraints(obj)
+            if ~ obj.initialized; obj.initialize; end
+            freeDofs = obj.freeDofs;
+            fixedDofs = obj.fixedDofs;
         end
         
-        function node = getNode(femModel, id)
-            node = femModel.nodeArray(id);
+        function node = getNode(obj, id)
+            node = obj.nodeArray(id);
         end
         
-        function nodes = getNodes(femModel, ids)
+        function nodes = getNodes(obj, ids)
             nodes = Node.empty;
             for ii = 1:length(ids)
-                nodes(ii) = femModel.nodeArray(ids(ii));
+                nodes(ii) = obj.nodeArray(ids(ii));
             end
         end
         
-        function element = getElement(femModel, id)
-            element = femModel.elementArray(id);
+        function element = getElement(obj, id)
+            element = obj.elementArray(id);
         end
         
-        function elements = getElements(femModel, ids)
+        function elements = getElements(obj, ids)
             elements = Element.empty;
             for ii = 1:length(ids)
-                elements(ii) = femModel.elementArray(ids(ii));
+                elements(ii) = obj.elementArray(ids(ii));
             end
         end
         
-        function femModelParts = getAllModelParts(femModel)
-            femModelParts = femModel.femModelParts;
+        function mp = getAllModelParts(obj)
+            %GETALLMODELPARTS returns the names of all model parts
+            mp = obj.femModelParts.keys;
         end
         
-        function modelPart = getModelPart(femModel, name)
-        %GETMODELPART returns the model part NAME
-        %   The model part is a struct with fields 'nodes' and 'elements'
-            modelPart = femModel.femModelParts(name);
+        function mp = getModelPart(obj, name)
+        %GETMODELPART returns a model part
+        %   mp = GETMODELPART(name)
+        %   see also FEMMODELPART
+            mp = obj.femModelParts(name);
+        end
+        
+        function mp = getMainModelPart(obj)
+        %GETMAINMODELPART returns the main model part
+            if ~ obj.initialized; obj.initialize; end
+            mp = obj.femModelParts('MainModelPart');
         end
         
         function mProperties = getProperties(femModel)
@@ -108,90 +114,97 @@ classdef FemModel < handle
         end
         
         % setter functions
-        function addNewModelPart(femModel, name, nodeIds, elementIds)
-        %ADDMODELPART adds a new model part NAME to the FEMMODEL containing
-        %nodes with NODEIDS and/or elements with ELEMENTIDS. 
-        %   The model part is stored as a struct with the fields 'nodes' 
-        %   and 'elements' containing the nodes and elements as objects.
-            if ~ nodeIds; nodeIds = []; end
-            if ~ elementIds; elementIds = []; end
+        function addNewModelPart(obj, name, nodeIds, elementIds)
+        %ADDNEWMODELPART add a new model part
+        %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to the 
+        %   FemModel containing nodes with nodeIds and/or elements with
+        %   elementIds.
+        %    
+        %   see also FEMMODELPART
+        
+            nodes = obj.getNodes(nodeIds);
+            elements = obj.getElements(elementIds);
             
-            nodes = femModel.getNodes(nodeIds);
-            elements = femModel.getElements(elementIds);
+            obj.femModelParts(name) = FemModelPart(name, ...
+                nodes, elements, obj);
             
-            femModel.femModelParts(name) = struct('nodes',nodes,...
-                'elements',elements);
+            obj.initialized = false;
         end
         
         % member functions
-        function initialize(femModel)
+        function initialize(obj)
         %INITIALIZE makes the model ready for computation by performing the
-        %following tasks:
-        %(1) check if all elements are initialized correctly
-        %(2) assign unique ids to the dofs
-        %(3) determine free and fixed dofs
-        %(4) sets the step to 1
-            if femModel.initialized
+        %   following tasks:
+        %       (1) check if all elements are initialized correctly
+        %       (2) assign unique ids to the dofs
+        %       (3) determine free and fixed dofs
+        %       (4) sets the step to 1
+        %       (5) add all nodes and elements to the main model part
+        %       (6) initialize the modelparts
+            if obj.initialized
                 return;
             end
             
-            elements = femModel.getAllElements();
-            for ii = 1:length(elements)
-                elements(ii).check();
+            % (1) check all elements
+            arrayfun(@(e) e.check(), obj.elementArray);
+            
+            % (2) assign dof ids
+            obj.dofArray = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
+            obj.dofArray = [obj.dofArray{:}];
+            
+            for ii = 1:length(obj.dofArray)
+                obj.dofArray(ii).setId(ii);
             end
             
-            femModel.dofArray = arrayfun(@(node) node.getDofArray, femModel.nodeArray, 'UniformOutput', false)';
-            femModel.dofArray = [femModel.dofArray{:}];
-%             femModel.dofArray = reshape(femModel.dofArray,1,size(femModel.dofArray,1)*size(femModel.dofArray,2));
-            for ii = 1:length(femModel.dofArray)
-                femModel.dofArray(ii).setId(ii);
-            end
+            % (3) determine free and fixed dofs
+            fixed = obj.dofArray.isFixed();
+            obj.fixedDofs = obj.dofArray(fixed);
+            obj.freeDofs = obj.dofArray(~fixed);
             
-            dofs = femModel.dofArray;
-            femModel.freeDofs = Dof.empty;
-            femModel.fixedDofs = Dof.empty;
-            for itDof = 1:length(dofs)
-                if dofs(itDof).isFixed
-                    femModel.fixedDofs = [femModel.fixedDofs dofs(itDof)];
-                else
-                    femModel.freeDofs = [femModel.freeDofs dofs(itDof)];
-                end
-            end
+            % (4) set step to 1
+            obj.getProperties.addValue('STEP',1);
             
-            femModel.getProperties.addValue('STEP',1);
+            % (5) build main model part
+            obj.femModelParts('MainModelPart') = FemModelPart('MainModelPart', ...
+                obj.nodeArray, obj.elementArray, obj);
             
-            femModel.initialized = true;
+            % (6) initialize the modelparts
+            cellfun(@(mp) mp.initialize(), obj.femModelParts.values);
+            
+            obj.initialized = true;
         end
         
-        function node = addNewNode(femModel, id, x, y, z)
+        function node = addNewNode(obj, id, x, y, z)
         %ADDNEWNODE inserts a new node in the fem model with id and x,y,z
-        %coordinates
-            nodeIds = arrayfun(@(node) node.getId, femModel.nodeArray);
+        %   coordinates
+            nodeIds = arrayfun(@(node) node.getId, obj.nodeArray);
             if any(id == nodeIds)
                 error('a node with id %d already exists in the model', id)
             end
             
             if nargin == 4
                 node = Node(id, x, y);
-                femModel.nodeArray(id) = node;
+                obj.nodeArray(id) = node;
             elseif nargin == 5
                 node = Node(id, x, y, z);
-                femModel.nodeArray(id) = node;
+                obj.nodeArray(id) = node;
             else
                 error('wrong input parameters')
             end
+            
+            obj.initialized = false;
         end
         
-        function element = addNewElement(femModel, elementName, id, nodes, props)
+        function element = addNewElement(obj, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
-        %elementName, id, and an array of nodes
-            elementIds = arrayfun(@(element) element.getId, femModel.elementArray);
+        %   elementName, id, and an array of nodes
+            elementIds = arrayfun(@(element) element.getId, obj.elementArray);
             if any(id == elementIds)
                 error('an element with id %d already exists in the model', id)
             end
             
             if ~ isa(nodes,'Node')
-                nodes = femModel.getNodes(nodes);
+                nodes = obj.getNodes(nodes);
             end
             
             switch elementName
@@ -224,8 +237,8 @@ classdef FemModel < handle
                 element.setProperties(props);
             end
             
-            femModel.elementArray(id) = element;
-            
+            obj.elementArray(id) = element;
+            obj.initialized = false;
         end
         
     end

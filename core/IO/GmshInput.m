@@ -160,11 +160,13 @@ classdef GmshInput < ModelIO
                             nModelPart = modelParts(modelPartName);
                             
                             if elementType == 15 % don't add nodes to the array
-                                nModelPart.nodes = [modelParts(modelPartName).nodes cElement];
+                                nModelPart.addNode(cElement);
+%                                 nModelPart.nodes = [modelParts(modelPartName).nodes cElement];
                                 modelParts(modelPartName) = nModelPart;
                             else
                                 elementArray = [elementArray cElement];
-                                nModelPart.elements = [nModelPart.elements cElement];
+                                nModelPart.addElement(cElement);
+%                                 nModelPart.elements = [nModelPart.elements cElement];
                                 modelParts(modelPartName) = nModelPart;
                             end
                             
@@ -205,8 +207,9 @@ classdef GmshInput < ModelIO
                         modelPartName = char(strrep(modelPartNameString(end),'"',''));
                         
                         obj.modelPartNames(nModelPartName) = modelPartName;
-                        modelParts(modelPartName) = struct('nodes',[],...
-                            'elements',[]);
+                        modelParts(modelPartName) = FemModelPart(modelPartName,[],[]);
+%                         modelParts(modelPartName) = struct('nodes',[],...
+%                             'elements',[]);
                         tline = fgetl(fid);
                     end
                     
