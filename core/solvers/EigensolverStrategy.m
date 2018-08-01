@@ -155,7 +155,8 @@ classdef EigensolverStrategy < Solver
             
             [~, force] = obj.assembler.applyExternalForces(obj.femModel);
             nModes = length(obj.eigenfrequencies);
-            
+            f_ind = find(force); %indices, where a force is acting
+
             for e=1:length(excitations)
                 excitation = excitations(e);
                 result = zeros;
@@ -169,12 +170,13 @@ classdef EigensolverStrategy < Solver
                         dampingRatio = 0.0;
                     end
                     factor = (obj.eigenfrequencies(n)^2 - excitation^2) + 2i * dampingRatio * obj.eigenfrequencies(n) * excitation;
-                    result = result + 1/factor .* ((obj.modalMatrix(:,n) * obj.modalMatrix(:,n).') * force');
+                    result = result + 1/factor .* ((obj.modalMatrix(:,n) * obj.modalMatrix(f_ind,n).') * force(f_ind)');
                 end
                 obj.assembler.appendValuesToDofs(obj.femModel, result);
 %                 solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', (1i * excitation) .* result)
 %                 solver.assembler.appendValuesToNodes(solver.femModel, 'ACCELERATION', (- power(excitation, 2)) .* result)
-            end    
+            end
+
             obj.femModel.getDofArray.removeValue(1);
             
         end
