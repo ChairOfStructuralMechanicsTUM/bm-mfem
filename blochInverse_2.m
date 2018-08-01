@@ -31,10 +31,10 @@ ele06 = QuadrilateralElement2d4n(6,[node07 node08 node12 node11]);
 
 elementArray = [ele01 ele02 ele03 ele04 ele05 ele06];
 
-elementArray.setPropertyValue('YOUNGS_MODULUS',96);
-elementArray.setPropertyValue('POISSON_RATIO',1/3);
+elementArray.setPropertyValue('YOUNGS_MODULUS',78000000);
+elementArray.setPropertyValue('POISSON_RATIO',0.3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
-elementArray.setPropertyValue('DENSITY',7860);
+elementArray.setPropertyValue('DENSITY',70000);
 
 
 model = FemModel(nodeArray, elementArray);
@@ -50,44 +50,83 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 initialize(solver)
 
 
+% [Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix);
+% 
+% [Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted);  
+% 
+% 
+% omega = cell(10,1);
+% f=zeros(1,10);
+% f_2=zeros(1,10);
+% % f_3=zeros(1,10);
+% % f_4=zeros(1,10);
+% 
+% for i = 1:10
+%     omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1});
+%     f(i) = omega{i,1}(1,1)/(2*pi);
+%     f_2(i) = omega{i,1}(2,1)/(2*pi);
+% %     f_3(i) = omega{i,1}(3,1)/(2*pi);
+% %     f_4(i) = omega{i,1}(4,1)/(2*pi);
+%    
+% end
+% 
+% 
+% [kx,miu] = propConst(solver,10);
+% Bandnummer=1;
+% 
+% figure(1);
+% plot(kx,f)
+% title('Dispersion curves')
+% xlabel('Phase k')
+% ylabel('frequenzy f')
+% xlim([0 pi])
+% legend(['bandnumber=' num2str(Bandnummer)],'Location','EastOutside')
+% hold on
+% plot(kx,f_2)
+
+
 [Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix);
 
-[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted);  
+numberOfPhases = 10;
 
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
 
-omega = cell(10000,1);
-f=zeros(1,10000);
-f_2=zeros(1,10000);
-f_3=zeros(1,10000);
-f_4=zeros(1,10000);
+omega = cell(numberOfPhases,1);
 
-for i = 1:10000
-    omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1});
-    f(i) = omega{i,1}(1,1)/(2*pi);
-    f_2(i) = omega{i,1}(2,1)/(2*pi);
-    f_3(i) = omega{i,1}(3,1)/(2*pi);
-    f_4(i) = omega{i,1}(4,1)/(2*pi);
-   
+nob = 3;
+[kx,miu] = propConst(solver,numberOfPhases); %already used in reducedStiffnesAndMass(..)
+
+    
+for j = 1:nob
+%     f(j,1) = zeros(1,numberOfPhases); 
+    for i = 1:numberOfPhases
+        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+        f(j,i) = omega{i,1}(j,1)/(2*pi);
+
+    end
+%     if j == 1
+%         figure(1)
+%         plot(kx,f(j,:))
+%         title('Dispersion curves')
+%         xlabel('Phase k')
+%         ylabel('frequenzy f')
+%         xlim([0 pi])
+%         legend('1stBand','Location','EastOutside')
+%         hold on
+%     elseif j == 2
+%         plot(kx,f(j,:))
+%         legend({'1stBand','2ndBand'},'Location','EastOutside')        
+%     else
+%       figure(j-1)
+        figure(1)
+        plot(kx,f(j,:),'r')
+        title('Dispersion curves')
+        xlabel('Phase k')
+        ylabel('frequenzy f')
+        xlim([0 pi])
+        legend(['bandnumber: ' num2str(j)],'Location','EastOutside')
+        hold on
+    
+
 end
-
-
-[kx,miu] = propConst(solver,10000);
-
-figure(1);
-plot(kx,f,kx,f_2)
-title('Dispersion curves')
-xlabel('Wavenumber k')
-ylabel('frequenzy f')
-xlim([0 pi])
-legend({'1stBand','2ndBand'},'Location','EastOutside')
-
-
-
-
-% figure(3);
-% plot(kx,f_3,'b.')
-% figure(4);
-% plot(kx,f_4,'b.')
-% figure(5);
-% plot(kx,f_5,'b.')
 
