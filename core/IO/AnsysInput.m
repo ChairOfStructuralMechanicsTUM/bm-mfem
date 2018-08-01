@@ -60,7 +60,7 @@ classdef AnsysInput < ModelIO
             model = FemModel;
 
             
-%% Continue here
+
 %             tline = fgetl(fid);
 %             
 %             while ischar(tline)
@@ -90,7 +90,7 @@ classdef AnsysInput < ModelIO
 %                 end
 %                 
 %                 tline = fgetl(fid);
-            end
+%            end
             
         end
         
