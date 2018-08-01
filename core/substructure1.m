@@ -1,4 +1,4 @@
-function [submatrix]=substructure1(N,dim,nodearray)
+function [gbc,gbr]=substructure1(N,dim,nodearray)
 %N: Anzahl der gewünschten substructures
 %dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
 %nodeaaray habe!
@@ -24,7 +24,7 @@ function [submatrix]=substructure1(N,dim,nodearray)
 
 %% nodearray-->nodematrix
 nodematrix=zeros(dim);
-k=1
+k=1;
 for i=1:dim(2)
     for j=1:dim(1)
         nodematrix(j,i)=nodearray(k);
@@ -32,19 +32,29 @@ for i=1:dim(2)
     end
 end
 %% nodematrix split in N substructures
+%gbc: globaler Vektor der corner nodes  bc:lokaler Vektor der corner nodes
+%einer subdomain in einer Iteration
+%gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
+%remainders in einer iteration
 
-[left,right]=Matrixsplit(nodematrix)
-%submatrix=[left,right]
-l=1
+[left,right,gbc,gbr]=Matrixsplit(nodematrix);
+
+l=1; %Schleifenzähler
+b=3;%Zählervariable für gbc
+r=dim(1)-1; %Zählervariable für gbr
 while l<N-1
     if size(left,2)<size(right,2)
-        [left,right]=Matrixsplit(right)
+        [left,right,bc,br]=Matrixsplit(right)
        
     else
-        [left,right]=Matrixsplit(left)
+        [left,right,bc,br]=Matrixsplit(left)
     end
-    l=l+1;
-    %submatrix=[left,right] %hier müsste eine merge funktion stehen!
+    gbc(b:b+1,1)=bc
+    gbr(r:r+dim(1)-3,1)=br
+    l=l+1
+    b=b+2
+    r=r+dim(1)-2
+end
 end
 
 
