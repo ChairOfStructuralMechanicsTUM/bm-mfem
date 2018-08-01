@@ -1,17 +1,17 @@
 clear;
-
+%3x4 nodes
 node01 = Node(1,0,0);
-node02 = Node(2,2,0);
-node03 = Node(3,4,0);
-node04 = Node(4,6,0);
-node05 = Node(5,0,1);
-node06 = Node(6,2,1);
-node07 = Node(7,4,1);
-node08 = Node(8,6,1);
-node09 = Node(9,0,2);
-node10 = Node(10,2,2);
-node11 = Node(11,4,2);
-node12 = Node(12,6,2);
+node02 = Node(2,0.033,0);
+node03 = Node(3,0.066,0);
+node04 = Node(4,0.1,0);
+node05 = Node(5,0,0.01);
+node06 = Node(6,0.033,0.01);
+node07 = Node(7,0.066,0.01);
+node08 = Node(8,0.1,0.01);
+node09 = Node(9,0,0.02);
+node10 = Node(10,0.033,0.02);
+node11 = Node(11,0.066,0.02);
+node12 = Node(12,0.1,0.02);
 
 nodeArray = [node01 node02 node03 node04 node05 ...
     node06 node07 node08 node09 node10 node11 node12];
@@ -50,17 +50,16 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 initialize(solver)
 
 
-[Kred,Mred] = reducedStiffnesAndMass (stiffnessMatrix,massMatrix,solver);  
-Ktest = Kred{5,1};
-Mtest = Mred{5,1};
+[Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix);
 
-omega_test = solver.calcOmega(Ktest,Mtest);
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted);  
+
+
 omega = cell(10000,1);
 f=zeros(1,10000);
 f_2=zeros(1,10000);
 f_3=zeros(1,10000);
 f_4=zeros(1,10000);
-f_5=zeros(1,10000);
 
 for i = 1:10000
     omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1});
@@ -68,7 +67,7 @@ for i = 1:10000
     f_2(i) = omega{i,1}(2,1)/(2*pi);
     f_3(i) = omega{i,1}(3,1)/(2*pi);
     f_4(i) = omega{i,1}(4,1)/(2*pi);
-    f_5(i) = omega{i,1}(5,1)/(2*pi);
+   
 end
 
 
