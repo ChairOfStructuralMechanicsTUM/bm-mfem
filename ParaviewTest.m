@@ -4,8 +4,8 @@ clear;
 % clc; 
 %% Initialization
 
-nx = 4;
-ny = 4;
+nx = 10;
+ny = 10;
 [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, nx, ny, 'elementType', 'ReissnerMindlinElement3d4n');
 model.getAllNodes.addDof(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
 support = [x0 xl y0 yl];
@@ -27,7 +27,7 @@ model.getNode(middle).setDofLoad('DISPLACEMENT_Z', 50);
 
 dt = .01;
 time = 0;
-endTime = .1;
+endTime = .2;
 solver = NewmarkSolvingStrategy(model, dt);
 
 while time < endTime
@@ -41,7 +41,7 @@ end
 % v.plotDeformed()
 
 tic
-v =  VisualizationParaview(model, 'Test.vtk', 'DISPLACEMENT_Z', 'ROTATION_X');
+v =  VisualizationParaview(model, 'test.vtk', 'DISPLACEMENT', 'ROTATION');
 v.vtkWrite();
 toc
 
