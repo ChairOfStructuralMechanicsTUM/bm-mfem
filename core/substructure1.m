@@ -1,4 +1,4 @@
-function [gbc,gbr]=substructure1(N,dim,nodearray)
+function [gbc,gbr,ufinal]=substructure1(N,dim,nodearray)
 %N: Anzahl der gewünschten substructures
 %dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
 %nodeaaray habe!
@@ -31,7 +31,7 @@ for i=1:dim(2)
         k=k+1;
     end
 end
-%% nodematrix split in N substructures
+%% nodematrix split in N substructures, gbc and gbr filled
 %gbc: globaler Vektor der corner nodes  bc:lokaler Vektor der corner nodes
 %einer subdomain in einer Iteration
 %gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
@@ -44,17 +44,35 @@ b=3;%Zählervariable für gbc
 r=dim(1)-1; %Zählervariable für gbr
 while l<N-1
     if size(left,2)<size(right,2)
-        [left,right,bc,br]=Matrixsplit(right)
+        [left,right,bc,br]=Matrixsplit(right);
        
     else
-        [left,right,bc,br]=Matrixsplit(left)
+        [left,right,bc,br]=Matrixsplit(left);
     end
-    gbc(b:b+1,1)=bc
-    gbr(r:r+dim(1)-3,1)=br
-    l=l+1
-    b=b+2
-    r=r+dim(1)-2
+    gbc(b:b+1,1)=bc;
+    gbr(r:r+dim(1)-3,1)=br;
+    l=l+1;
+    b=b+2;
+    r=r+dim(1)-2;
 end
+%% merge gbc and gbr to global u vector
+%gi: vector of internal nodes
+u1=[gbr;gbc]; %combined array, helps to find internal nodes
+ufinal=zeros(size(nodearray,1),1);
+%ufinal=sorted node vector: i;br;bc
+for i=1:size(nodearray,1)
+        if any(u1==nodearray(i))==false
+            ufinal(i,1)=nodearray(i,1);
+        else
+          %%fullfill: i zält weiter, aber erst eintrag weiter hinten kommt
+          %%an die stelle, id marker mitlaufen lassen
+        end
+end
+
+ufinal=[ufinal;gbr;gbc];            
+
+
+
 end
 
 
