@@ -58,10 +58,9 @@ classdef AnsysInput < ModelIO
             
             props = PropertyContainer;
             model = FemModel;
+
             
-
-%%%%% Continue HERE
-
+%% Continue here
 %             tline = fgetl(fid);
 %             
 %             while ischar(tline)
@@ -91,7 +90,7 @@ classdef AnsysInput < ModelIO
 %                 end
 %                 
 %                 tline = fgetl(fid);
-%             end
+            end
             
         end
         
@@ -226,7 +225,7 @@ classdef AnsysInput < ModelIO
                     x  =  nodesC(i,2);
                     y  =  nodesC(i,3);
                     z  =  nodesC(i,4);
-                    arrayAux(1,i) = Node(referenceNode,i,Point(x,y,z));
+                    arrayAux(1,i) = Node(referenceNode,x,y,z);
                 end
                 data.nodes = arrayAux;
                 data.numNodes = length(arrayAux);
@@ -235,105 +234,11 @@ classdef AnsysInput < ModelIO
                 %elementTypes = createElements(data.dimension);
                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = readElements();
                 
-%                 % Assign id to elements
-%                 ea(1,length(elementsOfModel)) = Element;
-%                 for i = 1:length(elementsOfModel)
-%                     ea(i) = elementsOfModel(i);
-%                     ea(i).id = i;
-%                 end
-%                 
-%                 
-%                 % Assign elements to model
-%                 data.elements = ea;
-%                 if length(elementsOfModel) == 1
-%                     for i = 1 :size(nodesC,1)
-%                         data.nodes(i).dof = data.elements.dof;
-%                     end
-%                 else
-%                     for i = 1 :length(elementsOfModel)
-%                         a1=cell2mat(data.nodeElementList(i));
-%                         DoF = data.elements(i).dof;
-%                         name = data.elements(i).name;
-%                         if ~strcmp(name,'COMBIN14')
-%                             for j = 1:length(a1)
-%                                 if ~isnan(a1(j))
-%                                     object = findobj(data.nodes,'id',a1(j));
-%                                     object.dof =DoF;
-%                                 end
-%                             end
-%                         end
-%                     end
-%                 end
-%                 
-%                 for i = 1 : length(nodeRest)
-%                     object = findobj(data.nodes,'id',nodeRest(i));
-%                     object.dof =1;
-%                 end
-%                 
-%                 init = 1;
-%                 for i = 1 : data.numNodes
-%                     aux = data.nodes(i).dof;
-%                     data.nodes(i).a = init;
-%                     data.nodes(i).b = init+aux-1;
-%                     init = init + aux;
-%                 end
                 rmdir('DataAnsys', 's')
             end
         end
         
-        function [fid,props] = readProperties(fid,props,nProp)
-            tline = fgetl(fid);
-            property = PropertyContainer;
-            while ~ strcmp(tline,'End Properties')
-                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-                
-                propData = strsplit(tline);
-                propData(cellfun('isempty',propData)) = [];
-                property.addValue(cell2mat(propData(1)),str2double(propData(2)));
-                tline = fgetl(fid);
-            end
-            props(nProp) = property;
-        end
         
-        function [fid,model] = readNodes(fid,model)
-            tline = fgetl(fid);
-            while ~ strcmp(tline,'End Nodes')
-                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-                
-                n = cell2mat(textscan(tline,'%f'))';
-                model.addNewNode(n(1),n(2),n(3),n(4));
-                tline = fgetl(fid);
-            end
-        end
-        
-        function [fid,model] = readSubModelParts(fid,model,name)
-            tline = fgetl(fid);
-            nodes = [];
-            elements = [];
-            while ~ strcmp(tline,'End SubModelPart')
-                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-                
-                if contains(tline,'Begin SubModelPartNodes')
-                    tline = fgetl(fid);
-                    while ~ contains(tline,'End SubModelPartNodes')
-                        nodes = [nodes str2double(tline)]; %#ok<AGROW>
-                        tline = fgetl(fid);
-                    end
-                end
-                
-                if contains(tline,'Begin SubModelPartElements')
-                    tline = fgetl(fid);
-                    while ~ contains(tline,'End SubModelPartElements')
-                        elements = [elements str2double(tline)]; %#ok<AGROW>
-                        tline = fgetl(fid);
-                    end
-                end
-                
-                tline = fgetl(fid);
-            end
-            
-            model.addNewModelPart(name,nodes,elements);
-        end
         
     end
     

@@ -1,0 +1,3 @@
+
+ *** NOTE ***                            CP =       0.766   TIME= 17:17:53
+ No nodal constraints to list.                                           

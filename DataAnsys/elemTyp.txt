@@ -1,0 +1,18 @@
+
+ LIST ELEMENT TYPES FROM      1 TO      1 BY      1
+
+ *** ANSYS - ENGINEERING ANALYSIS SYSTEM  RELEASE Release 17.1     17.1     ***
+ ANSYS Academic Research                           
+ 00226479  VERSION=WINDOWS x64   16:11:52  AUG 01, 2018 CP=      0.766
+
+                                                                               
+
+
+
+ ELEMENT TYPE      1 IS SOLID185     3-D 8-NODE STRUCTURAL SOLID 
+  KEYOPT( 1- 6)=        0      3      0        0      0      0
+  KEYOPT( 7-12)=        0      0      0        0      0      0
+  KEYOPT(13-18)=        0      0      0        0      0      0
+
+ CURRENT NODAL DOF SET IS  UX    UY    UZ  
+  THREE-DIMENSIONAL MODEL
