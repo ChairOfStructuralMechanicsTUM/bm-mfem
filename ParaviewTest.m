@@ -4,8 +4,8 @@ clear;
 % clc; 
 %% Initialization
 
-nx = 6;
-ny = 6;
+nx = 4;
+ny = 4;
 [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, nx, ny, 'elementType', 'ReissnerMindlinElement3d4n');
 model.getAllNodes.addDof(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
 support = [x0 xl y0 yl];
@@ -23,26 +23,27 @@ model.getAllElements.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
 middle = fix((nx+1)*(ny+1)/2)+1; 
 
 % Solver
-model.getNode(middle).setDofLoad('DISPLACEMENT_Z', 10);
+model.getNode(middle).setDofLoad('DISPLACEMENT_Z', 50);
 
 dt = .01;
 time = 0;
-endTime = .2;
+endTime = .1;
 solver = NewmarkSolvingStrategy(model, dt);
 
 while time < endTime
     solver.solve();
     time = time + dt;               
 end
+ 
+% v=Visualization(model);
+% v.setScaling(50);
+% v.plotUndeformed()
+% v.plotDeformed()
 
-v=Visualization(model);
-v.setScaling(50);
-v.plotUndeformed()
-v.plotDeformed()
-
-
-v =  VisualizationParaview(model, 'Test.vtk');
+tic
+v =  VisualizationParaview(model, 'Test.vtk', 'DISPLACEMENT_Z', 'ROTATION_X');
 v.vtkWrite();
+toc
 
-actualDisplacementZ = model.getNode(middle).getDofValue('DISPLACEMENT_Z','all')
+actualDisplacementZ = model.getNode(middle).getDofValue('DISPLACEMENT_Z','all');
 
