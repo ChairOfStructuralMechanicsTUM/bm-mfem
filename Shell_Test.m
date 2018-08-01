@@ -4,8 +4,8 @@ clear;
 % clc; 
 %% Initialization
 
-nx = 20; 
-ny = 20; 
+nx = 5; 
+ny = 5; 
 
 [ model, x0, xl, y0, yl ] = createRectangularPlate( 1, 1, nx, ny,'elementType', 'ShellElement3d4n');
 
@@ -43,13 +43,9 @@ tic
 solver = SimpleSolvingStrategy(model);
 solver.solve();
 toc
-% v=Visualization(model);
+v=Visualization(model);
 % v.setScaling(50);
 % v.plotUndeformed()
 % v.plotDeformed()
 
-v =  VisualizationParaview(model, 'Test.vtk');
-v.vtkWrite();
-
-
-model.getNode(middle).getDofValue('DISPLACEMENT_Z','all')
+model.getNode(middle).getDofValue('DISPLACEMENT_Z')
