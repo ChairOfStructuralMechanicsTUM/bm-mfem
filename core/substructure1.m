@@ -56,15 +56,17 @@ if N>size(nodematrix,2)-1
         gbc=[bc2;bc];
         gbr=[br2;br];
 else 
-[left,right,gbc,gbr]=Matrixsplit(nodematrix);%Initialisierung, left und right bleiben als Ausgangsbasis erhalten
-[left2,right2,gbc,gbr]=Matrixsplit(left);
+[left,right,bc,br]=Matrixsplit(nodematrix);%Initialisierung, left und right bleiben als Ausgangsbasis erhalten
+[left2,right2,bc2,br2]=Matrixsplit(left);
+gbc=[bc2;bc];
+gbr=[br2;br];
 %left2 und right 2 sind die zweite ebene der Ausgangsbasis die mit left und right verglichen werden...
 %als erster Schritt wird left nochmals geteilt da aufgrund der
 %Implementierung von Matrixsplit leftimmer >=right ist
 l=1; %Schleifenzähler 
 b=3;%Zählervariable für gbc
 r=dim(1)-1; %Zählervariable für gbr
-while l<N-2 %2 Schritte bei Initialisierung
+while l<N-3 %2 Schritte bei Initialisierung
     if size(left2,2)<= size(right,2)
         %jump to other branch
         %left=left2;
