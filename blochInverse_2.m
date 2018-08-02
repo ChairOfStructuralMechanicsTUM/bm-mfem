@@ -130,3 +130,6 @@ for j = 1:nob
 
 end
 
+v = Visualization(model);
+v.setScaling(1);
+v.plotUndeformed

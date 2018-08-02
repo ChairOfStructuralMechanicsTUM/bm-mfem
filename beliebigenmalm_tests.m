@@ -52,32 +52,32 @@ initialize(solver)
 
 [Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix);
 
-[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted);  
+numberOfPhases = 10;
 
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
 
-omega = cell(10,1);
-f=zeros(1,10);
-f_2=zeros(1,10);
+omega = cell(numberOfPhases,1);
 
+nob = 3;
+[kx,miu] = propConst(solver,numberOfPhases); %already used in reducedStiffnesAndMass(..)
 
-for i = 1:10
-    omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1});
-    f(i) = omega{i,1}(1,1)/(2*pi);
-    f_2(i) = omega{i,1}(2,1)/(2*pi);
-%     f_3(i) = omega{i,1}(3,1)/(2*pi);
-%     f_4(i) = omega{i,1}(4,1)/(2*pi);
-   
+    
+for j = 1:nob
+%     f(j,1) = zeros(1,numberOfPhases); 
+    for i = 1:numberOfPhases
+        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+        f(j,i) = omega{i,1}(j,1)/(2*pi);
+
+    end
+
+    figure(1)
+    plot(kx,f(j,:),'r')
+    title('Dispersion curves')
+    xlabel('Phase k')
+    ylabel('frequenzy f')
+    xlim([0 pi])
+    legend(['bandnumber: ' num2str(j)],'Location','EastOutside')
+    hold on
+    
+
 end
-
-
-[kx,miu] = propConst(solver,10);
-
-
-
-figure(1);
-plot(kx,f,kx,f_2)
-title('Dispersion curves')
-xlabel('phase k')
-ylabel('frequenzy f')
-xlim([0 pi])
-legend({'1stBand','2ndBand'},'Location','EastOutside')
