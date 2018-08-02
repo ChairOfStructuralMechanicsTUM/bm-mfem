@@ -134,7 +134,7 @@ classdef BlochInverse1D < Solver
                    
                 end
             end
-            disp(innerDofs)%not necessary
+%             disp(innerDofs)%not necessary
        end
        
 %        function [kx,miu] = propConst(obj,numberOfWaveNumbers) %obj kann auch entfernt werden -> dann muss die Funktion aber statisch sein!
