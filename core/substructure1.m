@@ -1,4 +1,5 @@
 function [gbc,gbr,ufinal]=substructure1(N,dim,nodearray)
+
 %N: Anzahl der gewünschten substructures
 %dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
 %nodeaaray habe!
@@ -66,16 +67,24 @@ r=dim(1)-1; %Zählervariable für gbr
 while l<N-2 %2 Schritte bei Initialisierung
     if size(left2,2)<= size(right,2)
         %jump to other branch
-        [left2,right2,bc,br]=Matrixsplit(right);
-        left=left2;
+        %left=left2;
+        [right,right2,bc,br]=Matrixsplit(right);
+        gbc(b:b+1,1)=bc;
+        gbr(r:r+dim(1)-3,1)=br;
+        b=b+2;
+        r=r+dim(1)-2;
     else 
         [left2,right2,bc,br]=Matrixsplit(left2);
+        gbc(b:b+1,1)=bc;
+        gbr(r:r+dim(1)-3,1)=br;
+        b=b+2;
+        r=r+dim(1)-2;
     end
-    gbc(b:b+1,1)=bc;
-    gbr(r:r+dim(1)-3,1)=br;
+    %gbc(b:b+1,1)=bc;
+    %gbr(r:r+dim(1)-3,1)=br;
     l=l+1;
-    b=b+2;
-    r=r+dim(1)-2;
+    %b=b+2;
+    %r=r+dim(1)-2;
 end
 end
     
