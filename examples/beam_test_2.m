@@ -4,12 +4,12 @@ clear all;
 model = FemModel();
 
 % Dimension of the structure
-Lx=5;
-Ly=0.5;
+Lx=10;
+Ly=2;
 
 % Number of elements in specific directions
-nx=300;
-ny=30;
+nx=20;
+ny=4;
 
 % Calculation of the dimension of the elements (defined via L and n)
 dx=Lx/nx;
@@ -44,19 +44,19 @@ for j=1:ny
 end
 
 % assignment of material properties
-model.getAllElements.setPropertyValue('YOUNGS_MODULUS',32);
-model.getAllElements.setPropertyValue('POISSON_RATIO',0.3);
-model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
+model.getAllElements.setPropertyValue('YOUNGS_MODULUS',30e6);
+model.getAllElements.setPropertyValue('POISSON_RATIO',0.0);
+model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',3);
 model.getAllElements.setPropertyValue('DENSITY',7860);
 
 % Definition of BCs
 for i=1:(ny+1)
-    model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_X');
-    model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_Y');
+    model.getNode(1+(i-1)*(nx+1)).fixDof('DISPLACEMENT_X');
+    model.getNode(1+(i-1)*(nx+1)).fixDof('DISPLACEMENT_Y');
 end
 
 % Definition of loading
-addPointLoad(model.getNode(numnodes),1,[0 -1]);
+addPointLoad(model.getNode(numnodes),300,[0 -1]);
 
 % Determination of global matrices
 assembling = SimpleAssembler(model);
@@ -72,7 +72,7 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
-v.setScaling(0.0001);
+v.setScaling(1000);
 v.plotUndeformed
 v.plotDeformed
     
