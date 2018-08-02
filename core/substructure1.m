@@ -55,11 +55,12 @@ while l<N-1
     b=b+2;
     r=r+dim(1)-2;
 end
-%% merge gbc and gbr to global u vector
+%% merge gbc and gbr to global ufinal vector
+%ufinal=sorted node vector: [i;br;bc]
 %gi: vector of internal nodes
 u1=[gbr;gbc]; %combined array, helps to find internal nodes
 ufinal=zeros(size(nodearray,1)-size(u1,1),1);
-%ufinal=sorted node vector: i;br;bc
+
 v=1;
 for i=1:size(nodearray,1)
         if any(u1==nodearray(i))==false
