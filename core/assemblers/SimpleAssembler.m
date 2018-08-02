@@ -3,21 +3,12 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
-%         stiffnessMatrix
-%         reducedStiffnessMatrix
-%         forceVector
-%         reducedForceVector
     end
     
     methods %test
         
         function assembling = SimpleAssembler(femModel)
-            if (nargin > 0)
-                
-%                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
-%                 [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
-                
-            else
+            if (nargin < 1)
                 error('input model is missing');
             end
         end
@@ -369,25 +360,6 @@ classdef SimpleAssembler < Assembler
         
         function reducedForceVector = getReducedForceVector(assembler)
             reducedForceVector = assembler.reducedForceVector;
-        end
-        
-    end
-    
-    methods (Static, Access = private)
-        
-        function stiffnessMatrix = applyBoundaryConditions(femModel, stiffnessMatrix)
-            dofs = femModel.getDofArray;
-            fixedDofs = [];
-            
-            for itDof = 1:length(dofs)
-               if dofs(itDof).isFixed
-                   fixedDofs = [fixedDofs itDof];
-               end
-            end
-            
-            stiffnessMatrix(fixedDofs,:) = [];
-            stiffnessMatrix(:,fixedDofs) = [];
-            
         end
         
     end
