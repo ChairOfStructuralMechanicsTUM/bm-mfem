@@ -38,16 +38,17 @@ end
 %einer subdomain in einer Iteration
 %gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
 %remainders in einer iteration
-
-[left,right,gbc,gbr]=Matrixsplit(nodematrix);
-
+if N>size(nodematrix,2)-1 
+    fprintf ('warning: too many subdomains!')
+    return
+else
+[left,right,gbc,gbr]=Matrixsplit(nodematrix); %Initialisierung
 l=1; %Schleifenzähler
 b=3;%Zählervariable für gbc
 r=dim(1)-1; %Zählervariable für gbr
 while l<N-1
     if size(left,2)<size(right,2)
         [left,right,bc,br]=Matrixsplit(right);
-       
     else
         [left,right,bc,br]=Matrixsplit(left);
     end
@@ -56,6 +57,7 @@ while l<N-1
     l=l+1;
     b=b+2;
     r=r+dim(1)-2;
+end
 end
 %% merge gbc and gbr to global ufinal vector
 
