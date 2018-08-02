@@ -6,7 +6,7 @@ function [left, right,bc,br]=Matrixsplit(Matrix)
 %hälfte statt
 [n,m]=size(Matrix);
 %n:Zeilenanzahl  m:Spaltenanzahl
-left=Matrix(1:n,1:ceil(m/2));
+left=Matrix(1:n,1:ceil(m/2)-1);
 right=Matrix(1:n, ceil(m/2):m);
 bc=[Matrix(1,ceil(m/2));Matrix(n,ceil(m/2))];
 br=Matrix(2:n-1,ceil(m/2));

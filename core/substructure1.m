@@ -23,6 +23,7 @@ function [gbc,gbr,ufinal]=substructure1(N,dim,nodearray)
 % end
 
 %% nodearray-->nodematrix
+
 nodematrix=zeros(dim);
 k=1;
 for i=1:dim(2)
@@ -32,6 +33,7 @@ for i=1:dim(2)
     end
 end
 %% nodematrix split in N substructures, gbc and gbr filled
+
 %gbc: globaler Vektor der corner nodes  bc:lokaler Vektor der corner nodes
 %einer subdomain in einer Iteration
 %gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
@@ -56,6 +58,7 @@ while l<N-1
     r=r+dim(1)-2;
 end
 %% merge gbc and gbr to global ufinal vector
+
 %ufinal=sorted node vector: [i;br;bc]
 %gi: vector of internal nodes
 u1=[gbr;gbc]; %combined array, helps to find internal nodes
@@ -74,6 +77,8 @@ for i=1:size(nodearray,1)
 end
 
 ufinal=[ufinal;gbr;gbc];            
+
+%% multiply Kmatrix and ufinal(converted to doffinal) to sort Kmatrix
 
 
 
