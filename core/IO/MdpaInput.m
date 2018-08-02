@@ -33,7 +33,7 @@ classdef MdpaInput < ModelIO
             
                 if contains(tline,'Begin Properties')
                     nProp = strsplit(tline);
-                    nProp = str2double(nProp{end});
+                    nProp = str2double(nProp{end}) + 1; %MDPA starts at 0
                     [fid,props] = obj.readProperties(fid,props,nProp);
                 end
                 
@@ -94,7 +94,7 @@ classdef MdpaInput < ModelIO
                 if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
                 
                 e = cell2mat(textscan(tline,'%f'));
-                model.addNewElement(etype,e(1),e(3:end),props(e(2)));
+                model.addNewElement(etype,e(1),e(3:end),props(e(2)+1));
                 tline = fgetl(fid);
             end
         end
