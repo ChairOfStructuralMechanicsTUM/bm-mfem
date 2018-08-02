@@ -38,19 +38,38 @@ end
 %einer subdomain in einer Iteration
 %gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
 %remainders in einer iteration
-if N>size(nodematrix,2)-1 
+if N>size(nodematrix,2)-1
     fprintf ('warning: too many subdomains!')
     return
-else
-[left,right,gbc,gbr]=Matrixsplit(nodematrix); %Initialisierung
-l=1; %Schleifenzähler
+    
+    elseif N==1
+        fprintf ('Trivialfall')
+        return
+
+    elseif N==2  
+        [~,~,gbc,gbr]=Matrixsplit(nodematrix);
+
+    elseif N==3
+        [left,~,bc,br]=Matrixsplit(nodematrix);
+        [~,~,bc2,br2]=Matrixsplit(left);
+        gbc=[bc2;bc];
+        gbr=[br2;br];
+else 
+[left,right,gbc,gbr]=Matrixsplit(nodematrix);%Initialisierung, left und right bleiben als Ausgangsbasis erhalten
+[left2,right2,gbc,gbr]=Matrixsplit(left);
+%left2 und right 2 sind die zweite ebene der Ausgangsbasis die mit left und right verglichen werden...
+%als erster Schritt wird left nochmals geteilt da aufgrund der
+%Implementierung von Matrixsplit leftimmer >=right ist
+l=1; %Schleifenzähler 
 b=3;%Zählervariable für gbc
 r=dim(1)-1; %Zählervariable für gbr
-while l<N-1
-    if size(left,2)<size(right,2)
-        [left,right,bc,br]=Matrixsplit(right);
-    else
-        [left,right,bc,br]=Matrixsplit(left);
+while l<N-2 %2 Schritte bei Initialisierung
+    if size(left2,2)<= size(right,2)
+        %jump to other branch
+        [left2,right2,bc,br]=Matrixsplit(right);
+        left=left2;
+    else 
+        [left2,right2,bc,br]=Matrixsplit(left2);
     end
     gbc(b:b+1,1)=bc;
     gbr(r:r+dim(1)-3,1)=br;
@@ -59,6 +78,7 @@ while l<N-1
     r=r+dim(1)-2;
 end
 end
+    
 %% merge gbc and gbr to global ufinal vector
 
 %ufinal=sorted node vector: [i;br;bc]
