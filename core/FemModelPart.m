@@ -50,9 +50,9 @@ classdef FemModelPart < handle
             d = obj.dofArray;
         end
         
-        function [fix, free] = getDofConstraints(obj)
-            fix = obj.fixedDofs;
+        function [free, fix] = getDofConstraints(obj)
             free = obj.freeDofs;
+            fix = obj.fixedDofs;
         end
         
         function p = getParentFemModel(obj)
