@@ -58,15 +58,18 @@ end
 %% merge gbc and gbr to global u vector
 %gi: vector of internal nodes
 u1=[gbr;gbc]; %combined array, helps to find internal nodes
-ufinal=zeros(size(nodearray,1),1);
+ufinal=zeros(size(nodearray,1)-size(u1,1),1);
 %ufinal=sorted node vector: i;br;bc
+v=1;
 for i=1:size(nodearray,1)
         if any(u1==nodearray(i))==false
-            ufinal(i,1)=nodearray(i,1);
+            ufinal(v,1)=nodearray(i,1);
         else
+            v=v-1;
           %%fullfill: i zält weiter, aber erst eintrag weiter hinten kommt
           %%an die stelle, id marker mitlaufen lassen
         end
+        v=v+1;
 end
 
 ufinal=[ufinal;gbr;gbc];            
