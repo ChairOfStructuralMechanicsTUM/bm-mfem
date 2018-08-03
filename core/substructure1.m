@@ -64,21 +64,21 @@ gbr=[br2;br];
 %als erster Schritt wird left nochmals geteilt da aufgrund der
 %Implementierung von Matrixsplit leftimmer >=right ist
 l=1; %Schleifenzähler 
-b=3;%Zählervariable für gbc
-r=dim(1)-1; %Zählervariable für gbr
-while l<N-3 %2 Schritte bei Initialisierung
+b=5;%Zählervariable für gbc
+r=size(gbr,1); %Zählervariable für gbr
+while l<N-2 %2 Schritte bei Initialisierung
     if size(left2,2)<= size(right,2)
         %jump to other branch
         %left=left2;
         [right,right2,bc,br]=Matrixsplit(right);
         gbc(b:b+1,1)=bc;
-        gbr(r:r+dim(1)-3,1)=br;
+        gbr(r+1:r+dim(1)-2,1)=br;
         b=b+2;
         r=r+dim(1)-2;
     else 
         [left2,right2,bc,br]=Matrixsplit(left2);
         gbc(b:b+1,1)=bc;
-        gbr(r:r+dim(1)-3,1)=br;
+        gbr(r+1:r+dim(1)-2,1)=br;
         b=b+2;
         r=r+dim(1)-2;
     end
