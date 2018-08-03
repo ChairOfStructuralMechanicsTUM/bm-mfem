@@ -10,9 +10,9 @@ ny = 4;
 
 % If SolvingMetod = 1 -> Harmonic solver
 % If SolvingMetod = 2 -> Newmark solver
-SolvingMethod = 2;
+SolvingMethod = 1;
 
-LoadValue = 100;
+LoadValue = 1;
 LoadDirection = [0 -1];
 
 %% Standard (u_s,u_f) displacement
