@@ -208,12 +208,12 @@ classdef AnsysInput < ModelIO
                 end
                 
                 % Read restriction on the nodes
-                data.nodeRest = readRestrictions();
+                data.nodeRest = AnsysInput.readRestrictions();
                 % Read record 5 of ANSYS to get the position of the entries
                 % of each node with the matrices
-                nodeEquiv = readRecord_5();
+                nodeEquiv = AnsysInput.readRecord_5();
                 % Read the coordinates of each node
-                data.nodeList = readCoord();
+                data.nodeList = AnsysInput.readCoord();
                 % Order the coordinates acoording to the record 5
                 nodesC = data.nodeList(nodeEquiv,:);
                 data.nodesOrderByDofs=nodesC(:,1)';
@@ -232,7 +232,7 @@ classdef AnsysInput < ModelIO
                 
                 % Create available elements
                 %elementTypes = createElements(data.dimension);
-                [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = readElements();
+                [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
                 
                 rmdir('DataAnsys', 's')
             end

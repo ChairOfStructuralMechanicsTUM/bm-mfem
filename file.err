@@ -1,0 +1,8 @@
+/COM,ANSYS RELEASE Release 17.1      BUILD 17.1      UP20160404       16:11:49
+
+ *** WARNING ***                         CP =       0.719   TIME= 16:11:50
+ File F:\bmFEM\bm-mfem\3DBeam.txt does not exist.                        
+  The /INPUT command is ignored.                                         
+
+ *** ERROR ***                           CP =       0.719   TIME= 16:11:50
+ There are no nodes defined.                                             
