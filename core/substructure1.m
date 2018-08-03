@@ -87,6 +87,8 @@ while l<N-2 %2 Schritte bei Initialisierung
     l=l+1;
     %b=b+2;
     %r=r+dim(1)-2;
+    gbc=sort(gbc);
+    gbr=sort(gbr);
 end
 end
     
