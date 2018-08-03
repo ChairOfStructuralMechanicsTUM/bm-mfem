@@ -54,10 +54,13 @@ classdef AnsysInput < ModelIO
             disp(['filename: ' fileName])
             disp(['filetype: ' extension])
             
-            data=obj.runAnsys(ansysExecutable,folder,fileName,extension);
+            model = FemModel;
+            data=obj.runAnsys(ansysExecutable,folder,fileName,extension,model);
+            model.addNewElement('DummyElement',1,model.getAllNodes);
+            % create nodes
+%             model.
             
             props = PropertyContainer;
-            model = FemModel;
             
             
             
@@ -98,10 +101,11 @@ classdef AnsysInput < ModelIO
     
     methods (Static)
         
-        function data=runAnsys(ansysExecutable,folder,file,extension)
+        function data=runAnsys(ansysExecutable,folder,file,extension,model)
             if(nargin > 0)
                 % make directory for files
                 mkdir('DataAnsys')
+                
                 % Header
                 fidl=fopen('DataAnsys/modelFile.txt','w');
                 % Read input file
@@ -219,16 +223,14 @@ classdef AnsysInput < ModelIO
                 data.nodesOrderByDofs=nodesC(:,1)';
                 
                 % Create objects "Node" and assign them to a model
-                arrayAux(1,size(nodesC,1)) = Node;
                 for i = 1 : size(nodesC,1)
                     referenceNode =  nodesC(i,1);
                     x  =  nodesC(i,2);
                     y  =  nodesC(i,3);
                     z  =  nodesC(i,4);
-                    arrayAux(1,i) = Node(referenceNode,x,y,z);
+                    model.addNewNode(referenceNode,x,y,z);
                 end
-                data.nodes = arrayAux;
-                data.numNodes = length(arrayAux);
+                data.numNodes = length(model.getAllNodes());
                 
                 % Create available elements
                 %elementTypes = createElements(data.dimension);
