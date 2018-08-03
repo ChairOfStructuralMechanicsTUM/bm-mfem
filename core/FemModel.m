@@ -214,10 +214,6 @@ classdef FemModel < handle
         function element = addNewElement(obj, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
         %   elementName, id, and an array of nodes
-%             elementIds = arrayfun(@(element) element.getId, obj.elementArray);
-%             if any(id == elementIds)
-%                 error('an element with id %d already exists in the model', id)
-%             end
 
             if id <= length(obj.elementArray)
                 if obj.elementArray(id).getId ~= -1
