@@ -68,6 +68,7 @@ classdef (Abstract) QuadrilateralElement < Element
                     e = addCause(e,causeException);
                     rethrow(e);
                 end
+
             end
             
             if ~isempty(res); c = 1; end
@@ -118,6 +119,7 @@ classdef (Abstract) QuadrilateralElement < Element
             else
                 pl = line(x,y);
             end
+
         end
         
         function update(obj)

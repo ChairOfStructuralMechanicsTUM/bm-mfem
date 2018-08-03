@@ -13,7 +13,6 @@ classdef EigensolverStrategy < Solver
         
         eigenfrequencies
         modalMatrix
-        spectralMatrix
         
         normalizedModalMatrix
         rayleighAlpha
@@ -23,61 +22,69 @@ classdef EigensolverStrategy < Solver
     
     methods
         
-        function eigensolver = EigensolverStrategy(femModel)
+        function obj = EigensolverStrategy(femModel)
             if nargin > 0
-                eigensolver.femModel = femModel;
-                eigensolver.assembler = SimpleAssembler(femModel);
-                eigensolver.isInitialized = false;
+                obj.femModel = femModel;
+                obj.assembler = SimpleAssembler(femModel);
+                obj.isInitialized = false;
             else
                 error("Error (EigensolverStratey): no fem model defined!")
             end
             
         end
         
-        function solve(eigensolver, nModes)
-            if ~ eigensolver.isInitialized
-                eigensolver.initialize();
+        function solve(obj, nModes)
+            %EIGENSOLVERSTRATEGY.SOLVE computes the eigenfrequencies and mode shapes of the
+            %given system
+            if ~ obj.isInitialized
+                obj.initialize();
             end
             
-            if size(eigensolver.stiffnessMatrix,1) < nModes
-                nModes = size(eigensolver.stiffnessMatrix,1);
-                fprintf("Warning (EigensolverStrategy): setting number of modes to %d\n",nModes);
+            if size(obj.stiffnessMatrix,1) < nModes
+                nModes = size(obj.stiffnessMatrix,1);
+                warning('EigensolverStrategy: setting number of modes to %d\n',nModes);
             end
             
             % solve
-            [eigensolver.modalMatrix, eigensolver.spectralMatrix] = ...
-                eigs(eigensolver.stiffnessMatrix, eigensolver.massMatrix, ...
+            [obj.modalMatrix, spectralMatrix] = ...
+                eigs(obj.stiffnessMatrix, obj.massMatrix, ...
                 nModes, 'sm');
             
-            % get eigenfrequencies
-            eigensolver.eigenfrequencies = diag(eigensolver.spectralMatrix);
-            eigensolver.eigenfrequencies = sqrt(eigensolver.eigenfrequencies) ./ (2*pi);
+            % save eigenfrequencies in rad/s
+            obj.eigenfrequencies = sqrt(diag(spectralMatrix));
+            
+            % sort eigenfrequencies and mode shapes
+            [obj.eigenfrequencies, order] = sort(obj.eigenfrequencies);
+            obj.modalMatrix = obj.modalMatrix(:,order);
         end
         
-        function assignModeShapes(eigensolver)
-            nModes = size(eigensolver.modalMatrix, 2);
-            for itEv = 1:nModes
-                eigensolver.assembler.appendValuesToDofs(eigensolver.femModel, eigensolver.modalMatrix(:,itEv));
+        function assignModeShapes(obj)
+            %EIGENSOLVERSTRATEGY.ASSIGNMODESHAPES assigns the modal displacement to all dofs.
+            %   step 1 visualizes the first eigenvector etc.
+            nModes = size(obj.modalMatrix, 2);
+            obj.assembler.assignResultsToDofs(obj.femModel, obj.modalMatrix(:,1));
+            for itEv = 2:nModes
+                obj.assembler.appendValuesToDofs(obj.femModel, obj.modalMatrix(:,itEv));
             end
         end
         
-        function solveUndampedModalSuperposition(solver)
+        function solveUndampedModalSuperposition(obj)
             %SOLVEUNDAMPEDMODALSUPERPOSITION using a time integration
             %scheme for arbitrary excitations
             
-            if isempty(solver.eigenfrequencies)
-                solver.solve();
+            if isempty(obj.eigenfrequencies)
+                obj.solve();
             end
-            solver.normalizeModalMatrix();
+            obj.normalizeModalMatrix();
             
-            solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
+            obj.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
                 "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
             
-            disp = solver.assembler.assemble3dDofVector(solver.femModel, 'DISPLACEMENT');
-            vel = solver.assembler.assemble3dValueVector(solver.femModel, 'VELOCITY');
-            [~, force0] = solver.assembler.applyExternalForces(solver.femModel);
+            disp = obj.assembler.assemble3dDofVector(obj.femModel, 'DISPLACEMENT');
+            vel = obj.assembler.assemble3dValueVector(obj.femModel, 'VELOCITY');
+            [~, force0] = obj.assembler.applyExternalForces(obj.femModel);
             
-            [~, fixedDofs] = solver.femModel.getDofConstraints();
+            [~, fixedDofs] = obj.femModel.getDofConstraints();
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
                 vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
@@ -88,24 +95,24 @@ classdef EigensolverStrategy < Solver
             endTime = 2000;
             dt = 3;
             
-            nModes = length(solver.eigenfrequencies);
+            nModes = length(obj.eigenfrequencies);
             
             mc = zeros(nModes,1);  %modal coordinate eta
             mcd = zeros(nModes,1); %derivative of modal coordinate eta
             pfo = zeros(nModes,1); %old modal participation factor phi (load)
             pfn = zeros(nModes,1); %new modal participation factor phi (load)
             for m = 1:nModes
-                pfo(m) = solver.modalMatrix(:,m).' * solver.massMatrix * force0';
-                mc(m) = solver.modalMatrix(:,m).' * solver.massMatrix * disp0;
-                mcd(m) = solver.modalMatrix(:,m).' * solver.massMatrix * vel0;
+                pfo(m) = obj.modalMatrix(:,m).' * obj.massMatrix * force0';
+                mc(m) = obj.modalMatrix(:,m).' * obj.massMatrix * disp0;
+                mcd(m) = obj.modalMatrix(:,m).' * obj.massMatrix * vel0;
             end
             
             while t < endTime
                 for m = 1:nModes
-                    eigenvalues = diag(solver.spectralMatrix);
+                    eigenvalues = diag(obj.spectralMatrix);
                     alpha = sqrt(eigenvalues(m)) * dt;
-                    [~, force] = solver.assembler.applyExternalForces(solver.femModel);
-                    pfn(m) = solver.modalMatrix(:,m).' * solver.massMatrix * force';
+                    [~, force] = obj.assembler.applyExternalForces(obj.femModel);
+                    pfn(m) = obj.modalMatrix(:,m).' * obj.massMatrix * force';
                     res = [cos(alpha) sin(alpha)/alpha; -alpha*sin(alpha) cos(alpha)] ...
                         * [mc(m); dt*mcd(m)] ...
                         + dt^2/alpha^2 ...
@@ -123,109 +130,126 @@ classdef EigensolverStrategy < Solver
                 disp = 0;
                 vel = 0;
                 for m = 1:nModes
-                    disp = disp + mc(m) * solver.modalMatrix(:,m);
-                    vel = vel + mcd(m) * solver.modalMatrix(:,m);
+                    disp = disp + mc(m) * obj.modalMatrix(:,m);
+                    vel = vel + mcd(m) * obj.modalMatrix(:,m);
                 end
-                solver.assembler.appendValuesToDofs(solver.femModel, disp);
-                solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', vel);
+                obj.assembler.appendValuesToDofs(obj.femModel, disp);
+                obj.assembler.appendValuesToNodes(obj.femModel, 'VELOCITY', vel);
                 
                 t = t + dt;
             end
             
         end
         
-        function harmonicAnalysis(solver, excitations, nModes)
+        function harmonicAnalysis(obj, excitations, nModes)
             %HARMONIC ANALYSIS performs an analysis in the frequency domain
             %using a harmonic excitation
             %EXCITATIONS: vector of all excitation frequencies in rad/s
             %NMODES: number of modes
-            if isempty(solver.eigenfrequencies)
-                solver.solve(nModes);
+            if isempty(obj.eigenfrequencies)
+                obj.solve(nModes);
             end
             
 %             solver.femModel.getAllNodes.addNewValue(["VELOCITY_X", "VELOCITY_Y", "VELOCITY_Z", ...
 %                 "ACCELERATION_X", "ACCELERATION_Y", "ACCELERATION_Z"]);
             
-            [~, force] = solver.assembler.applyExternalForces(solver.femModel);
-            nModes = length(solver.eigenfrequencies);
-            
-            eigenvalues = diag(solver.spectralMatrix);
-            
+            [~, force] = obj.assembler.applyExternalForces(obj.femModel);
+            nModes = length(obj.eigenfrequencies);
+            f_ind = find(force); %indices, where a force is acting
+
             for e=1:length(excitations)
                 excitation = excitations(e);
                 result = zeros;
                 for n=1:nModes
-                    if solver.modalDampingRatio ~= 0
-                        dampingRatio = solver.modalDampingRatio;
-                    elseif (solver.rayleighAlpha ~= 0) || (solver.rayleighBeta ~= 0)
-                        dampingRatio = solver.rayleighAlpha / (2 * sqrt(eigenvalues(n))) + solver.rayleighBeta * sqrt(eigenvalues(n)) / 2;
+                    if obj.modalDampingRatio ~= 0
+                        dampingRatio = obj.modalDampingRatio;
+                    elseif (obj.rayleighAlpha ~= 0) || (obj.rayleighBeta ~= 0)
+                        dampingRatio = obj.rayleighAlpha / (2 * obj.eigenfrequencies(n) ) ...
+                            + obj.rayleighBeta * obj.eigenfrequencies(n) / 2;
                     else
                         dampingRatio = 0.0;
                     end
-                    factor = (eigenvalues(n) - excitation^2) + 2i * dampingRatio * sqrt(eigenvalues(n)) * excitation;
-                    result = result + 1/factor .* ((solver.modalMatrix(:,n) * solver.modalMatrix(:,n)') * force');
+                    factor = (obj.eigenfrequencies(n)^2 - excitation^2) + 2i * dampingRatio * obj.eigenfrequencies(n) * excitation;
+                    result = result + 1/factor .* ((obj.modalMatrix(:,n) * obj.modalMatrix(f_ind,n).') * force(f_ind)');
                 end
-                solver.assembler.appendValuesToDofs(solver.femModel, result);
+                obj.assembler.appendValuesToDofs(obj.femModel, result);
 %                 solver.assembler.appendValuesToNodes(solver.femModel, 'VELOCITY', (1i * excitation) .* result)
 %                 solver.assembler.appendValuesToNodes(solver.femModel, 'ACCELERATION', (- power(excitation, 2)) .* result)
-            end    
-            solver.femModel.getDofArray.removeValue(1);
+            end
+
+            obj.femModel.getDofArray.removeValue(1);
             
         end
         
-        function normalizeModalMatrix(solver)
-            nEigenvectors = size(solver.modalMatrix,1);
-            solver.normalizedModalMatrix = zeros(nEigenvectors);
+        function normalizeModalMatrix(obj)
+            nEigenvectors = size(obj.modalMatrix,1);
+            obj.normalizedModalMatrix = zeros(nEigenvectors);
             for ii = 1:nEigenvectors
-               solver.normalizedModalMatrix(:,ii) = ...
-                   1 / sqrt(solver.modalMatrix(:,ii).' * solver.massMatrix * solver.modalMatrix(:,ii))...
-                   .* solver.modalMatrix(:,ii);
+               obj.normalizedModalMatrix(:,ii) = ...
+                   1 / sqrt(obj.modalMatrix(:,ii).' * obj.massMatrix * obj.modalMatrix(:,ii))...
+                   .* obj.modalMatrix(:,ii);
             end
         end
         
-        function initialize(eigensolver)
-            if ~ eigensolver.femModel.isInitialized()
-                eigensolver.femModel.initialize;
+        function initialize(obj)
+            if ~ obj.femModel.isInitialized()
+                obj.femModel.initialize;
             end
             
             % assemble and reduce matrices
-            eigensolver.massMatrix = eigensolver.assembler.assembleGlobalMassMatrix(eigensolver.femModel);
-            eigensolver.dampingMatrix = eigensolver.assembler.assembleGlobalDampingMatrix(eigensolver.femModel);
-            eigensolver.stiffnessMatrix = eigensolver.assembler.assembleGlobalStiffnessMatrix(eigensolver.femModel);
+            obj.massMatrix = obj.assembler.assembleGlobalMassMatrix(obj.femModel);
+            obj.dampingMatrix = obj.assembler.assembleGlobalDampingMatrix(obj.femModel);
+            obj.stiffnessMatrix = obj.assembler.assembleGlobalStiffnessMatrix(obj.femModel);
             
-            [~, fixedDofs] = eigensolver.femModel.getDofConstraints();
+            [~, fixedDofs] = obj.femModel.getDofConstraints();
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
-                eigensolver.massMatrix = applyMatrixBoundaryConditions(eigensolver.massMatrix, fixedDofIds);
-                eigensolver.dampingMatrix = applyMatrixBoundaryConditions(eigensolver.dampingMatrix, fixedDofIds);
-                eigensolver.stiffnessMatrix = applyMatrixBoundaryConditions(eigensolver.stiffnessMatrix, fixedDofIds);                
+                obj.massMatrix = applyMatrixBoundaryConditions(obj.massMatrix, fixedDofIds);
+                obj.dampingMatrix = applyMatrixBoundaryConditions(obj.dampingMatrix, fixedDofIds);
+                obj.stiffnessMatrix = applyMatrixBoundaryConditions(obj.stiffnessMatrix, fixedDofIds);                
             end
             
             %get the damping coefficients
-            if (eigensolver.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_ALPHA')) ...
-                    && (eigensolver.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_BETA'))
-                eigensolver.rayleighAlpha = eigensolver.femModel.getElement(1).getProperties.getValue('RAYLEIGH_ALPHA');
-                eigensolver.rayleighBeta = eigensolver.femModel.getElement(1).getProperties.getValue('RAYLEIGH_BETA');
+            if (obj.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_ALPHA')) ...
+                    && (obj.femModel.getElement(1).getProperties.hasValue('RAYLEIGH_BETA'))
+                obj.rayleighAlpha = obj.femModel.getElement(1).getProperties.getValue('RAYLEIGH_ALPHA');
+                obj.rayleighBeta = obj.femModel.getElement(1).getProperties.getValue('RAYLEIGH_BETA');
             else
-                eigensolver.rayleighAlpha = 0.0;
-                eigensolver.rayleighBeta = 0.0;
+                obj.rayleighAlpha = 0.0;
+                obj.rayleighBeta = 0.0;
             end
             
-            if (eigensolver.femModel.getElement(1).getProperties.hasValue('MODAL_DAMPING_RATIO'))
-                eigensolver.modalDampingRatio = eigensolver.femModel.getElement(1).getProperties.getValue('MODAL_DAMPING_RATIO');
+            if (obj.femModel.getElement(1).getProperties.hasValue('MODAL_DAMPING_RATIO'))
+                obj.modalDampingRatio = obj.femModel.getElement(1).getProperties.getValue('MODAL_DAMPING_RATIO');
             else
-                eigensolver.modalDampingRatio = 0.0;
+                obj.modalDampingRatio = 0.0;
             end
             
-            eigensolver.isInitialized = true;
+            obj.isInitialized = true;
         end
         
-        function ef = getEigenfrequencies(eigensolver)
-            ef = eigensolver.eigenfrequencies;
+        function ef = getEigenfrequencies(obj, unit)
+            %GETEIGENFREQUENCIES returns the eigenfrequencies sorted from low to high
+            %   UNIT can be 'Hz' or 'rad'. If UNIT is not specified, 'rad'
+            %   will be used.
+            ef = obj.eigenfrequencies;
+            if nargin > 1
+                if strcmp(unit, 'Hz')
+                    ef = ef/(2*pi);
+                elseif strcmp(unit, 'rad')
+                    %nothing
+                else
+                    msg = 'GetEigenfrequenices: unit can only be Hz or rad.';
+                    e = MException('MATLAB:bm_mfem:unknownParameter',msg);
+                    throw(e);
+                end
+            end
         end
         
-        function mm = getModalMatrix(eigensolver)
-            mm = eigensolver.modalMatrix;
+        function mm = getModalMatrix(obj)
+            %GETMODALMATRIX returns the modal matrix of the system sorted
+            %according to the eigenfrequencies
+            mm = obj.modalMatrix;
         end
         
     end

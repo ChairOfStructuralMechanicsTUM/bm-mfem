@@ -137,8 +137,11 @@ classdef Dof < handle
             valueType = dof.valueType;
         end
         
-        function fixed = isFixed(dof)
-            fixed = dof.fixed;
+        function fixed = isFixed(dofs)
+            fixed = false(1,length(dofs));
+            for ii = 1:length(dofs)
+                fixed(ii) = dofs(ii).fixed;
+            end
         end
 
         % setter functions
