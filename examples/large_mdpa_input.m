@@ -13,6 +13,8 @@ model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y", "DISPLACEMENT_Z", .
 model.getModelPart('GENERIC_left_support').getNodes().fixAllDofs();
 model.getModelPart('GENERIC_right_support').getNodes().fixAllDofs();
 
+ln = model.getModelPart('GENERIC_left_support').getNodes()
+rn = model.getModelPart('GENERIC_right_support').getNodes()
 %set load for all elements in 'inner_circle':
 model.getModelPart('GENERIC_inner_circle').getNodes().setDofLoad('DISPLACEMENT_X',10000);
 
