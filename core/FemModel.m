@@ -198,7 +198,13 @@ classdef FemModel < handle
                     element = QuadrilateralElement2d4n(id, nodes);
                 case 'HexahedronElement3d8n'
                     element = HexahedronElement3d8n(id, nodes);
-                    
+                case 'BiotAllardElement2d4n'
+                    element = BiotAllardElement2d4n(id, nodes);   
+                case 'AtallaElement2d4n'
+                    element = AtallaElement2d4n(id, nodes); 
+                case 'DazelElement2d4n'
+                    element = DazelElement2d4n(id, nodes); 
+                   
                 otherwise
                     error('unknown element %s',elementName)
             end %switch

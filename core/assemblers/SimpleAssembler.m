@@ -176,7 +176,7 @@ classdef SimpleAssembler < Assembler
             end
         end
         
-        function massMatrix = assembleGlobalMassMatrix(femModel)
+        function [massMatrix, reducedMassMatrix] = assembleGlobalMassMatrix(femModel)
             elements = femModel.getAllElements;
             ndofs = length(femModel.getDofArray);
             massMatrix = zeros(ndofs);
@@ -186,6 +186,11 @@ classdef SimpleAssembler < Assembler
                elementalDofIds = elements(itEle).getDofList().getId;
                massMatrix(elementalDofIds, elementalDofIds) = ...
                    massMatrix(elementalDofIds, elementalDofIds) + elementalMassMatrix;
+            end
+            [~, fixedDofs] = femModel.getDofConstraints;
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                reducedMassMatrix = applyMatrixBoundaryConditions(massMatrix, fixedDofIds);                
             end
         end
         

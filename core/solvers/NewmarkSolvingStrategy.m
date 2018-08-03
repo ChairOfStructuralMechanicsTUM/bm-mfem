@@ -1,7 +1,7 @@
 classdef NewmarkSolvingStrategy < Solver
     %NEWMARKSOLVINGSTRATEGY A time integration method based on the Newmark
     %method
-    %   Newmark's method as outlined in Géradin, Michel, and Daniel J. 
+    %   Newmark's method as outlined in Gï¿½radin, Michel, and Daniel J. 
     %   Rixen. Mechanical vibrations: theory and application to structural
     %   dynamics. John Wiley & Sons, 2014.
     
@@ -93,6 +93,7 @@ classdef NewmarkSolvingStrategy < Solver
         function initialize(solver)
             solver.femModel.initialize;
             step = solver.femModel.getProperties.getValue('STEP');
+            
             
             % assemble and reduce matrices
             [~, fixedDofs] = solver.femModel.getDofConstraints();
