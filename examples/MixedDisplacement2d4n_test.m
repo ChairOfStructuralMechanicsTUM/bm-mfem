@@ -8,7 +8,17 @@ node04 = Node(4,0,1);
 nodeArray = [node01 node02 node03 node04];
 nodeArray.addDof({'DISPLACEMENT_SOLID_X', 'DISPLACEMENT_SOLID_Y','PRESSURE_FLUID'});
 
+<<<<<<< HEAD:examples/MixedFormulation2d4n_test.m
 ele01 = MixedDisplacementElement2d4n(1,[node01 node02 node03 node04]);
+=======
+
+
+ele01 = MixedDisplacementElement2d4n(1,[node01 node02 node03 node04]);
+
+%ele01 = MixedFormulationElement2d4n(1,[node01 node02 node03 node04]);
+
+
+>>>>>>> 7883e3470bdd45c2d8ea706f0ee3bf7cb639b5c7:examples/MixedDisplacement2d4n_test.m
 elementArray = ele01;
 
 % Solid Parameters:
@@ -49,12 +59,18 @@ assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);     
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
+<<<<<<< HEAD:examples/MixedFormulation2d4n_test.m
 solver = SimpleHarmonicSolvingStrategy(model,100);
 x = solver.solve();
 
 step = 1;
 
 VerschiebungDofs = model.getDofArray.getValue(step);
+=======
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+         
+massMatrix = assembling.assembleGlobalMassMatrix(model);
+>>>>>>> 7883e3470bdd45c2d8ea706f0ee3bf7cb639b5c7:examples/MixedDisplacement2d4n_test.m
 
 nodalForces = solver.getNodalForces(step);
 
