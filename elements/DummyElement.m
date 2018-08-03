@@ -29,9 +29,29 @@ classdef DummyElement < Element
                         
         end
         
+        function barycenter(obj)
+            
+        end
+        
+        function computeLocalStiffnessMatrix(obj)
+            
+        end
+        
         function check(obj)
            %CHECK override the element check function. nothing has to be
            %    checked for the dummy element.
+        end
+        
+        function getValuesVector(obj)
+            
+        end
+        
+        function update(obj)
+            
+        end
+        
+        function initialize(obj)
+            
         end
         
         function dofs = getDofList(obj)

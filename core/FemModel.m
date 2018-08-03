@@ -237,6 +237,8 @@ classdef FemModel < handle
                     element = BeamElement3d2n(id, nodes);
                 case 'ConcentratedMassElement3d1n'
                     element = ConcentratedMassElement3d1n(id, nodes);
+                case 'DummyElement'
+                    element = DummyElement(id, nodes);
                 case 'SpringDamperElement3d2n'
                     element = SpringDamperElement3d2n(id, nodes);
                 case 'ReissnerMindlinElement3d4n'
