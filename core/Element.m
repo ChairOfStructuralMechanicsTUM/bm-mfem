@@ -3,7 +3,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     %   Abstract base class for all element implementations
     
     properties (Access = private)
-        id
+        id = -1
     end
     properties (Access = protected)
         nodeArray
@@ -14,25 +14,24 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     methods
         % constructor
-        function element = Element(id, nodeArray, requiredPropertyNames)
-            if nargin > 0
-                element.id = id;
-                element.eProperties = PropertyContainer();
-                element.nodeArray = {};
-            end
+        function obj = Element(id, nodeArray, requiredPropertyNames)
             
-            if nargin == 3
-                element.nodeArray = nodeArray;
+            if nargin == 0
+                obj.id = -1;
+            elseif nargin == 3
+                obj.id = id;
+                obj.eProperties = PropertyContainer();
+                obj.nodeArray = nodeArray;
+                obj.requiredPropertyNames = requiredPropertyNames;
                 
                 for ii = 1:length(requiredPropertyNames)
-                    element.eProperties.addValue(requiredPropertyNames{ii});
+                    obj.eProperties.addValue(requiredPropertyNames{ii});
                 end
-                element.requiredPropertyNames = requiredPropertyNames;
                 
-                element.initialize();
+                obj.initialize();
             end
-            
         end
+        
     end
     
     methods (Abstract)
@@ -40,7 +39,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         update(element)     % update properties after e.g. nodes changed
         barycenter(element)
         computeLocalStiffnessMatrix(element)
-        computeLocalForceVector(element)
+%         computeLocalForceVector(element)
         getDofList(element)
         getValuesVector(element, step)
     end
@@ -77,9 +76,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
 %            end
 %         end
         
-        function setProperties(elements, props)
-            for ii = 1:length(elements)
-                elements(ii).eProperties = copy(props);
+        function setProperties(obj, props)
+            for ii = 1:length(obj)
+                names = props.getValueNames();
+                for jj = 1:length(names)
+                    if obj(ii).eProperties.hasValue(names{jj})
+                        obj(ii).eProperties.setValue(names{jj}, props.getValue(names{jj}));
+                    else
+                        obj(ii).eProperties.addValue(names{jj}, props.getValue(names{jj}));
+                    end
+                end
             end
         end
         
@@ -92,42 +98,6 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
         function addProperty(elements, valueName, value)
             for ii = 1:length(elements)
                 elements(ii).eProperties.addValue(valueName, value);
-            end
-        end
-            
-        
-        function check(element)
-        %CHECK checks, if all dofs and properties required by the element
-        %are available. If a property is missing, it will be initialized
-        %with 0.
-            
-            %check the dofs
-            for iNode = 1:length(element.nodeArray)
-                cNode = element.nodeArray(iNode);
-                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
-                diff = setxor(element.dofNames', availableDofNames);
-                if ~ isempty(diff)
-                    missingDofs = setdiff(element.dofNames', availableDofNames);
-                    unknownDofs = setdiff(availableDofNames, element.dofNames');
-                    
-                    error('the following dofs are missing at node %d: %s\nthe following dofs at node %d are not defined for the element %s: %s\n', ...
-                        cNode.getId, ...
-                        strjoin(missingDofs,', '), ...
-                        cNode.getId, ...
-                        class(element), ...
-                        strjoin(unknownDofs,', '))
-                end
-            end
-            
-            %check the properties
-            valsToCheck = element.requiredPropertyNames;
-            properties = element.getProperties;
-            availableValueNames = properties.getValueNames;
-            for ii = 1:length(valsToCheck)
-                if ~ any(ismember(valsToCheck(ii), availableValueNames))
-%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
-                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
-                end
             end
         end
         
@@ -164,6 +134,68 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     methods
         
+        function check(element)
+        %CHECK checks, if all dofs and properties required by the element
+        %   are available. If a property is missing, it will be initialized
+        %   with 0.
+            
+            %check the dofs
+            for iNode = 1:length(element.nodeArray)
+                cNode = element.nodeArray(iNode);
+                availableDofNames = arrayfun(@(dof) dof.getValueType, cNode.getDofArray, 'UniformOutput',false);
+                diff = setxor(element.dofNames', availableDofNames);
+                if ~ isempty(diff)
+                    missingDofs = setdiff(element.dofNames', availableDofNames);
+                    unknownDofs = setdiff(availableDofNames, element.dofNames');
+                    
+                    if ~isempty(missingDofs)
+                        msg = ['Element: The following dofs are missing', ...
+                            ' at node ', num2str(cNode.getId), ': ', ...
+                            char(strjoin(missingDofs,', '))];
+                        e = MException('MATLAB:bm_mfem:elementalDofMissing',msg);
+                        throw(e);
+                    end
+                    
+                    if ~isempty(unknownDofs)
+                        msg = ['Element: The following dofs at node ', ...
+                            num2str(cNode.getId), ' are not defined for ', ...
+                            class(element), ': ', ...
+                            char(strjoin(unknownDofs,', '))];
+                        e = MException('MATLAB:bm_mfem:unknownElementalDof',msg);
+                        throw(e);
+                    end
+                end
+            end
+            
+            %check the properties
+            valsToCheck = element.requiredPropertyNames;
+            properties = element.getProperties;
+            availableValueNames = properties.getValueNames;
+            for ii = 1:length(valsToCheck)
+                if ~ any(ismember(valsToCheck(ii), availableValueNames))
+%                     fprintf('assigning %s to element %d with value 0\n', cell2mat(valsToCheck(ii)), element.id)
+                    properties.addValue(cell2mat(valsToCheck(ii)), 0);
+                end
+            end
+        end
+        
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            %COMPUTELOCALDAMPINGMATRIX returns the damping matrix for
+            %   proportional (Rayleigh) damping
+            props = obj.getProperties;
+            
+            if props.hasValue('RAYLEIGH_ALPHA') && props.hasValue('RAYLEIGH_BETA')
+                alpha = props.getValue('RAYLEIGH_ALPHA');
+                beta = props.getValue('RAYLEIGH_BETA');
+                dampingMatrix = alpha * obj.computeLocalMassMatrix + ...
+                    beta * obj.computeLocalStiffnessMatrix;
+            else
+                nnodes = length(obj.nodeArray);
+                ndofs = length(obj.dofNames);
+                dampingMatrix = sparse(nnodes*ndofs, nnodes*ndofs);
+            end
+        end
+        
         function overwriteNode(element, oldNode, newNode)
             if ~isa(newNode,'Node')
                 error('invalid node')
@@ -179,6 +211,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
+    end
+    
+    methods (Static, Sealed, Access = protected)
+        function obj = getDefaultScalarElement
+            %TODO change this!
+            obj = BeamElement3d2n;
+        end
     end
     
 end
