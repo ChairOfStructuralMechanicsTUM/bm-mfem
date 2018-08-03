@@ -27,7 +27,7 @@ classdef AnsysInput < ModelIO
         end
         
         function model = readModel(obj,ansysExecutable)
-                        
+            
             A=strsplit(obj.file,'\');
             
             B=strsplit(A{end},'.');
@@ -58,39 +58,39 @@ classdef AnsysInput < ModelIO
             
             props = PropertyContainer;
             model = FemModel;
-
             
-
-%             tline = fgetl(fid);
-%             
-%             while ischar(tline)
-%                 if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-%                 
-%                 if contains(tline,'Begin Properties')
-%                     nProp = strsplit(tline);
-%                     nProp = str2double(nProp{end});
-%                     [fid,props] = obj.readProperties(fid,props,nProp);
-%                 end
-%                 
-%                 if contains(tline,'Begin Nodes')
-%                     [fid,model] = obj.readNodes(fid,model);
-%                 end
-%                 
-%                 if contains(tline,'Begin Elements')
-%                     etype = strsplit(tline);
-%                     etype = cell2mat(etype(3));
-%                     etype = erase(etype,'//');
-%                     [fid,model] = obj.readElements(fid,model,etype,props);
-%                 end
-%                 
-%                 if contains(tline,'Begin SubModelPart')
-%                     name = strsplit(tline);
-%                     name = cell2mat(name(3));
-%                     [fid,model] = obj.readSubModelParts(fid,model,name);
-%                 end
-%                 
-%                 tline = fgetl(fid);
-%            end
+            
+            
+            %             tline = fgetl(fid);
+            %
+            %             while ischar(tline)
+            %                 if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
+            %
+            %                 if contains(tline,'Begin Properties')
+            %                     nProp = strsplit(tline);
+            %                     nProp = str2double(nProp{end});
+            %                     [fid,props] = obj.readProperties(fid,props,nProp);
+            %                 end
+            %
+            %                 if contains(tline,'Begin Nodes')
+            %                     [fid,model] = obj.readNodes(fid,model);
+            %                 end
+            %
+            %                 if contains(tline,'Begin Elements')
+            %                     etype = strsplit(tline);
+            %                     etype = cell2mat(etype(3));
+            %                     etype = erase(etype,'//');
+            %                     [fid,model] = obj.readElements(fid,model,etype,props);
+            %                 end
+            %
+            %                 if contains(tline,'Begin SubModelPart')
+            %                     name = strsplit(tline);
+            %                     name = cell2mat(name(3));
+            %                     [fid,model] = obj.readSubModelParts(fid,model,name);
+            %                 end
+            %
+            %                 tline = fgetl(fid);
+            %            end
             
         end
         
@@ -238,7 +238,225 @@ classdef AnsysInput < ModelIO
             end
         end
         
+        function A = readCoord()
+            % function A = readCoord()
+            %
+            % Function   : readCoord
+            %
+            % Description: This function gets the nodes coordinates from txt files
+            %              created in ANSYS
+            %
+            % Parameters :
+            %
+            % Return     : A                   - matrix with nodal information
+            %
+            fid=fopen('DataAnsys/nodeCoor.txt') ;
+            fidd=fopen('DataAnsys/nodeCoor_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            % Discard some line to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
+            end
+            
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 9
+                        fgetl(fid) ;
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            
+            fclose all ;
+            filename = 'DataAnsys/nodeCoor_modified.dat';
+            delimiterIn = ' ';
+            % Get data in matlab
+            A = importdata(filename,delimiterIn);
+        end
         
+        function [elementList,nodesArrays,nodeConnectivity] = readElements()
+            % function [elementList,nodesArrays] = readElements()
+            %
+            % Function   : readElements
+            %
+            % Description: This function gets the element information from the txt
+            %              files generated by ANSYS
+            %
+            % Parameters :
+            %
+            % Return     : elementList                 - matrix with nodal information
+            %              nodesArrays                 - array with the nodes related
+            %                                            to certain element
+            fid=fopen('DataAnsys/elemNodes.txt') ;
+            fidd=fopen('DataAnsys/elemNodes_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            % Discard some line to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
+            end
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 10
+                        fgetl(fid) ;
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            fclose all ;
+            filename = 'DataAnsys/elemNodes_modified.dat';
+            delimiterIn = ' ';
+            % Get data in matlab
+            A = importdata(filename,delimiterIn);
+            
+            nodeConnectivity=A(:,7:end);
+            
+            A(:,1) = [];
+            A(:,1) = [];
+            A(:,2) = [];
+            A(:,2) = [];
+            A(:,2) = [];
+            % Check how many element types there are
+            elements = unique(A(:,1));
+            %nodesArrays = cell(length(elements),1);
+            aux1 = [];
+            aux2 = [];
+            nodesArrays = cell(length(elements),1);
+            for i = 1 : length(elements)
+                for j = 1 : size(A,1)
+                    if A(j,1) == elements(i)
+                        for k = 2:size(A,2)
+                            aux1 = [aux1 A(j,k)];
+                        end
+                        aux2 = [aux2 aux1];
+                    end
+                end
+                nodesArrays(i) = {unique(aux2)};
+                aux1 = [];
+                aux2 = [];
+            end
+            
+            fid=fopen('DataAnsys/elemTyp.txt') ;
+            fidd=fopen('DataAnsys/elemTyp_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            % Discard some line to read the data from the txt files
+            for j = 1 : 11
+                fgetl(fid) ;
+            end
+            
+            for j = 1 : length(elements)
+                tline=fgets(fid);
+                fgetl(fid) ;
+                fgetl(fid) ;
+                fgetl(fid) ;
+                fgetl(fid) ;
+                fwrite(fidd,tline) ;
+            end
+            fclose all ;
+            filename = 'DataAnsys/elemTyp_modified.dat';
+            delimiterIn = ' ';
+            % Get data in matlab
+            eList = {};
+            elementList = {};
+            A = importdata(filename,delimiterIn);
+            for i =  1:size(A,1)
+                eList(i) = textscan(A{i,1},'%s');
+                if strcmp(eList{1,i}{1},'ELEMENT')
+                    elementList{i} = eList{1,i}{5};
+                end
+            end
+        end
+        
+        function nodeNum = readRecord_5()
+            % function nodeNum = readRecord_5()
+            %
+            %
+            % Function   : readRecord_5
+            %
+            % Description: This function get the nodal equivalence between the
+            %              original number of node given in ANSYS and the distribution
+            %              within the stiffness matrix through reading record5
+            %
+            % Parameters :
+            %
+            % Return     : nodeNum                   - array
+            %
+            fid = fopen('DataAnsys/record_5.txt', 'r') ;
+            if fid < 0, error('Cannot open file'); end
+            for i = 1 : 10
+                fgetl(fid) ;
+            end
+            buffer = fread(fid, Inf) ;
+            fclose(fid);
+            fid = fopen('DataAnsys/record_5_modified.txt', 'w')  ;
+            fwrite(fid, buffer) ;
+            fclose(fid) ;
+            filename = 'DataAnsys/record_5_modified.txt';
+            delimiterIn = ' ';
+            A = importdata(filename,delimiterIn);
+            %wenn nur ein Element in FEmodel dann ist A kein struct
+            if ~isstruct(A)
+                B.textdata=strtrim(cellstr(num2str(A'))');
+                A=B;
+            else
+                A.textdata(:,6)=[];
+            end
+            nodeNum = [];
+            for i = 1 : size(A.textdata,1)
+                %for j = 1 : 5
+                for j = 1 : size(A.textdata,2)
+                    if isnan(str2double(A.textdata(i,j)))
+                        break;
+                    end
+                    nodeNum = [nodeNum str2double(A.textdata(i,j))];
+                end
+            end
+        end
+        
+        function A = readRestrictions()
+            % function A = readRestrictions()
+            %
+            % Function   : readRestrictions
+            %
+            % Description: This function get the restrictions on the coordinates from
+            %              ANSYS
+            %
+            % Parameters :
+            %
+            % Return     : A array with restrictions
+            fid=fopen('DataAnsys/nodeRest.txt') ;                   % the original file
+            fidd=fopen('DataAnsys/nodeRest_modified.dat','w') ;     % the new file
+            if fid < 0, error('Cannot open file'); end    % Check for an error
+            for j = 1 : 13
+                fgetl(fid) ;                              % Read/discard line.
+            end
+            while ~feof(fid)  % reads the original till last line
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 9
+                        fgetl(fid) ;                     % Read/discard line.
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            fclose all ;
+            filename = 'DataAnsys/nodeRest_modified.dat';
+            delimiterIn = ' ';
+            A = importdata(filename,delimiterIn);        % Get data in matlab
+            
+            if ~isempty(A)
+                A.textdata(:,2) = [];
+                nodeRest = str2double(A.textdata);
+                A = sort(unique(nodeRest),'ascend');
+            else
+                A = [];
+            end
+            
+        end
         
     end
     
