@@ -144,6 +144,18 @@ classdef FemModel < handle
             if obj.initialized
                 return;
             end
+%             
+%             % (1) check for double ids
+%             
+%             nodeIds = arrayfun(@(node) node.getId, obj.nodeArray);
+%             [~, uids] = unique(nodeIds);
+%             if length(nodeIds) ~= length(uids)
+%                 duplicate_ids = setdiff(1:length(nodeIds), uids);
+%                 msg = ['FemModel: Multiple nodes with id(s) \"', ...
+%                     nodeIds(duplicate_ids), '\" exist'];
+%                 e = MException('MATLAB:bm_mfem:duplicateId',msg);
+%                 throw(e);
+%             end
             
             % (1) check all elements
             arrayfun(@(e) e.check(), obj.elementArray);
@@ -177,11 +189,15 @@ classdef FemModel < handle
         function node = addNewNode(obj, id, x, y, z)
         %ADDNEWNODE inserts a new node in the fem model with id and x,y,z
         %   coordinates
-            nodeIds = arrayfun(@(node) node.getId, obj.nodeArray);
-            if any(id == nodeIds)
-                error('a node with id %d already exists in the model', id)
+            if id <= length(obj.nodeArray)
+                if obj.nodeArray(id).getId ~= -1
+                    msg = ['FemModel: A node with id \"', num2str(id), ...
+                        '\" already exists in the model'];
+                    e = MException('MATLAB:bm_mfem:duplicateId',msg);
+                    throw(e);
+                end
             end
-            
+
             if nargin == 4
                 node = Node(id, x, y);
                 obj.nodeArray(id) = node;
@@ -198,9 +214,18 @@ classdef FemModel < handle
         function element = addNewElement(obj, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
         %   elementName, id, and an array of nodes
-            elementIds = arrayfun(@(element) element.getId, obj.elementArray);
-            if any(id == elementIds)
-                error('an element with id %d already exists in the model', id)
+%             elementIds = arrayfun(@(element) element.getId, obj.elementArray);
+%             if any(id == elementIds)
+%                 error('an element with id %d already exists in the model', id)
+%             end
+
+            if id <= length(obj.elementArray)
+                if obj.elementArray(id).getId ~= -1
+                    msg = ['FemModel: An element with id \"', num2str(id), ...
+                        '\" already exists in the model'];
+                    e = MException('MATLAB:bm_mfem:duplicateId',msg);
+                    throw(e);
+                end
             end
             
             if ~ isa(nodes,'Node')
