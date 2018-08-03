@@ -77,9 +77,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
 %            end
 %         end
         
-        function setProperties(elements, props)
-            for ii = 1:length(elements)
-                elements(ii).eProperties = copy(props);
+        function setProperties(obj, props)
+            for ii = 1:length(obj)
+                names = props.getValueNames();
+                for jj = 1:length(names)
+                    if obj(ii).eProperties.hasValue(names{jj})
+                        obj(ii).eProperties.setValue(names{jj}, props.getValue(names{jj}));
+                    else
+                        obj(ii).eProperties.addValue(names{jj}, props.getValue(names{jj}));
+                    end
+                end
             end
         end
         

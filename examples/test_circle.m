@@ -5,7 +5,6 @@ io=MdpaInput('test_circle.mdpa'); %specify input file
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["ROTATION_Y","DISPLACEMENT_Y", "DISPLACEMENT_X", "DISPLACEMENT_Z", ...
     "ROTATION_X",  "ROTATION_Z"]);
-model.getAllElements.addProperty('NUMBER_GAUSS_POINT',2);
 
 
 %set boundary conditions for all elements in 'left_support' and 'right_support':
