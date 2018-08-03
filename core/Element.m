@@ -3,7 +3,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     %   Abstract base class for all element implementations
     
     properties (Access = private)
-        id
+        id = -1
     end
     properties (Access = protected)
         nodeArray
@@ -14,25 +14,24 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
     
     methods
         % constructor
-        function element = Element(id, nodeArray, requiredPropertyNames)
-            if nargin > 0
-                element.id = id;
-                element.eProperties = PropertyContainer();
-                element.nodeArray = {};
-            end
+        function obj = Element(id, nodeArray, requiredPropertyNames)
             
-            if nargin == 3
-                element.nodeArray = nodeArray;
+            if nargin == 0
+                obj.id = -1;
+            elseif nargin == 3
+                obj.id = id;
+                obj.eProperties = PropertyContainer();
+                obj.nodeArray = nodeArray;
+                obj.requiredPropertyNames = requiredPropertyNames;
                 
                 for ii = 1:length(requiredPropertyNames)
-                    element.eProperties.addValue(requiredPropertyNames{ii});
+                    obj.eProperties.addValue(requiredPropertyNames{ii});
                 end
-                element.requiredPropertyNames = requiredPropertyNames;
                 
-                element.initialize();
+                obj.initialize();
             end
-            
         end
+        
     end
     
     methods (Abstract)
@@ -77,9 +76,16 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
 %            end
 %         end
         
-        function setProperties(elements, props)
-            for ii = 1:length(elements)
-                elements(ii).eProperties = copy(props);
+        function setProperties(obj, props)
+            for ii = 1:length(obj)
+                names = props.getValueNames();
+                for jj = 1:length(names)
+                    if obj(ii).eProperties.hasValue(names{jj})
+                        obj(ii).eProperties.setValue(names{jj}, props.getValue(names{jj}));
+                    else
+                        obj(ii).eProperties.addValue(names{jj}, props.getValue(names{jj}));
+                    end
+                end
             end
         end
         
@@ -205,6 +211,13 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
             end
         end
         
+    end
+    
+    methods (Static, Sealed, Access = protected)
+        function obj = getDefaultScalarElement
+            %TODO change this!
+            obj = BeamElement3d2n;
+        end
     end
     
 end

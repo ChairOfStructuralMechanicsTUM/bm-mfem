@@ -33,7 +33,7 @@ classdef MdpaInput < ModelIO
             
                 if contains(tline,'Begin Properties')
                     nProp = strsplit(tline);
-                    nProp = str2double(nProp{end});
+                    nProp = str2double(nProp{end}) + 1; %MDPA starts at 0
                     [fid,props] = obj.readProperties(fid,props,nProp);
                 end
                 
@@ -78,13 +78,9 @@ classdef MdpaInput < ModelIO
         end
         
         function [fid,model] = readNodes(fid,model)
-            tline = fgetl(fid);
-            while ~ strcmp(tline,'End Nodes')
-                if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-                
-                n = cell2mat(textscan(tline,'%f'))';
-                model.addNewNode(n(1),n(2),n(3),n(4));
-                tline = fgetl(fid);
+            dat = textscan(fid,'%u%f%f%f','delimiter','\t');
+            for ii = 1:length(dat{1})
+                model.addNewNode(dat{1}(ii),dat{2}(ii),dat{3}(ii),dat{4}(ii));
             end
         end
         
@@ -94,7 +90,7 @@ classdef MdpaInput < ModelIO
                 if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
                 
                 e = cell2mat(textscan(tline,'%f'));
-                model.addNewElement(etype,e(1),e(3:end),props(e(2)));
+                model.addNewElement(etype,e(1),e(3:end),props(e(2)+1));
                 tline = fgetl(fid);
             end
         end
