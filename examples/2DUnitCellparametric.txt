@@ -1,0 +1,65 @@
+FINISH
+$/clear
+/filname, 2DUnitCellparametric
+/PREP7
+
+m_percent=0.1
+f=60
+D=0.02
+
+lx=0.1
+ly=0.1
+thicknessZ=0.001
+
+! Titan
+dichte=4429
+eModul=104000000000
+poisson=0.31
+
+V=lx*ly*thicknessZ
+MassePlatte=V*dichte
+
+m=m_percent*MassePlatte
+k=m*(2*ACOS(-1)*f)**2
+c=2*D*m*2*ACOS(-1)*f
+
+nDiv=6
+
+ET,1,SHELL63
+R,1,thicknessZ 
+MPTEMP,,,,
+MPTEMP,1,0
+MP,EX,1,eModul
+MP,NUXY,1,poisson
+MP,DENS,1,dichte
+RECTNG,0,lx,0,ly
+TYPE,1
+MAT,1
+ESIZE,,2,,
+MSHKEY,1
+LESIZE,ALL,,,nDiv
+AMAP,1,1,2,3,4
+ET,2,MASS21,,,2
+ET,3,COMBIN14,,3
+R,2 , m
+R,3 , k,c
+
+ALLSEL
+NSEL,S,LOC,X,0.5*lx-0.001,0.5*lx+0.001
+NSEL,R,LOC,Y,0.5*ly-0.001,0.5*ly+0.001
+*GET,TMD_root_node,NODE,0,NUM,MAX
+ALLSEL
+
+!TMD_root_node = NODE( ,lx,ly,0.1)
+
+*GET,TMD_maxNodenumber,NODE,0,NUM,MAXD
+TMD_topNode = TMD_maxNodenumber+1
+N, TMD_topNode ,NX(TMD_root_node), NY(TMD_root_node),NZ(TMD_root_node)+0.1 
+TYPE,3
+REAL,3
+E,TMD_root_node,TMD_topNode
+TYPE,2
+REAL,2
+E,TMD_topNode
+D, TMD_topNode , UY, 0
+D, TMD_topNode , UX, 0

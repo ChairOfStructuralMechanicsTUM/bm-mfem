@@ -233,10 +233,61 @@ classdef AnsysInput < ModelIO
                 data.numNodes = length(model.getAllNodes());
                 
                 % Create available elements
-                %elementTypes = createElements(data.dimension);
                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
                 
+                % Assign dofs to node
+                numberOfdofs=zeros(size(data.nodesOrderByDofs));
+                for i = 1 :length(data.elementsOfModel)
+                    nodes=cell2mat(data.nodeElementList(i));
+                    dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel(i));
+                    for j = 1:length(nodes)
+                        if ~isnan(nodes(j))
+                            numberOfdofs(data.nodesOrderByDofs==nodes(j)) = dofs;
+                        end
+                    end
+                    
+                end
+                
+                init = 1;
+                lowestDof=zeros(size(data.nodesOrderByDofs));
+                highestDof=zeros(size(data.nodesOrderByDofs));
+                for i = 1 : length(numberOfdofs)
+                    aux = numberOfdofs(i);
+                    lowestDof(i) = init;
+                    highestDof(i) = init+aux-1;
+                    init = init + aux;
+                end
+                data.nodeOrdersByDofs = [data.nodesOrderByDofs;
+                                         numberOfdofs;
+                                         lowestDof;
+                                         highestDof];
                 rmdir('DataAnsys', 's')
+            end
+        end
+        
+        function dofs = getDofsOfAnsysElements(elementName)
+            switch 1
+                case strcmp(elementName,'BEAM3')
+                    dofs=3;
+                case strcmp(elementName,'COMBIN14')
+                    dofs=3;
+                case strcmp(elementName,'MASS21')
+                    dofs=6;
+                case strcmp(elementName,'SHELL63')
+                    dofs=6;
+                case strcmp(elementName,'SHELL181')
+                    dofs=6;
+                case strcmp(elementName,'PLANE182')
+                    dofs=2;
+                case strcmp(elementName,'SOLID185')
+                    dofs=3;
+                case strcmp(elementName,'SOLID186')
+                    dofs=3;
+                case strcmp(elementName,'SOLID187')
+                    dofs=3;    
+                otherwise
+                    disp('Please enter the number of dofs for ANSYS element:')
+                    disp([elementName ' in AnsysInput.getDofsOfAnsysElements(name)'])
             end
         end
         
