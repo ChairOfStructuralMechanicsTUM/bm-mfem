@@ -1,4 +1,5 @@
 classdef QuadrilateralElement2d4n < QuadrilateralElement
+    %QUADRILATERALELEMENT2D4N A basic quadrilateral element 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % CAUTION SHEAR LOCKING NOT PEREVENTED YET      %
     % Element works only for certain configurations %
@@ -33,17 +34,22 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         end
         
         %Initialization
-        function initialize(quadrilateralElement2d4n)
-            quadrilateralElement2d4n.lengthX = computeLength(quadrilateralElement2d4n.nodeArray(1).getCoords, ...
-                quadrilateralElement2d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
             
-            quadrilateralElement2d4n.lengthY = computeLength(quadrilateralElement2d4n.nodeArray(1).getCoords, ...
-                quadrilateralElement2d4n.nodeArray(4).getCoords);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
             
-            checkConvexity(quadrilateralElement2d4n);
+            if ~checkConvexity(obj)
+                msg = ['QuaadrilateralElement2d4n: Element ', ...
+                    num2str(obj.getId), ' is not convex.'];
+                e = MException('MATLAB:bm_mfem:elementNotConvex',msg);
+                throw(e);
+            end
         end
         
-        function [N_mat, N, Be, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
+        function [N_mat, N, Be, J] = computeShapeFunction(obj,xi,eta)
             % Shape Function and Derivatives
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
@@ -56,8 +62,8 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
             for i=1:4
-                ele_coords(i,1) = quadrilateralElement2d4n.nodeArray(i).getX;
-                ele_coords(i,2) = quadrilateralElement2d4n.nodeArray(i).getY;
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
             % Jacobian
@@ -73,10 +79,10 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                 By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
         end
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix(quadrilateralElement2d4n)
-            EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
-            PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
-            p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+            EModul = obj.getPropertyValue('YOUNGS_MODULUS');
+            PoissonRatio = obj.getPropertyValue('POISSON_RATIO');
+            p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             % Calculate Materialmatrix
             Emat = EModul/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
             stiffnessMatrix=zeros(8,8);
@@ -86,15 +92,15 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [~, ~, B, J] = computeShapeFunction(quadrilateralElement2d4n, xi, eta);
+                    [~, ~, B, J] = computeShapeFunction(obj, xi, eta);
                     stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*det(J)*transpose(B)*(Emat*B));
                 end
             end
         end
         
-        function massMatrix = computeLocalMassMatrix(quadrilateralElement2d4n)
-            roh = quadrilateralElement2d4n.getPropertyValue('DENSITY');
-            p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+        function massMatrix = computeLocalMassMatrix(obj)
+            roh = obj.getPropertyValue('DENSITY');
+            p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             massMatrix=zeros(8,8);
             [w,g]=returnGaussPoint(p);
             
@@ -102,56 +108,56 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [N_mat, ~, ~, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta);
+                    [N_mat, ~, ~, J] = computeShapeFunction(obj,xi,eta);
                     massMatrix=massMatrix + (w(i)*w(j)*roh*transpose(N_mat)*N_mat*det(J));
                 end
             end
         end
         
         
-        function dampingMatrix = computeLocalDampingMatrix(e)
-            eProperties = e.getProperties;
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            eProperties = obj.getProperties;
             dampingMatrix = sparse(8,8);
             
             if (eProperties.hasValue('RAYLEIGH_ALPHA'))
                 alpha = eProperties.getValue('RAYLEIGH_ALPHA');
-                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+                dampingMatrix = dampingMatrix + alpha * obj.computeLocalMassMatrix;
             end
             
             if (eProperties.hasValue('RAYLEIGH_BETA'))
                 beta = eProperties.getValue('RAYLEIGH_BETA');
-                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+                dampingMatrix = dampingMatrix + beta * obj.computeLocalStiffnessMatrix;
             end
             
         end
         
-        function dofs = getDofList(element)
-            dofs([1 3 5 7]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 4 6 8]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+        function dofs = getDofList(obj)
+            dofs([1 3 5 7]) = obj.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 4 6 8]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
         end
         
-        function vals = getValuesVector(element, step)
+        function vals = getValuesVector(obj, step)
             vals = zeros(1,8);
             
-            vals([1 3 5 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([1 3 5 7]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 4 6 8]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
-        function vals = getFirstDerivativesVector(element, step)
+        function vals = getFirstDerivativesVector(obj, step)
             vals = zeros(1,8);
             
-            [~, vals([1 3 5 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([2 4 6 8]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([1 3 5 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 4 6 8]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
         end
         
-        function vals = getSecondDerivativesVector(element, step)
+        function vals = getSecondDerivativesVector(obj, step)
             vals = zeros(1,8);
             
-            [~, ~, vals([1 3 5 7])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([2 4 6 8])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([1 3 5 7])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 4 6 8])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
         end      
         
-        function F = computeLocalForceVector(quadrilateralElement)
+        function F = computeLocalForceVector(obj)
             F = zeros(1,8);
         end
         

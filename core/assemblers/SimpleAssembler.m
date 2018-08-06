@@ -3,21 +3,12 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
-%         stiffnessMatrix
-%         reducedStiffnessMatrix
-%         forceVector
-%         reducedForceVector
     end
     
     methods %test
         
         function assembling = SimpleAssembler(femModel)
-            if (nargin > 0)
-                
-%                 [assembling.stiffnessMatrix, assembling.reducedStiffnessMatrix] = SimpleAssembler.assembleGlobalStiffnessMatrix(femModel);
-%                 [assembling.forceVector, assembling.reducedForceVector] = SimpleAssembler.applyExternalForces(femModel);
-                
-            else
+            if (nargin < 1)
                 error('input model is missing');
             end
         end
@@ -25,8 +16,19 @@ classdef SimpleAssembler < Assembler
     
     methods (Static)
         
-        function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel)
-            elements = femModel.getAllElements;
+        function [stiffnessMatrix, reducedStiffnessMatrix] = assembleGlobalStiffnessMatrix(femModel, modelPartName)
+            if nargin == 1
+                elements = femModel.getAllElements;
+            elseif nargin == 2
+                elements = femModel.getModelPart(modelPartName).getElements;
+                if isempty(elements)
+                    msg = ['SimpleAssembler: Model part ', modelPartName, ...
+                        ' has no elements in it.'];
+                    e = MException('MATLAB:bm_mfem:emptyModelPart',msg);
+                    throw(e);
+                end
+            end
+            
             ndofs = length(femModel.getDofArray);
             stiffnessMatrix = zeros(ndofs);
             
@@ -36,10 +38,23 @@ classdef SimpleAssembler < Assembler
                stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
                    stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
             end
-            [~, fixedDofs] = femModel.getDofConstraints;
-            if ~ isempty(fixedDofs)
-                fixedDofIds = fixedDofs.getId();
-                reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
+            
+            if nargin == 1
+                [~, fixedDofs] = femModel.getDofConstraints;
+                if ~ isempty(fixedDofs)
+                    fixedDofIds = fixedDofs.getId();
+                    reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);
+                else
+                    reducedStiffnessMatrix = stiffnessMatrix;
+                end
+            
+            elseif nargin == 2
+                mp = femModel.getModelPart(modelPartName);
+                mp_dof_ids = mp.getDofArray().getId();
+                [free, ~] = mp.getDofConstraints();
+                free = intersect(free.getId(), mp_dof_ids);
+                reducedStiffnessMatrix = stiffnessMatrix(free,free);
+                stiffnessMatrix = stiffnessMatrix(mp_dof_ids,mp_dof_ids);
             end
         end 
         
@@ -175,9 +190,20 @@ classdef SimpleAssembler < Assembler
                 node.setStepValue(strcat(valueName, dofDirection), 0, step);
             end
         end
-        
-        function [massMatrix, reducedMassMatrix] = assembleGlobalMassMatrix(femModel)
-            elements = femModel.getAllElements;
+
+        function massMatrix = assembleGlobalMassMatrix(femModel, modelPartName)
+            if nargin == 1
+                elements = femModel.getAllElements;
+            elseif nargin == 2
+                elements = femModel.getModelPart(modelPartName).getElements;
+                if isempty(elements)
+                    msg = ['SimpleAssembler: Model part ', modelPartName, ...
+                        ' has no elements in it.'];
+                    e = MException('MATLAB:bm_mfem:emptyModelPart',msg);
+                    throw(e);
+                end
+            end
+            
             ndofs = length(femModel.getDofArray);
             massMatrix = zeros(ndofs);
             
@@ -187,10 +213,10 @@ classdef SimpleAssembler < Assembler
                massMatrix(elementalDofIds, elementalDofIds) = ...
                    massMatrix(elementalDofIds, elementalDofIds) + elementalMassMatrix;
             end
-            [~, fixedDofs] = femModel.getDofConstraints;
-            if ~ isempty(fixedDofs)
-                fixedDofIds = fixedDofs.getId();
-                reducedMassMatrix = applyMatrixBoundaryConditions(massMatrix, fixedDofIds);                
+            
+            if nargin == 2
+                mp_ids = femModel.getModelPart(modelPartName).getDofArray().getId();
+                massMatrix = massMatrix(mp_ids, mp_ids);
             end
         end
         
@@ -334,25 +360,6 @@ classdef SimpleAssembler < Assembler
         
         function reducedForceVector = getReducedForceVector(assembler)
             reducedForceVector = assembler.reducedForceVector;
-        end
-        
-    end
-    
-    methods (Static, Access = private)
-        
-        function stiffnessMatrix = applyBoundaryConditions(femModel, stiffnessMatrix)
-            dofs = femModel.getDofArray;
-            fixedDofs = [];
-            
-            for itDof = 1:length(dofs)
-               if dofs(itDof).isFixed
-                   fixedDofs = [fixedDofs itDof];
-               end
-            end
-            
-            stiffnessMatrix(fixedDofs,:) = [];
-            stiffnessMatrix(:,fixedDofs) = [];
-            
         end
         
     end

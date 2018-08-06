@@ -186,8 +186,8 @@ classdef BeamElement3d2n < LinearElement
             eProperties = element.getProperties;
             if (eProperties.hasValue('RAYLEIGH_ALPHA')) ...
                     && (eProperties.hasValue('RAYLEIGH_BETA'))
-                dampingMatrix = ePropertes.getValue('RAYLEIGH_ALPHA') * element.computeMassMatrix ...
-                    + ePropertes.getValue('RAYLEIGH_BETA') * element.computeStiffnessMatrix;
+                dampingMatrix = eProperties.getValue('RAYLEIGH_ALPHA') * element.computeLocalMassMatrix ...
+                    + eProperties.getValue('RAYLEIGH_BETA') * element.computeLocalStiffnessMatrix;
             else
                 dampingMatrix = sparse(12,12);
             end          
