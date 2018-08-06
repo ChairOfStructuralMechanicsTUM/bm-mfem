@@ -57,8 +57,7 @@ classdef AnsysInput < ModelIO
             model = FemModel;
             data=obj.runAnsys(ansysExecutable,folder,fileName,extension,model);
             model.addNewElement('DummyElement',1,model.getAllNodes);
-            % create nodes
-%             model.
+            model.getElement(1).setMatrices(data.Mansys, data.Cansys, data.Kansys);
             
             props = PropertyContainer;
             
@@ -232,20 +231,36 @@ classdef AnsysInput < ModelIO
                 end
                 data.numNodes = length(model.getAllNodes());
                 
-                % Create available elements
+                % Read available element data
                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
                 
                 % Assign dofs to node
                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
                 for i = 1 :length(data.elementsOfModel)
                     nodes=cell2mat(data.nodeElementList(i));
-                    dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel(i));
+                    dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
+                    nodes(isnan(nodes)) = [];
                     for j = 1:length(nodes)
-                        if ~isnan(nodes(j))
-                            numberOfdofs(data.nodesOrderByDofs==nodes(j)) = dofs;
+                        n = model.getNode(nodes(j));
+                        n.addDof(dofs);
+                        
+                        if numberOfdofs(data.nodesOrderByDofs==nodes(j)) < length(dofs)
+%                         if ~isnan(nodes(j))
+                            numberOfdofs(data.nodesOrderByDofs==nodes(j)) = length(dofs);
+%                         end
                         end
                     end
                     
+                end
+                
+                dofId = 1;
+                for ii=1:length(data.nodesOrderByDofs)
+                    n = model.getNode(data.nodesOrderByDofs(ii));
+                    d = n.getDofArray;
+                    for jj=1:length(d)
+                        d(jj).setId(dofId);
+                        dofId = dofId + 1;
+                    end
                 end
                 
                 init = 1;
@@ -261,30 +276,93 @@ classdef AnsysInput < ModelIO
                                          numberOfdofs;
                                          lowestDof;
                                          highestDof];
-                rmdir('DataAnsys', 's')
+                try
+                 rmdir('DataAnsys', 's')
+                catch
+                end
             end
         end
         
-        function dofs = getDofsOfAnsysElements(elementName)
+        function dofs = getDofsOfAnsysElements(elementName, keyopts)
+            ux = "DISPLACEMENT_X";
+            uy = "DISPLACEMENT_Y";
+            uz = "DISPLACEMENT_Z";
+            rx = "ROTATION_X";
+            ry = "ROTATION_Y";
+            rz = "ROTATION_Z";
             switch 1
                 case strcmp(elementName,'BEAM3')
                     dofs=3;
+                    
                 case strcmp(elementName,'COMBIN14')
-                    dofs=3;
+                    if keyopts(2) == 0
+                        if keyopts(3) == 0
+                            dofs = [ux uy uz];
+                        elseif keyopts(3) == 1
+                            dofs = [rx ry rz];
+                        elseif keyopts(3) == 2
+                            dofs = [ux uy];
+                        elseif keyopts(3) == 4
+                            dofs = [ux uy];
+                        else
+                            msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                                elementName];
+                            e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                            throw(e);
+                        end
+                    elseif keyopts(2) == 1
+                        dofs = ux;
+                    elseif keyopts(2) == 2
+                        dofs = uy;
+                    elseif keyopts(2) == 3
+                        dofs = uz;
+                    elseif keyopts(2) == 4
+                        dofs = rx;
+                    elseif keyopts(2) == 5
+                        dofs = ry;
+                    elseif keyopts(2) == 6
+                        dofs = rz;
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
                 case strcmp(elementName,'MASS21')
-                    dofs=6;
+                    if keyopts(3) == 0
+                        dofs = [ux uy uz rx ry rz];
+                    elseif keyopts(3) == 2
+                        dofs = [ux uy uz];
+                    elseif keyopts(3) == 3
+                        dofs = [ux uy rz];
+                    elseif keyopts(3) == 4
+                        dofs = [ux uy];
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
                 case strcmp(elementName,'SHELL63')
-                    dofs=6;
+                    dofs = [ux uy uz rx ry rz];
+                    
                 case strcmp(elementName,'SHELL181')
                     dofs=6;
+                    
                 case strcmp(elementName,'PLANE182')
                     dofs=2;
+                    
                 case strcmp(elementName,'SOLID185')
                     dofs=3;
+                    
                 case strcmp(elementName,'SOLID186')
                     dofs=3;
+                    
                 case strcmp(elementName,'SOLID187')
-                    dofs=3;    
+                    dofs=3;  
+                    
                 otherwise
                     disp('Please enter the number of dofs for ANSYS element:')
                     disp([elementName ' in AnsysInput.getDofsOfAnsysElements(name)'])
@@ -339,9 +417,11 @@ classdef AnsysInput < ModelIO
             %
             % Parameters :
             %
-            % Return     : elementList                 - matrix with nodal information
-            %              nodesArrays                 - array with the nodes related
-            %                                            to certain element
+            % Return     : elementList  - cell array with element names in
+            %                             elementList{:,1} and keyopts in
+            %                             elementList{:,2}
+            %              nodesArrays  - array with the nodes related
+            %                             to certain element
             fid=fopen('DataAnsys/elemNodes.txt') ;
             fidd=fopen('DataAnsys/elemNodes_modified.dat','w') ;
             if fid < 0, error('Cannot open file'); end
@@ -392,35 +472,65 @@ classdef AnsysInput < ModelIO
                 aux2 = [];
             end
             
-            fid=fopen('DataAnsys/elemTyp.txt') ;
-            fidd=fopen('DataAnsys/elemTyp_modified.dat','w') ;
-            if fid < 0, error('Cannot open file'); end
-            % Discard some line to read the data from the txt files
-            for j = 1 : 11
-                fgetl(fid) ;
+            % % read element types
+%             fid=fopen('DataAnsys/elemTyp.txt') ;
+%             fidd=fopen('DataAnsys/elemTyp_modified.dat','w') ;
+%             if fid < 0, error('Cannot open file'); end
+%             % Discard some line to read the data from the txt files
+%             for j = 1 : 11
+%                 fgetl(fid) ;
+%             end
+%             
+%             for j = 1 : length(elements)
+%                 tline=fgets(fid);
+%                 fgetl(fid) ;
+%                 fgetl(fid) ;
+%                 fgetl(fid) ;
+%                 fgetl(fid) ;
+%                 fwrite(fidd,tline) ;
+%             end
+%             fclose all ;
+% %             filename = 'DataAnsys/elemTyp_modified.dat';
+%             filename = 'DataAnsys/elemTyp.txt';
+%             delimiterIn = ' ';
+%             % Get data in matlab
+%             eList = {};
+%             elementList = {};
+%             A = importdata(filename,delimiterIn);
+%             A = importdata(filename);
+%             for i =  1:size(A,1)
+%                 eList(i) = textscan(A{i,1},'%s');
+%                 if strcmp(eList{1,i}{1},'ELEMENT')
+%                     elementList{i} = eList{1,i}{5};
+%                 end
+%             end
+            
+            
+            % % read element types new
+            fid=fopen('DataAnsys/elemTyp.txt');
+            fgetl(fid);
+            tline = fgetl(fid);
+            tmp = strsplit(strtrim(tline),' ');
+            elementList = cell(str2double(tmp{7}),2);    %array for element type and keyopts
+            tline = fgetl(fid);
+            
+            while ~ feof(fid)
+                if contains(tline,'ELEMENT TYPE')
+                    tmp = strsplit(strtrim(tline),' ');
+                    n_etype = str2double(tmp{3});
+                    elementList{n_etype,1} = tmp{5};
+                    keyopts = zeros(1,18);
+                    for ii = 0:2
+                        tline = fgetl(fid);
+                        tmp = str2double(strsplit(strtrim(tline),' '));
+                        keyopts(ii*6+1:ii*6+6) = tmp(end-5:end);
+                    end
+                    elementList{n_etype,2} = keyopts;
+                end
+                tline = fgetl(fid);
             end
             
-            for j = 1 : length(elements)
-                tline=fgets(fid);
-                fgetl(fid) ;
-                fgetl(fid) ;
-                fgetl(fid) ;
-                fgetl(fid) ;
-                fwrite(fidd,tline) ;
-            end
-            fclose all ;
-            filename = 'DataAnsys/elemTyp_modified.dat';
-            delimiterIn = ' ';
-            % Get data in matlab
-            eList = {};
-            elementList = {};
-            A = importdata(filename,delimiterIn);
-            for i =  1:size(A,1)
-                eList(i) = textscan(A{i,1},'%s');
-                if strcmp(eList{1,i}{1},'ELEMENT')
-                    elementList{i} = eList{1,i}{5};
-                end
-            end
+            
         end
         
         function nodeNum = readRecord_5()
