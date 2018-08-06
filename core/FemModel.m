@@ -163,9 +163,18 @@ classdef FemModel < handle
             % (2) assign dof ids
             obj.dofArray = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
             obj.dofArray = [obj.dofArray{:}];
+            dof_ids = obj.dofArray.getId();
+            max_id = max(dof_ids);
             
-            for ii = 1:length(obj.dofArray)
-                obj.dofArray(ii).setId(ii);
+            if max_id < 1
+                for ii = 1:length(obj.dofArray)
+                    obj.dofArray(ii).setId(ii);
+                end
+            else
+                dofs_noid = obj.dofArray(dof_ids < 1);
+                for ii = 1:(length(obj.dofArray) - max_id)
+                    dofs_noid(ii).setId(max_id+ii);
+                end
             end
             
             % (3) determine free and fixed dofs
