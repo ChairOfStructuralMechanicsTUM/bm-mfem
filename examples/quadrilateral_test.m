@@ -34,7 +34,6 @@ model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 % Generation of elements
 id = 0;
 
-
 for j=1:ny
     for i=1:nx
         id=id+1;

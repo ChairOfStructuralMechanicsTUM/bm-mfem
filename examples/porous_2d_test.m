@@ -76,23 +76,6 @@ end
 % Definition of loading
 addPointLoadPorous(model.getNode(numnodes),1,[0 -1]);
 
-% for k=1:200
-%     model.getAllElements.setPropertyValue('FREQUENCY',k)
-%     assembling = SimpleAssembler(model);
-%     [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
-%     [~, Mred] = SimpleAssembler.assembleGlobalMassMatrix(model);
-%     stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-%     massMatrix = assembling.assembleGlobalMassMatrix(model);
-%     if k <= 30
-%         scale=1e-5;
-% %     elseif (4 <= k) && (k <= 30)
-% %         scale=1e-5;
-%     else
-%         scale=1e-6;
-%     end
-%     a(k,1)=det(scale*(Kred-k^2*Mred));
-% end
-
 % Determination of global matrices
 assembling = SimpleAssembler(model);
 [stiffnessMatrix, Kred] = assembling.assembleGlobalStiffnessMatrix(model);           
@@ -106,21 +89,11 @@ step = 1;
 
 VerschiebungDofs = model.getDofArray.getValue(step);
 
-for i=1:numnodes
-    Displacement_Solid (1+(i-1)*2,1) = VerschiebungDofs(1+(i-1)*4);
-    Displacement_Solid (2+(i-1)*2,1) = VerschiebungDofs(2+(i-1)*4);
-end
-
-for i=1:2*numnodes
-    Betrag(i,1)=sqrt(real(Displacement_Solid(i))^2 + imag(Displacement_Solid(i))^2);
-    Phase(i,1)=atan(imag(Displacement_Solid(i))/real(Displacement_Solid(i)));
-end
-
 nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
 v.setScaling(3e4);
-%v.plotUndeformed
+v.plotUndeformed
 v.plotDeformed
     
 %% Total
@@ -202,52 +175,25 @@ end
 % Definition of loading
 addPointLoadPorous(model.getNode(numnodes),1,[0 -1]);
 
-for k=1:200
-    model.getAllElements.setPropertyValue('FREQUENCY',k)
-    assembling = SimpleAssembler(model);
-    [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
-    [~, Mred] = SimpleAssembler.assembleGlobalMassMatrix(model);
-    stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-    massMatrix = assembling.assembleGlobalMassMatrix(model);
-    if k <= 1
-        scale=1e-4;
-    elseif (2 <= k) && (k <= 38)
-        scale=1e-5;
-    else
-        scale=1e-6;
-    end
-    a(k,1)=det(scale*(Kred-k^2*Mred));
-end
+% Determination of global matrices
+assembling = SimpleAssembler(model);
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);           
+massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-% % Determination of global matrices
-% assembling = SimpleAssembler(model);
-% stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);           
-% massMatrix = assembling.assembleGlobalMassMatrix(model);
-% 
-% % Solving
-% solver = SimpleHarmonicSolvingStrategy(model,200);
-% x = solver.solve();
-% 
-% step = 1;
-% 
-% VerschiebungDofs = model.getDofArray.getValue(step);
-% 
-% for i=1:numnodes
-%     Displacement_Solid (1+(i-1)*2,1) = VerschiebungDofs(1+(i-1)*4);
-%     Displacement_Solid (2+(i-1)*2,1) = VerschiebungDofs(2+(i-1)*4);
-% end
-% 
-% for i=1:2*numnodes
-%     Betrag(i,1)=sqrt(real(Displacement_Solid(i))^2 + imag(Displacement_Solid(i))^2);
-%     Phase(i,1)=atan(imag(Displacement_Solid(i))/real(Displacement_Solid(i)));
-% end
-% 
-% nodalForces = solver.getNodalForces(step);
-% 
-% v = Visualization(model);
-% v.setScaling(1e5);
-% %v.plotUndeformed
-% v.plotDeformed
+% Solving
+solver = SimpleHarmonicSolvingStrategy(model,200);
+x = solver.solve();
+
+step = 1;
+
+VerschiebungDofs = model.getDofArray.getValue(step);
+
+nodalForces = solver.getNodalForces(step);
+
+v = Visualization(model);
+v.setScaling(1e5);
+v.plotUndeformed
+v.plotDeformed
 
 %% Mixed
 
@@ -340,46 +286,22 @@ end
 % Definition of loading
 addPointLoadPorous(model.getNode(numnodes),1,[0 -1]);
 
-for k=1:200
-    model.getAllElements.setPropertyValue('FREQUENCY',k)
-    assembling = SimpleAssembler(model);
-    [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(model);
-    [~, Mred] = SimpleAssembler.assembleGlobalMassMatrix(model);
-    stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-    massMatrix = assembling.assembleGlobalMassMatrix(model);
-    a(k,1)=det(1e-4*(Kred-k^2*Mred));
-end
+% Determination of global matrices
+assembling = SimpleAssembler(model);
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);           
+massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-% % Determination of global matrices
-% assembling = SimpleAssembler(model);
-% stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);           
-% massMatrix = assembling.assembleGlobalMassMatrix(model);
-% 
-% % Solving
-% solver = SimpleHarmonicSolvingStrategy(model,200);
-% x = solver.solve();
-% 
-% step = 1;
-% 
-% VerschiebungDofs = model.getDofArray.getValue(step);
-% 
-% for i=1:numnodes
-%     a=1+(i-1)*2
-%     b=2+(i-1)*2
-%     c=1+(i-1)*3
-%     d=2+(i-1)*3
-%     Displacement_Solid (1+(i-1)*2,1) = VerschiebungDofs(1+(i-1)*3);
-%     Displacement_Solid (2+(i-1)*2,1) = VerschiebungDofs(2+(i-1)*3);
-% end
-% 
-% for i=1:2*numnodes
-%     Betrag(i,1)=sqrt(real(Displacement_Solid(i))^2 + imag(Displacement_Solid(i))^2);
-%     Phase(i,1)=atan(imag(Displacement_Solid(i))/real(Displacement_Solid(i)));
-% end
-% 
-% nodalForces = solver.getNodalForces(step);
-% 
-% v = Visualization(model);
-% v.setScaling(1e5);
-% %v.plotUndeformed
-% v.plotDeformed
+% Solving
+solver = SimpleHarmonicSolvingStrategy(model,200);
+x = solver.solve();
+
+step = 1;
+
+VerschiebungDofs = model.getDofArray.getValue(step);
+
+nodalForces = solver.getNodalForces(step);
+
+v = Visualization(model);
+v.setScaling(1e5);
+v.plotUndeformed
+v.plotDeformed
