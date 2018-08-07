@@ -60,13 +60,14 @@ classdef DummyElement < Element
         end
         
         function initialize(obj)
-            dofs = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
-            obj.dofArray = [dofs{:}];
+%             dofs = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
+%             obj.dofArray = [dofs{:}];
         end
         
         function dofs = getDofList(obj)
 %             dofs = obj.dofArray(~obj.dofArray.isFixed);
             dofs = obj.dofArray;
+%             dofs = [1:length(obj.dofArray)];
         end
         
         function setMatrices(obj, massMatrix, dampingMatrix, stiffnessMatrix)
@@ -78,8 +79,16 @@ classdef DummyElement < Element
         function setDofRestriction(obj, node, dofName)
         %SETDOFRESTRICTION if the dof is restricted to zero, it has to be
         %   removed from the dof list
-            obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
-            node.fixDof(dofName);
+%             obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
+%             node.fixDof(dofName);
+        end
+        
+        function setDofOrder(obj, order)
+%             dofs = Dof.empty;
+            for ii=order
+                obj.dofArray = [obj.dofArray obj.nodeArray(ii).getDofArray];
+            end
+%             obj.dofArray = dofs;
         end
     end
     

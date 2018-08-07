@@ -35,6 +35,7 @@ classdef SimpleAssembler < Assembler
             for itEle = 1:length(elements)
                elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
                elementalDofIds = elements(itEle).getDofList().getId;
+%                elementalDofIds = elements(itEle).getDofList();
                stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
                    stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
             end
@@ -67,7 +68,7 @@ classdef SimpleAssembler < Assembler
             % get the external load on the dofs
             for itDof = 1:nDofs
                 if ( ~ dofs(itDof).isFixed)
-                    forceVector(itDof) = dofs(itDof).getDofLoad;
+                    forceVector(dofs(itDof).getId) = dofs(itDof).getDofLoad;
                 end
             end
             
@@ -80,7 +81,9 @@ classdef SimpleAssembler < Assembler
 %             end
             
             reducedForceVector = forceVector;
-            reducedForceVector(fixedDofs.getId()) = [];
+            if ~isempty(fixedDofs)
+                reducedForceVector(fixedDofs.getId()) = [];
+            end
             
         end
         

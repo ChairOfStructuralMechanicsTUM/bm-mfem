@@ -56,8 +56,18 @@ classdef AnsysInput < ModelIO
             
             model = FemModel;
             data=obj.runAnsys(ansysExecutable,folder,fileName,extension,model);
-            model.addNewElement('DummyElement',1,model.getAllNodes);
-            model.getElement(1).setMatrices(data.Mansys, data.Cansys, data.Kansys);
+            e = model.addNewElement('DummyElement',1,model.getAllNodes);
+            systemSize = size(data.Mansys,1);
+            
+            Mdiag = spdiags(data.Mansys,0);
+            M = data.Mansys + data.Mansys.' - spdiags(Mdiag(:),0,systemSize,systemSize);
+            Cdiag = spdiags(data.Cansys,0);
+            C = data.Cansys + data.Cansys.' - spdiags(Cdiag(:),0,systemSize,systemSize);
+            Kdiag = spdiags(data.Kansys,0);
+            K = data.Kansys + data.Kansys.' - spdiags(Kdiag(:),0,systemSize,systemSize);
+            e.setMatrices(M, C, K);
+            e.setDofOrder(data.nodesOrderByDofs);
+            
             
             % set restrictions
             for ii = 1:length(data.nodeRest{1})
@@ -232,6 +242,7 @@ classdef AnsysInput < ModelIO
                 
                 
 %                 restrictedNodes = data.nodeRest{1};
+                dofId = 1;
                 for i = 1 :size(data.elementsOfModel,1)
                     nodeData=cell2mat(data.nodeElementList(i));
                     dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
@@ -242,20 +253,27 @@ classdef AnsysInput < ModelIO
 %                             
 %                         end
                         n.addDof(dofs);
+                        d = n.getDofArray;
+                        for jj=1:length(d)
+                            d(jj).setId(dofId);
+                            dofId = dofId + 1;
+                        end
+                        
                         
                     end
                     
                 end
                 
-                dofId = 1;
-                for ii=1:length(data.nodesOrderByDofs)
-                    n = model.getNode(data.nodesOrderByDofs(ii));
-                    d = n.getDofArray;
-                    for jj=1:length(d)
-                        d(jj).setId(dofId);
-                        dofId = dofId + 1;
-                    end
-                end
+                
+%                 dofId = 1;
+%                 for ii=1:length(data.nodesOrderByDofs)
+%                     n = model.getNode(data.nodesOrderByDofs(ii));
+%                     d = n.getDofArray;
+%                     for jj=1:length(d)
+%                         d(jj).setId(dofId);
+%                         dofId = dofId + 1;
+%                     end
+%                 end
                 
 %                 init = 1;
 %                 lowestDof=zeros(size(data.nodesOrderByDofs));
