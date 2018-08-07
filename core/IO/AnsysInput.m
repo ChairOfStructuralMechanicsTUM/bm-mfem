@@ -253,15 +253,21 @@ classdef AnsysInput < ModelIO
 %                             
 %                         end
                         n.addDof(dofs);
-                        d = n.getDofArray;
-                        for jj=1:length(d)
-                            d(jj).setId(dofId);
-                            dofId = dofId + 1;
-                        end
+%                         d = n.getDofArray;
+%                         for jj=1:length(d)
+%                             d(jj).setId(dofId);
+%                             dofId = dofId + 1;
+%                         end
                         
                         
                     end
                     
+                end
+                dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
+                dofArray = [dofArray{:}];
+%                 dof_ids = dofArray.getId();
+                for ii = 1:length(dofArray)
+                    dofArray(ii).setId(ii);
                 end
                 
                 
