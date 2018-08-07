@@ -42,8 +42,36 @@ classdef FemModelPart < handle
             n = obj.nodeArray;
         end
         
+        function n = getNodeById(obj, id)
+            n = Node.empty;
+            if ~ isempty(obj.nodeArray)
+                nodeIds = obj.nodeArray.getId();
+                n = obj.nodeArray(id==nodeIds);
+            end
+            if isempty(n)
+                msg = ['FemModelPart: Node with id ', num2str(id), ...
+                    ' not found in modelpart ', obj.name];
+                e = MException('MATLAB:bm_mfem:nodeNotFound',msg);
+                throw(e);
+            end
+        end
+        
         function e = getElements(obj)
             e = obj.elementArray;
+        end
+        
+        function e = getElementById(obj, id)
+            e = Element.empty;
+            if ~ isempty(obj.elementArray)
+                elementIds = obj.elementArray.getId();
+                e = obj.elementArray(id==elementIds);
+            end
+            if isempty(e)
+                msg = ['FemModelPart: Element with id ', num2str(id), ...
+                    ' not found in modelpart ', obj.name];
+                err = MException('MATLAB:bm_mfem:elementNotFound',msg);
+                throw(err);
+            end
         end
         
         function d = getDofArray(obj)
@@ -63,7 +91,7 @@ classdef FemModelPart < handle
             if isa(node,'Node')
                 obj.nodeArray = [obj.nodeArray node];
             else
-                obj.nodeArray = [obj.nodeArray obj.getNode(node)];
+                obj.nodeArray = [obj.nodeArray obj.parentFemModel.getNode(node)];
             end
         end
         
@@ -71,7 +99,37 @@ classdef FemModelPart < handle
             if isa(element,'Element')
                 obj.elementArray = [obj.elementArray element];
             else
-                obj.elementArray = [obj.elementArray obj.getElement(element)];
+                obj.elementArray = [obj.elementArray obj.parentFemModel.getElement(element)];
+            end
+        end
+        
+        function n = addNewNode(obj, id, x, y, z)
+            if ~isempty(obj.parentFemModel)
+                n = obj.parentFemModel.addNewNode(id, x, y, z);
+                obj.nodeArray = [obj.nodeArray n];
+            else
+                msg = 'FemModelPart: No parent model defined';
+                e = MException('MATLAB:bm_mfem:noParentModel',msg);
+                throw(e);
+            end
+        end
+        
+        function e = addNewElement(obj, elementName, id, nodes, props)
+            if ~isempty(obj.parentFemModel)
+                if nargin == 4
+                    e = obj.parentFemModel.addNewElement(elementName, id, nodes);
+                elseif nargin == 5
+                    e = obj.parentFemModel.addNewElement(elementName, id, nodes, props);
+                else
+                    msg = 'FemModelPart: Wrong number of input arguments';
+                    err = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                    throw(err);
+                end
+                obj.elementArray = [obj.elementArray e];
+            else
+                msg = 'FemModelPart: No parent model defined';
+                err = MException('MATLAB:bm_mfem:noParentModel',msg);
+                throw(err);
             end
         end
     end
