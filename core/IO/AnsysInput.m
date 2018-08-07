@@ -59,40 +59,33 @@ classdef AnsysInput < ModelIO
             model.addNewElement('DummyElement',1,model.getAllNodes);
             model.getElement(1).setMatrices(data.Mansys, data.Cansys, data.Kansys);
             
-            props = PropertyContainer;
-            
-            
-            
-            %             tline = fgetl(fid);
-            %
-            %             while ischar(tline)
-            %                 if startsWith(strtrim(tline),'//'); tline = fgetl(fid); continue; end
-            %
-            %                 if contains(tline,'Begin Properties')
-            %                     nProp = strsplit(tline);
-            %                     nProp = str2double(nProp{end});
-            %                     [fid,props] = obj.readProperties(fid,props,nProp);
-            %                 end
-            %
-            %                 if contains(tline,'Begin Nodes')
-            %                     [fid,model] = obj.readNodes(fid,model);
-            %                 end
-            %
-            %                 if contains(tline,'Begin Elements')
-            %                     etype = strsplit(tline);
-            %                     etype = cell2mat(etype(3));
-            %                     etype = erase(etype,'//');
-            %                     [fid,model] = obj.readElements(fid,model,etype,props);
-            %                 end
-            %
-            %                 if contains(tline,'Begin SubModelPart')
-            %                     name = strsplit(tline);
-            %                     name = cell2mat(name(3));
-            %                     [fid,model] = obj.readSubModelParts(fid,model,name);
-            %                 end
-            %
-            %                 tline = fgetl(fid);
-            %            end
+            % set restrictions
+            for ii = 1:length(data.nodeRest{1})
+                n = model.getNode(data.nodeRest{1}(ii));
+                if data.nodeRest{3}(ii) == 0
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
+                        case 'UY'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
+                        case 'UZ'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                else
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            n.setDofValue('DISPLACEMENT_X', data.nodeRest{3}(ii));
+                        case 'UY'
+                            n.setDofValue('DISPLACEMENT_Y', data.nodeRest{3}(ii));
+                        case 'UZ'
+                            n.setDofValue('DISPLACEMENT_Z', data.nodeRest{3}(ii));
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                end
+            end
             
         end
         
@@ -235,20 +228,21 @@ classdef AnsysInput < ModelIO
                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
                 
                 % Assign dofs to node
-                numberOfdofs=zeros(size(data.nodesOrderByDofs));
-                for i = 1 :length(data.elementsOfModel)
-                    nodes=cell2mat(data.nodeElementList(i));
+%                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
+                
+                
+%                 restrictedNodes = data.nodeRest{1};
+                for i = 1 :size(data.elementsOfModel,1)
+                    nodeData=cell2mat(data.nodeElementList(i));
                     dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
-                    nodes(isnan(nodes)) = [];
-                    for j = 1:length(nodes)
-                        n = model.getNode(nodes(j));
+                    nodeData(isnan(nodeData)) = [];
+                    for j = 1:length(nodeData)
+                        n = model.getNode(nodeData(j));
+%                         if any(find(restrictedNodes == n.getId()))
+%                             
+%                         end
                         n.addDof(dofs);
                         
-                        if numberOfdofs(data.nodesOrderByDofs==nodes(j)) < length(dofs)
-%                         if ~isnan(nodes(j))
-                            numberOfdofs(data.nodesOrderByDofs==nodes(j)) = length(dofs);
-%                         end
-                        end
                     end
                     
                 end
@@ -263,23 +257,23 @@ classdef AnsysInput < ModelIO
                     end
                 end
                 
-                init = 1;
-                lowestDof=zeros(size(data.nodesOrderByDofs));
-                highestDof=zeros(size(data.nodesOrderByDofs));
-                for i = 1 : length(numberOfdofs)
-                    aux = numberOfdofs(i);
-                    lowestDof(i) = init;
-                    highestDof(i) = init+aux-1;
-                    init = init + aux;
-                end
-                data.nodeOrdersByDofs = [data.nodesOrderByDofs;
-                                         numberOfdofs;
-                                         lowestDof;
-                                         highestDof];
-                try
-                 rmdir('DataAnsys', 's')
-                catch
-                end
+%                 init = 1;
+%                 lowestDof=zeros(size(data.nodesOrderByDofs));
+%                 highestDof=zeros(size(data.nodesOrderByDofs));
+%                 for i = 1 : length(numberOfdofs)
+%                     aux = numberOfdofs(i);
+%                     lowestDof(i) = init;
+%                     highestDof(i) = init+aux-1;
+%                     init = init + aux;
+%                 end
+%                 data.nodeOrdersByDofs = [data.nodesOrderByDofs;
+%                                          numberOfdofs;
+%                                          lowestDof;
+%                                          highestDof];
+%                 try
+%                  rmdir('DataAnsys', 's')
+%                 catch
+%                 end
             end
         end
         
@@ -352,7 +346,7 @@ classdef AnsysInput < ModelIO
                     dofs=6;
                     
                 case strcmp(elementName,'PLANE182')
-                    dofs=2;
+                    dofs = [ux uy];
                     
                 case strcmp(elementName,'SOLID185')
                     dofs=3;
@@ -590,34 +584,59 @@ classdef AnsysInput < ModelIO
             % Parameters :
             %
             % Return     : A array with restrictions
-            fid=fopen('DataAnsys/nodeRest.txt') ;                   % the original file
-            fidd=fopen('DataAnsys/nodeRest_modified.dat','w') ;     % the new file
-            if fid < 0, error('Cannot open file'); end    % Check for an error
-            for j = 1 : 13
-                fgetl(fid) ;                              % Read/discard line.
-            end
-            while ~feof(fid)  % reads the original till last line
-                tline=fgets(fid);
-                if isspace(tline)
-                    for j = 1 : 9
-                        fgetl(fid) ;                     % Read/discard line.
-                    end
-                else
-                    fwrite(fidd,tline) ;
-                end
-            end
-            fclose all ;
-            filename = 'DataAnsys/nodeRest_modified.dat';
-            delimiterIn = ' ';
-            A = importdata(filename,delimiterIn);        % Get data in matlab
             
-            if ~isempty(A)
-                A.textdata(:,2) = [];
-                nodeRest = str2double(A.textdata);
-                A = sort(unique(nodeRest),'ascend');
-            else
-                A = [];
+            % old
+%             fid=fopen('DataAnsys/nodeRest.txt') ;                   % the original file
+%             fidd=fopen('DataAnsys/nodeRest_modified.dat','w') ;     % the new file
+%             if fid < 0, error('Cannot open file'); end    % Check for an error
+%             for j = 1 : 13
+%                 fgetl(fid) ;                              % Read/discard line.
+%             end
+%             while ~feof(fid)  % reads the original till last line
+%                 tline=fgets(fid);
+%                 if isspace(tline)
+%                     for j = 1 : 9
+%                         fgetl(fid) ;                     % Read/discard line.
+%                     end
+%                 else
+%                     fwrite(fidd,tline) ;
+%                 end
+%             end
+%             fclose all ;
+%             filename = 'DataAnsys/nodeRest_modified.dat';
+%             delimiterIn = ' ';
+%             A = importdata(filename,delimiterIn);        % Get data in matlab
+%             
+%             if ~isempty(A)
+%                 A.textdata(:,2) = [];
+%                 nodeRest = str2double(A.textdata);
+%                 A = sort(unique(nodeRest),'ascend');
+%             else
+%                 A = [];
+%             end
+            
+            % new
+            fid=fopen('DataAnsys/nodeRest.txt');
+            for j = 1:13
+                fgetl(fid);                              % Read/discard line.
             end
+            
+            A = textscan(fid,'%u%s%f%f');
+%             while ~ feof(fid)
+%                 if contains(tline,'LABEL')
+%                     tmp = strsplit(strtrim(tline),' ');
+%                     n_etype = str2double(tmp{3});
+%                     elementList{n_etype,1} = tmp{5};
+%                     keyopts = zeros(1,18);
+%                     for ii = 0:2
+%                         tline = fgetl(fid);
+%                         tmp = str2double(strsplit(strtrim(tline),' '));
+%                         keyopts(ii*6+1:ii*6+6) = tmp(end-5:end);
+%                     end
+%                     elementList{n_etype,2} = keyopts;
+%                 end
+%                 tline = fgetl(fid);
+%             end
             
         end
         
