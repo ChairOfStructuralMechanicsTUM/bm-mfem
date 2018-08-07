@@ -79,8 +79,8 @@ classdef DummyElement < Element
         function setDofRestriction(obj, node, dofName)
         %SETDOFRESTRICTION if the dof is restricted to zero, it has to be
         %   removed from the dof list
-%             obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
-%             node.fixDof(dofName);
+            obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
+            node.fixDof(dofName);
         end
         
         function setDofOrder(obj, order)
