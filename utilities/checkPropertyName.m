@@ -3,7 +3,7 @@ function [ type ] = checkPropertyName( name )
 %   All variables which should be used in the program have to be defined
 %   here.
 
-availableProperties = cellstr(["ELEMENTAL_STIFFNESS", ...
+availableProperties = ["ELEMENTAL_STIFFNESS", ...
     "ELEMENTAL_DAMPING", ...
     "ELEMENTAL_MASS", ...
     "IY", ...
@@ -32,11 +32,12 @@ availableProperties = cellstr(["ELEMENTAL_STIFFNESS", ...
     "STATIC_FLOW_RESISTIVITY",...
     "VISCOUS_CHAR_LENGTH",...
     "THERMAL_CHAR_LENGTH",...
-    "FREQUENCY"]);
+    "FREQUENCY"];
 
-available3dProperties = cellstr(["VOLUME_ACCELERATION"]);
+available3dProperties = ["VOLUME_ACCELERATION"];
 
-availableFlags = cellstr(["FULL_INTEGRATION"]);
+availableFlags = ["FULL_INTEGRATION", ...
+    "USE_CONSISTENT_MASS_MATRIX"];
 
 if any(ismember(name, availableProperties))
     type = 'variable1d';
@@ -45,7 +46,10 @@ elseif any(ismember(name, available3dProperties))
 elseif any(ismember(name, availableFlags))
     type = 'flag';
 else
-    error('A property with name \"%s\" has not been defined', name);
+    msg = ['CheckPropertyName: A property with name \"', ...
+        name, '\" is not defined'];
+    e = MException('MATLAB:bm_mfem:undefinedPropertyName',msg);
+    throw(e);
 end
 
 end
