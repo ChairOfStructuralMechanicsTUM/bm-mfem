@@ -183,6 +183,7 @@ classdef Porous2d4n < QuadrilateralElement
         end
         
         function F = computeLocalForceVector(quadrilateralElement)
+            F = zeros(1,16);
         end
     end
 end
