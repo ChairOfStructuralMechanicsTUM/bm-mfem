@@ -146,7 +146,7 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                 diff = setxor(element.dofNames', availableDofNames);
                 if ~ isempty(diff)
                     missingDofs = setdiff(element.dofNames', availableDofNames);
-                    unknownDofs = setdiff(availableDofNames, element.dofNames');
+%                     unknownDofs = setdiff(availableDofNames, element.dofNames');
                     
                     if ~isempty(missingDofs)
                         msg = ['Element: The following dofs are missing', ...
@@ -156,14 +156,14 @@ classdef (Abstract) Element < handle & matlab.mixin.Heterogeneous & matlab.mixin
                         throw(e);
                     end
                     
-                    if ~isempty(unknownDofs)
-                        msg = ['Element: The following dofs at node ', ...
-                            num2str(cNode.getId), ' are not defined for ', ...
-                            class(element), ': ', ...
-                            char(strjoin(unknownDofs,', '))];
-                        e = MException('MATLAB:bm_mfem:unknownElementalDof',msg);
-                        throw(e);
-                    end
+%                     if ~isempty(unknownDofs)
+%                         msg = ['Element: The following dofs at node ', ...
+%                             num2str(cNode.getId), ' are not defined for ', ...
+%                             class(element), ': ', ...
+%                             char(strjoin(unknownDofs,', '))];
+%                         e = MException('MATLAB:bm_mfem:unknownElementalDof',msg);
+%                         throw(e);
+%                     end
                 end
             end
             
