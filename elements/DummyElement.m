@@ -4,14 +4,15 @@ classdef DummyElement < Element
     
     properties (Access = private)
         massMatrix
+        dampingMatrix
         stiffnessMatrix
-        
+        dofArray
+        restrictedDofs = Dof.empty
     end
     
     methods
         
         function obj = DummyElement(id, nodeArray)
-%             requiredPropertyNames = [];
             
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -33,8 +34,16 @@ classdef DummyElement < Element
             
         end
         
-        function computeLocalStiffnessMatrix(obj)
-            
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+            stiffnessMatrix = obj.stiffnessMatrix;
+        end
+        
+        function massMatrix = computeLocalMassMatrix(obj)
+            massMatrix = obj.massMatrix;
+        end
+        
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            dampingMatrix = obj.massMatrix;
         end
         
         function check(obj)
@@ -51,13 +60,26 @@ classdef DummyElement < Element
         end
         
         function initialize(obj)
-            
+            dofs = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
+            obj.dofArray = [dofs{:}];
         end
         
         function dofs = getDofList(obj)
-            dofs([1 4]) = obj.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 5]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
-            dofs([3 6]) = obj.nodeArray.getDof('DISPLACEMENT_Z');
+%             dofs = obj.dofArray(~obj.dofArray.isFixed);
+            dofs = obj.dofArray;
+        end
+        
+        function setMatrices(obj, massMatrix, dampingMatrix, stiffnessMatrix)
+            obj.massMatrix = massMatrix;
+            obj.dampingMatrix = dampingMatrix;
+            obj.stiffnessMatrix = stiffnessMatrix;
+        end
+        
+        function setDofRestriction(obj, node, dofName)
+        %SETDOFRESTRICTION if the dof is restricted to zero, it has to be
+        %   removed from the dof list
+            obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
+            node.fixDof(dofName);
         end
     end
     
