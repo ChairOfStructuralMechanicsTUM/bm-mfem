@@ -28,7 +28,7 @@ classdef IOTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.RelativeTolerance
         
             %eigenvalue analysis
-            io = AnsysInput('examples/model_qa.txt', getPaths('ansys'));
+            io = AnsysInput('tests/ansys_model.inp', getPaths('ansys'));
             model = io.readModel;
             
             solver = EigensolverStrategy(model);
