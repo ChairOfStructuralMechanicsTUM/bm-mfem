@@ -22,6 +22,10 @@ classdef DummyElement < Element
                     error('problem with the nodes in element %d', id);
                 end
                 super_args = {id, nodeArray, []};
+            else
+                msg = 'DummyElement: Wrong number of input parameters.';
+                e = MException('MATLAB:bm_mfem:invalidInput',msg);
+                throw(e);
             end
             
             % call the super class constructor
@@ -31,7 +35,6 @@ classdef DummyElement < Element
         end
         
         function barycenter(obj)
-            
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
@@ -51,44 +54,49 @@ classdef DummyElement < Element
            %    checked for the dummy element.
         end
         
-        function getValuesVector(obj)
-            
+        function dofs = getDofList(obj)
+            dofs = obj.dofArray;
         end
         
-        function update(obj)
-            
+        function vals = getValuesVector(obj, step)
+            vals = obj.dofArray.getValue(step);
+        end
+        
+        function vals = getFirstDerivativesVector(obj, step)
+            vals = obj.dofArray.getFirstDerivativeValue(step);
+        end
+        
+        function vals = getSecondDerivativesVector(obj, step)
+            vals = obj.dofArray.getSecondDerivativeValue(step);
+        end
+        
+        function update(obj)            
         end
         
         function initialize(obj)
-%             dofs = arrayfun(@(node) node.getDofArray, obj.nodeArray, 'UniformOutput', false);
-%             obj.dofArray = [dofs{:}];
-        end
-        
-        function dofs = getDofList(obj)
-%             dofs = obj.dofArray(~obj.dofArray.isFixed);
-            dofs = obj.dofArray;
-%             dofs = [1:length(obj.dofArray)];
         end
         
         function setMatrices(obj, massMatrix, dampingMatrix, stiffnessMatrix)
+        %SETMATRICES sets the matrices M, C, and K for the element.
             obj.massMatrix = massMatrix;
             obj.dampingMatrix = dampingMatrix;
             obj.stiffnessMatrix = stiffnessMatrix;
         end
         
         function setDofRestriction(obj, node, dofName)
-        %SETDOFRESTRICTION if the dof is restricted to zero, it has to be
-        %   removed from the dof list
+        %SETDOFRESTRICTION remove a dof from the elemental dof array. This
+        %   has to be done, if is restricted to zero in ANSYS. The dof is
+        %   then fixed.
             obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
             node.fixDof(dofName);
         end
         
         function setDofOrder(obj, order)
-%             dofs = Dof.empty;
+        %SETDOFORDER rearranges the dof array (ordered nodewise by default)
+        %   to match the ordering in the imported ANSYS matrices.
             for ii=order
                 obj.dofArray = [obj.dofArray obj.nodeArray(ii).getDofArray];
             end
-%             obj.dofArray = dofs;
         end
     end
     
