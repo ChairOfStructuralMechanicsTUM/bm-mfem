@@ -59,3 +59,45 @@
 %                     end 
 %                 end
 %           end
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Aus function [...] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs)
+
+% % %            %innerDofs(fixedDofIds==innerDofs)=[];  logical Indexing
+% % %            a=0;
+% % %            for i = 1:length(innerDofs)           
+% % %                for j = 1:length(fixedDofIds)                                
+% % %                    if innerDofs(i)+ a == fixedDofIds(j)
+% % %                         for k = length(innerDofs):-1:i
+% % %                             innerDofs(k) = innerDofs(k)-1;
+% % %                         end
+% % %                         a=a+1;
+% % %                     end
+% % %                end
+% % %            end
+% % %            a=0;
+% % %            for i = 1:length(leftDofs)
+% % %                for j = 1:length(fixedDofIds)              
+% % %                     if leftDofs(i)+a == fixedDofIds(j)
+% % %                         for k = length(leftDofs):-1:i
+% % %                             leftDofs(k) = leftDofs(k)-1;
+% % %                         end
+% % %                         a = a+1;
+% % %                     end
+% % %                end
+% % %            end
+% % %            a=0;
+% % %            for i = 1:length(rightDofs)
+% % %                for j = 1:length(fixedDofIds)              
+% % %                     if rightDofs(i)+a == fixedDofIds(j)
+% % %                         for k = length(rightDofs):-1:i
+% % %                             rightDofs(k) = rightDofs(k)-1;
+% % %                         end
+% % %                         a=a+1;
+% % %                     end
+% % %                end
+% % %            end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -63,20 +63,20 @@ numberOfPhases = 20;
 omega = cell(numberOfPhases,1);
 nob = 10;
 [kx,miu] = propConst(solver,numberOfPhases); %already used in reducedStiffnesAndMass(..)
-%     
-% for j = 1:nob
-%     for i = 1:numberOfPhases
-%         omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
-%         f(j,i) = omega{i,1}(j,1)/(2*pi);
-%     end
-%     figure(1)
-%     plot(kx,f(j,:),'r')
-%     title('Dispersion curves')
-%     xlabel('Phase k')
-%     ylabel('frequenzy f')
-%     xlim([0 pi])
-%     legend(['bandnumber: ' num2str(j)],'Location','EastOutside')
-%     hold on
-% end
-% 
-% 
+    
+for j = 1:nob
+    for i = 1:numberOfPhases
+        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+        f(j,i) = omega{i,1}(j,1)/(2*pi);
+    end
+    figure(1)
+    plot(kx,f(j,:),'r')
+    title('Dispersion curves')
+    xlabel('Phase k')
+    ylabel('frequenzy f')
+    xlim([0 pi])
+    legend(['bandnumber: ' num2str(j)],'Location','EastOutside')
+    hold on
+end
+
+

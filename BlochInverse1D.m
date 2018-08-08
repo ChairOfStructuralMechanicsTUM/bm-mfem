@@ -194,7 +194,7 @@ classdef BlochInverse1D < Solver
        end
            
         
-       function R = transformationMatrix(obj,miu,index)
+       function R = transformationMatrix(obj,miu,index)   %%funktioniert, da nur Dimensionen geändert werden mussten
            nodeIdsRight = obj.rightNodes;
            nodeIdsLeft = obj.leftNodes; 
            leftDofs = obj.leftDofs;
@@ -247,28 +247,22 @@ classdef BlochInverse1D < Solver
        
        function [reducedLeftDofs,reducedInnerDofs, reducedRightDofs,allDofs] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs)
            
-           %Eliminates Fixed Dofs and reduces the following Dofs by 1 (-->loop)   LOOP IS NOT WORKING      
+           %Eliminates Fixed Dofs and reduces the following Dofs by 1 in allDofs(-->loop)  
+           %left-,inner, and rightDofs are not reduced
            
-                      
+           %Part          
            [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
            fixedDofIds = getId(fixedDofs);
              
-           indices1=find(ismember(leftDofs,fixedDofIds));
-           indices2=find(ismember(rightDofs,fixedDofIds));           
-           indices3=find(ismember(innerDofs,fixedDofIds));
            
-           
+           %%allDofs           
            allDofs=[leftDofs,innerDofs,rightDofs];
            indicesAll =find(ismember(allDofs,fixedDofIds));
            
            a=0;
            for j = 1:length(fixedDofIds)   
                for i=1:length(allDofs)
-                   if allDofs(i) + a == fixedDofIds(j)
-%                         for k = length(allDofs):-1:i
-%                             allDofs(k) = allDofs(k)-1;
-%                         end
-%                         a=a+1;
+                   if allDofs(i) + a == fixedDofIds(j)                        
                         for k=1:length(allDofs)
                             if allDofs(k)>=fixedDofIds(j)
                                 allDofs(k)=allDofs(k)-1;
@@ -278,48 +272,17 @@ classdef BlochInverse1D < Solver
                     end
                end
            end
-           
-           
-           
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Fehler, nicht genug reduziert (idR max(allDofs) noch
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%um 2 zu groß
            allDofs(indicesAll)=[];
            
-% % %            %innerDofs(fixedDofIds==innerDofs)=[];  logical Indexing
-% % %            a=0;
-% % %            for i = 1:length(innerDofs)           
-% % %                for j = 1:length(fixedDofIds)                                
-% % %                    if innerDofs(i)+ a == fixedDofIds(j)
-% % %                         for k = length(innerDofs):-1:i
-% % %                             innerDofs(k) = innerDofs(k)-1;
-% % %                         end
-% % %                         a=a+1;
-% % %                     end
-% % %                end
-% % %            end
-% % %            a=0;
-% % %            for i = 1:length(leftDofs)
-% % %                for j = 1:length(fixedDofIds)              
-% % %                     if leftDofs(i)+a == fixedDofIds(j)
-% % %                         for k = length(leftDofs):-1:i
-% % %                             leftDofs(k) = leftDofs(k)-1;
-% % %                         end
-% % %                         a = a+1;
-% % %                     end
-% % %                end
-% % %            end
-% % %            a=0;
-% % %            for i = 1:length(rightDofs)
-% % %                for j = 1:length(fixedDofIds)              
-% % %                     if rightDofs(i)+a == fixedDofIds(j)
-% % %                         for k = length(rightDofs):-1:i
-% % %                             rightDofs(k) = rightDofs(k)-1;
-% % %                         end
-% % %                         a=a+1;
-% % %                     end
-% % %                end
-% % %            end
-
-            
            
+           %%%%eliminate left-, inner- and rightDofs
+           
+           indices1=find(ismember(leftDofs,fixedDofIds));
+           indices2=find(ismember(rightDofs,fixedDofIds));           
+           indices3=find(ismember(innerDofs,fixedDofIds));
+
            leftDofs(indices1)=[];
            rightDofs(indices2)=[];
            innerDofs(indices3)=[];
@@ -328,7 +291,7 @@ classdef BlochInverse1D < Solver
            reducedInnerDofs = innerDofs;
        end
        
-       function [Kred,Mred] = reducedStiffnesAndMass (obj,K,M,numberOfPhases)
+       function [Kred,Mred] = reducedStiffnesAndMass (obj,K,M,numberOfPhases) %%Fehler, wenn dann bei M und/oder K
           
             
            [kx,miu] = propConst(obj,numberOfPhases);
