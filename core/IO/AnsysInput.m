@@ -121,7 +121,10 @@ classdef AnsysInput < ModelIO
             e.setDofOrder(data.nodesOrderByDofs);
             
             % Set restrictions
-            obj.setRestrictions(data, model);
+            e.setDofRestrictions(data.nodeRest);
+            
+            % Set node connectivity
+            e.setNodeConnectivity(data.nodeConnectivity);
             
             % Add everything to a model part
             model.addNewModelPart('ANSYS_model', ...
@@ -423,9 +426,9 @@ classdef AnsysInput < ModelIO
                 for j = 1 : size(A,1)
                     if A(j,1) == elements(i)
                         for k = 2:size(A,2)
-                            aux1 = [aux1 A(j,k)];
+                            aux1 = [aux1 A(j,k)]; %#ok<AGROW>
                         end
-                        aux2 = [aux2 aux1];
+                        aux2 = [aux2 aux1]; %#ok<AGROW>
                     end
                 end
                 nodesArrays(i) = {unique(aux2)};
@@ -456,7 +459,7 @@ classdef AnsysInput < ModelIO
                 end
                 tline = fgetl(fid);
             end
-            
+            fclose(fid);
             
         end
         
@@ -501,7 +504,7 @@ classdef AnsysInput < ModelIO
                     if isnan(str2double(A.textdata(i,j)))
                         break;
                     end
-                    nodeNum = [nodeNum str2double(A.textdata(i,j))];
+                    nodeNum = [nodeNum str2double(A.textdata(i,j))]; %#ok<AGROW>
                 end
             end
         end
@@ -529,35 +532,6 @@ classdef AnsysInput < ModelIO
             
             A = textscan(fid,'%u%s%f%f');
             
-        end
-        
-        function setRestrictions(data, model)
-            for ii = 1:length(data.nodeRest{1})
-                n = model.getNode(data.nodeRest{1}(ii));
-                if data.nodeRest{3}(ii) == 0
-                    switch data.nodeRest{2}{ii}
-                        case 'UX'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
-                        case 'UY'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
-                        case 'UZ'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                else
-                    switch data.nodeRest{2}{ii}
-                        case 'UX'
-                            n.setDofValue('DISPLACEMENT_X', data.nodeRest{3}(ii));
-                        case 'UY'
-                            n.setDofValue('DISPLACEMENT_Y', data.nodeRest{3}(ii));
-                        case 'UZ'
-                            n.setDofValue('DISPLACEMENT_Z', data.nodeRest{3}(ii));
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                end
-            end
         end
         
     end

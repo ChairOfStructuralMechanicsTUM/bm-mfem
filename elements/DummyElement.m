@@ -8,6 +8,7 @@ classdef DummyElement < Element
         stiffnessMatrix
         dofArray
         restrictedDofs = Dof.empty
+        nodeConnectivity
     end
     
     methods
@@ -23,9 +24,9 @@ classdef DummyElement < Element
                 end
                 super_args = {id, nodeArray, []};
             else
-                msg = 'DummyElement: Wrong number of input parameters.';
-                e = MException('MATLAB:bm_mfem:invalidInput',msg);
-                throw(e);
+                msg = 'DummyElement: Wrong number of input arguments';
+                err = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                throw(err);
             end
             
             % call the super class constructor
@@ -83,19 +84,54 @@ classdef DummyElement < Element
             obj.stiffnessMatrix = stiffnessMatrix;
         end
         
-        function setDofRestriction(obj, node, dofName)
-        %SETDOFRESTRICTION remove a dof from the elemental dof array. This
-        %   has to be done, if is restricted to zero in ANSYS. The dof is
-        %   then fixed.
-            obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
-            node.fixDof(dofName);
-        end
-        
         function setDofOrder(obj, order)
         %SETDOFORDER rearranges the dof array (ordered nodewise by default)
         %   to match the ordering in the imported ANSYS matrices.
             for ii=order
                 obj.dofArray = [obj.dofArray obj.nodeArray(ii).getDofArray];
+            end
+        end
+        
+        function setDofRestrictions(obj, restrictions)
+        %SETDOFRESTRICTIONS removes dofs from the elemental dof array or 
+        %   sets the value ~= 0 according to the ANSYS input. The dofs 
+        %   restricted to 0 are then fixed.
+            for ii = 1:length(restrictions{1})
+                n = obj.nodeArray(obj.nodeArray.getId == restrictions{1}(ii));
+                switch restrictions{2}{ii}
+                    case 'UX'
+                        obj.setDofRestriction(n, 'DISPLACEMENT_X', restrictions{3}(ii));
+                    case 'UY'
+                        obj.setDofRestriction(n, 'DISPLACEMENT_Y', restrictions{3}(ii));
+                    case 'UZ'
+                        obj.setDofRestriction(n, 'DISPLACEMENT_Z', restrictions{3}(ii));
+                    case 'ROTX'
+                        obj.setDofRestriction(n, 'ROTATION_X', restrictions{3}(ii));
+                    case 'ROTY'
+                        obj.setDofRestriction(n, 'ROTATION_Y', restrictions{3}(ii));
+                    case 'ROTZ'
+                        obj.setDofRestriction(n, 'ROTATION_Z', restrictions{3}(ii));
+                    otherwise
+                        error('required restriction not yet implemented')
+                end
+            end
+        end
+        
+        function setNodeConnectivity(obj, nc)
+            obj.nodeConnectivity = nc;
+        end
+    end
+    
+    methods (Access = private)
+        function setDofRestriction(obj, node, dofName, value)
+        %SETDOFRESTRICTION removes dofs from the elemental dof array or 
+        %   sets the value ~= 0 according to the ANSYS input. The dofs 
+        %   restricted to 0 are then fixed.
+            if value == 0
+                obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
+                node.fixDof(dofName);
+            else
+                node.setDofValue(dofName, value);
             end
         end
     end
