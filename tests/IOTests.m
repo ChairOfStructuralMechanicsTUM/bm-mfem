@@ -27,6 +27,7 @@ classdef IOTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
         
+            %eigenvalue analysis
             io = AnsysInput('examples/model_qa.txt', getPaths('ansys'));
             model = io.readModel;
             
@@ -41,6 +42,7 @@ classdef IOTests <  matlab.unittest.TestCase
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
             
+            % static analysis
             model = io.readModel;
             model.getNode(10).setDofLoad('DISPLACEMENT_Y', -1);
             solver = SimpleSolvingStrategy(model);
@@ -54,6 +56,26 @@ classdef IOTests <  matlab.unittest.TestCase
                 -3.5126E-07;-5.9549E-07;-8.8436E-07;-1.2067E-06;-1.5514E-06];
             
             testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-4)))
+            
+            % dynamic analysis
+            model = io.readModel;
+            model.getNode(10).setDofLoad('DISPLACEMENT_Y', -1);
+            
+            dt = .00005;
+            time = 0;
+            endTime = .005;
+            solver = NewmarkSolvingStrategy(model, dt);
+            
+            while time < endTime
+                solver.solve();
+                time = time + dt;
+            end
+            
+            actualDisplacement = model.getNode(10).getDofValue('DISPLACEMENT_Y','all');
+            load('tests/test_data.mat','ansys_input_dynamic');
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(ansys_input_dynamic, ...
                 'Within', RelativeTolerance(1e-4)))
             
         end
