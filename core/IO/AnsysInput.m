@@ -3,18 +3,19 @@ classdef AnsysInput < ModelIO
     %   Detailed explanation goes here
     
     properties (Access = private)
+        ansysExecutable
     end
     
     methods
         
-        function ansysInput = AnsysInput(file)
+        function obj = AnsysInput(file, ansysExecutable)
             % file - full file path with filetype as extensions
             % examample: file='F:\ALMA_simulations\AnsysModels\plate.inp';
             % ansysExecutable - full file path of Ansys executable
             %
             if nargin == 0
                 super_args = {};
-            elseif nargin == 1
+            elseif nargin == 2
                 if ~ exist(file, 'file')
                     msg = ['AnsysInput: File ', file, ' not found.'];
                     e = MException('MATLAB:bm_mfem:fileNotFound',msg);
@@ -22,11 +23,13 @@ classdef AnsysInput < ModelIO
                 end
                 super_args = {file};
             end
-            ansysInput@ModelIO(super_args{:});
             
+            obj@ModelIO(super_args{:});
+            
+            obj.ansysExecutable = ansysExecutable;
         end
         
-        function model = readModel(obj,ansysExecutable)
+        function model = readModel(obj)
             
             A=strsplit(obj.file,'\');
             
@@ -55,7 +58,7 @@ classdef AnsysInput < ModelIO
             disp(['filetype: ' extension])
             
             model = FemModel;
-            data=obj.runAnsys(ansysExecutable,folder,fileName,extension,model);
+            data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension,model);
             e = model.addNewElement('DummyElement',1,model.getAllNodes);
             systemSize = size(data.Mansys,1);
             
@@ -294,10 +297,10 @@ classdef AnsysInput < ModelIO
 %                                          numberOfdofs;
 %                                          lowestDof;
 %                                          highestDof];
-%                 try
-%                  rmdir('DataAnsys', 's')
-%                 catch
-%                 end
+                try
+                 rmdir('DataAnsys', 's')
+                catch
+                end
             end
         end
         
