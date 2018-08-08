@@ -315,9 +315,10 @@ classdef AnsysInput < ModelIO
             rx = "ROTATION_X";
             ry = "ROTATION_Y";
             rz = "ROTATION_Z";
+            
             switch 1
                 case strcmp(elementName,'BEAM3')
-                    dofs=3;
+                    dofs = [ux uy rz];
                     
                 case strcmp(elementName,'COMBIN14')
                     if keyopts(2) == 0
@@ -374,19 +375,28 @@ classdef AnsysInput < ModelIO
                     dofs = [ux uy uz rx ry rz];
                     
                 case strcmp(elementName,'SHELL181')
-                    dofs=6;
+                    if keyopts(1) == 0
+                        dofs = [ux uy uz rx ry rz];
+                    elseif keyopts(1) == 1
+                        dofs = [ux uy uz];
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
                     
                 case strcmp(elementName,'PLANE182')
                     dofs = [ux uy];
                     
                 case strcmp(elementName,'SOLID185')
-                    dofs=3;
+                    dofs = [ux uy uz];
                     
                 case strcmp(elementName,'SOLID186')
-                    dofs=3;
+                    dofs = [ux uy uz];
                     
                 case strcmp(elementName,'SOLID187')
-                    dofs=3;  
+                    dofs = [ux uy uz];
                     
                 otherwise
                     msg = ['AnsysInput: Available dofs for element ', ...
