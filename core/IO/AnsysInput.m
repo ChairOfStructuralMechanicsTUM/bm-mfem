@@ -22,6 +22,10 @@ classdef AnsysInput < ModelIO
                     throw(e);
                 end
                 super_args = {file};
+            else
+                msg = 'AnsysInput: Wrong number of input parameters.';
+                e = MException('MATLAB:bm_mfem:invalidInput',msg);
+                throw(e);
             end
             
             obj@ModelIO(super_args{:});
@@ -385,8 +389,10 @@ classdef AnsysInput < ModelIO
                     dofs=3;  
                     
                 otherwise
-                    disp('Please enter the number of dofs for ANSYS element:')
-                    disp([elementName ' in AnsysInput.getDofsOfAnsysElements(name)'])
+                    msg = ['AnsysInput: Available dofs for element ', ...
+                        elementName, ' not defined.'];
+                    e = MException('MATLAB:bm_mfem:undefinedElement',msg);
+                    throw(e);
             end
         end
         
@@ -493,41 +499,7 @@ classdef AnsysInput < ModelIO
                 aux2 = [];
             end
             
-            % % read element types
-%             fid=fopen('DataAnsys/elemTyp.txt') ;
-%             fidd=fopen('DataAnsys/elemTyp_modified.dat','w') ;
-%             if fid < 0, error('Cannot open file'); end
-%             % Discard some line to read the data from the txt files
-%             for j = 1 : 11
-%                 fgetl(fid) ;
-%             end
-%             
-%             for j = 1 : length(elements)
-%                 tline=fgets(fid);
-%                 fgetl(fid) ;
-%                 fgetl(fid) ;
-%                 fgetl(fid) ;
-%                 fgetl(fid) ;
-%                 fwrite(fidd,tline) ;
-%             end
-%             fclose all ;
-% %             filename = 'DataAnsys/elemTyp_modified.dat';
-%             filename = 'DataAnsys/elemTyp.txt';
-%             delimiterIn = ' ';
-%             % Get data in matlab
-%             eList = {};
-%             elementList = {};
-%             A = importdata(filename,delimiterIn);
-%             A = importdata(filename);
-%             for i =  1:size(A,1)
-%                 eList(i) = textscan(A{i,1},'%s');
-%                 if strcmp(eList{1,i}{1},'ELEMENT')
-%                     elementList{i} = eList{1,i}{5};
-%                 end
-%             end
-            
-            
-            % % read element types new
+            % read element types with their keyopts
             fid=fopen('DataAnsys/elemTyp.txt');
             fgetl(fid);
             tline = fgetl(fid);
@@ -610,60 +582,18 @@ classdef AnsysInput < ModelIO
             %
             % Parameters :
             %
-            % Return     : A array with restrictions
+            % Return     : A cell with restrictions. 
+            %               A{1}: node numbers
+            %               A{2}: resticted dof name
+            %               A{3}: real values the dof is restricted to
+            %               A{4}: imaginary values the dof is restricted to
             
-            % old
-%             fid=fopen('DataAnsys/nodeRest.txt') ;                   % the original file
-%             fidd=fopen('DataAnsys/nodeRest_modified.dat','w') ;     % the new file
-%             if fid < 0, error('Cannot open file'); end    % Check for an error
-%             for j = 1 : 13
-%                 fgetl(fid) ;                              % Read/discard line.
-%             end
-%             while ~feof(fid)  % reads the original till last line
-%                 tline=fgets(fid);
-%                 if isspace(tline)
-%                     for j = 1 : 9
-%                         fgetl(fid) ;                     % Read/discard line.
-%                     end
-%                 else
-%                     fwrite(fidd,tline) ;
-%                 end
-%             end
-%             fclose all ;
-%             filename = 'DataAnsys/nodeRest_modified.dat';
-%             delimiterIn = ' ';
-%             A = importdata(filename,delimiterIn);        % Get data in matlab
-%             
-%             if ~isempty(A)
-%                 A.textdata(:,2) = [];
-%                 nodeRest = str2double(A.textdata);
-%                 A = sort(unique(nodeRest),'ascend');
-%             else
-%                 A = [];
-%             end
-            
-            % new
             fid=fopen('DataAnsys/nodeRest.txt');
             for j = 1:13
-                fgetl(fid);                              % Read/discard line.
+                fgetl(fid); % Read/discard line.
             end
             
             A = textscan(fid,'%u%s%f%f');
-%             while ~ feof(fid)
-%                 if contains(tline,'LABEL')
-%                     tmp = strsplit(strtrim(tline),' ');
-%                     n_etype = str2double(tmp{3});
-%                     elementList{n_etype,1} = tmp{5};
-%                     keyopts = zeros(1,18);
-%                     for ii = 0:2
-%                         tline = fgetl(fid);
-%                         tmp = str2double(strsplit(strtrim(tline),' '));
-%                         keyopts(ii*6+1:ii*6+6) = tmp(end-5:end);
-%                     end
-%                     elementList{n_etype,2} = keyopts;
-%                 end
-%                 tline = fgetl(fid);
-%             end
             
         end
         
