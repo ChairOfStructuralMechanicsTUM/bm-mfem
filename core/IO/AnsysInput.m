@@ -63,12 +63,14 @@ classdef AnsysInput < ModelIO
             data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
             
             % Read restriction on the nodes
-            data.nodeRest = AnsysInput.readRestrictions();
+            data.nodeRest = obj.readRestrictions();
+            % Read loads on the nodes
+            data.nodeLoads = obj.readLoads();
             % Read record 5 of ANSYS to get the position of the entries
             % of each node with the matrices
-            nodeEquiv = AnsysInput.readRecord_5();
+            nodeEquiv = obj.readRecord_5();
             % Read the coordinates of each node
-            data.nodeList = AnsysInput.readCoord();
+            data.nodeList = obj.readCoord();
             % Order the coordinates acoording to the record 5
             nodesC = data.nodeList(nodeEquiv,:);
             data.nodesOrderByDofs=nodesC(:,1)';
@@ -162,6 +164,10 @@ classdef AnsysInput < ModelIO
             % Create external file with the restricted DoF
             fprintf(fidl,'/output,DataAnsys/nodeRest,txt \r\n');
             fprintf(fidl,'DLIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with loads
+            fprintf(fidl,'/output,DataAnsys/nodeLoads,txt \r\n');
+            fprintf(fidl,'FLIST,ALL,\r\n');
             fprintf(fidl,'/output \r\n');
             % Create external file with the element type
             fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
@@ -532,6 +538,60 @@ classdef AnsysInput < ModelIO
             
             A = textscan(fid,'%u%s%f%f');
             
+            for ii = 1:length(A{2})
+                A{2}{ii} = AnsysInput.replaceANSYSDofName(A{2}{ii});
+            end
+            
+        end
+        
+        function A = readLoads()
+            % function A = readLoads()
+            %
+            % Function   : readLoads
+            %
+            % Description: This function gets the loads on coordinates from
+            %              ANSYS
+            %
+            % Parameters :
+            %
+            % Return     : A cell with loads.
+            %               A{1}: node numbers
+            %               A{2}: resticted dof name
+            %               A{3}: real values the dof is restricted to
+            %               A{4}: imaginary values the dof is restricted to
+            
+            fid=fopen('DataAnsys/nodeLoads.txt');
+            for j = 1:13
+                fgetl(fid); % Read/discard line.
+            end
+            
+            A = textscan(fid,'%u%s%f%f');
+            
+%             for ii = 1:length(A{2})
+%                 A{2}{ii} = AnsysInput.replaceANSYSDofName(A{2}{ii});
+%             end
+            
+        end
+        
+        function name = replaceANSYSDofName(ansysName)
+            switch ansysName
+                case 'UX'
+                    name = 'DISPLACEMENT_X';
+                case 'UY'
+                    name = 'DISPLACEMENT_Y';
+                case 'UZ'
+                    name = 'DISPLACEMENT_Z';
+                case 'ROTX'
+                    name = 'ROTATION_X';
+                case 'ROTY'
+                    name = 'ROTATION_Y';
+                case 'ROTZ'
+                    name = 'ROTATION_Z';
+                otherwise
+                    msg = ['AnsysInput: Unknown ANSYS dof name ', ansysName];
+                    err = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                    throw(err);
+            end
         end
         
     end

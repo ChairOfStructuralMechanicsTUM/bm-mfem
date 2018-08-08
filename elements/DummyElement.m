@@ -98,41 +98,17 @@ classdef DummyElement < Element
         %   restricted to 0 are then fixed.
             for ii = 1:length(restrictions{1})
                 n = obj.nodeArray(obj.nodeArray.getId == restrictions{1}(ii));
-                switch restrictions{2}{ii}
-                    case 'UX'
-                        obj.setDofRestriction(n, 'DISPLACEMENT_X', restrictions{3}(ii));
-                    case 'UY'
-                        obj.setDofRestriction(n, 'DISPLACEMENT_Y', restrictions{3}(ii));
-                    case 'UZ'
-                        obj.setDofRestriction(n, 'DISPLACEMENT_Z', restrictions{3}(ii));
-                    case 'ROTX'
-                        obj.setDofRestriction(n, 'ROTATION_X', restrictions{3}(ii));
-                    case 'ROTY'
-                        obj.setDofRestriction(n, 'ROTATION_Y', restrictions{3}(ii));
-                    case 'ROTZ'
-                        obj.setDofRestriction(n, 'ROTATION_Z', restrictions{3}(ii));
-                    otherwise
-                        error('required restriction not yet implemented')
+                if restrictions{3}(ii) == 0
+                    obj.dofArray(obj.dofArray.getId==n.getDof(restrictions{2}{ii}).getId) = [];
+                    n.fixDof(restrictions{2}{ii});
+                else
+                    n.setDofValue(restrictions{2}{ii}, restrictions{3}(ii));
                 end
             end
         end
         
         function setNodeConnectivity(obj, nc)
             obj.nodeConnectivity = nc;
-        end
-    end
-    
-    methods (Access = private)
-        function setDofRestriction(obj, node, dofName, value)
-        %SETDOFRESTRICTION removes dofs from the elemental dof array or 
-        %   sets the value ~= 0 according to the ANSYS input. The dofs 
-        %   restricted to 0 are then fixed.
-            if value == 0
-                obj.dofArray(obj.dofArray.getId==node.getDof(dofName).getId) = [];
-                node.fixDof(dofName);
-            else
-                node.setDofValue(dofName, value);
-            end
         end
     end
     
