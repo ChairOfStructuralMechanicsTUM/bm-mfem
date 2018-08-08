@@ -36,7 +36,9 @@ classdef AnsysInput < ModelIO
         function model = readModel(obj)
             
             A=strsplit(obj.file,'\');
+            
             B=strsplit(A{end},'.');
+            
             C=strsplit(obj.file,B{1});
             
             if strcmp(A{1},obj.file)
@@ -105,11 +107,9 @@ classdef AnsysInput < ModelIO
                 dofArray(ii).setId(ii);
             end
             
-            % Create the dummy element
             e = mp.addNewElement('DummyElement',1,mp.getNodes);
-            
-            % Set the matrices
             systemSize = size(data.Mansys,1);
+            
             Mdiag = spdiags(data.Mansys,0);
             M = data.Mansys + data.Mansys.' - spdiags(Mdiag(:),0,systemSize,systemSize);
             Cdiag = spdiags(data.Cansys,0);
@@ -117,22 +117,11 @@ classdef AnsysInput < ModelIO
             Kdiag = spdiags(data.Kansys,0);
             K = data.Kansys + data.Kansys.' - spdiags(Kdiag(:),0,systemSize,systemSize);
             e.setMatrices(M, C, K);
-            
-            % Set the dof ordering in the dummy element
             e.setDofOrder(data.nodesOrderByDofs);
             
-            % Set restrictions
+            
+            % set restrictions
             obj.setRestrictions(data.nodeRest, mp);
-            
-            % Set node connectivity
-            e.setNodeConnectivity(data.nodeConnectivity);
-            
-            % Delete auxiliary files
-            
-%             try
-%                 rmdir('DataAnsys', 's')
-%             catch
-%             end
             
         end
         
@@ -140,99 +129,276 @@ classdef AnsysInput < ModelIO
     
     methods (Static)
         
-        function data = runAnsys(ansysExecutable,folder,file,extension)
-            % make directory for files
-            if exist('DataAnsys','dir') ~= 7; mkdir('DataAnsys'); end
-            
-            % Header
-            fidl=fopen('DataAnsys/modelFile.txt','w');
-            % Read input file
-            fprintf(fidl,'/INPUT,%s,%s,%s,,0 \r\n',file...
-                ,extension...
-                ,folder);
-            % Enters the preprocessor
-            fprintf(fidl,'/PREP7 \r\n');
-            % Set EMAWRITE to "yes" to obtain binary files
-            fprintf(fidl,'EMATWRITE,YES \r\n');
-            % Create external file with the nodal information
-            fprintf(fidl,'/output,DataAnsys/nodeCoor,txt \r\n');
-            fprintf(fidl,'NLIST,ALL,,,XYZ,NODE,NODE,NODE \r\n');
-            fprintf(fidl,'/output \r\n');
-            % Create external file with the restricted DoF
-            fprintf(fidl,'/output,DataAnsys/nodeRest,txt \r\n');
-            fprintf(fidl,'DLIST,ALL,\r\n');
-            fprintf(fidl,'/output \r\n');
-            % Create external file with the element type
-            fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
-            fprintf(fidl,'ETLIST,ALL,\r\n');
-            fprintf(fidl,'/output \r\n');
-            % Create external file with the element type
-            fprintf(fidl,'/output,DataAnsys/elemNodes,txt \r\n');
-            fprintf(fidl,'ELIST,ALL,\r\n');
-            fprintf(fidl,'/output \r\n');
-            % Create external file with the material information
-            fprintf(fidl,'/output,DataAnsys/materialPro,txt \r\n');
-            fprintf(fidl,'MPLIST,ALL,,,EVLT\r\n');
-            fprintf(fidl,'/output \r\n');
-            % Set solver
-            fprintf(fidl,'/SOLU\r\n');
-            fprintf(fidl,'ANTYPE,MODAL\r\n');
-            fprintf(fidl,'MODOPT,DAMP,1\r\n');
-            fprintf(fidl,'MXPAND,1,,,YES\r\n');
-            fprintf(fidl,'WRFULL,1\r\n');
-            fprintf(fidl,'SOLVE\r\n');
-            fprintf(fidl,'FINISH\r\n');
-            % Extract the mass, damping and stifness matrix
-            fprintf(fidl,'/AUX2\r\n');
-            fprintf(fidl,'file,,full\r\n');
-            
-            fprintf(fidl,...
-                'HBMAT,DataAnsys/HBMstiff,txt,,ascii,stiff,yes,yes\r\n');
-            
-            fprintf(fidl,...
-                'HBMAT,DataAnsys/HBMmass,txt,,ascii,mass,yes,yes\r\n');
-            
-            fprintf(fidl,...
-                'HBMAT,DataAnsys/HBMdamp,txt,,ascii,damp,yes,yes\r\n');
-            
-            fprintf(fidl,'FINISH\r\n');
-            % Get the modified nodal information
-            fprintf(fidl,'/AUX2\r\n');
-            fprintf(fidl,'/output,DataAnsys/record_5,txt \r\n');
-            fprintf(fidl,'form,long\r\n');
-            fprintf(fidl,'fileaux2,,emat,%s\r\n',folder);
-            fprintf(fidl,'dump,5,5\r\n');
-            fprintf(fidl,'/output \r\n');
-            fprintf(fidl,'FINISH\r\n');
-            fclose(fidl);
-            
-            % Run ANSYS
-            eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])            
-            
-            % Import sparse matrices form harwell boeing format to matlab
-            % See http://people.sc.fsu.edu/~jburkardt/m_src/hb_to_msm/hb_to_msm.html
-            % The function hb_to_msm is freely distributed according to the website
-            data.Mansys = hb_to_msm('DataAnsys/HBMmass.txt');
-            data.Kansys = hb_to_msm('DataAnsys/HBMstiff.txt');
-            data.Cansys = hb_to_msm('DataAnsys/HBMdamp.txt');
-            
-            % Delete files
-            try
-                delete('*.emat');
-                delete('*.esav');
-                delete('*.full');
-                delete('*.mlv');
-                delete('*.err');
-                delete('*.db');
-                delete('*.log');
-                delete('*.BCS');
-                delete('*.ce');
-                delete('*.mode');
-                delete('*.stat');
-                delete('*.xml');
-            catch
+        function data=runAnsys(ansysExecutable,folder,file,extension)
+            if(nargin > 0)
+                % make directory for files
+                mkdir('DataAnsys')
+                
+                % Header
+                fidl=fopen('DataAnsys/modelFile.txt','w');
+                % Read input file
+                fprintf(fidl,'/INPUT,%s,%s,%s,,0 \r\n',file...
+                    ,extension...
+                    ,folder);
+                % Enters the preprocessor
+                fprintf(fidl,'/PREP7 \r\n');
+                % Set EMAWRITE to "yes" to obtain binary files
+                fprintf(fidl,'EMATWRITE,YES \r\n');
+                % Create external file with the nodal information
+                fprintf(fidl,'/output,DataAnsys/nodeCoor,txt \r\n');
+                fprintf(fidl,'NLIST,ALL,,,XYZ,NODE,NODE,NODE \r\n');
+                fprintf(fidl,'/output \r\n');
+                % Create external file with the restricted DoF
+                fprintf(fidl,'/output,DataAnsys/nodeRest,txt \r\n');
+                fprintf(fidl,'DLIST,ALL,\r\n');
+                fprintf(fidl,'/output \r\n');
+                % Create external file with the element type
+                fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
+                fprintf(fidl,'ETLIST,ALL,\r\n');
+                fprintf(fidl,'/output \r\n');
+                % Create external file with the element type
+                fprintf(fidl,'/output,DataAnsys/elemNodes,txt \r\n');
+                fprintf(fidl,'ELIST,ALL,\r\n');
+                fprintf(fidl,'/output \r\n');
+                % Create external file with the material information
+                fprintf(fidl,'/output,DataAnsys/materialPro,txt \r\n');
+                fprintf(fidl,'MPLIST,ALL,,,EVLT\r\n');
+                fprintf(fidl,'/output \r\n');
+                % Set solver
+                fprintf(fidl,'/SOLU\r\n');
+                fprintf(fidl,'ANTYPE,MODAL\r\n');
+                fprintf(fidl,'MODOPT,DAMP,1\r\n');
+                fprintf(fidl,'MXPAND,1,,,YES\r\n');
+                fprintf(fidl,'WRFULL,1\r\n');
+                fprintf(fidl,'SOLVE\r\n');
+                fprintf(fidl,'FINISH\r\n');
+                % Extract the mass, damping and stifness matrix
+                fprintf(fidl,'/AUX2\r\n');
+                fprintf(fidl,'file,,full\r\n');
+                
+                fprintf(fidl,...
+                    'HBMAT,DataAnsys/HBMstiff,txt,,ascii,stiff,yes,yes\r\n');
+                
+                fprintf(fidl,...
+                    'HBMAT,DataAnsys/HBMmass,txt,,ascii,mass,yes,yes\r\n');
+                
+                fprintf(fidl,...
+                    'HBMAT,DataAnsys/HBMdamp,txt,,ascii,damp,yes,yes\r\n');
+                
+                fprintf(fidl,'FINISH\r\n');
+                % Get the modified nodal information
+                fprintf(fidl,'/AUX2\r\n');
+                fprintf(fidl,'/output,DataAnsys/record_5,txt \r\n');
+                fprintf(fidl,'form,long\r\n');
+                fprintf(fidl,'fileaux2,,emat,%s\r\n',folder);
+                fprintf(fidl,'dump,5,5\r\n');
+                fprintf(fidl,'/output \r\n');
+                fprintf(fidl,'FINISH\r\n');
+                fclose(fidl);
+                % Run ANSYS
+                % Warning: modify path according to the user
+                %!"C:\Program Files\ANSYS Inc\v171\ansys\bin\winx64\ANSYS171.exe" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out
+                eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])
+                
+                
+                
+                % See http://people.sc.fsu.edu/~jburkardt/m_src/hb_to_msm/hb_to_msm.html
+                % The function hb_to_msm is freely distributed according to the website
+                data.Mansys = hb_to_msm('DataAnsys/HBMmass.txt');
+                
+                %                data.M = full(Mansys)+transpose(full(Mansys))...
+                %                    -diag(diag(full(Mansys)));
+                
+                data.Kansys = hb_to_msm('DataAnsys/HBMstiff.txt');
+                %                data.K = full(Kansys)+transpose(full(Kansys))...
+                %                    -diag(diag(full(Kansys)));
+                
+                data.Cansys = hb_to_msm('DataAnsys/HBMdamp.txt');
+                %                data.C = full(Cansys)+transpose(full(Cansys))...
+                %                    -diag(diag(full(Cansys)));
+                %                if  sum(sum(abs(data.C))) ~= 0
+                %                    data.damped = true;
+                %                end
+                % Delete files
+                try
+                    delete('*.emat');
+                    delete('*.esav');
+                    delete('*.full');
+                    delete('*.mlv');
+                    delete('*.err');
+                    delete('*.db');
+                    delete('*.log');
+                catch
+                end
+                try
+                    delete('*.BCS');
+                    delete('*.ce');
+                    delete('*.mode');
+                    delete('*.stat');
+                    delete('*.xml');
+                catch
+                end
+                
+%                 % Read restriction on the nodes
+%                 data.nodeRest = AnsysInput.readRestrictions();
+%                 % Read record 5 of ANSYS to get the position of the entries
+%                 % of each node with the matrices
+%                 nodeEquiv = AnsysInput.readRecord_5();
+%                 % Read the coordinates of each node
+%                 data.nodeList = AnsysInput.readCoord();
+%                 % Order the coordinates acoording to the record 5
+%                 nodesC = data.nodeList(nodeEquiv,:);
+%                 data.nodesOrderByDofs=nodesC(:,1)';
+%                 
+%                 % Create objects "Node" and assign them to a model
+%                 for i = 1 : size(nodesC,1)
+%                     referenceNode =  nodesC(i,1);
+%                     x  =  nodesC(i,2);
+%                     y  =  nodesC(i,3);
+%                     z  =  nodesC(i,4);
+%                     model.addNewNode(referenceNode,x,y,z);
+%                 end
+%                 data.numNodes = length(model.getAllNodes());
+%                 
+%                 % Read available element data
+%                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
+%                 
+%                 % Assign dofs to node
+% %                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
+%                 
+%                 
+% %                 restrictedNodes = data.nodeRest{1};
+%                 dofId = 1;
+%                 for i = 1 :size(data.elementsOfModel,1)
+%                     nodeData=cell2mat(data.nodeElementList(i));
+%                     dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
+%                     nodeData(isnan(nodeData)) = [];
+%                     for j = 1:length(nodeData)
+%                         n = model.getNode(nodeData(j));
+% %                         if any(find(restrictedNodes == n.getId()))
+% %                             
+% %                         end
+%                         n.addDof(dofs);
+% %                         d = n.getDofArray;
+% %                         for jj=1:length(d)
+% %                             d(jj).setId(dofId);
+% %                             dofId = dofId + 1;
+% %                         end
+%                         
+%                         
+%                     end
+%                     
+%                 end
+%                 dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
+%                 dofArray = [dofArray{:}];
+% %                 dof_ids = dofArray.getId();
+%                 for ii = 1:length(dofArray)
+%                     dofArray(ii).setId(ii);
+%                 end
+                
+%                 try
+%                  rmdir('DataAnsys', 's')
+%                 catch
+%                 end
             end
+        end
+        
+        function dofs = getDofsOfAnsysElements(elementName, keyopts)
+            ux = "DISPLACEMENT_X";
+            uy = "DISPLACEMENT_Y";
+            uz = "DISPLACEMENT_Z";
+            rx = "ROTATION_X";
+            ry = "ROTATION_Y";
+            rz = "ROTATION_Z";
             
+            switch 1
+                case strcmp(elementName,'BEAM3')
+                    dofs = [ux uy rz];
+                    
+                case strcmp(elementName,'COMBIN14')
+                    if keyopts(2) == 0
+                        if keyopts(3) == 0
+                            dofs = [ux uy uz];
+                        elseif keyopts(3) == 1
+                            dofs = [rx ry rz];
+                        elseif keyopts(3) == 2
+                            dofs = [ux uy];
+                        elseif keyopts(3) == 4
+                            dofs = [ux uy];
+                        else
+                            msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                                elementName];
+                            e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                            throw(e);
+                        end
+                    elseif keyopts(2) == 1
+                        dofs = ux;
+                    elseif keyopts(2) == 2
+                        dofs = uy;
+                    elseif keyopts(2) == 3
+                        dofs = uz;
+                    elseif keyopts(2) == 4
+                        dofs = rx;
+                    elseif keyopts(2) == 5
+                        dofs = ry;
+                    elseif keyopts(2) == 6
+                        dofs = rz;
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
+                case strcmp(elementName,'MASS21')
+                    if keyopts(3) == 0
+                        dofs = [ux uy uz rx ry rz];
+                    elseif keyopts(3) == 2
+                        dofs = [ux uy uz];
+                    elseif keyopts(3) == 3
+                        dofs = [ux uy rz];
+                    elseif keyopts(3) == 4
+                        dofs = [ux uy];
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
+                case strcmp(elementName,'SHELL63')
+                    dofs = [ux uy uz rx ry rz];
+                    
+                case strcmp(elementName,'SHELL181')
+                    if keyopts(1) == 0
+                        dofs = [ux uy uz rx ry rz];
+                    elseif keyopts(1) == 1
+                        dofs = [ux uy uz];
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
+                case strcmp(elementName,'PLANE182')
+                    dofs = [ux uy];
+                    
+                case strcmp(elementName,'SOLID185')
+                    dofs = [ux uy uz];
+                    
+                case strcmp(elementName,'SOLID186')
+                    dofs = [ux uy uz];
+                    
+                case strcmp(elementName,'SOLID187')
+                    dofs = [ux uy uz];
+                    
+                otherwise
+                    msg = ['AnsysInput: Available dofs for element ', ...
+                        elementName, ' not defined.'];
+                    e = MException('MATLAB:bm_mfem:undefinedElement',msg);
+                    throw(e);
+            end
         end
         
         function A = readCoord()
@@ -475,104 +641,6 @@ classdef AnsysInput < ModelIO
                     end
                 end
             end 
-        end
-        
-        function dofs = getDofsOfAnsysElements(elementName, keyopts)
-            ux = "DISPLACEMENT_X";
-            uy = "DISPLACEMENT_Y";
-            uz = "DISPLACEMENT_Z";
-            rx = "ROTATION_X";
-            ry = "ROTATION_Y";
-            rz = "ROTATION_Z";
-            
-            switch 1
-                case strcmp(elementName,'BEAM3')
-                    dofs = [ux uy rz];
-                    
-                case strcmp(elementName,'COMBIN14')
-                    if keyopts(2) == 0
-                        if keyopts(3) == 0
-                            dofs = [ux uy uz];
-                        elseif keyopts(3) == 1
-                            dofs = [rx ry rz];
-                        elseif keyopts(3) == 2
-                            dofs = [ux uy];
-                        elseif keyopts(3) == 4
-                            dofs = [ux uy];
-                        else
-                            msg = ['AnsysInput: Invalid keyopts for element type ', ...
-                                elementName];
-                            e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
-                            throw(e);
-                        end
-                    elseif keyopts(2) == 1
-                        dofs = ux;
-                    elseif keyopts(2) == 2
-                        dofs = uy;
-                    elseif keyopts(2) == 3
-                        dofs = uz;
-                    elseif keyopts(2) == 4
-                        dofs = rx;
-                    elseif keyopts(2) == 5
-                        dofs = ry;
-                    elseif keyopts(2) == 6
-                        dofs = rz;
-                    else
-                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
-                            elementName];
-                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
-                        throw(e);
-                    end
-                    
-                case strcmp(elementName,'MASS21')
-                    if keyopts(3) == 0
-                        dofs = [ux uy uz rx ry rz];
-                    elseif keyopts(3) == 2
-                        dofs = [ux uy uz];
-                    elseif keyopts(3) == 3
-                        dofs = [ux uy rz];
-                    elseif keyopts(3) == 4
-                        dofs = [ux uy];
-                    else
-                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
-                            elementName];
-                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
-                        throw(e);
-                    end
-                    
-                case strcmp(elementName,'SHELL63')
-                    dofs = [ux uy uz rx ry rz];
-                    
-                case strcmp(elementName,'SHELL181')
-                    if keyopts(1) == 0
-                        dofs = [ux uy uz rx ry rz];
-                    elseif keyopts(1) == 1
-                        dofs = [ux uy uz];
-                    else
-                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
-                            elementName];
-                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
-                        throw(e);
-                    end
-                    
-                case strcmp(elementName,'PLANE182')
-                    dofs = [ux uy];
-                    
-                case strcmp(elementName,'SOLID185')
-                    dofs = [ux uy uz];
-                    
-                case strcmp(elementName,'SOLID186')
-                    dofs = [ux uy uz];
-                    
-                case strcmp(elementName,'SOLID187')
-                    dofs = [ux uy uz];
-                    
-                otherwise
-                    msg = ['AnsysInput: Available dofs for element ', ...
-                        elementName, ' not defined.'];
-                    e = MException('MATLAB:bm_mfem:undefinedElement',msg);
-                    throw(e);
-            end
         end
         
     end
