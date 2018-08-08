@@ -41,21 +41,6 @@ classdef VariousTests <  matlab.unittest.TestCase
                 'MATLAB:bm_mfem:elementNotConvex');
         end
         
-        function mdpaInputTest(testCase)
-        %MDPAINPUTTEST tests the input from a mdpa file using properties,
-        %   line comments, different element types, and model parts
-            import matlab.unittest.constraints.IsTrue
-            
-            io = MdpaInput('tests/mdpatest.mdpa');
-            model = io.readModel;
-            
-            testCase.verifyEqual(model.getNode(14).getX,2.213);
-            testCase.verifyEqual(model.getElement(9).getPropertyValue('DENSITY'),7850);
-            testCase.verifyEqual(model.getElement(11).getPropertyValue('POISSON_RATIO'),0.3);
-            testCase.verifyThat(isa(model.getElement(11),'ReissnerMindlinElement3d4n'),IsTrue);
-            testCase.verifyEqual(model.getModelPart('PointLoad').getNodes.getId(),11);
-        end
-        
         function modelPartTest(testCase)
         %MODELPARTTEST tests the behavior of modelparts
             import matlab.unittest.constraints.IsTrue
