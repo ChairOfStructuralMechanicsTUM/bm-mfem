@@ -33,7 +33,7 @@ classdef AnsysInput < ModelIO
             obj.ansysExecutable = ansysExecutable;
         end
         
-        function mp = readModel(obj)
+        function model = readModel(obj)
             
             A=strsplit(obj.file,'\');
             
@@ -62,52 +62,8 @@ classdef AnsysInput < ModelIO
             disp(['filetype: ' extension])
             
             model = FemModel;
-            mp = model.addNewModelPart('ANSYS_import');
-            data = obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
-            
-            % Read restriction on the nodes
-            data.nodeRest = obj.readRestrictions();
-            % Read record 5 of ANSYS to get the position of the entries
-            % of each node with the matrices
-            nodeEquiv = obj.readRecord_5();
-            % Read the coordinates of each node
-            data.nodeList = obj.readCoord();
-            % Order the coordinates acoording to the record 5
-            nodesC = data.nodeList(nodeEquiv,:);
-            data.nodesOrderByDofs=nodesC(:,1)';
-            
-            % Create objects "Node" and assign them to a model
-            for ii = 1:size(nodesC,1)
-                id = nodesC(ii,1);
-                x = nodesC(ii,2);
-                y = nodesC(ii,3);
-                z = nodesC(ii,4);
-                mp.addNewNode(id,x,y,z);
-            end
-            data.numNodes = length(mp.getAllNodes());
-            
-            % Read available element data
-            [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
-            
-            % Assign dofs to nodes
-            for ii = 1 :size(data.elementsOfModel,1)
-                nodeData=cell2mat(data.nodeElementList(ii));
-                dofs = obj.getDofsOfAnsysElements(data.elementsOfModel{ii,1}, data.elementsOfModel{ii,2});
-                nodeData(isnan(nodeData)) = [];
-                for j = 1:length(nodeData)
-                    n = mp.getNode(nodeData(j));
-                    n.addDof(dofs);
-                end
-            end
-            % Set dof ids according to node numbering (bm-mfem style,
-            % reordering is done in the DummyElement
-            dofArray = arrayfun(@(node) node.getDofArray, mp.getAllNodes(), 'UniformOutput', false);
-            dofArray = [dofArray{:}];
-            for ii = 1:length(dofArray)
-                dofArray(ii).setId(ii);
-            end
-            
-            e = mp.addNewElement('DummyElement',1,mp.getAllNodes);
+            data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension,model);
+            e = model.addNewElement('DummyElement',1,model.getAllNodes);
             systemSize = size(data.Mansys,1);
             
             Mdiag = spdiags(data.Mansys,0);
@@ -121,7 +77,32 @@ classdef AnsysInput < ModelIO
             
             
             % set restrictions
-            obj.setRestrictions(data.nodeRest, mp);
+            for ii = 1:length(data.nodeRest{1})
+                n = model.getNode(data.nodeRest{1}(ii));
+                if data.nodeRest{3}(ii) == 0
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
+                        case 'UY'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
+                        case 'UZ'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                else
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            n.setDofValue('DISPLACEMENT_X', data.nodeRest{3}(ii));
+                        case 'UY'
+                            n.setDofValue('DISPLACEMENT_Y', data.nodeRest{3}(ii));
+                        case 'UZ'
+                            n.setDofValue('DISPLACEMENT_Z', data.nodeRest{3}(ii));
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                end
+            end
             
         end
         
@@ -129,7 +110,7 @@ classdef AnsysInput < ModelIO
     
     methods (Static)
         
-        function data=runAnsys(ansysExecutable,folder,file,extension)
+        function data=runAnsys(ansysExecutable,folder,file,extension,model)
             if(nargin > 0)
                 % make directory for files
                 mkdir('DataAnsys')
@@ -239,67 +220,91 @@ classdef AnsysInput < ModelIO
                 catch
                 end
                 
-%                 % Read restriction on the nodes
-%                 data.nodeRest = AnsysInput.readRestrictions();
-%                 % Read record 5 of ANSYS to get the position of the entries
-%                 % of each node with the matrices
-%                 nodeEquiv = AnsysInput.readRecord_5();
-%                 % Read the coordinates of each node
-%                 data.nodeList = AnsysInput.readCoord();
-%                 % Order the coordinates acoording to the record 5
-%                 nodesC = data.nodeList(nodeEquiv,:);
-%                 data.nodesOrderByDofs=nodesC(:,1)';
-%                 
-%                 % Create objects "Node" and assign them to a model
-%                 for i = 1 : size(nodesC,1)
-%                     referenceNode =  nodesC(i,1);
-%                     x  =  nodesC(i,2);
-%                     y  =  nodesC(i,3);
-%                     z  =  nodesC(i,4);
-%                     model.addNewNode(referenceNode,x,y,z);
-%                 end
-%                 data.numNodes = length(model.getAllNodes());
-%                 
-%                 % Read available element data
-%                 [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
-%                 
-%                 % Assign dofs to node
-% %                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
-%                 
-%                 
-% %                 restrictedNodes = data.nodeRest{1};
+                % Read restriction on the nodes
+                data.nodeRest = AnsysInput.readRestrictions();
+                % Read record 5 of ANSYS to get the position of the entries
+                % of each node with the matrices
+                nodeEquiv = AnsysInput.readRecord_5();
+                % Read the coordinates of each node
+                data.nodeList = AnsysInput.readCoord();
+                % Order the coordinates acoording to the record 5
+                nodesC = data.nodeList(nodeEquiv,:);
+                data.nodesOrderByDofs=nodesC(:,1)';
+                
+                % Create objects "Node" and assign them to a model
+                for i = 1 : size(nodesC,1)
+                    referenceNode =  nodesC(i,1);
+                    x  =  nodesC(i,2);
+                    y  =  nodesC(i,3);
+                    z  =  nodesC(i,4);
+                    model.addNewNode(referenceNode,x,y,z);
+                end
+                data.numNodes = length(model.getAllNodes());
+                
+                % Read available element data
+                [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
+                
+                % Assign dofs to node
+%                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
+                
+                
+%                 restrictedNodes = data.nodeRest{1};
+                dofId = 1;
+                for i = 1 :size(data.elementsOfModel,1)
+                    nodeData=cell2mat(data.nodeElementList(i));
+                    dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
+                    nodeData(isnan(nodeData)) = [];
+                    for j = 1:length(nodeData)
+                        n = model.getNode(nodeData(j));
+%                         if any(find(restrictedNodes == n.getId()))
+%                             
+%                         end
+                        n.addDof(dofs);
+%                         d = n.getDofArray;
+%                         for jj=1:length(d)
+%                             d(jj).setId(dofId);
+%                             dofId = dofId + 1;
+%                         end
+                        
+                        
+                    end
+                    
+                end
+                dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
+                dofArray = [dofArray{:}];
+%                 dof_ids = dofArray.getId();
+                for ii = 1:length(dofArray)
+                    dofArray(ii).setId(ii);
+                end
+                
+                
 %                 dofId = 1;
-%                 for i = 1 :size(data.elementsOfModel,1)
-%                     nodeData=cell2mat(data.nodeElementList(i));
-%                     dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
-%                     nodeData(isnan(nodeData)) = [];
-%                     for j = 1:length(nodeData)
-%                         n = model.getNode(nodeData(j));
-% %                         if any(find(restrictedNodes == n.getId()))
-% %                             
-% %                         end
-%                         n.addDof(dofs);
-% %                         d = n.getDofArray;
-% %                         for jj=1:length(d)
-% %                             d(jj).setId(dofId);
-% %                             dofId = dofId + 1;
-% %                         end
-%                         
-%                         
+%                 for ii=1:length(data.nodesOrderByDofs)
+%                     n = model.getNode(data.nodesOrderByDofs(ii));
+%                     d = n.getDofArray;
+%                     for jj=1:length(d)
+%                         d(jj).setId(dofId);
+%                         dofId = dofId + 1;
 %                     end
-%                     
-%                 end
-%                 dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
-%                 dofArray = [dofArray{:}];
-% %                 dof_ids = dofArray.getId();
-%                 for ii = 1:length(dofArray)
-%                     dofArray(ii).setId(ii);
 %                 end
                 
-%                 try
-%                  rmdir('DataAnsys', 's')
-%                 catch
+%                 init = 1;
+%                 lowestDof=zeros(size(data.nodesOrderByDofs));
+%                 highestDof=zeros(size(data.nodesOrderByDofs));
+%                 for i = 1 : length(numberOfdofs)
+%                     aux = numberOfdofs(i);
+%                     lowestDof(i) = init;
+%                     highestDof(i) = init+aux-1;
+%                     init = init + aux;
 %                 end
+%                 data.nodeOrdersByDofs = [data.nodesOrderByDofs;
+%                                          numberOfdofs;
+%                                          lowestDof;
+%                                          highestDof];
+                try
+                 rmdir('DataAnsys', 's')
+                catch
+                end
             end
         end
         
@@ -600,47 +605,6 @@ classdef AnsysInput < ModelIO
             
             A = textscan(fid,'%u%s%f%f');
             
-        end
-        
-        function setRestrictions(restrictions, model)
-           for ii = 1:length(restrictions{1})
-                n = model.getNode(restrictions{1}(ii));
-                if restrictions{3}(ii) == 0
-                    switch restrictions{2}{ii}
-                        case 'UX'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
-                        case 'UY'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
-                        case 'UZ'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
-                        case 'ROTX'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_X');
-                        case 'ROTY'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_Y');
-                        case 'ROTZ'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_Z');
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                else
-                    switch restrictions{2}{ii}
-                        case 'UX'
-                            n.setDofValue('DISPLACEMENT_X', restrictions{3}(ii));
-                        case 'UY'
-                            n.setDofValue('DISPLACEMENT_Y', restrictions{3}(ii));
-                        case 'UZ'
-                            n.setDofValue('DISPLACEMENT_Z', restrictions{3}(ii));
-                        case 'ROTX'
-                            n.setDofValue('ROTATION_X', restrictions{3}(ii));
-                        case 'ROTY'
-                            n.setDofValue('ROTATION_Y', restrictions{3}(ii));
-                        case 'ROTZ'
-                            n.setDofValue('ROTATION_Z', restrictions{3}(ii));
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                end
-            end 
         end
         
     end
