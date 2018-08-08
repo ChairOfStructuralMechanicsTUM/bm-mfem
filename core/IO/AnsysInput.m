@@ -1,16 +1,17 @@
 classdef AnsysInput < ModelIO
-    %AnsysInput Read model input from mdpa
+    %AnsysInput Read model input from ANSYS
     %   Detailed explanation goes here
     
     properties (Access = private)
         ansysExecutable
+        printOutput = false
     end
     
     methods
         
         function obj = AnsysInput(file, ansysExecutable)
             % file - full file path with filetype as extensions
-            % examample: file='F:\ALMA_simulations\AnsysModels\plate.inp';
+            % exaample: file='F:\ALMA_simulations\AnsysModels\plate.inp';
             % ansysExecutable - full file path of Ansys executable
             %
             if nargin == 0
@@ -54,10 +55,12 @@ classdef AnsysInput < ModelIO
                 extension=B{end};
             end
             
-            disp('Ansys input file selected')
-            disp(['folder: ' folder])
-            disp(['filename: ' fileName])
-            disp(['filetype: ' extension])
+            if obj.printOutput
+                disp('Ansys input file selected')
+                disp(['folder: ' folder])
+                disp(['filename: ' fileName])
+                disp(['filetype: ' extension])
+            end
             
             model = FemModel;
             data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
@@ -143,6 +146,16 @@ classdef AnsysInput < ModelIO
             catch
             end
             
+        end
+        
+        function setPrintOutput(obj, print)
+            if isa(print, 'logical')
+                obj.printOutput = print;
+            else
+                msg = 'AnsysInput: Input argument must be a logical';
+                err = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                throw(err);
+            end
         end
         
     end
