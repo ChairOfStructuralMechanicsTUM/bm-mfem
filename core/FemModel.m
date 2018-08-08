@@ -114,20 +114,30 @@ classdef FemModel < handle
         end
         
         % setter functions
-        function addNewModelPart(obj, name, nodeIds, elementIds)
+        function mp = addNewModelPart(obj, name, nodeIds, elementIds)
         %ADDNEWMODELPART add a new model part
         %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to the 
         %   FemModel containing nodes with nodeIds and/or elements with
         %   elementIds.
+        %
+        %   ANNEWMODELPART(name) adds an empty model part
         %    
         %   see also FEMMODELPART
-        
-            nodes = obj.getNodes(nodeIds);
-            elements = obj.getElements(elementIds);
+            if nargin == 2
+                obj.femModelParts(name) = FemModelPart(name, [], [], obj);
+            elseif nargin == 4
+                nodes = obj.getNodes(nodeIds);
+                elements = obj.getElements(elementIds);
+
+                obj.femModelParts(name) = FemModelPart(name, ...
+                    nodes, elements, obj);
+            else
+                msg = 'FemModel: Wrong number of input arguments';
+                e = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                throw(e);
+            end
             
-            obj.femModelParts(name) = FemModelPart(name, ...
-                nodes, elements, obj);
-            
+            mp = obj.femModelParts(name);
             obj.initialized = false;
         end
         
@@ -144,18 +154,6 @@ classdef FemModel < handle
             if obj.initialized
                 return;
             end
-%             
-%             % (1) check for double ids
-%             
-%             nodeIds = arrayfun(@(node) node.getId, obj.nodeArray);
-%             [~, uids] = unique(nodeIds);
-%             if length(nodeIds) ~= length(uids)
-%                 duplicate_ids = setdiff(1:length(nodeIds), uids);
-%                 msg = ['FemModel: Multiple nodes with id(s) \"', ...
-%                     nodeIds(duplicate_ids), '\" exist'];
-%                 e = MException('MATLAB:bm_mfem:duplicateId',msg);
-%                 throw(e);
-%             end
             
             % (1) check all elements
             arrayfun(@(e) e.check(), obj.elementArray);
