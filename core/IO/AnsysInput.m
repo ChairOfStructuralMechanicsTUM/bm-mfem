@@ -61,7 +61,12 @@ classdef AnsysInput < ModelIO
             
             model = FemModel;
             mp = model.addNewModelPart('ANSYS_import');
+            
+            % Run ANSYS and extract data
             data = obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
+            
+            % Read the outfile with errors and warnings
+            obj.readOutFile();
             
             % Read restriction on the nodes
             data.nodeRest = obj.readRestrictions();
@@ -233,6 +238,21 @@ classdef AnsysInput < ModelIO
             catch
             end
             
+        end
+        
+        function [err, warn] = readOutFile()
+            err = [];
+            warn = [];
+            fid = fopen('DataAnsys/result.out');
+            if fid < 0, error('Cannot open  outfile'); end
+            
+            while ~feof(fid)
+                tline = fgetl(fid);
+                if contains(tline,'*** WARNING ***')
+                    tline = fgetl(fid);
+                    warn = [warn; tline]; %#ok<AGROW>
+                end
+            end
         end
         
         function A = readCoord()
