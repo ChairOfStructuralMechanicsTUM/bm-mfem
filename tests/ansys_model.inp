@@ -20,7 +20,6 @@ lesize,2,,,division
 lesize,3,,,4*division
 lesize,4,,,division
 
-
 MSHKEY,0
 TYPE,1
 MAT,1
@@ -32,4 +31,4 @@ D,12,UX,0
 D,1,UY,0
 D,12,UY,0
 
-!F,10,FY,-1
+F,10,FY,-1

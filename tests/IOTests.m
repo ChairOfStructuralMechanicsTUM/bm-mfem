@@ -44,7 +44,6 @@ classdef IOTests <  matlab.unittest.TestCase
             
             % static analysis
             model = io.readModel;
-            model.getNode(10).setDofLoad('DISPLACEMENT_Y', -1);
             solver = SimpleSolvingStrategy(model);
             solver.solve();
             
@@ -60,7 +59,6 @@ classdef IOTests <  matlab.unittest.TestCase
             
             % dynamic analysis
             model = io.readModel;
-            model.getNode(10).setDofLoad('DISPLACEMENT_Y', -1);
             
             dt = .00005;
             time = 0;
