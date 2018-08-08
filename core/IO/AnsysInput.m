@@ -125,6 +125,12 @@ classdef AnsysInput < ModelIO
             % Set restrictions
             e.setDofRestrictions(data.nodeRest);
             
+            % Set loads
+            for ii=1:length(data.nodeLoads{1})
+                n = model.getNode(data.nodeLoads{1}(ii));
+                n.setDofLoad(data.nodeLoads{2}{ii}, data.nodeLoads{3}(ii));
+            end
+            
             % Set node connectivity
             e.setNodeConnectivity(data.nodeConnectivity);
             
@@ -567,19 +573,19 @@ classdef AnsysInput < ModelIO
             
             A = textscan(fid,'%u%s%f%f');
             
-%             for ii = 1:length(A{2})
-%                 A{2}{ii} = AnsysInput.replaceANSYSDofName(A{2}{ii});
-%             end
+            for ii = 1:length(A{2})
+                A{2}{ii} = AnsysInput.replaceANSYSDofName(A{2}{ii});
+            end
             
         end
         
         function name = replaceANSYSDofName(ansysName)
             switch ansysName
-                case 'UX'
+                case {'UX', 'FX'}
                     name = 'DISPLACEMENT_X';
-                case 'UY'
+                case {'UY', 'FY'}
                     name = 'DISPLACEMENT_Y';
-                case 'UZ'
+                case {'UZ', 'FZ'}
                     name = 'DISPLACEMENT_Z';
                 case 'ROTX'
                     name = 'ROTATION_X';
