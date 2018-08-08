@@ -8,6 +8,7 @@ classdef DummyElement < Element
         stiffnessMatrix
         dofArray
         restrictedDofs = Dof.empty
+        nodeConnectivity
     end
     
     methods
@@ -97,6 +98,10 @@ classdef DummyElement < Element
             for ii=order
                 obj.dofArray = [obj.dofArray obj.nodeArray(ii).getDofArray];
             end
+        end
+        
+        function setNodeConnectivity(obj, nc)
+            obj.nodeConnectivity = nc;
         end
     end
     
