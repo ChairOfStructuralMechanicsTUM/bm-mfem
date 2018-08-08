@@ -249,6 +249,8 @@ classdef FemModel < handle
                     element = QuadrilateralElement2d4n(id, nodes);
                 case 'HexahedronElement3d8n'
                     element = HexahedronElement3d8n(id, nodes);
+                case 'Porous2d4n'
+                    element = Porous2d4n(id,nodes);
                     
                 otherwise
                     error('unknown element %s',elementName)

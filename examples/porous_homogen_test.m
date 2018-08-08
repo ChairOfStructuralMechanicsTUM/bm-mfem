@@ -57,8 +57,8 @@ element_porous.setPropertyValue('TORTUOSITY',7.8);
 element_porous.setPropertyValue('VISCOUS_CHAR_LENGTH',226*10^-6);
 element_porous.setPropertyValue('STATIC_FLOW_RESISTIVITY',2500);
 
-K_h=element_homogen.computeLocalStiffnessMatrix;
-K_p=element_porous.computeLocalStiffnessMatrix;
+K_h = element_homogen.computeLocalStiffnessMatrix;
+K_p = element_porous.computeLocalStiffnessMatrix;
 
 % ID-Zuweisung an dofs
 dofArray = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false);
@@ -68,8 +68,8 @@ for iDofs=1:length(dofArray)
 end
 
 %Aufstellung Gesamtmatrix K aus K für poröses und homogenes Element
-size_h=size(K_h,1);
-size_p=size(K_p,1);
+size_h = size(K_h,1);
+size_p = size(K_p,1);
 K = zeros(size_h+size_p);
 K([1:size_h],[1:size_h])=K_h;
 K([size_h+1:end],[size_h+1:end])=K_p;

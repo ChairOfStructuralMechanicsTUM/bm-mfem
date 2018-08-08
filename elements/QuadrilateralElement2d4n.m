@@ -161,5 +161,8 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             F = zeros(1,8);
         end
         
+        function nodes = getNodeArray(element)
+            nodes = element.nodeArray;
+        end
     end
 end

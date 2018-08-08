@@ -30,6 +30,10 @@ classdef Porous2d4n < QuadrilateralElement
         
         % Getter functions
         
+        function nodes = getNodeArray(element)
+            nodes = element.nodeArray;
+        end
+        
         function dofs = getDofList(element)
             dofs([1 3 5 7]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_X');
             dofs([2 4 6 8]) = element.nodeArray.getDof('FRAME_DISPLACEMENT_Y');
