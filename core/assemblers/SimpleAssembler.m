@@ -190,8 +190,8 @@ classdef SimpleAssembler < Assembler
                 node.setStepValue(strcat(valueName, dofDirection), 0, step);
             end
         end
-        
-        function massMatrix = assembleGlobalMassMatrix(femModel, modelPartName)
+
+        function [massMatrix, reducedMassMatrix] = assembleGlobalMassMatrix(femModel, modelPartName)
             if nargin == 1
                 elements = femModel.getAllElements;
             elseif nargin == 2
@@ -214,10 +214,24 @@ classdef SimpleAssembler < Assembler
                    massMatrix(elementalDofIds, elementalDofIds) + elementalMassMatrix;
             end
             
-            if nargin == 2
-                mp_ids = femModel.getModelPart(modelPartName).getDofArray().getId();
-                massMatrix = massMatrix(mp_ids, mp_ids);
+            if nargin == 1
+                [~, fixedDofs] = femModel.getDofConstraints;
+                if ~ isempty(fixedDofs)
+                    fixedDofIds = fixedDofs.getId();
+                    reducedMassMatrix = applyMatrixBoundaryConditions(massMatrix, fixedDofIds);
+                else
+                    reducedMassMatrix = massMatrix;
+                end
+                
+            elseif nargin == 2
+                mp = femModel.getModelPart(modelPartName);
+                mp_dof_ids = mp.getDofArray().getId();
+                [free, ~] = mp.getDofConstraints();
+                free = intersect(free.getId(), mp_dof_ids);
+                reducedMassMatrix = massMatrix(free,free);
+                massMatrix = massMatrix(mp_dof_ids,mp_dof_ids);
             end
+            
         end
         
         function dampingMatrix = assembleGlobalDampingMatrix(femModel)
