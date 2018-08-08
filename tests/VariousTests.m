@@ -67,26 +67,6 @@ classdef VariousTests <  matlab.unittest.TestCase
             testCase.verifyEqual(model.getNode(1).getDofArray().isFixed(),true(1,6));
             testCase.verifyEqual(model.getNode(3).getDofArray().isFixed(),false(1,6));
         end
-        
-        function addToModelPartTest(testCase)
-            model = FemModel();
-            mp1 = model.addNewModelPart('mp1');
-            mp2 = model.addNewModelPart('mp2');
-            
-            n1 = mp1.addNewNode(1,0,0,0);
-            n2 = mp2.addNewNode(2,1,0,0);
-            mp2.addNewElement('BeamElement3d2n',1,[n1 n2]);
-            
-            testCase.verifyEqual(model.getNode(1),mp1.getNodes());
-            testCase.verifyEqual(model.getElement(1),mp2.getElements());
-            testCase.verifyEqual(model.getNode(2),mp2.getNodeById(2));
-            testCase.verifyError(@() mp1.addNewNode(2,1,0,1), ...
-                'MATLAB:bm_mfem:duplicateId');
-            testCase.verifyError(@() mp1.getNodeById(2), ...
-                'MATLAB:bm_mfem:nodeNotFound');
-            testCase.verifyError(@() mp1.getElementById(1), ...
-                'MATLAB:bm_mfem:elementNotFound');
-        end
     end
     
 end
