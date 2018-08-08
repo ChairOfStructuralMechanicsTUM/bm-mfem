@@ -23,9 +23,9 @@ classdef AnsysInput < ModelIO
                 end
                 super_args = {file};
             else
-                msg = 'AnsysInput: Wrong number of input parameters.';
-                e = MException('MATLAB:bm_mfem:invalidInput',msg);
-                throw(e);
+                msg = 'AnsysInput: Wrong number of input arguments';
+                err = MException('MATLAB:bm_mfem:invalidArguments',msg);
+                throw(err);
             end
             
             obj@ModelIO(super_args{:});
@@ -36,9 +36,7 @@ classdef AnsysInput < ModelIO
         function model = readModel(obj)
             
             A=strsplit(obj.file,'\');
-            
             B=strsplit(A{end},'.');
-            
             C=strsplit(obj.file,B{1});
             
             if strcmp(A{1},obj.file)
@@ -62,10 +60,55 @@ classdef AnsysInput < ModelIO
             disp(['filetype: ' extension])
             
             model = FemModel;
-            data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension,model);
-            e = model.addNewElement('DummyElement',1,model.getAllNodes);
-            systemSize = size(data.Mansys,1);
+            data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
             
+            % Read restriction on the nodes
+            data.nodeRest = AnsysInput.readRestrictions();
+            % Read record 5 of ANSYS to get the position of the entries
+            % of each node with the matrices
+            nodeEquiv = AnsysInput.readRecord_5();
+            % Read the coordinates of each node
+            data.nodeList = AnsysInput.readCoord();
+            % Order the coordinates acoording to the record 5
+            nodesC = data.nodeList(nodeEquiv,:);
+            data.nodesOrderByDofs=nodesC(:,1)';
+            
+            % Create objects "Node" and assign them to a model
+            for i = 1 : size(nodesC,1)
+                id =  nodesC(i,1);
+                x  =  nodesC(i,2);
+                y  =  nodesC(i,3);
+                z  =  nodesC(i,4);
+                model.addNewNode(id,x,y,z);
+            end
+            data.numNodes = length(model.getAllNodes());
+            
+            % Read available element data
+            [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
+            
+            % Assign dofs to node
+            for i = 1 :size(data.elementsOfModel,1)
+                nodeData=cell2mat(data.nodeElementList(i));
+                dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
+                nodeData(isnan(nodeData)) = [];
+                for j = 1:length(nodeData)
+                    n = model.getNode(nodeData(j));
+                    n.addDof(dofs);
+                end
+            end
+            % Order dofs by nodes (bm-mfem style; the dummy element takes
+            % care of reordering the matrices)
+            dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
+            dofArray = [dofArray{:}];
+            for ii = 1:length(dofArray)
+                dofArray(ii).setId(ii);
+            end
+            
+            % Create the dummy element
+            e = model.addNewElement('DummyElement',1,model.getAllNodes);
+            
+            % Set the matrices
+            systemSize = size(data.Mansys,1);
             Mdiag = spdiags(data.Mansys,0);
             M = data.Mansys + data.Mansys.' - spdiags(Mdiag(:),0,systemSize,systemSize);
             Cdiag = spdiags(data.Cansys,0);
@@ -73,35 +116,20 @@ classdef AnsysInput < ModelIO
             Kdiag = spdiags(data.Kansys,0);
             K = data.Kansys + data.Kansys.' - spdiags(Kdiag(:),0,systemSize,systemSize);
             e.setMatrices(M, C, K);
+            
+            % Set the dof order
             e.setDofOrder(data.nodesOrderByDofs);
             
+            % Set restrictions
+            obj.setRestrictions(data, model);
             
-            % set restrictions
-            for ii = 1:length(data.nodeRest{1})
-                n = model.getNode(data.nodeRest{1}(ii));
-                if data.nodeRest{3}(ii) == 0
-                    switch data.nodeRest{2}{ii}
-                        case 'UX'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
-                        case 'UY'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
-                        case 'UZ'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                else
-                    switch data.nodeRest{2}{ii}
-                        case 'UX'
-                            n.setDofValue('DISPLACEMENT_X', data.nodeRest{3}(ii));
-                        case 'UY'
-                            n.setDofValue('DISPLACEMENT_Y', data.nodeRest{3}(ii));
-                        case 'UZ'
-                            n.setDofValue('DISPLACEMENT_Z', data.nodeRest{3}(ii));
-                        otherwise
-                            error('required restriction not yet implemented')
-                    end
-                end
+            % Add everything to a model part
+            model.addNewModelPart('ANSYS_model', ...
+                model.getAllNodes().getId(), model.getAllElements().getId());
+            
+            try
+                rmdir('DataAnsys', 's')
+            catch
             end
             
         end
@@ -110,201 +138,97 @@ classdef AnsysInput < ModelIO
     
     methods (Static)
         
-        function data=runAnsys(ansysExecutable,folder,file,extension,model)
-            if(nargin > 0)
-                % make directory for files
-                mkdir('DataAnsys')
-                
-                % Header
-                fidl=fopen('DataAnsys/modelFile.txt','w');
-                % Read input file
-                fprintf(fidl,'/INPUT,%s,%s,%s,,0 \r\n',file...
-                    ,extension...
-                    ,folder);
-                % Enters the preprocessor
-                fprintf(fidl,'/PREP7 \r\n');
-                % Set EMAWRITE to "yes" to obtain binary files
-                fprintf(fidl,'EMATWRITE,YES \r\n');
-                % Create external file with the nodal information
-                fprintf(fidl,'/output,DataAnsys/nodeCoor,txt \r\n');
-                fprintf(fidl,'NLIST,ALL,,,XYZ,NODE,NODE,NODE \r\n');
-                fprintf(fidl,'/output \r\n');
-                % Create external file with the restricted DoF
-                fprintf(fidl,'/output,DataAnsys/nodeRest,txt \r\n');
-                fprintf(fidl,'DLIST,ALL,\r\n');
-                fprintf(fidl,'/output \r\n');
-                % Create external file with the element type
-                fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
-                fprintf(fidl,'ETLIST,ALL,\r\n');
-                fprintf(fidl,'/output \r\n');
-                % Create external file with the element type
-                fprintf(fidl,'/output,DataAnsys/elemNodes,txt \r\n');
-                fprintf(fidl,'ELIST,ALL,\r\n');
-                fprintf(fidl,'/output \r\n');
-                % Create external file with the material information
-                fprintf(fidl,'/output,DataAnsys/materialPro,txt \r\n');
-                fprintf(fidl,'MPLIST,ALL,,,EVLT\r\n');
-                fprintf(fidl,'/output \r\n');
-                % Set solver
-                fprintf(fidl,'/SOLU\r\n');
-                fprintf(fidl,'ANTYPE,MODAL\r\n');
-                fprintf(fidl,'MODOPT,DAMP,1\r\n');
-                fprintf(fidl,'MXPAND,1,,,YES\r\n');
-                fprintf(fidl,'WRFULL,1\r\n');
-                fprintf(fidl,'SOLVE\r\n');
-                fprintf(fidl,'FINISH\r\n');
-                % Extract the mass, damping and stifness matrix
-                fprintf(fidl,'/AUX2\r\n');
-                fprintf(fidl,'file,,full\r\n');
-                
-                fprintf(fidl,...
-                    'HBMAT,DataAnsys/HBMstiff,txt,,ascii,stiff,yes,yes\r\n');
-                
-                fprintf(fidl,...
-                    'HBMAT,DataAnsys/HBMmass,txt,,ascii,mass,yes,yes\r\n');
-                
-                fprintf(fidl,...
-                    'HBMAT,DataAnsys/HBMdamp,txt,,ascii,damp,yes,yes\r\n');
-                
-                fprintf(fidl,'FINISH\r\n');
-                % Get the modified nodal information
-                fprintf(fidl,'/AUX2\r\n');
-                fprintf(fidl,'/output,DataAnsys/record_5,txt \r\n');
-                fprintf(fidl,'form,long\r\n');
-                fprintf(fidl,'fileaux2,,emat,%s\r\n',folder);
-                fprintf(fidl,'dump,5,5\r\n');
-                fprintf(fidl,'/output \r\n');
-                fprintf(fidl,'FINISH\r\n');
-                fclose(fidl);
-                % Run ANSYS
-                % Warning: modify path according to the user
-                %!"C:\Program Files\ANSYS Inc\v171\ansys\bin\winx64\ANSYS171.exe" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out
-                eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])
-                
-                
-                
-                % See http://people.sc.fsu.edu/~jburkardt/m_src/hb_to_msm/hb_to_msm.html
-                % The function hb_to_msm is freely distributed according to the website
-                data.Mansys = hb_to_msm('DataAnsys/HBMmass.txt');
-                
-                %                data.M = full(Mansys)+transpose(full(Mansys))...
-                %                    -diag(diag(full(Mansys)));
-                
-                data.Kansys = hb_to_msm('DataAnsys/HBMstiff.txt');
-                %                data.K = full(Kansys)+transpose(full(Kansys))...
-                %                    -diag(diag(full(Kansys)));
-                
-                data.Cansys = hb_to_msm('DataAnsys/HBMdamp.txt');
-                %                data.C = full(Cansys)+transpose(full(Cansys))...
-                %                    -diag(diag(full(Cansys)));
-                %                if  sum(sum(abs(data.C))) ~= 0
-                %                    data.damped = true;
-                %                end
-                % Delete files
-                try
-                    delete('*.emat');
-                    delete('*.esav');
-                    delete('*.full');
-                    delete('*.mlv');
-                    delete('*.err');
-                    delete('*.db');
-                    delete('*.log');
-                catch
-                end
-                try
-                    delete('*.BCS');
-                    delete('*.ce');
-                    delete('*.mode');
-                    delete('*.stat');
-                    delete('*.xml');
-                catch
-                end
-                
-                % Read restriction on the nodes
-                data.nodeRest = AnsysInput.readRestrictions();
-                % Read record 5 of ANSYS to get the position of the entries
-                % of each node with the matrices
-                nodeEquiv = AnsysInput.readRecord_5();
-                % Read the coordinates of each node
-                data.nodeList = AnsysInput.readCoord();
-                % Order the coordinates acoording to the record 5
-                nodesC = data.nodeList(nodeEquiv,:);
-                data.nodesOrderByDofs=nodesC(:,1)';
-                
-                % Create objects "Node" and assign them to a model
-                for i = 1 : size(nodesC,1)
-                    referenceNode =  nodesC(i,1);
-                    x  =  nodesC(i,2);
-                    y  =  nodesC(i,3);
-                    z  =  nodesC(i,4);
-                    model.addNewNode(referenceNode,x,y,z);
-                end
-                data.numNodes = length(model.getAllNodes());
-                
-                % Read available element data
-                [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
-                
-                % Assign dofs to node
-%                 numberOfdofs=zeros(size(data.nodesOrderByDofs));
-                
-                
-%                 restrictedNodes = data.nodeRest{1};
-                dofId = 1;
-                for i = 1 :size(data.elementsOfModel,1)
-                    nodeData=cell2mat(data.nodeElementList(i));
-                    dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
-                    nodeData(isnan(nodeData)) = [];
-                    for j = 1:length(nodeData)
-                        n = model.getNode(nodeData(j));
-%                         if any(find(restrictedNodes == n.getId()))
-%                             
-%                         end
-                        n.addDof(dofs);
-%                         d = n.getDofArray;
-%                         for jj=1:length(d)
-%                             d(jj).setId(dofId);
-%                             dofId = dofId + 1;
-%                         end
-                        
-                        
-                    end
-                    
-                end
-                dofArray = arrayfun(@(node) node.getDofArray, model.getAllNodes(), 'UniformOutput', false);
-                dofArray = [dofArray{:}];
-%                 dof_ids = dofArray.getId();
-                for ii = 1:length(dofArray)
-                    dofArray(ii).setId(ii);
-                end
-                
-                
-%                 dofId = 1;
-%                 for ii=1:length(data.nodesOrderByDofs)
-%                     n = model.getNode(data.nodesOrderByDofs(ii));
-%                     d = n.getDofArray;
-%                     for jj=1:length(d)
-%                         d(jj).setId(dofId);
-%                         dofId = dofId + 1;
-%                     end
-%                 end
-                
-%                 init = 1;
-%                 lowestDof=zeros(size(data.nodesOrderByDofs));
-%                 highestDof=zeros(size(data.nodesOrderByDofs));
-%                 for i = 1 : length(numberOfdofs)
-%                     aux = numberOfdofs(i);
-%                     lowestDof(i) = init;
-%                     highestDof(i) = init+aux-1;
-%                     init = init + aux;
-%                 end
-%                 data.nodeOrdersByDofs = [data.nodesOrderByDofs;
-%                                          numberOfdofs;
-%                                          lowestDof;
-%                                          highestDof];
-                try
-                 rmdir('DataAnsys', 's')
-                catch
-                end
+        function data = runAnsys(ansysExecutable,folder,file,extension)
+            % make directory for files
+            if ~exist('DataAnsys','dir'); mkdir('DataAnsys'); end
+            
+            % Header
+            fidl=fopen('DataAnsys/modelFile.txt','w');
+            % Read input file
+            fprintf(fidl,'/INPUT,%s,%s,%s,,0 \r\n',file...
+                ,extension...
+                ,folder);
+            % Enters the preprocessor
+            fprintf(fidl,'/PREP7 \r\n');
+            % Set EMAWRITE to "yes" to obtain binary files
+            fprintf(fidl,'EMATWRITE,YES \r\n');
+            % Create external file with the nodal information
+            fprintf(fidl,'/output,DataAnsys/nodeCoor,txt \r\n');
+            fprintf(fidl,'NLIST,ALL,,,XYZ,NODE,NODE,NODE \r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with the restricted DoF
+            fprintf(fidl,'/output,DataAnsys/nodeRest,txt \r\n');
+            fprintf(fidl,'DLIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with the element type
+            fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
+            fprintf(fidl,'ETLIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with the element type
+            fprintf(fidl,'/output,DataAnsys/elemNodes,txt \r\n');
+            fprintf(fidl,'ELIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with the material information
+            fprintf(fidl,'/output,DataAnsys/materialPro,txt \r\n');
+            fprintf(fidl,'MPLIST,ALL,,,EVLT\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Set solver
+            fprintf(fidl,'/SOLU\r\n');
+            fprintf(fidl,'ANTYPE,MODAL\r\n');
+            fprintf(fidl,'MODOPT,DAMP,1\r\n');
+            fprintf(fidl,'MXPAND,1,,,YES\r\n');
+            fprintf(fidl,'WRFULL,1\r\n');
+            fprintf(fidl,'SOLVE\r\n');
+            fprintf(fidl,'FINISH\r\n');
+            % Extract the mass, damping and stifness matrix
+            fprintf(fidl,'/AUX2\r\n');
+            fprintf(fidl,'file,,full\r\n');
+            
+            fprintf(fidl,...
+                'HBMAT,DataAnsys/HBMstiff,txt,,ascii,stiff,yes,yes\r\n');
+            
+            fprintf(fidl,...
+                'HBMAT,DataAnsys/HBMmass,txt,,ascii,mass,yes,yes\r\n');
+            
+            fprintf(fidl,...
+                'HBMAT,DataAnsys/HBMdamp,txt,,ascii,damp,yes,yes\r\n');
+            
+            fprintf(fidl,'FINISH\r\n');
+            % Get the modified nodal information
+            fprintf(fidl,'/AUX2\r\n');
+            fprintf(fidl,'/output,DataAnsys/record_5,txt \r\n');
+            fprintf(fidl,'form,long\r\n');
+            fprintf(fidl,'fileaux2,,emat,%s\r\n',folder);
+            fprintf(fidl,'dump,5,5\r\n');
+            fprintf(fidl,'/output \r\n');
+            fprintf(fidl,'FINISH\r\n');
+            fclose(fidl);
+            
+            % Run ANSYS
+            eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])
+            
+            % Read matrices
+            % See http://people.sc.fsu.edu/~jburkardt/m_src/hb_to_msm/hb_to_msm.html
+            % The function hb_to_msm is freely distributed according to the website
+            data.Mansys = hb_to_msm('DataAnsys/HBMmass.txt');
+            data.Kansys = hb_to_msm('DataAnsys/HBMstiff.txt');
+            data.Cansys = hb_to_msm('DataAnsys/HBMdamp.txt');
+            
+            % Delete files
+            try
+                delete('*.emat');
+                delete('*.esav');
+                delete('*.full');
+                delete('*.mlv');
+                delete('*.err');
+                delete('*.db');
+                delete('*.log');
+                delete('*.BCS');
+                delete('*.ce');
+                delete('*.mode');
+                delete('*.stat');
+                delete('*.xml');
+            catch
             end
         end
         
@@ -592,7 +516,7 @@ classdef AnsysInput < ModelIO
             %
             % Parameters :
             %
-            % Return     : A cell with restrictions. 
+            % Return     : A cell with restrictions.
             %               A{1}: node numbers
             %               A{2}: resticted dof name
             %               A{3}: real values the dof is restricted to
@@ -605,6 +529,35 @@ classdef AnsysInput < ModelIO
             
             A = textscan(fid,'%u%s%f%f');
             
+        end
+        
+        function setRestrictions(data, model)
+            for ii = 1:length(data.nodeRest{1})
+                n = model.getNode(data.nodeRest{1}(ii));
+                if data.nodeRest{3}(ii) == 0
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
+                        case 'UY'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
+                        case 'UZ'
+                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                else
+                    switch data.nodeRest{2}{ii}
+                        case 'UX'
+                            n.setDofValue('DISPLACEMENT_X', data.nodeRest{3}(ii));
+                        case 'UY'
+                            n.setDofValue('DISPLACEMENT_Y', data.nodeRest{3}(ii));
+                        case 'UZ'
+                            n.setDofValue('DISPLACEMENT_Z', data.nodeRest{3}(ii));
+                        otherwise
+                            error('required restriction not yet implemented')
+                    end
+                end
+            end
         end
         
     end
