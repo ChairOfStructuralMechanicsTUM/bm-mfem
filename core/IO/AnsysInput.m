@@ -33,7 +33,7 @@ classdef AnsysInput < ModelIO
             obj.ansysExecutable = ansysExecutable;
         end
         
-        function mp = readModel(obj)
+        function model = readModel(obj)
             
             A=strsplit(obj.file,'\');
             
@@ -84,7 +84,7 @@ classdef AnsysInput < ModelIO
                 z = nodesC(ii,4);
                 mp.addNewNode(id,x,y,z);
             end
-            data.numNodes = length(mp.getAllNodes());
+            data.numNodes = length(mp.getNodes());
             
             % Read available element data
             [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
@@ -95,19 +95,19 @@ classdef AnsysInput < ModelIO
                 dofs = obj.getDofsOfAnsysElements(data.elementsOfModel{ii,1}, data.elementsOfModel{ii,2});
                 nodeData(isnan(nodeData)) = [];
                 for j = 1:length(nodeData)
-                    n = mp.getNode(nodeData(j));
+                    n = mp.getNodeById(nodeData(j));
                     n.addDof(dofs);
                 end
             end
             % Set dof ids according to node numbering (bm-mfem style,
             % reordering is done in the DummyElement
-            dofArray = arrayfun(@(node) node.getDofArray, mp.getAllNodes(), 'UniformOutput', false);
+            dofArray = arrayfun(@(node) node.getDofArray, mp.getNodes(), 'UniformOutput', false);
             dofArray = [dofArray{:}];
             for ii = 1:length(dofArray)
                 dofArray(ii).setId(ii);
             end
             
-            e = mp.addNewElement('DummyElement',1,mp.getAllNodes);
+            e = mp.addNewElement('DummyElement',1,mp.getNodes);
             systemSize = size(data.Mansys,1);
             
             Mdiag = spdiags(data.Mansys,0);
@@ -602,23 +602,23 @@ classdef AnsysInput < ModelIO
             
         end
         
-        function setRestrictions(restrictions, model)
+        function setRestrictions(restrictions, mp)
            for ii = 1:length(restrictions{1})
-                n = model.getNode(restrictions{1}(ii));
+                n = mp.getNodeById(restrictions{1}(ii));
                 if restrictions{3}(ii) == 0
                     switch restrictions{2}{ii}
                         case 'UX'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_X');
+                            mp.getElementById(1).setDofRestriction(n, 'DISPLACEMENT_X');
                         case 'UY'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Y');
+                            mp.getElementById(1).setDofRestriction(n, 'DISPLACEMENT_Y');
                         case 'UZ'
-                            model.getElement(1).setDofRestriction(n, 'DISPLACEMENT_Z');
+                            mp.getElementById(1).setDofRestriction(n, 'DISPLACEMENT_Z');
                         case 'ROTX'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_X');
+                            mp.getElementById(1).setDofRestriction(n, 'ROTATION_X');
                         case 'ROTY'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_Y');
+                            mp.getElementById(1).setDofRestriction(n, 'ROTATION_Y');
                         case 'ROTZ'
-                            model.getElement(1).setDofRestriction(n, 'ROTATION_Z');
+                            mp.getElementById(1).setDofRestriction(n, 'ROTATION_Z');
                         otherwise
                             error('required restriction not yet implemented')
                     end
