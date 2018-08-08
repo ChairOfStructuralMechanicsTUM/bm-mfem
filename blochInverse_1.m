@@ -27,34 +27,52 @@ elementArray.setPropertyValue('POISSON_RATIO',1/3);
 elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
 elementArray.setPropertyValue('DENSITY',7860);
 
-
 model = FemModel(nodeArray, elementArray);
 
-obj = BlochInverse1D(model);
+model.getNode(5).fixDof('DISPLACEMENT_Y');
+model.getNode(5).fixDof('DISPLACEMENT_X');
+
+solver = BlochInverse1D(model);
 assembling = SimpleAssembler(model);
 
-stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+[stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
             
-massMatrix = assembling.assembleGlobalMassMatrix(model);
+[massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
 
-
-initialize(obj)
-
-% x = obj.solve();
-
-
-
-
-%solver = SimpleSolvingStrategy(model);
-%x = solver.solve();
-% 
-% step = 1;
-% 
-% VerschiebungDofs = model.getDofArray.getValue(step);
-% 
-% nodalForces = solver.getNodalForces(step);
-% 
 % v = Visualization(model);
 % v.setScaling(1);
 % v.plotUndeformed
-% v.plotDeformed
+
+initialize(solver)
+
+%  [Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix);
+ [Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+
+numberOfPhases = 20;
+
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
+
+omega = cell(numberOfPhases,1);
+
+nob = 10;
+[kx,miu] = propConst(solver,numberOfPhases); %already used in reducedStiffnesAndMass(..)
+
+    
+for j = 1:nob
+%     f(j,1) = zeros(1,numberOfPhases); 
+    for i = 1:numberOfPhases
+        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+        f(j,i) = omega{i,1}(j,1)/(2*pi);
+
+    end
+
+    figure(2)
+    plot(kx,f(j,:),'r')
+    title('Dispersion curves')
+    xlabel('Phase k')
+    ylabel('frequenzy f')
+    xlim([0 pi])
+    hold on
+    
+
+end

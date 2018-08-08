@@ -199,16 +199,10 @@ classdef BlochInverse1D < Solver
            nodeIdsLeft = obj.leftNodes; 
            leftDofs = obj.leftDofs;
            rightDofs = obj.rightDofs;
-           [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
-           fixedDofIds = getId(fixedDofs);
-           
-           indices1=find(ismember(leftDofs,fixedDofIds));
-           leftDofs(indices1)=[];
-           M = obj.massMatrix; 
-           X = length(M)-length(fixedDofs);
-           R = [eye(length(leftDofs)), zeros(length(leftDofs),X-2*length(leftDofs)); ...
-               zeros(X-2*length(leftDofs),length(leftDofs)), eye(X-2*length(leftDofs));...
-               miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),X-2*length(leftDofs))];
+           M = obj.massMatrix;
+           R = [eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs)); ...
+               zeros(length(M)-2*length(leftDofs),length(leftDofs)), eye(length(M)-2*length(leftDofs));...
+               miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs))];
 
 
        end          
@@ -218,115 +212,14 @@ classdef BlochInverse1D < Solver
            rightDofs = obj.rightDofs;
            innerDofs = getInnerDofIds(obj);
            
-           [reducedLeftDofs,reducedInnerDofs, reducedRightDofs,vecdofsAll] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs);
-%            [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
-%            fixedDofIds = getId(fixedDofs);
-%              
-%            indices1=find(ismember(leftDofs,fixedDofIds));
-%            indices2=find(ismember(rightDofs,fixedDofIds));           
-%            indices3=find(ismember(innerDofs,fixedDofIds));
            
-%             vecdofs1 = [leftDofs,innerDofs,rightDofs];
-% % %            vecdofs = [reducedLeftDofs,reducedInnerDofs,reducedRightDofs];
-%            vecdofs1 = sort(vecdofs);
-%            
-%            for i = 1:length(vecdofs1)-1
-%              if vecdofs1(i)~=vecdofs1(i+1)-1
-%                  for j = length(vecdofs1):-1:i+1
-%                     vecdofs1(j) = vecdofs1(j)-1;
-%                  end
-%              end
-%            end    
-                 
-                 
-           Ksorted = K(vecdofsAll,vecdofsAll);
-           Msorted = M(vecdofsAll,vecdofsAll);
-%            Msorted1 = M(vecdofs1,vecdofs1);
            
+           vecdofs = [leftDofs,innerDofs,rightDofs];
+           Ksorted = K(vecdofs,vecdofs);
+           Msorted = M(vecdofs,vecdofs);
        end
        
-       function [reducedLeftDofs,reducedInnerDofs, reducedRightDofs,allDofs] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs)
-           
-           %Eliminates Fixed Dofs and reduces the following Dofs by 1 (-->loop)   LOOP IS NOT WORKING      
-           
-                      
-           [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
-           fixedDofIds = getId(fixedDofs);
-             
-           indices1=find(ismember(leftDofs,fixedDofIds));
-           indices2=find(ismember(rightDofs,fixedDofIds));           
-           indices3=find(ismember(innerDofs,fixedDofIds));
-           
-           
-           allDofs=[leftDofs,innerDofs,rightDofs];
-           indicesAll =find(ismember(allDofs,fixedDofIds));
-           
-           a=0;
-           for j = 1:length(fixedDofIds)   
-               for i=1:length(allDofs)
-                   if allDofs(i) + a == fixedDofIds(j)
-%                         for k = length(allDofs):-1:i
-%                             allDofs(k) = allDofs(k)-1;
-%                         end
-%                         a=a+1;
-                        for k=1:length(allDofs)
-                            if allDofs(k)>=fixedDofIds(j)
-                                allDofs(k)=allDofs(k)-1;
-                            end
-                        end
-                        a=a+1;
-                    end
-               end
-           end
-           
-           
-           
-           allDofs(indicesAll)=[];
-           
-% % %            %innerDofs(fixedDofIds==innerDofs)=[];  logical Indexing
-% % %            a=0;
-% % %            for i = 1:length(innerDofs)           
-% % %                for j = 1:length(fixedDofIds)                                
-% % %                    if innerDofs(i)+ a == fixedDofIds(j)
-% % %                         for k = length(innerDofs):-1:i
-% % %                             innerDofs(k) = innerDofs(k)-1;
-% % %                         end
-% % %                         a=a+1;
-% % %                     end
-% % %                end
-% % %            end
-% % %            a=0;
-% % %            for i = 1:length(leftDofs)
-% % %                for j = 1:length(fixedDofIds)              
-% % %                     if leftDofs(i)+a == fixedDofIds(j)
-% % %                         for k = length(leftDofs):-1:i
-% % %                             leftDofs(k) = leftDofs(k)-1;
-% % %                         end
-% % %                         a = a+1;
-% % %                     end
-% % %                end
-% % %            end
-% % %            a=0;
-% % %            for i = 1:length(rightDofs)
-% % %                for j = 1:length(fixedDofIds)              
-% % %                     if rightDofs(i)+a == fixedDofIds(j)
-% % %                         for k = length(rightDofs):-1:i
-% % %                             rightDofs(k) = rightDofs(k)-1;
-% % %                         end
-% % %                         a=a+1;
-% % %                     end
-% % %                end
-% % %            end
-
-            
-           
-           leftDofs(indices1)=[];
-           rightDofs(indices2)=[];
-           innerDofs(indices3)=[];
-           reducedLeftDofs = leftDofs;
-           reducedRightDofs = rightDofs;
-           reducedInnerDofs = innerDofs;
-       end
+       
        
        function [Kred,Mred] = reducedStiffnesAndMass (obj,K,M,numberOfPhases)
           
