@@ -496,7 +496,7 @@ Begin Nodes
 End Nodes
 
 
-Begin Elements ShellElement3d4n// GUI group identifier: surface
+Begin Elements QuadrilateralElement2d4n// GUI group identifier: surface
         1          0          2          1          3          4 
         2          0        305        307        271        279 
         3          0        446        413        397        448 
