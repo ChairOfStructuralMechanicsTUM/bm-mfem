@@ -41,6 +41,21 @@ classdef IOTests <  matlab.unittest.TestCase
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
             
+            model = io.readModel;
+            model.getNode(10).setDofLoad('DISPLACEMENT_Y', -1);
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+            
+            actualDisplacement = model.getAllNodes().getDofValue('DISPLACEMENT_Y');
+            expectedDisplacement = [0.0000E+00;-1.9071E-06;-4.3293E-08;-1.6443E-07;...
+                -3.5260E-07;-5.9656E-07;-8.8517E-07;-1.2072E-06;-1.5517E-06;-1.9077E-06;...
+                -1.9072E-06;0.0000E+00;-1.5515E-06;-1.2073E-06;-8.8516E-07;-5.9656E-07;...
+                -3.5260E-07;-1.6443E-07;-4.3294E-08;1.9033E-09;-4.1353E-08;-1.6284E-07;...
+                -3.5126E-07;-5.9549E-07;-8.8436E-07;-1.2067E-06;-1.5514E-06];
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-4)))
+            
         end
     end
     
