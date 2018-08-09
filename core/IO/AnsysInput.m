@@ -82,7 +82,8 @@ classdef AnsysInput < ModelIO
             % Read the coordinates of each node
             data.nodeList = obj.readCoord();
             % Order the coordinates acoording to the record 5
-            nodesC = data.nodeList(nodeEquiv,:);
+            [~, order] = ismember(nodeEquiv.', data.nodeList(:,1));
+            nodesC = data.nodeList(order,:);
             data.nodesOrderByDofs=nodesC(:,1)';
             
             % Create objects "Node" and assign them to a model
