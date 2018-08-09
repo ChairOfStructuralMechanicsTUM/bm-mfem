@@ -146,7 +146,7 @@ classdef Node < handle & matlab.mixin.Copyable
                 dof.setValue(load);
             end
         end
-        
+
         
         
         function setDofLoad(nodes, dofName, load)

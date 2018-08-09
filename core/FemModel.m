@@ -59,7 +59,7 @@ classdef FemModel < handle
         end
         
         function dofArray = getDofArray(obj)
-            if ~ obj.initialized; obj.initialize; end
+             if ~ obj.initialized; obj.initialize; end
             dofArray = obj.dofArray;
         end
         
@@ -263,6 +263,14 @@ classdef FemModel < handle
             obj.elementArray(id) = element;
             obj.initialized = false;
         end
+        
+        function deleteDof(obj, dofIds)
+            if ~ obj.initialized; obj.initialize; end
+            dofArray = obj.dofArray;
+            dofArray(dofIds) = [];
+            obj.dofArray = dofArray;
+        end
+            
         
     end
     

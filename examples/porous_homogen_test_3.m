@@ -7,6 +7,7 @@
 % - Implementierung der Berechnung der Massenmatrix
 % - Implementierung der Berechnung der reduzierten Matrizen infolge von
 % aufgebrachten Randbedingungen
+% - Einbeziehung des neu geschaffenen Solvers PHHarmonicSolvingStrategy
 %
 % Einschränkungen:
 % - der Rand der beiden Elemente ist parallel zur x-Achse
@@ -76,7 +77,13 @@ model.getNode(1).fixAllDofs();
 model.getNode(4).fixAllDofs();
 model.getNode(6).fixAllDofs();
 
+model.initialize;
+
 [K,Kred] = Assembler_Porous_Homogen.assembleGlobalStiffnessMatrix(model);
 [M,Mred] = Assembler_Porous_Homogen.assembleGlobalMassMatrix(model);
+[f,fred] = Assembler_Porous_Homogen.applyExternalForces(model);
+
+solver = PHHarmonicSolvingStrategy(model,300);
+x=solver.solve();
 
 time=toc;
