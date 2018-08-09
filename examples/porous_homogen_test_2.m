@@ -6,10 +6,11 @@
 % - es wird angenommen, dass die Elemente fest verbunden sind (bounded)
 
 tic;
-clear;
 close all;
  
-% Creating a new model and adding nodes
+%% Creating a new model 
+
+% Adding nodes
 model = FemModel();
  
 model.addNewNode(1,0,0,0);
@@ -65,14 +66,14 @@ mp2.getNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y",...
     "FLUID_DISPLACEMENT_X", "FLUID_DISPLACEMENT_Y"]);
            
  
-% % Setting BC
+%% Setting BC
 % model.getNode(1).fixAllDofs();
 % model.getNode(4).fixAllDofs();
 % model.getNode(6).fixAllDofs();
  
 model.initialize();
 
-% computing elemental matrices and expanding them on full size
+%% Computing elemental matrices and expanding them on full size
 
 ndofs = length(model.getDofArray);
 
@@ -106,12 +107,14 @@ K_p_full(id_vector_porous,id_vector_porous)= K_p;
     
 K_full=K_p_full+K_h_full;
 
-% Determining intersection (common nodes)
+%% Determining intersection (common nodes)
 ids1 = mp1.getNodes().getId();
 ids2 = mp2.getNodes().getId();
 kopplung = intersect(ids1,ids2);
 
-% Applying coupling conditions and reducing matrices
+%% Applying coupling conditions and reducing matrix
+
+% Applying coupling conditions
 delete = zeros(length(kopplung),1);
 node_array = model.getAllNodes;
 
@@ -133,11 +136,26 @@ for iNode = 1:length(kopplung)
     
     delete([3*iNode-2,3*iNode-1,3*iNode]) = [id_frame_x,id_frame_y,id_fluid_y];
 end
+
+%reducing matrix
+for iID1=1:length(ids1)
+    if ~ismember(ids1(iID1),kopplung)
+        delete(end+1)=node_array_mp1(iID1).getDof('FRAME_DISPLACEMENT_X').getId;
+        delete(end+1)=node_array_mp1(iID1).getDof('FRAME_DISPLACEMENT_Y').getId;
+        delete(end+1)=node_array_mp1(iID1).getDof('FLUID_DISPLACEMENT_X').getId;
+        delete(end+1)=node_array_mp1(iID1).getDof('FLUID_DISPLACEMENT_Y').getId;
+    end
+end
+   
+for iID2=1:length(ids2)
+    if ~ismember(ids2(iID2),kopplung)
+        delete(end+1)=node_array_mp2(iID2).getDof('DISPLACEMENT_X').getId;
+        delete(end+1)=node_array_mp2(iID2).getDof('DISPLACEMENT_Y').getId;
+    end
+end
+
 K_full(delete,:) = [];
 K_full(:,delete) = [];
 
 time = toc;
 
-% hier noch unnötige Zeilen der zusätzlichen dofs, die ohnehin Null sind entfernen
-% evtl. auch einige Teile in eigene Funktionen auslagern (--> Assembler?)
-% Massenmatrix integrieren
