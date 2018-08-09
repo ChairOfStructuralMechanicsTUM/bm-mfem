@@ -4,7 +4,7 @@ function [ path ] = getPaths_changeme(type)
 %   change the filename to "getPaths.m" and the function name to "getPaths".
 switch type
     case 'ansys'
-        path = 'C:\Program Files\ANSYS Inc\v171\ansys\bin\winx64\ANSYS171.exe';
+        path = 'C:/Program Files/ANSYS Inc/v171/ansys/bin/winx64/ANSYS171.exe';
     otherwise
         msg = ['GetPaths: A path with name \"', ...
             type, '\" is not defined'];

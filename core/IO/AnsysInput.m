@@ -31,7 +31,14 @@ classdef AnsysInput < ModelIO
             
             obj@ModelIO(super_args{:});
             
-            obj.ansysExecutable = ansysExecutable;
+            if exist(ansysExecutable, 'file') == 2
+                obj.ansysExecutable = ansysExecutable;
+            else
+                msg = ['AnsysInput: Ansys executable could not be found at' ...
+                    ' specified location ', ansysExecutable];
+                err = MException('MATLAB:bm_mfem:ansysNotFound',msg);
+                throw(err);
+            end
         end
         
         function model = readModel(obj)
