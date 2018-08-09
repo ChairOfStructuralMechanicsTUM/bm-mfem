@@ -244,11 +244,9 @@ classdef AnsysInput < ModelIO
             eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])
             
             % Read matrices
-            % See http://people.sc.fsu.edu/~jburkardt/m_src/hb_to_msm/hb_to_msm.html
-            % The function hb_to_msm is freely distributed according to the website
-            data.Mansys = hb_to_msm('DataAnsys/HBMmass.txt');
-            data.Kansys = hb_to_msm('DataAnsys/HBMstiff.txt');
-            data.Cansys = hb_to_msm('DataAnsys/HBMdamp.txt');
+            data.Mansys = HBread('DataAnsys/HBMmass.txt');
+            data.Kansys = HBread('DataAnsys/HBMstiff.txt');
+            data.Cansys = HBread('DataAnsys/HBMdamp.txt');
             
             % Delete files
             try
