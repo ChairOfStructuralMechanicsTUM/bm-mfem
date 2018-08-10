@@ -332,6 +332,19 @@ classdef AnsysInput < ModelIO
                 case strcmp(elementName,'SHELL63')
                     dofs = [ux uy uz rx ry rz];
                     
+                case strcmp(elementName,'TARGE170')
+                    dofs = [ux uy uz];
+                    
+                case strcmp(elementName,'CONTA174')
+                    if keyopts(1) == 0
+                        dofs = [ux uy uz];
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
                 case strcmp(elementName,'SHELL181')
                     if keyopts(1) == 0
                         dofs = [ux uy uz rx ry rz];
