@@ -87,9 +87,8 @@ classdef DummyElement < Element
         function setDofOrder(obj, order)
         %SETDOFORDER rearranges the dof array (ordered nodewise by default)
         %   to match the ordering in the imported ANSYS matrices.
-            for ii=order
-                obj.dofArray = [obj.dofArray obj.nodeArray(ii).getDofArray];
-            end
+            obj.dofArray = arrayfun(@(n) n.getDofArray(), obj.nodeArray(order), 'Uniform', 0);
+            obj.dofArray = [obj.dofArray{:}];
         end
         
         function setDofRestrictions(obj, restrictions)
