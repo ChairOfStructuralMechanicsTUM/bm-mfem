@@ -140,7 +140,7 @@ classdef AtallaElement2d4n < PorousElement2d4n
             % Hysteretic proportional damping model:
             LAME_COEFF = (1+1i*ETA_S)*LAMBDA;
             SHEAR_MODULUS = (1+1i*ETA_S)*MUE;
-                                 
+                       
             % Calculate Bulk-Modulus K_f:
             K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
                 (1+(8*ETA_F)/(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
