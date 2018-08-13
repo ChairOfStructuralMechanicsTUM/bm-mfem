@@ -1,4 +1,4 @@
-function [gbc,gbr,ufinal]=substructure1(N,dim,nodearray)
+function [gbc,gbr,ufinal,Kfinal]=substructure1(N,dim,nodearray,Kmatrix)
 
 %N: Anzahl der gewünschten substructures
 %dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
@@ -114,7 +114,9 @@ end
 ufinal=[ufinal;gbr;gbc];            
 
 %% multiply Kmatrix and ufinal(converted to doffinal) to sort Kmatrix
-
+%boolean Matrizen B aufstellen um K zu sortieren
+%B1: bezieht sich auf gbc
+Kfinal=Kmatrix(:,[ufinal.']);
 
 
 end

@@ -35,6 +35,6 @@ for i=1:18
 end
 
 %% substructuring
-substructure1(2)
+%substructure1(2)
 
 
