@@ -102,7 +102,7 @@ classdef AnsysInput < ModelIO
             % Assign dofs to node
             for i = 1 :size(data.elementsOfModel,1)
                 nodeData=cell2mat(data.nodeElementList(i));
-                dofs = AnsysInput.getDofsOfAnsysElements(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
+                [dofs, ~] = AnsysInput.getAnsysElementInfo(data.elementsOfModel{i,1}, data.elementsOfModel{i,2});
                 nodeData(isnan(nodeData)) = [];
                 for j = 1:length(nodeData)
                     n = model.getNode(nodeData(j));
@@ -266,7 +266,12 @@ classdef AnsysInput < ModelIO
             end
         end
         
-        function dofs = getDofsOfAnsysElements(elementName, keyopts)
+        function [dofs, nnodes] = getAnsysElementInfo(elementName, keyopts)
+            if nargin == 1
+                keyopts = zeros(1,18);
+            end
+            nnodes = -1;
+            
             ux = "DISPLACEMENT_X";
             uy = "DISPLACEMENT_Y";
             uz = "DISPLACEMENT_Z";
@@ -312,6 +317,7 @@ classdef AnsysInput < ModelIO
                         e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
                         throw(e);
                     end
+                    nnodes = 2;
                     
                 case strcmp(elementName,'MASS21')
                     if keyopts(3) == 0
@@ -328,9 +334,11 @@ classdef AnsysInput < ModelIO
                         e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
                         throw(e);
                     end
+                    nnodes = 1;
                     
                 case strcmp(elementName,'SHELL63')
                     dofs = [ux uy uz rx ry rz];
+                    nnodes = 4;
                     
                 case strcmp(elementName,'TARGE170')
                     dofs = [ux uy uz];
@@ -362,12 +370,15 @@ classdef AnsysInput < ModelIO
                     
                 case strcmp(elementName,'SOLID185')
                     dofs = [ux uy uz];
+                    nnodes = 8;
                     
                 case strcmp(elementName,'SOLID186')
                     dofs = [ux uy uz];
+                    nnodes = 20;
                     
                 case strcmp(elementName,'SOLID187')
                     dofs = [ux uy uz];
+                    nnodes = 10;
                     
                 otherwise
                     msg = ['AnsysInput: Available dofs for element ', ...
@@ -432,6 +443,8 @@ classdef AnsysInput < ModelIO
             %                             to certain element
             fid=fopen('DataAnsys/elemNodes.txt') ;
             fidd=fopen('DataAnsys/elemNodes_modified.dat','w') ;
+%             fid=fopen('elemNodes.txt') ;
+%             fidd=fopen('elemNodes_modified.dat','w') ;
             if fid < 0, error('Cannot open file'); end
             % Discard some line to read the data from the txt files
             for j = 1 : 13
@@ -448,11 +461,16 @@ classdef AnsysInput < ModelIO
                 end
             end
             fclose all ;
+            tic
             filename = 'DataAnsys/elemNodes_modified.dat';
+%             filename = 'elemNodes_modified.dat';
             delimiterIn = ' ';
             % Get data in matlab
             A = importdata(filename,delimiterIn);
-            
+% %             fid = fopen(filename);
+%             fid = fopen('test.txt');
+%             B = textscan(fid,'%u%u%u%u%u%u%u%u%u%u%u%u%u%u%u','Delimiter','\n');
+%             
             nodeConnectivity=A(:,7:end);
             
             A(:,1) = [];
@@ -479,7 +497,7 @@ classdef AnsysInput < ModelIO
                 aux1 = [];
                 aux2 = [];
             end
-            
+            toc
             % read element types with their keyopts
             fid=fopen('DataAnsys/elemTyp.txt');
             fgetl(fid);
@@ -505,6 +523,43 @@ classdef AnsysInput < ModelIO
             end
             fclose(fid);
             
+            % read nodes associated with the elements
+%             fid = fopen('DataAnsys/elemNodes_modified.dat');
+%             while ~feof(fid)
+%                 tline = fgetl(fid);
+%                 tmp = strsplit(strtrim(tline),' ');
+%                 etype = elementList{str2double(tmp(3)),1};
+%                 [~, nnodes] = AnsysInput.getAnsysElementInfo(etype);
+%                 
+%                 nodeIds = arrayfun(@(x) 
+%                 
+%                 if nnodes > 8
+%                     tline = fgetl(fid);
+%                     tmp2 = strsplit(strtrim(tline),' ');
+%                 elseif nnodes > 16
+%                     tline = fgetl(fid);
+%                     tmp3 = strsplit(strtrim(tline),' ');
+%                 end
+%             end
+            tic
+            eledat = sscanf(fileread('DataAnsys/elemNodes_modified.dat'),'%u');
+            nodesArrays2 = cell(size(elementList,1),1);
+%             nodes = zeros;
+            ii = 1;
+            while ii < length(eledat)
+%             for ii = 1:length(eledat)
+                etype = eledat(ii+2);
+                [~, nnodes] = AnsysInput.getAnsysElementInfo(elementList{etype,1});
+                nodes = eledat(ii+6:ii+5+nnodes);
+                nodesArrays2{etype}(end+1:end+length(nodes)) = nodes;
+                ii = ii+6+nnodes;
+%                 nodesArrays2(etype,:) = {nodesArrays2(etype) nodes};
+            end
+            
+            for ii = 1:size(elementList,1)
+                nodesArrays2{ii} = unique(nodesArrays2{ii});
+            end
+            toc
         end
         
         function nodeNum = readRecord_5()
