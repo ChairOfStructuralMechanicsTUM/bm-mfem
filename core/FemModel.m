@@ -114,10 +114,13 @@ classdef FemModel < handle
         end
         
         % setter functions
-        function mp = addNewModelPart(obj, name, nodeIds, elementIds)
+        function mp = addNewModelPart(obj, name, nodes, elements)
         %ADDNEWMODELPART add a new model part
-        %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to the 
-        %   FemModel containing nodes with nodeIds and/or elements with
+        %   ADDNEWMODELPART(name, nodes, elements) adds a modelpart to the 
+        %   FemModel containing nodes and/or elements.
+        %
+        %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to
+        %   the FemModel containing nodes with nodeIds and/or elements with
         %   elementIds.
         %
         %   ANNEWMODELPART(name) adds an empty model part
@@ -126,9 +129,13 @@ classdef FemModel < handle
             if nargin == 2
                 obj.femModelParts(name) = FemModelPart(name, [], [], obj);
             elseif nargin == 4
-                nodes = obj.getNodes(nodeIds);
-                elements = obj.getElements(elementIds);
-
+                if ~isa(nodes,'Node')
+                    nodes = obj.getNodes(nodes);
+                end
+                if ~isa(elements,'Element')
+                    elements = obj.getElements(elements);
+                end
+                
                 obj.femModelParts(name) = FemModelPart(name, ...
                     nodes, elements, obj);
             else

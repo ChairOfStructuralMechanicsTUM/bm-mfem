@@ -147,7 +147,7 @@ classdef AnsysInput < ModelIO
             
             % Add everything to a model part
             model.addNewModelPart('ANSYS_model', ...
-                model.getAllNodes().getId(), model.getAllElements().getId());
+                model.getAllNodes(), model.getAllElements());
             
             try
                 rmdir('DataAnsys', 's')
