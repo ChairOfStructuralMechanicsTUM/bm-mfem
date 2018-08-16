@@ -29,10 +29,12 @@ classdef BlochInverse1D < Solver
             if ~ obj.isInitialized
                 obj.initialize();
             end
+            
         end
         
         
         function [nodeIdsLeft] = findLeftNodes(obj)
+            
             nodeArray = obj.femModel.getAllNodes;
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             nodeXcoords = arrayfun(@(node) node.getX, nodeArray);
@@ -50,6 +52,7 @@ classdef BlochInverse1D < Solver
         end
         
         function [nodeIdsRight] = findRightNodes(obj)
+            
             nodeArray = obj.femModel.getAllNodes;
             nodeIds = arrayfun(@(node) node.getId, nodeArray);
             nodeXcoords = arrayfun(@(node) node.getX, nodeArray);
@@ -63,17 +66,20 @@ classdef BlochInverse1D < Solver
                     nodeIdsRight(n) = nodeIds(i);
                 end
             end
+            
             fprintf('Number of right boundary nodes is %s. \n', num2str(n))
         end
         
         
-        function [leftDofs,rightDofs] = getLeftRightDofIds(obj)  %right and left nodes are requiered
+        function [leftDofs,rightDofs] = getLeftRightDofIds(obj)
             nodeArray = obj.femModel.getAllNodes;
             nodeIdsRight = obj.rightNodes;
             nodeIdsLeft = obj.leftNodes;
             
-            dofArray1 = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false)'; 
-            dofArray = [dofArray1{:}];   
+            dofArray1 = arrayfun(@(node) node.getDofArray, nodeArray, 'UniformOutput', false)';
+            
+            dofArray = [dofArray1{:}];
+            
             for ii = 1:length(dofArray)
                 dofArray(ii).setId(ii);
             end
@@ -122,45 +128,91 @@ classdef BlochInverse1D < Solver
                     
                 end
             end
+            
         end
         
-        function [kx,miu] = propConst(obj,numberOfPhases) 
+        function [kx,miu] = propConst(obj,numberOfPhases)
             kx = linspace(0,pi,numberOfPhases);
-            miu = exp(i*kx); 
+            miu = exp(1i*kx);
         end
-        
         
         function R = transformationMatrix(obj,miu,index)
             nodeIdsRight = obj.rightNodes;
             nodeIdsLeft = obj.leftNodes;
             leftDofs = obj.leftDofs;
             rightDofs = obj.rightDofs;
+            [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
+            fixedDofIds = getId(fixedDofs);
+            
+            indices1=find(ismember(leftDofs,fixedDofIds));
+            leftDofs(indices1)=[];
             M = obj.massMatrix;
-            R = [eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs)); ...
-                zeros(length(M)-2*length(leftDofs),length(leftDofs)), eye(length(M)-2*length(leftDofs));...
-                miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs))];
+            X = length(M)-length(fixedDofs);
+            R = [eye(length(leftDofs)), zeros(length(leftDofs),X-2*length(leftDofs)); ...
+                zeros(X-2*length(leftDofs),length(leftDofs)), eye(X-2*length(leftDofs));...
+                miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),X-2*length(leftDofs))];
         end
         
         function [Ksorted,Msorted] = sortKandM(obj,K,M)
             leftDofs = obj.leftDofs;
             rightDofs = obj.rightDofs;
             innerDofs = getInnerDofIds(obj);
-            vecdofs = [leftDofs,innerDofs,rightDofs];
-            Ksorted = K(vecdofs,vecdofs);
-            Msorted = M(vecdofs,vecdofs);
+            
+            [reducedLeftDofs,reducedInnerDofs, reducedRightDofs,vecdofsAll] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs);
+            
+            Ksorted = K(vecdofsAll,vecdofsAll);
+            Msorted = M(vecdofsAll,vecdofsAll);
         end
         
-        
+        function [reducedLeftDofs,reducedInnerDofs, reducedRightDofs,allDofs] = eliminateFixedDofs(obj,leftDofs,innerDofs,rightDofs)
+            
+            
+            [freeDofs, fixedDofs] = getDofConstraints(obj.femModel);
+            fixedDofIds = getId(fixedDofs);
+            
+            allDofs=[leftDofs,innerDofs,rightDofs];
+            indicesAll =find(ismember(allDofs,fixedDofIds));
+            
+            a=0;
+            for j = 1:length(fixedDofIds)
+                for i=1:length(allDofs)
+                    if allDofs(i) + a == fixedDofIds(j)
+                        for k=1:length(allDofs)
+                            if allDofs(k)>=fixedDofIds(j)
+                                allDofs(k)=allDofs(k)-1;
+                            end
+                        end
+                        a=a+1;
+                    end
+                end
+            end
+            
+            allDofs(indicesAll)=[];
+            
+            indices1=find(ismember(leftDofs,fixedDofIds));
+            indices2=find(ismember(rightDofs,fixedDofIds));
+            indices3=find(ismember(innerDofs,fixedDofIds));
+            
+            leftDofs(indices1)=[];
+            rightDofs(indices2)=[];
+            innerDofs(indices3)=[];
+            reducedLeftDofs = leftDofs;
+            reducedRightDofs = rightDofs;
+            reducedInnerDofs = innerDofs;
+        end
         
         function [Kred,Mred] = reducedStiffnesAndMass (obj,K,M,numberOfPhases)
+            
             [kx,miu] = propConst(obj,numberOfPhases);
             Kred = cell(numberOfPhases,1);
             Mred = cell(numberOfPhases,1);
+            
             
             for i=1:numberOfPhases
                 
                 
                 R = transformationMatrix(obj,miu,i);
+                
                 Mred{i,1} = R'*M*R;
                 Kred{i,1} = R'*K*R;
             end
@@ -172,14 +224,13 @@ classdef BlochInverse1D < Solver
                 obj.femModel.initialize;
             end
             
-            % assemble and reduce matrices
             obj.massMatrix = obj.assembler.assembleGlobalMassMatrix(obj.femModel);
             obj.stiffnessMatrix = obj.assembler.assembleGlobalStiffnessMatrix(obj.femModel);
             
             nodeIdsLeft = obj.findLeftNodes;
             nodeIdsRight = obj.findRightNodes;
             
-            obj.leftNodes = nodeIdsLeft; 
+            obj.leftNodes = nodeIdsLeft;
             obj.rightNodes = nodeIdsRight;
             
             leftNodes = getNodes(obj.femModel, nodeIdsLeft);
@@ -200,10 +251,10 @@ classdef BlochInverse1D < Solver
             disp(Y)
             
             [leftDofs,rightDofs] = getLeftRightDofIds(obj);
-
+            
             obj.leftDofs = leftDofs;
             obj.rightDofs = rightDofs;
-
+            
             if length(nodeIdsLeft) ~= length(nodeIdsRight)
                 error('Same amount of left and right boundary nodes are requiered')
             end
@@ -222,10 +273,10 @@ classdef BlochInverse1D < Solver
                     error('All right boundary nodes must have the same x-coordinates')
                 end
             end
-              
-        end 
             
-    end 
+        end
+        
+    end
     
     methods (Static)
         
@@ -233,7 +284,6 @@ classdef BlochInverse1D < Solver
             omega2 = eigs(Kred,Mred,numberOfBands,'sm');
             omega = sqrt(abs(omega2));
         end
-        
     end
     
 end
