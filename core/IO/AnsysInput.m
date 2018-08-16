@@ -267,10 +267,14 @@ classdef AnsysInput < ModelIO
         end
         
         function [dofs, nnodes] = getAnsysElementInfo(elementName, keyopts)
+        %GETANSYSELEMENTINFO return information about ANSYS elements
+        %   [dofs, nnodes] = GETANSYSELEMENTINFO(elementName, keyopts)
+        %   returns the dofs and number of nodes of the ANSYS element
+        %   specified in elementName based on the chosen keyopts. If no
+        %   keyopts are specified, they are assumed to be all set to 0.
             if nargin == 1
                 keyopts = zeros(1,18);
             end
-            nnodes = -1;
             
             ux = "DISPLACEMENT_X";
             uy = "DISPLACEMENT_Y";
@@ -282,6 +286,7 @@ classdef AnsysInput < ModelIO
             switch 1
                 case strcmp(elementName,'BEAM3')
                     dofs = [ux uy rz];
+                    nnodes = 2;
                     
                 case strcmp(elementName,'COMBIN14')
                     if keyopts(2) == 0
@@ -340,18 +345,18 @@ classdef AnsysInput < ModelIO
                     dofs = [ux uy uz rx ry rz];
                     nnodes = 4;
                     
-                case strcmp(elementName,'TARGE170')
-                    dofs = [ux uy uz];
-                    
-                case strcmp(elementName,'CONTA174')
-                    if keyopts(1) == 0
-                        dofs = [ux uy uz];
-                    else
-                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
-                            elementName];
-                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
-                        throw(e);
-                    end
+%                 case strcmp(elementName,'TARGE170')
+%                     dofs = [ux uy uz];
+%                     
+%                 case strcmp(elementName,'CONTA174')
+%                     if keyopts(1) == 0
+%                         dofs = [ux uy uz];
+%                     else
+%                         msg = ['AnsysInput: Invalid keyopts for element type ', ...
+%                             elementName];
+%                         e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+%                         throw(e);
+%                     end
                     
                 case strcmp(elementName,'SHELL181')
                     if keyopts(1) == 0
@@ -364,9 +369,11 @@ classdef AnsysInput < ModelIO
                         e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
                         throw(e);
                     end
+                    nnodes = 4;
                     
                 case strcmp(elementName,'PLANE182')
                     dofs = [ux uy];
+                    nnodes = 4;
                     
                 case strcmp(elementName,'SOLID185')
                     dofs = [ux uy uz];
