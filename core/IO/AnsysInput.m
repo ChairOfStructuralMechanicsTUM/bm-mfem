@@ -446,65 +446,14 @@ classdef AnsysInput < ModelIO
             % Return     : elementList  - cell array with element names in
             %                             elementList{:,1} and keyopts in
             %                             elementList{:,2}
-            %              nodesArrays  - array with the nodes related
-            %                             to certain element
-            fid=fopen('DataAnsys/elemNodes.txt') ;
-            fidd=fopen('DataAnsys/elemNodes_modified.dat','w') ;
-%             fid=fopen('elemNodes.txt') ;
-%             fidd=fopen('elemNodes_modified.dat','w') ;
-            if fid < 0, error('Cannot open file'); end
-            % Discard some line to read the data from the txt files
-            for j = 1 : 13
-                fgetl(fid) ;
-            end
-            while ~feof(fid)
-                tline=fgets(fid);
-                if isspace(tline)
-                    for j = 1 : 10
-                        fgetl(fid) ;
-                    end
-                else
-                    fwrite(fidd,tline) ;
-                end
-            end
-            fclose all ;
-            tic
-            filename = 'DataAnsys/elemNodes_modified.dat';
-%             filename = 'elemNodes_modified.dat';
-            delimiterIn = ' ';
-            % Get data in matlab
-            A = importdata(filename,delimiterIn);
-% %             fid = fopen(filename);
-%             fid = fopen('test.txt');
-%             B = textscan(fid,'%u%u%u%u%u%u%u%u%u%u%u%u%u%u%u','Delimiter','\n');
-%             
-            nodeConnectivity=A(:,7:end);
+            %              nodesArrays  - cell array with the nodes related
+            %                             to the elements in the model.
+            %                             nodesArrays{i} are all node
+            %                             numbers for the element i
+            %              nodeConnectivity - cell array with all nodes for
+            %                             each element. nodeConnectivity{i}
+            %                             is the node array for element i
             
-            A(:,1) = [];
-            A(:,1) = [];
-            A(:,2) = [];
-            A(:,2) = [];
-            A(:,2) = [];
-            % Check how many element types there are
-            elements = unique(A(:,1));
-            %nodesArrays = cell(length(elements),1);
-            aux1 = [];
-            aux2 = [];
-            nodesArrays = cell(length(elements),1);
-            for i = 1 : length(elements)
-                for j = 1 : size(A,1)
-                    if A(j,1) == elements(i)
-                        for k = 2:size(A,2)
-                            aux1 = [aux1 A(j,k)]; %#ok<AGROW>
-                        end
-                        aux2 = [aux2 aux1]; %#ok<AGROW>
-                    end
-                end
-                nodesArrays(i) = {unique(aux2)};
-                aux1 = [];
-                aux2 = [];
-            end
-            toc
             % read element types with their keyopts
             fid=fopen('DataAnsys/elemTyp.txt');
             fgetl(fid);
@@ -530,43 +479,47 @@ classdef AnsysInput < ModelIO
             end
             fclose(fid);
             
-            % read nodes associated with the elements
-%             fid = fopen('DataAnsys/elemNodes_modified.dat');
-%             while ~feof(fid)
-%                 tline = fgetl(fid);
-%                 tmp = strsplit(strtrim(tline),' ');
-%                 etype = elementList{str2double(tmp(3)),1};
-%                 [~, nnodes] = AnsysInput.getAnsysElementInfo(etype);
-%                 
-%                 nodeIds = arrayfun(@(x) 
-%                 
-%                 if nnodes > 8
-%                     tline = fgetl(fid);
-%                     tmp2 = strsplit(strtrim(tline),' ');
-%                 elseif nnodes > 16
-%                     tline = fgetl(fid);
-%                     tmp3 = strsplit(strtrim(tline),' ');
-%                 end
-%             end
-            tic
+            % Read elements with their nodes
+            % remove stuff from element list and save it
+            fid=fopen('DataAnsys/elemNodes.txt') ;
+            fidd=fopen('DataAnsys/elemNodes_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            % Discard some line to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
+            end
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 10
+                        fgetl(fid) ;
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            fclose all ;
+            
+            % read element data
             eledat = sscanf(fileread('DataAnsys/elemNodes_modified.dat'),'%u');
-            nodesArrays2 = cell(size(elementList,1),1);
-%             nodes = zeros;
+            nodesArrays = cell(size(elementList,1),1);
+            nodeConnectivity = cell(0);
+            
             ii = 1;
             while ii < length(eledat)
-%             for ii = 1:length(eledat)
                 etype = eledat(ii+2);
                 [~, nnodes] = AnsysInput.getAnsysElementInfo(elementList{etype,1});
                 nodes = eledat(ii+6:ii+5+nnodes);
-                nodesArrays2{etype}(end+1:end+length(nodes)) = nodes;
+                nodesArrays{etype}(end+1:end+length(nodes)) = nodes;
                 ii = ii+6+nnodes;
-%                 nodesArrays2(etype,:) = {nodesArrays2(etype) nodes};
+                
+                nodeConnectivity{end+1} = nodes; %#ok<AGROW>
             end
             
             for ii = 1:size(elementList,1)
-                nodesArrays2{ii} = unique(nodesArrays2{ii});
+                nodesArrays{ii} = unique(nodesArrays{ii});
             end
-            toc
+            
         end
         
         function nodeNum = readRecord_5()
