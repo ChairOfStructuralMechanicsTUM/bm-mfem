@@ -1,15 +1,18 @@
-function [gbc,gbr,ufinal,Kfinal]=substructure1(N,dim,nodearray,Kmatrix)
+function [nodematrix,K]=substructure1(Ns,hz,v,nodearray,dim)
 
-%N: Anzahl der gewünschten substructures
-%dim= dimension des Fachwerks z.B. 3x5, muss gleiche Anzahl Knoten wie
-%nodeaaray habe!
-%Test-steifigkeitsmatrix wird eingeführt um substrrukturierung testen zusubstructure1 (N, nodearray, dofarray, Kmatrix, dim)
-%können
-%dof: [D1 D2 D3]^T werden an K ranmultipliziert: erste Spalte von K bezieht
-%sich auf D1... 
-%Benennung von K: Kik: Festhaltekraft am Freiheitsgrad(dof)
-%i infolge Einheitsverschiebung Dk=1
+%Ns: Anzahl der gewünschten substructures
+%hz: Anzahl der Substrukturen in horizontale richtung
+%v: Anzahl der Substrukturen in vertikale Richtung
+%hz und v sollten gleich sein oder zumindest so nah wie möglich beieinander
+%liegen um eine sinnvolle Substrukturierung zu erhalten also z.B. 10x10 und
+%nicht 50x2
+if hz*v~=Ns
+    fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
+   return
+else
 
+%dim= dimension des Fachwerks, bezieht sich auf Knoten!!! z.B. 3x5, muss gleiche Anzahl Knoten
+%wie nodeaaray haben
 
 %Kmatrix= globale Systemsteifigkeitsmatrix, lokale Elemente bereits
 %assembliert
@@ -33,92 +36,108 @@ for i=1:dim(2)
         k=k+1;
     end
 end
+
+%% substructuring of nodematrix
+K=cell(v,hz) %cell um die verschiedenen Substructures als arrays darin zu speichern
+a=floor(size(nodematrix,1)/v) %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
+b=floor(size(nodematrix,2)/hz) %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
+
+for i=1:hz
+    for j=1:v
+    K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b)}
+    k=k+a
+    end
+end
+
+
+
+%% substructure first aproach
 %% nodematrix split in N substructures, gbc and gbr filled
 
 %gbc: globaler Vektor der corner nodes  bc:lokaler Vektor der corner nodes
 %einer subdomain in einer Iteration
 %gbr: globaler Vektor der corner remainders  br: lokaler Vektor der boundry
 %remainders in einer iteration
-if N>size(nodematrix,2)-1
-    fprintf ('warning: too many subdomains!')
-    return
-    
-    elseif N==1
-        fprintf ('Trivialfall')
-        return
-
-    elseif N==2  
-        [~,~,gbc,gbr]=Matrixsplit(nodematrix);
-
-    elseif N==3
-        [left,~,bc,br]=Matrixsplit(nodematrix);
-        [~,~,bc2,br2]=Matrixsplit(left);
-        gbc=[bc2;bc];
-        gbr=[br2;br];
-else 
-[left,right,bc,br]=Matrixsplit(nodematrix);%Initialisierung, left und right bleiben als Ausgangsbasis erhalten
-[left2,right2,bc2,br2]=Matrixsplit(left);
-gbc=[bc2;bc];
-gbr=[br2;br];
+% if N>size(nodematrix,2)-1
+%     fprintf ('warning: too many subdomains!')
+%     return
+%     
+%     elseif N==1
+%         fprintf ('Trivialfall')
+%         return
+% 
+%     elseif N==2  
+%         [~,~,gbc,gbr]=Matrixsplit(nodematrix);
+% 
+%     elseif N==3
+%         [left,~,bc,br]=Matrixsplit(nodematrix);
+%         [~,~,bc2,br2]=Matrixsplit(left);
+%         gbc=[bc2;bc];
+%         gbr=[br2;br];
+% else 
+% [left,right,bc,br]=Matrixsplit(nodematrix);%Initialisierung, left und right bleiben als Ausgangsbasis erhalten
+% [left2,right2,bc2,br2]=Matrixsplit(left);
+% gbc=[bc2;bc];
+% gbr=[br2;br];
 %left2 und right 2 sind die zweite ebene der Ausgangsbasis die mit left und right verglichen werden...
 %als erster Schritt wird left nochmals geteilt da aufgrund der
 %Implementierung von Matrixsplit leftimmer >=right ist
-l=1; %Schleifenzähler 
-b=5;%Zählervariable für gbc
-r=size(gbr,1); %Zählervariable für gbr
-while l<N-2 %2 Schritte bei Initialisierung
-    if size(left2,2)<= size(right,2)
-        %jump to other branch
-        %left=left2;
-        [right,right2,bc,br]=Matrixsplit(right);
-        gbc(b:b+1,1)=bc;
-        gbr(r+1:r+dim(1)-2,1)=br;
-        b=b+2;
-        r=r+dim(1)-2;
-    else 
-        [left2,right2,bc,br]=Matrixsplit(left2);
-        gbc(b:b+1,1)=bc;
-        gbr(r+1:r+dim(1)-2,1)=br;
-        b=b+2;
-        r=r+dim(1)-2;
-    end
-    %gbc(b:b+1,1)=bc;
-    %gbr(r:r+dim(1)-3,1)=br;
-    l=l+1;
-    %b=b+2;
-    %r=r+dim(1)-2;
-    gbc=sort(gbc);
-    gbr=sort(gbr);
+% l=1; %Schleifenzähler 
+% b=5;%Zählervariable für gbc
+% r=size(gbr,1); %Zählervariable für gbr
+% while l<N-2 %2 Schritte bei Initialisierung
+%     if size(left2,2)<= size(right,2)
+%         %jump to other branch
+%         %left=left2;
+%         [right,right2,bc,br]=Matrixsplit(right);
+%         gbc(b:b+1,1)=bc;
+%         gbr(r+1:r+dim(1)-2,1)=br;
+%         b=b+2;
+%         r=r+dim(1)-2;
+%     else 
+%         [left2,right2,bc,br]=Matrixsplit(left2);
+%         gbc(b:b+1,1)=bc;
+%         gbr(r+1:r+dim(1)-2,1)=br;
+%         b=b+2;
+%         r=r+dim(1)-2;
+%     end
+%     %gbc(b:b+1,1)=bc;
+%     %gbr(r:r+dim(1)-3,1)=br;
+%     l=l+1;
+%     %b=b+2;
+%     %r=r+dim(1)-2;
+%     gbc=sort(gbc);
+%     gbr=sort(gbr);
+% end
+% end
+%     
+% %% merge gbc and gbr to global ufinal vector
+% 
+% %ufinal=sorted node vector: [i;br;bc]
+% %gi: vector of internal nodes
+% u1=[gbr;gbc]; %combined array, helps to find internal nodes
+% ufinal=zeros(size(nodearray,1)-size(u1,1),1);
+% 
+% v=1;
+% for i=1:size(nodearray,1)
+%         if any(u1==nodearray(i))==false
+%             ufinal(v,1)=nodearray(i,1);
+%         else
+%             v=v-1;
+%           %%fullfill: i zält weiter, aber erst eintrag weiter hinten kommt
+%           %%an die stelle, id marker mitlaufen lassen
+%         end
+%         v=v+1;
+% end
+% 
+% ufinal=[ufinal;gbr;gbc];            
+% 
+% %% multiply Kmatrix and ufinal(converted to doffinal) to sort Kmatrix
+% %boolean Matrizen B aufstellen um K zu sortieren
+% %B1: bezieht sich auf gbc
+% Kfinal=Kmatrix(:,[ufinal.']);
+% 
 end
-end
-    
-%% merge gbc and gbr to global ufinal vector
-
-%ufinal=sorted node vector: [i;br;bc]
-%gi: vector of internal nodes
-u1=[gbr;gbc]; %combined array, helps to find internal nodes
-ufinal=zeros(size(nodearray,1)-size(u1,1),1);
-
-v=1;
-for i=1:size(nodearray,1)
-        if any(u1==nodearray(i))==false
-            ufinal(v,1)=nodearray(i,1);
-        else
-            v=v-1;
-          %%fullfill: i zält weiter, aber erst eintrag weiter hinten kommt
-          %%an die stelle, id marker mitlaufen lassen
-        end
-        v=v+1;
-end
-
-ufinal=[ufinal;gbr;gbc];            
-
-%% multiply Kmatrix and ufinal(converted to doffinal) to sort Kmatrix
-%boolean Matrizen B aufstellen um K zu sortieren
-%B1: bezieht sich auf gbc
-Kfinal=Kmatrix(:,[ufinal.']);
-
-
 end
 
 
