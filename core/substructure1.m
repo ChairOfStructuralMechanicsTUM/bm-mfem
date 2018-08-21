@@ -1,11 +1,12 @@
 function [nodematrix,K]=substructure1(Ns,hz,v,nodearray,dim)
-
+clc
 %Ns: Anzahl der gewünschten substructures
 %hz: Anzahl der Substrukturen in horizontale richtung
 %v: Anzahl der Substrukturen in vertikale Richtung
 %hz und v sollten gleich sein oder zumindest so nah wie möglich beieinander
 %liegen um eine sinnvolle Substrukturierung zu erhalten also z.B. 10x10 und
 %nicht 50x2
+%dim(~,~)= dimension der Knotenmatrix= Zeilen und Spaltenanzahl
 if hz*v~=Ns
     fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
    return
@@ -27,26 +28,39 @@ K=cell(v,hz); %cell um die verschiedenen Substructures als arrays darin zu speic
 a=size(nodematrix,1)/v; %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
 b=size(nodematrix,2)/hz; %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
 if round(a)==a
-    a=a+1;
+    a=a+1
 else
-    a=round(a);
+    a=round(a)
 end
 if round(b)==b
-    b=b+1;
+    b=b+1
 else
-    b=round(b);
+    b=round(b)
 end    
 %testen auf minimalsubstruktur: 3x3 Fachwerk
-if or(a,b)<3
+if or(a<3,b<3)
+    fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
     return
 else
     
 for i=1:hz
     for j=1:v
-    K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b)};
+        if i==hz && j~=v
+            K{j,i}={nodematrix((j-1)*a+1:j*(a-1),(i-1)*b:i*(b-1))};
+        elseif j==v && i~=hz
+            K{j,i}={nodematrix((j-1)*a:j*(a-1),(i-1)*b+1:i*(b-1))};
+        elseif j==v && i==hz
+            K{j,i}={nodematrix((j-1)*a:j*(a-1),(i-1)*b:i*(b-1))};
+        else
+            K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b)};
+        end
     end
 end
-
+% for i=(hz-1):hz
+%     for j=(v-1):v
+%     K{j,i}={nodematrix(j*a:dim(1),i*b:dim(2))};
+%     end
+% end
 
 
 %% substructure first aproach
