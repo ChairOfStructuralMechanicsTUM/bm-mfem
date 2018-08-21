@@ -10,7 +10,47 @@ if hz*v~=Ns
     fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
    return
 else
+%% nodearray-->nodematrix
 
+nodematrix=zeros(dim);
+k=1;
+for i=1:dim(2)
+    for j=1:dim(1)
+        nodematrix(j,i)=nodearray(k);
+        k=k+1;
+    end
+end
+
+%% substructuring of nodematrix
+
+K=cell(v,hz); %cell um die verschiedenen Substructures als arrays darin zu speichern
+a=size(nodematrix,1)/v; %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
+b=size(nodematrix,2)/hz; %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
+if round(a)==a
+    a=a+1;
+else
+    a=round(a);
+end
+if round(b)==b
+    b=b+1;
+else
+    b=round(b);
+end    
+%testen auf minimalsubstruktur: 3x3 Fachwerk
+if or(a,b)<3
+    return
+else
+    
+for i=1:hz
+    for j=1:v
+    K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b)};
+    end
+end
+
+
+
+%% substructure first aproach
+%% 
 %dim= dimension des Fachwerks, bezieht sich auf Knoten!!! z.B. 3x5, muss gleiche Anzahl Knoten
 %wie nodeaaray haben
 
@@ -26,32 +66,6 @@ else
 %     end
 % end
 
-%% nodearray-->nodematrix
-
-nodematrix=zeros(dim);
-k=1;
-for i=1:dim(2)
-    for j=1:dim(1)
-        nodematrix(j,i)=nodearray(k);
-        k=k+1;
-    end
-end
-
-%% substructuring of nodematrix
-K=cell(v,hz) %cell um die verschiedenen Substructures als arrays darin zu speichern
-a=floor(size(nodematrix,1)/v) %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
-b=floor(size(nodematrix,2)/hz) %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
-
-for i=1:hz
-    for j=1:v
-    K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b)}
-    k=k+a
-    end
-end
-
-
-
-%% substructure first aproach
 %% nodematrix split in N substructures, gbc and gbr filled
 
 %gbc: globaler Vektor der corner nodes  bc:lokaler Vektor der corner nodes
@@ -137,6 +151,7 @@ end
 % %B1: bezieht sich auf gbc
 % Kfinal=Kmatrix(:,[ufinal.']);
 % 
+end
 end
 end
 
