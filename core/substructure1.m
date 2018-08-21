@@ -7,9 +7,15 @@ clc
 %liegen um eine sinnvolle Substrukturierung zu erhalten also z.B. 10x10 und
 %nicht 50x2
 %dim(~,~)= dimension der Knotenmatrix= Zeilen und Spaltenanzahl
+
+%% Abbruchkriterien
+
 if hz*v~=Ns
     fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
    return
+elseif Ns==1
+    fprintf('keine Substrukturierung ausgewählt bitte Ns ungleich 1 wählen')
+    return
 else
 %% nodearray-->nodematrix
 
@@ -27,22 +33,15 @@ end
 K=cell(v,hz); %cell um die verschiedenen Substructures als arrays darin zu speichern
 a=floor(size(nodematrix,1)/v); %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
 b=floor(size(nodematrix,2)/hz); %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
-% if round(a)==a
-%     a=a+1
-% else
-%     a=round(a)
-% end
-% if round(b)==b
-%     b=b+1
-% else
-%     b=round(b)
-% end    
-%testen auf minimalsubstruktur: 3x3 Fachwerk
+
+%% Testen auf minimalsubstruktur: 3x3 Fachwerk mit 9 Knoten
+
 if or(a<2,b<2)
     fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
     return
 else
-    
+%% Unterteilung der nodematrix in Substrukturen Kij   
+
 for i=1:hz
     for j=1:v
         if i==1 && j==1 %Fall 1: linke obere Ecke
@@ -66,11 +65,7 @@ for i=1:hz
         end
     end
 end
-% for i=(hz-1):hz
-%     for j=(v-1):v
-%     K{j,i}={nodematrix(j*a:dim(1),i*b:dim(2))};
-%     end
-% end
+
 
 
 %% substructure first aproach
