@@ -69,7 +69,7 @@ for j = 1:nob
         omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
         f(j,i) = omega{i,1}(j,1)/(2*pi);
     end
-    figure(1)
+    figure(2)
     plot(kx,f(j,:),'r')
     title('Dispersion curves')
     xlabel('Phase k')

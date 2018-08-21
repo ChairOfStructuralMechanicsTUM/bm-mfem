@@ -16,10 +16,10 @@ springNodes = model.getModelPart('GENERIC_springNodes').getNodes()
 springNodeIds = arrayfun(@(node) node.getId, springNodes);
 springNodeCoords = arrayfun(@(node) node.getCoords, springNodes,'UniformOutput',false);
 
-leftSpringNode = springNodes(1,7);
+leftSpringNode = springNodes(1,2);
 leftSNCoords = getCoords(leftSpringNode);
 leftSNId = getId(leftSpringNode);
-rightSpringNode = springNodes(1,2);
+rightSpringNode = springNodes(1,7);
 rightSNCoords = getCoords(rightSpringNode);
 rightSNId = getId(rightSpringNode);
 horizontalSpringNodes = [leftSpringNode rightSpringNode];
@@ -29,18 +29,31 @@ model.getAllElements.setPropertyValue('POISSON_RATIO',0.34);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',2699);
 
+%%% 2 springs, 1 mass
+model.addNewNode(366,0.1,0.075,0);
+model.addNewElement('SpringDamperElement3d2n',308,[112 366]);
+model.addNewElement('SpringDamperElement3d2n',309,[366 198]);
+model.addNewElement('ConcentratedMassElement3d1n',310, 366);
 
-model.addNewElement('SpringDamperElement3d2n',320,[211 105])
-model.getElement(320).setPropertyValue('ELEMENTAL_STIFFNESS',7e5);
-model.getElement(320).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getNode(112).addDof("DISPLACEMENT_Z");
+model.getNode(198).addDof("DISPLACEMENT_Z");
+model.getNode(366).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMENT_Z"]);
 
-model.getNode(211).addDof("DISPLACEMENT_Z");
-model.getNode(105).addDof("DISPLACEMENT_Z");
 
-model.getNode(211).fixDof('DISPLACEMENT_Z');
-model.getNode(105).fixDof('DISPLACEMENT_Z');
+model.getNode(112).fixDof('DISPLACEMENT_Z');
+model.getNode(198).fixDof('DISPLACEMENT_Z');
+model.getNode(366).fixDof('DISPLACEMENT_Y');
+model.getNode(366).fixDof('DISPLACEMENT_Z');
 
-% b = model.getAllNodes();
+
+model.getElement(308).setPropertyValue('ELEMENTAL_STIFFNESS',7e4);
+model.getElement(308).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(309).setPropertyValue('ELEMENTAL_STIFFNESS',7e4);
+model.getElement(309).setPropertyValue('ELEMENTAL_DAMPING',0);
+
+model.getElement(310).setPropertyValue('ELEMENTAL_MASS',7e1);
+model.getElement(310).setPropertyValue('VOLUME_ACCELERATION',10);
+
 
 v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
@@ -72,7 +85,7 @@ for j = 1:nob
 
     end
 
-    figure(1)
+    figure(2)
     plot(kx,f(j,:),'r')
     title('Dispersion curves')
     xlabel('Phase k')
