@@ -62,7 +62,7 @@ for i=1:hz
         elseif i==hz && j~=1 && j~=v %Fall 8 letzte Spalte Mitte
             K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
         else %Fall 9 rechte untere Ecke
-            K{j,i}={nodematrix((j-1)*a+1:dim(1),(i-1)*b:dim(2))};
+            K{j,i}={nodematrix((j-1)*a:dim(1),(i-1)*b+1:dim(2))};
         end
     end
 end
