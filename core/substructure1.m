@@ -50,45 +50,46 @@ for i=1:hz
     for j=1:v
         if i==1 && j==1 %Fall 1: linke obere Ecke
             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
-                bc{j,i}={[nodematrix(1,b+1);nodematrix(a,b+1)]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
+                bc(j,i)={[nodematrix(1,b+1);nodematrix(a,b+1)]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
             else
-                bc{j,i}={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                bc(j,i)={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
             end
         elseif i==1 && j~=1 && j~=v %Fall 2: erste Spalte Mitte
             bc(j,i)={[nodematrix((j-1)*a+1,1);nodematrix((j-1)*a+1,b+1);nodematrix(j*a+1,1);nodematrix(j*a+1,b+1)]};
-            K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
         elseif i==1 && j==v %Fall 3 linke untere Ecke
             bc(j,i)={[nodematrix(dim(1)-(a),1);nodematrix(dim(1)-(a),b+1);nodematrix(dim(1),b+1)]};
-            K{j,i}={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};  
+            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};  
         elseif j==1 && i~=1 && i~= hz    %Fall 4 erste Zeile Mitte
             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
-                bc{j,i}={[nodematrix(1,(i-1)*b+1);nodematrix(a,(i-1)*b+1);nodematrix(1,i*b+1);nodematrix(a,i*b+1)]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
+                bc(j,i)={[nodematrix(1,(i-1)*b+1);nodematrix(a,(i-1)*b+1);nodematrix(1,i*b+1);nodematrix(a,i*b+1)]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
             else
-                bc{j,i}={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(j*a+1,i*b+1)]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(j*a+1,i*b+1)]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
             end
         elseif i>1 && i<hz && j>1 && j<v %Fall 5 Mitte Mitte
             bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(j*a+1,i*b+1)]};
-            K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
         elseif j==v && i~=1 && i~= hz %Fall 6 unterste Zeile Mitte
             bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(dim(1),(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(dim(1),i*b+1)]};
-            K{j,i}={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};
+            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};
         elseif j==1 && i==hz %Fall 7 rechte obere Ecke
             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
-                bc{j,i}={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b)]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
+                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b)]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
             else
-                bc{j,i}={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b);nodematrix(a,dim(2))]};
-                K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
+                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b);nodematrix(a,dim(2))]};
+                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
             end
         elseif i==hz && j~=1 && j~=v %Fall 8 letzte Spalte Mitte
-            
-            K{j,i}={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
+            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,dim(2));nodematrix(j*a+1,dim(2))]};
+            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
         else %Fall 9 rechte untere Ecke
-            K{j,i}={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
+            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(dim(1),(i-1)*b+1);nodematrix((j-1)*a+1,dim(2))]};
+            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
         end
     end
 end
