@@ -189,7 +189,7 @@ classdef BlochInverse1D < Solver
 %        end
 
        function [kx,miu] = propConst(obj,numberOfPhases) %obj kann auch entfernt werden -> dann muss die Funktion aber statisch sein!
-           kx = linspace(0,pi,numberOfPhases);    
+           kx = linspace(10e-4,pi,numberOfPhases);    
            miu = exp(i*kx); %kx:Phase
        end
            
@@ -272,8 +272,7 @@ classdef BlochInverse1D < Solver
                     end
                end
            end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Fehler, nicht genug reduziert (idR max(allDofs) noch
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%um 2 zu groß
+
            allDofs(indicesAll)=[];
            
            
