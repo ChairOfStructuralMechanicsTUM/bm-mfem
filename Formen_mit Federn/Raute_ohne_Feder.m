@@ -1,8 +1,8 @@
-%%%% Kreis ohne Feder
+%%%% Raute ohne Feder
     
 clear
 
-io=MdpaInput('Federtests_Kreis.mdpa'); %specify input file
+io=MdpaInput('Federtests_Raute.mdpa'); %specify input file
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -12,8 +12,8 @@ model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',2699);
 
 % % 
-a=model.getAllModelParts;
-% % leftNodes = model.getModelPart('GENERIC_leftNodes').getNodes();
+ a=model.getAllModelParts;
+% %leftNodes = model.getModelPart('GENERIC_leftNodes').getNodes();
 % % rightNodes = model.getModelPart('GENERIC_rightNodes').getNodes();
 % % springNodes = model.getModelPart('GENERIC_springNodes').getNodes();
 %     innerMaterial = model.getModelPart('GENERIC_innerMaterial').getNodes()
@@ -81,7 +81,7 @@ nob = 10;
 
 
 figure(2)
-title('Dispersion curves')
+title('Dispersion curves - Raute oF')
 xlabel('Phase k')
 ylabel('frequenzy f')
 xlim([0 pi])

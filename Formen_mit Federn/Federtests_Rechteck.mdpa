@@ -895,3 +895,83 @@ Begin SubModelPart GENERIC_rightNodes // Group rightNodes // Subtree GENERIC
     Begin SubModelPartConditions
     End SubModelPartConditions
 End SubModelPart
+Begin SubModelPart GENERIC_0Grad // Group 0Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           70
+          115
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_22.5Grad // Group 22.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           76
+          108
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_45Grad // Group 45Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           87
+           97
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_67.5Grad // Group 67.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           84
+          102
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_112.5Grad // Group 112.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           59
+          130
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_90Grad // Group 90Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           75
+          116
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_135Grad // Group 135Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           56
+          139
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_157.5_Grad // Group 157.5 Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+           63
+          121
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart

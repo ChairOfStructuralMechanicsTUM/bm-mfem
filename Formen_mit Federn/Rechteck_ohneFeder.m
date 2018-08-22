@@ -12,7 +12,7 @@ model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',2699);
 
 % % 
-% % a=model.getAllModelParts;
+a=model.getAllModelParts;
 % % leftNodes = model.getModelPart('GENERIC_leftNodes').getNodes();
 % % rightNodes = model.getModelPart('GENERIC_rightNodes').getNodes();
 % % springNodes = model.getModelPart('GENERIC_springNodes').getNodes();
@@ -61,44 +61,44 @@ v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
 
 
-solver = BlochInverse1D(model);
-assembling = SimpleAssembler(model);
-
-[stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
-[massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
-
-initialize(solver)
-[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
-
-numberOfPhases = 20;
-
-[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
-
-omega = cell(numberOfPhases,1);
-
-nob = 10;
-[kx,miu] = propConst(solver,numberOfPhases);
-
-
-figure(2)
-title('Dispersion curves - Rechteck oF')
-xlabel('Phase k')
-ylabel('frequenzy f')
-xlim([0 pi])
-
-ylim([0 2e4])
-
-hold on
-for j = 1:nob
-    
-    for i = 1:numberOfPhases
-        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
-        f(j,i) = omega{i,1}(j,1)/(2*pi);
-
-    end
-    plot(kx,f(j,:),'r')       
-    legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
-end
+% % solver = BlochInverse1D(model);
+% % assembling = SimpleAssembler(model);
+% % 
+% % [stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
+% % [massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
+% % 
+% % initialize(solver)
+% % [Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+% % 
+% % numberOfPhases = 20;
+% % 
+% % [Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
+% % 
+% % omega = cell(numberOfPhases,1);
+% % 
+% % nob = 10;
+% % [kx,miu] = propConst(solver,numberOfPhases);
+% % 
+% % 
+% % figure(2)
+% % title('Dispersion curves - Rechteck oF')
+% % xlabel('Phase k')
+% % ylabel('frequenzy f')
+% % xlim([0 pi])
+% % 
+% % ylim([0 2e4])
+% % 
+% % hold on
+% % for j = 1:nob
+% %     
+% %     for i = 1:numberOfPhases
+% %         omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+% %         f(j,i) = omega{i,1}(j,1)/(2*pi);
+% % 
+% %     end
+% %     plot(kx,f(j,:),'r')       
+% %     legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
+% % end
 
 
 % m = model.getElement(201).getPropertyValue('ELEMENTAL_MASS');
