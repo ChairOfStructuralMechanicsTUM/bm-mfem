@@ -1,4 +1,4 @@
-function [nodematrix,K,bc,br,i]=substructure1(Ns,v,hz,nodearray,dim)
+function [nodematrix,K,bc,br,in]=substructure1(Ns,v,hz,nodearray,dim)
 clc
 %Ns: Anzahl der gewünschten substructures
 %hz: Anzahl der Substrukturen in horizontale richtung
@@ -103,10 +103,11 @@ for i=1:hz
             br(j,i)={[nodematrix((j-1)*a+2:dim(1)-1,dim(2)-b);nodematrix(dim(1)-a,(dim(2)-b+1:dim(2)-1)).']};
             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
         end
+        in(j,i)={setdiff(cell2mat(K(j,i)),union(cell2mat(bc(j,i)),cell2mat(br(j,i))))};
     end
 end
 
-%% Identifizierung der Eckknoten bc, Interface Knoten br und internen Knoten i
+%% Zusammenstellung der globalen Eckknoten bc, Interface Knoten br und internen Knoten i
 
 %K1=cell2mat(K{1,1});
 
