@@ -1,4 +1,4 @@
-function [Kmatrix,Ksort,Krr,Kcc,Krc,Kcr]=splitKmatrix (n)
+function [Ksort,Krr,Kcc,Krc,Kcr]=splitKmatrix (Kmatrix,n)
 
 %Kmatrix= globale Systemsteifigkeitsmatrix, lokale Elemente bereits
 %assembliert
@@ -6,13 +6,13 @@ function [Kmatrix,Ksort,Krr,Kcc,Krc,Kcr]=splitKmatrix (n)
 %enspricht linker oberer Ecke einer minimalen Substruktur
 %% setup 
 %Kmatrix
-Kmatrix=string(ones(n));
-for i=1:n
-    for j=1:n
-        id=[i,j];
-        Kmatrix(i,j)=['K' num2str(id(1)) num2str(id(2))];
-    end
-end
+% Kmatrix=string(ones(n));
+% for i=1:n
+%     for j=1:n
+%         id=[i,j];
+%         Kmatrix(i,j)=['K' num2str(id(1)) num2str(id(2))];
+%     end
+% end
 %bc: Freiheitsgrade der Eckknoten
 bc=[1;2];
 %br
