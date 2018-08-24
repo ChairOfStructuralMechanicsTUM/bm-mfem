@@ -93,17 +93,19 @@ ele40 = BarElement2d2n(40,[node16 node17]);
 ele41 = BarElement2d2n(41,[node17 node18]);
 ele42 = BarElement2d2n(42,[node18 node19]);
 ele43 = BarElement2d2n(43,[node19 node20]);
+ele44 = BarElement2d2n(44,[node16 node21]);
+ele45 = BarElement2d2n(45,[node17 node21]);
+ele46 = BarElement2d2n(46,[node17 node22]);
+ele47 = BarElement2d2n(47,[node18 node22]);
+ele48 = BarElement2d2n(48,[node18 node23]);
+ele49 = BarElement2d2n(49,[node19 node23]);
+ele50 = BarElement2d2n(50,[node19 node24]);
+ele51 = BarElement2d2n(51,[node20 node24]);
+ele52 = BarElement2d2n(52,[node20 node25]);
 %
+ele53 = BarElement2d2n(53,[node21 node22]);
 
 
-ele32 = BarElement2d2n(32,[node16 node21]);
-ele33 = BarElement2d2n(33,[node17 node21]);
-ele34 = BarElement2d2n(34,[node17 node22]);
-ele35 = BarElement2d2n(35,[node18 node22]);
-ele36 = BarElement2d2n(36,[node18 node23]);
-ele37 = BarElement2d2n(37,[node19 node23]);
-ele38 = BarElement2d2n(38,[node19 node24]);
-ele39 = BarElement2d2n(39,[node20 node24]);
-ele40 = BarElement2d2n(40,[node20 node25]);
-ele41 = BarElement2d2n(41,[node10 node14]);
+
+
 
