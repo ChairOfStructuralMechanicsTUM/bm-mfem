@@ -231,7 +231,7 @@ classdef BlochInverse1D < Solver
 %            vecdofs1 = sort(vecdofs);
 %            
 %            for i = 1:length(vecdofs1)-1
-%              if vecdofs1(i)~=vecdofs1(i+1)-1
+%              if vecdofs1(i)~=vecdofs1(i+1)-3
 %                  for j = length(vecdofs1):-1:i+1
 %                     vecdofs1(j) = vecdofs1(j)-1;
 %                  end
