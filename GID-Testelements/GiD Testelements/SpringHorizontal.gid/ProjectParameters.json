@@ -1,0 +1,57 @@
+{
+    "problem_data"             : {
+        "problem_name"    : "SpringHorizontal",
+        "model_part_name" : "Structure",
+        "domain_size"     : 3,
+        "parallel_type"   : "OpenMP",
+        "time_step"       : 1.1,
+        "start_time"      : 0.0,
+        "end_time"        : 1.0,
+        "echo_level"      : 1
+    },
+    "solver_settings"          : {
+        "solver_type"                        : "Static",
+        "echo_level"                         : 1,
+        "analysis_type"                      : "non_linear",
+        "model_import_settings"              : {
+            "input_type"     : "mdpa",
+            "input_filename" : "SpringHorizontal"
+        },
+        "material_import_settings"           : {
+            "materials_filename" : "StructuralMaterials.json"
+        },
+        "line_search"                        : false,
+        "convergence_criterion"              : "residual_criterion",
+        "displacement_relative_tolerance"    : 0.0001,
+        "displacement_absolute_tolerance"    : 1e-9,
+        "residual_relative_tolerance"        : 0.0001,
+        "residual_absolute_tolerance"        : 1e-9,
+        "max_iteration"                      : 10,
+        "problem_domain_sub_model_part_list" : ["Parts_structure"],
+        "processes_sub_model_part_list"      : [],
+        "rotation_dofs"                      : true
+    },
+    "constraints_process_list" : [],
+    "loads_process_list"       : [],
+    "list_other_processes"     : [],
+    "output_configuration"     : {
+        "result_file_configuration" : {
+            "gidpost_flags"       : {
+                "GiDPostMode"           : "GiD_PostBinary",
+                "WriteDeformedMeshFlag" : "WriteDeformed",
+                "WriteConditionsFlag"   : "WriteConditions",
+                "MultiFileFlag"         : "SingleFile"
+            },
+            "file_label"          : "step",
+            "output_control_type" : "step",
+            "output_frequency"    : 1,
+            "body_output"         : true,
+            "node_output"         : false,
+            "skin_output"         : false,
+            "plane_output"        : [],
+            "nodal_results"       : ["DISPLACEMENT","ROTATION"],
+            "gauss_point_results" : []
+        },
+        "point_data_configuration"  : []
+    }
+}

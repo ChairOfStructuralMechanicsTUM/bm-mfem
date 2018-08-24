@@ -1,4 +1,11 @@
 %%%% Kreis, Masse_Feder_system 90Grad
+
+%%%%% FIXDOF(X) eigenwertproblem nicht lösbar
+
+%%%% FIXDOF(Y) Index in position 1 exceeds array bounds (must not exceed 535).
+% % % % %Error in BlochInverse1D/sortKandM (line 242)
+% % % %            Ksorted = K(vecdofsAll,vecdofsAll);
+
     
 clear
 
@@ -18,9 +25,9 @@ allNodes = model.getAllNodes();
 massNodeID = length(allNodes)+1;
 
 allElements = model.getAllElements();
-spring1ID = length(allElements)+1;
-spring2ID = length(allElements)+2;
-massID = length(allElements)+3;
+massID = length(allElements)+1;
+spring1ID = massID+1;
+spring2ID = massID+2;
 
 
 springNodes = model.getModelPart('GENERIC_90Grad').getNodes();
@@ -46,7 +53,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+%model.getNode(massNodeID).fixDof('DISPLACEMENT_X');
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 

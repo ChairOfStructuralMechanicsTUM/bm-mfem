@@ -1,0 +1,163 @@
+ |  /           |             
+ ' /   __| _` | __|  _ \   __|
+ . \  |   (   | |   (   |\__ \ 
+_|\_\_|  \__,_|\__|\___/ ____/
+           Multi-Physics 6.0.0-d195893325
+Importing    KratosStructuralMechanicsApplication 
+     KRATOS   ___|  |                   |                   |                     
+            \___ \  __|  __| |   |  __| __| |   |  __| _` | |                   
+                  | |   |    |   | (    |   |   | |   (   | |                     
+            _____/ \__|_|   \__,_|\___|\__|\__,_|_|  \__,_|_| MECHANICS     
+Importing    KratosExternalSolversApplication 
+Initializing KratosExternalSolversApplication... 
+ExternalSolversApplication: succesfully imported 
+Importing    KratosEigenSolversApplication 
+Initializing KratosEigenSolversApplication... 
+EigenSolversApplication: succesfully imported 
+::[MechanicalSolver]::  Construction finished: 
+::[StaticMechanicalSolver]::  Construction finished: 
+::[MechanicalSolver]::  Variables ADDED: 
+::[MechanicalSolver]::: Reading model part. 
+::[MechanicalSolver]::: Reading model part from file: C:\Users\ga78vuk\Desktop\GiD Testelements\Ellips_flach.gid\Ellips_flach.mdpa 
+ModelPartIO:   [Reading Nodes    : 243 nodes read]
+ModelPartIO:   [Reading Elements : 204 elements read] [Type: ShellThinElementCorotational3D4N]
+ModelPartIO:   [Total Lines Read : 986]
+::[MechanicalSolver]::: Finished reading model part from mdpa file. 
+ModelPart: -Structure- model part
+    Buffer Size : 1
+    Number of tables : 0
+    Number of sub model parts : 4
+    Current solution step index : 0
+    DOMAIN_SIZE : 3
+    IS_RESTARTED : 0
+
+    Mesh 0 : 
+        Number of Nodes      : 243
+        Number of Properties : 1
+        Number of Elements   : 204
+        Number of Conditions : 0
+
+    -Parts_structure- model part
+        Number of tables : 0
+        Number of sub model parts : 0
+
+        Mesh 0 : 
+            Number of Nodes      : 243
+            Number of Properties : 0
+            Number of Elements   : 204
+            Number of Conditions : 0
+    -GENERIC_springNodes- model part
+        Number of tables : 0
+        Number of sub model parts : 0
+
+        Mesh 0 : 
+            Number of Nodes      : 24
+            Number of Properties : 0
+            Number of Elements   : 0
+            Number of Conditions : 0
+    -GENERIC_leftNodes- model part
+        Number of tables : 0
+        Number of sub model parts : 0
+
+        Mesh 0 : 
+            Number of Nodes      : 11
+            Number of Properties : 0
+            Number of Elements   : 0
+            Number of Conditions : 0
+    -GENERIC_rightNodes- model part
+        Number of tables : 0
+        Number of sub model parts : 0
+
+        Mesh 0 : 
+            Number of Nodes      : 11
+            Number of Properties : 0
+            Number of Elements   : 0
+            Number of Conditions : 0
+ 
+::[MechanicalSolver]:: : Finished reading model part. 
+Computing model part:: -computing_domain- model part
+    Number of tables : 0
+    Number of sub model parts : 0
+
+    Mesh 0 : 
+        Number of Nodes      : 243
+        Number of Properties : 1
+        Number of Elements   : 204
+        Number of Conditions : 0
+
+ 
+::[Reading materials process]:: : Started 
+Warning in reading materials: Ignoring "KratosMultiphysics.StructuralMechanicsApplication" for Constitutive Law "LinearElasticPlaneStress2DLaw" 
+::[Reading materials process]:: : Finished 
+::[MechanicalSolver]::  Constitutive law was successfully imported.: 
+::[MechanicalSolver]::: ModelPart prepared for Solver. 
+::[MechanicalSolver]::  DOF's ADDED: 
+::[StaticMechanicalSolver]::  Initializing ...: 
+::[MechanicalSolver]::  Initializing ...: 
+::[Mechanical Solver]:: : CONVERGENCE CRITERION : residual_criterion 
+::[MechanicalSolver]::  Finished initialization.: 
+::[StaticMechanicalSolver]::  Finished initialization.: 
+::[KSM Simulation]:: : Analysis -START-  
+Setup Dofs Time: 0.00364817
+Setup System Time: 1.8773e-05
+System Matrix Resize Time: 0.0338302
+System Construction Time: 0.0376528
+::[KSM Simulation]:: : STEP:  1 
+::[KSM Simulation]:: : TIME:  1.1 
+ MESH MOVED 
+ResidualBasedBlockBuilderAndSolver: Build time: 0.076517
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.369233
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 1;  Norm = 2.12716e-09
+RESIDUAL ROTATION CRITERION :: Ratio = 1;  Norm = 3.15895e-12
+ResidualBasedBlockBuilderAndSolver: Build time: 0.069975
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.34184
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 14.9257;  Norm = 3.17493e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 13.5021;  Norm = 4.26523e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.0744403
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.328782
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 20.6109;  Norm = 4.38427e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 18.3831;  Norm = 5.80711e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.080543
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.343575
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 24.0293;  Norm = 5.11143e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 16.614;  Norm = 5.24826e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.085449
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.311743
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 19.3892;  Norm = 4.12441e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 17.9139;  Norm = 5.65889e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.10717
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.359533
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 25.9323;  Norm = 5.51623e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 22.103;  Norm = 6.98223e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.080558
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.414423
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 26.1521;  Norm = 5.56299e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 24.0345;  Norm = 7.59238e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.0776601
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.493901
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 34.5478;  Norm = 7.34888e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 29.1214;  Norm = 9.19931e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.0880097
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.401671
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 37.6455;  Norm = 8.00783e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 28.1698;  Norm = 8.89869e-11
+ResidualBasedBlockBuilderAndSolver: Build time: 0.0808662
+ResidualBasedBlockBuilderAndSolver: System solve time: 0.338227
+ MESH MOVED 
+RESIDUAL DISPLACEMENT CRITERION :: Ratio = 40.1919;  Norm = 8.54949e-08
+RESIDUAL ROTATION CRITERION :: Ratio = 30.6209;  Norm = 9.67297e-11
+***************************************************
+******* ATTENTION: max iterations exceeded ********
+***************************************************
+::[KSM Simulation]:: : Analysis -END-  
+BuilderAndSolver: Clear Function called
+KRATOS TERMINATED CORRECTLY

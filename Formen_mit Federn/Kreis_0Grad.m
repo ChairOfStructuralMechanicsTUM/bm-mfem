@@ -1,7 +1,7 @@
     
 clear
 
-io=MdpaInput('Federtests_Kreis.mdpa'); %specify input file
+io=MdpaInput('Federtests_Kreis_withInner_0Grad.mdpa'); %specify input file
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -10,6 +10,8 @@ model.getAllElements.setPropertyValue('POISSON_RATIO',0.34);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',2699);
 
+model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_Y');
+model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_X');
 % % 
 a=model.getAllModelParts;
 
@@ -17,9 +19,10 @@ allNodes = model.getAllNodes();
 massNodeID = length(allNodes)+1;
 
 allElements = model.getAllElements();
-spring1ID = length(allElements)+1;
-spring2ID = length(allElements)+2;
-massID = length(allElements)+3;
+massID = length(allElements)+1;
+spring1ID = massID+1;
+spring2ID = massID+2;
+
 
 
 springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
@@ -57,6 +60,9 @@ model.getElement(spring2ID).setPropertyValue('ELEMENTAL_DAMPING',0);
 model.getElement(massID).setPropertyValue('ELEMENTAL_MASS',7e0);
 model.getElement(massID).setPropertyValue('VOLUME_ACCELERATION',10);
 
+
+
+
 v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
 
@@ -68,11 +74,11 @@ assembling = SimpleAssembler(model);
 [massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
 
 initialize(solver)
-[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1); %%%sorts M and K to left,interior,right and removes fixed parts
 
 numberOfPhases = 20;
 
-[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  %%calculates R, 
 
 omega = cell(numberOfPhases,1);
 
@@ -99,11 +105,11 @@ for j = 1:nob
     plot(kx,f(j,:),'r')       
     legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
 end
-
-
-m = model.getElement(massID).getPropertyValue('ELEMENTAL_MASS');
-k1 = model.getElement(spring1ID).getPropertyValue('ELEMENTAL_STIFFNESS');
-k2 = model.getElement(spring2ID).getPropertyValue('ELEMENTAL_STIFFNESS');
-
-fe_SpringMass = sqrt((k1+k2)/m)/(2*pi());
-fprintf('Erwartetes Stopband bei Eigenfrequenz des MF-Systems: %s \n',fe_SpringMass)
+% 
+% 
+% m = model.getElement(massID).getPropertyValue('ELEMENTAL_MASS');
+% k1 = model.getElement(spring1ID).getPropertyValue('ELEMENTAL_STIFFNESS');
+% k2 = model.getElement(spring2ID).getPropertyValue('ELEMENTAL_STIFFNESS');
+% 
+% fe_SpringMass = sqrt((k1+k2)/m)/(2*pi());
+% fprintf('Erwartetes Stopband bei Eigenfrequenz des MF-Systems: %s \n',fe_SpringMass)

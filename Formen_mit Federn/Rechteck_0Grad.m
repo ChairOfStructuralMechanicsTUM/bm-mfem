@@ -22,7 +22,7 @@ spring2ID = length(allElements)+2;
 massID = length(allElements)+3;
 
 
-springNodes = model.getModelPart('GENERIC_22.5Grad').getNodes();
+springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
 
 leftSpringNode = springNodes(1,1);
 % % leftSNCoords = getCoords(leftSpringNode);
@@ -81,7 +81,7 @@ nob = 10;
 
 
 figure(2)
-title('Dispersion curves, Rechteck 22.5Grad')
+title('Dispersion curves, Rechteck 0Grad')
 xlabel('Phase k')
 ylabel('frequenzy f')
 xlim([0 pi])

@@ -46,7 +46,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+% % model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 
@@ -69,7 +69,7 @@ assembling = SimpleAssembler(model);
 [massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
 
 initialize(solver)
-[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+[Ksorted,Msorted] = sortKandM(solver,stiffnessMatrix,massMatrix); %%%vorher Kres1, Mred1
 
 numberOfPhases = 20;
 

@@ -1,4 +1,4 @@
-%%%% Kreis, Masse_Feder_system 90Grad
+%%%% Kreis, an allen 16 Punkten Federn
     
 clear
 
@@ -22,20 +22,20 @@ spring1ID = length(allElements)+1;
 spring2ID = length(allElements)+2;
 massID = length(allElements)+3;
 
-spring3ID = length(allElements)+3;
-spring4ID = length(allElements)+4;
-spring5ID = length(allElements)+5;
-spring6ID = length(allElements)+6;
-spring7ID = length(allElements)+7;
-spring8ID = length(allElements)+8;
-spring9ID = length(allElements)+9;
-spring10ID = length(allElements)+10;
-spring11ID = length(allElements)+11;
-spring12ID = length(allElements)+12;
-spring13ID = length(allElements)+13;
-spring14ID = length(allElements)+14;
-spring15ID = length(allElements)+15;
-spring16ID = length(allElements)+16;
+spring3ID = length(allElements)+4;
+spring4ID = length(allElements)+5;
+spring5ID = length(allElements)+6;
+spring6ID = length(allElements)+7;
+spring7ID = length(allElements)+8;
+spring8ID = length(allElements)+9;
+spring9ID = length(allElements)+10;
+spring10ID = length(allElements)+11;
+spring11ID = length(allElements)+12;
+spring12ID = length(allElements)+13;
+spring13ID = length(allElements)+14;
+spring14ID = length(allElements)+15;
+spring15ID = length(allElements)+16;
+spring16ID = length(allElements)+17;
 
 
 
@@ -62,7 +62,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 
@@ -126,15 +126,119 @@ model.getElement(spring6ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
 model.getElement(spring6ID).setPropertyValue('ELEMENTAL_DAMPING',0);
 
 
+%%%%%%%%Spring 7 und 8 ; 67.5Grad
+
+springNodes = model.getModelPart('GENERIC_67.5Grad').getNodes();
+leftSpringNode = springNodes(1,1);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+rightSNId = getId(rightSpringNode);
+
+model.addNewElement('SpringDamperElement3d2n',spring7ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring8ID,[massNodeID rightSNId]);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+
+model.getElement(spring7ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring7ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring8ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring8ID).setPropertyValue('ELEMENTAL_DAMPING',0)
 
 
+%%%%%%%Spring 9 und 10 ; 90Grad
+
+springNodes = model.getModelPart('GENERIC_90Grad').getNodes();
+leftSpringNode = springNodes(1,1);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+rightSNId = getId(rightSpringNode);
+
+model.addNewElement('SpringDamperElement3d2n',spring9ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring10ID,[massNodeID rightSNId]);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+
+model.getElement(spring9ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring9ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring10ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring10ID).setPropertyValue('ELEMENTAL_DAMPING',0)
 
 
+%%%%%%%Spring 11 und 12 ; 112.5Grad
+
+springNodes = model.getModelPart('GENERIC_112.5Grad').getNodes();
+leftSpringNode = springNodes(1,1);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+rightSNId = getId(rightSpringNode);
+
+model.addNewElement('SpringDamperElement3d2n',spring11ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring12ID,[massNodeID rightSNId]);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+
+model.getElement(spring11ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring11ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring12ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring12ID).setPropertyValue('ELEMENTAL_DAMPING',0)
 
 
+%%%%%%%Spring 13 und 14 ; 135Grad
+
+springNodes = model.getModelPart('GENERIC_135Grad').getNodes();
+leftSpringNode = springNodes(1,1);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+rightSNId = getId(rightSpringNode);
+
+model.addNewElement('SpringDamperElement3d2n',spring13ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring14ID,[massNodeID rightSNId]);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+
+model.getElement(spring13ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring13ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring14ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring14ID).setPropertyValue('ELEMENTAL_DAMPING',0)
 
 
+%%%%%%%Spring 15 und 16 ; 157.5Grad
 
+springNodes = model.getModelPart('GENERIC_157.5Grad').getNodes();
+leftSpringNode = springNodes(1,1);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+rightSNId = getId(rightSpringNode);
+
+model.addNewElement('SpringDamperElement3d2n',spring15ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring16ID,[massNodeID rightSNId]);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+
+model.getElement(spring15ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring15ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring16ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring16ID).setPropertyValue('ELEMENTAL_DAMPING',0)
 
 
 
@@ -143,46 +247,47 @@ v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
 
 
-% solver = BlochInverse1D(model);
-% assembling = SimpleAssembler(model);
-% 
-% [stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
-% [massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
-% 
-% initialize(solver)
-% [Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
-% 
-% numberOfPhases = 20;
-% 
-% [Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
-% 
-% omega = cell(numberOfPhases,1);
-% 
-% nob = 10;
-% [kx,miu] = propConst(solver,numberOfPhases);
-% 
-% 
-% figure(2)
-% title('Dispersion curves, Kreis 90Grad')
-% xlabel('Phase k')
-% ylabel('frequenzy f')
-% xlim([0 pi])
-% 
-% ylim([0 2e4])
-% 
-% hold on
-% for j = 1:nob
-%     
-%     for i = 1:numberOfPhases
-%         omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
-%         f(j,i) = omega{i,1}(j,1)/(2*pi);
-% 
-%     end
-%     plot(kx,f(j,:),'r')       
-%     legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
-% end
-% 
-% 
+
+solver = BlochInverse1D(model);
+assembling = SimpleAssembler(model);
+
+[stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
+[massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
+
+initialize(solver)
+[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+
+numberOfPhases = 20;
+
+[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
+
+omega = cell(numberOfPhases,1);
+
+nob = 10;
+[kx,miu] = propConst(solver,numberOfPhases);
+
+
+figure(2)
+title('Dispersion curves, Kreis 90Grad')
+xlabel('Phase k')
+ylabel('frequenzy f')
+xlim([0 pi])
+
+ylim([0 2e4])
+
+hold on
+for j = 1:nob
+    
+    for i = 1:numberOfPhases
+        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
+        f(j,i) = omega{i,1}(j,1)/(2*pi);
+
+    end
+    plot(kx,f(j,:),'r')       
+    legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
+end
+
+
 % m = model.getElement(massID).getPropertyValue('ELEMENTAL_MASS');
 % k1 = model.getElement(spring1ID).getPropertyValue('ELEMENTAL_STIFFNESS');
 % k2 = model.getElement(spring2ID).getPropertyValue('ELEMENTAL_STIFFNESS');

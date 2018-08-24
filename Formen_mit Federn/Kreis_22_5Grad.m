@@ -45,7 +45,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y'); %%%%%%UNFIX?
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gid version="13.5">
+  <pre>
+    <layer_to_use name="Layer0"/>
+    <groups>
+      <group id="1" name="leftNodes" color="#999999ff"/>
+      <group id="2" name="rightNodes" color="#0000ffff"/>
+      <group id="4" name="outerMaterial" color="#00ffffff"/>
+      <group id="5" name="structure" color="#a60021ff"/>
+      <group id="6" name="innerMaterial" color="#00ff00ff"/>
+    </groups>
+    <entities_groups>
+      <entities_group name="lines">
+        <vector name="entity_ids" length="2" type="integer">2 4</vector>
+        <vector name="entity_num_groups" length="2" type="ushort">1 1</vector>
+        <vector name="entity_groups" length="2" type="ushort">2 1</vector>
+      </entities_group>
+      <entities_group name="surfaces">
+        <vector name="entity_ids" length="2" type="integer">5 6</vector>
+        <vector name="entity_num_groups" length="2" type="ushort">2 2</vector>
+        <vector name="entity_groups" length="4" type="ushort">5 4 5 6</vector>
+      </entities_group>
+      <entities_group name="nodes">
+        <vector name="entity_ids" length="299" type="integer">1:299</vector>
+        <vector name="entity_num_groups" length="299" type="ushort">3 3 2 2 3 2x3 3 2x4 3 2x3 3 2x5 3 2x5 3 2x4 3 2x5 3 2x5 3 2x7 3 3 2x4 3 2 2 3 2 3 2x5 3 2 3 2 3 2x7 3 3 2x3 3 2x5 3 2 2 3 2 3 2x5 3 2 3 2x5 3 3 2 2 3 2x5 3 2x4 3 2 2 3 2x5 3 2x4 3 2x5 3 2x3 3 2x4 3 2x4 3 2x4 3 2 3 2x9 3 2x5 3 2x3 3 2x6 3 2x48 3x3 2 3 3 2x3 3 3 2x4 3 2 3 2 2 3 2x3 3 2x3 3 2 2 3 2x3 3 2x3 3 2x3 3 2 2 3 2 3 2 3 2 3 3</vector>
+        <vector name="entity_groups" length="664" type="ushort">1 5 4 1 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 6 1 5 4 5 4 5 4 5 4 5 4 5 4 6 5 4 5 6 1 5 4 5 4 5 4 6 5 4 5 4 5 4 5 6 5 4 5 4 6 5 6 1 5 4 5 4 5 4 6 5 4 5 6 5 4 5 4 5 4 5 4 5 6 5 4 6 1 5 4 5 6 5 4 5 4 5 4 6 5 4 5 4 5 4 5 6 5 4 5 4 6 5 6 5 4 1 5 4 5 4 5 4 6 5 4 5 6 5 6 5 4 5 4 5 4 6 5 4 1 5 4 5 4 5 4 5 4 5 4 5 6 5 4 6 5 4 6 5 6 5 4 1 5 4 5 4 5 6 5 4 5 4 5 4 5 4 6 5 4 5 4 5 6 5 4 5 4 6 5 6 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 5 4 6 5 4 5 6 5 6 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 5 4 6 5 6 5 4 5 4 5 4 6 5 4 5 4 5 4 5 6 5 4 6 5 6 5 4 5 4 5 4 1 5 4 5 4 5 4 5 4 5 4 5 4 6 5 6 5 4 6 5 4 5 4 5 4 5 4 5 6 5 4 5 4 5 4 5 6 5 4 6 5 4 5 4 5 4 5 4 5 4 5 4 6 5 4 5 6 5 4 5 4 6 5 4 5 4 5 4 5 4 5 4 5 4 5 4 6 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 2 5 4 2 5 4 2 5 4 5 4 2 5 4 2 5 4 5 4 5 4 5 4 2 5 4 2 5 4 5 4 5 4 5 4 5 4 2 5 4 5 4 2 5 4 5 4 5 4 2 5 4 5 4 5 4 5 4 2 5 4 5 4 5 4 5 4 2 5 4 5 4 5 4 2 5 4 5 4 5 4 5 4 2 5 4 5 4 5 4 5 4 2 5 4 5 4 5 4 5 4 2 5 4 5 4 5 4 2 5 4 5 4 2 5 4 5 4 2 5 4 5 4 2 5 4 2 5 4</vector>
+      </entities_group>
+      <entities_group name="elements">
+        <vector name="entity_ids" length="287" type="integer">1:247 268:287 308:327</vector>
+        <vector name="entity_num_groups" length="287" type="ushort">2x247 1x40</vector>
+        <vector name="entity_groups" length="534" type="ushort">5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 4 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 5 6 2x20 1x20</vector>
+      </entities_group>
+    </entities_groups>
+  </pre>
+</gid>

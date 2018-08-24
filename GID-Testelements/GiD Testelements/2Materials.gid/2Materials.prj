@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gid version="13.5">
+  <pre>
+    <layer_to_use name="Layer0"/>
+    <groups>
+      <group id="2" name="Structure" color="#0000ffff"/>
+      <group id="3" name="leftNodes" color="#ff00ffff"/>
+      <group id="4" name="rightNodes" color="#00ffffff"/>
+      <group id="5" name="holeNodes" color="#a60021ff"/>
+      <group id="6" name="innerMaterial" color="#00ff00ff"/>
+      <group id="7" name="outerMaterial" color="#996600ff"/>
+    </groups>
+    <entities_groups>
+      <entities_group name="lines">
+        <vector name="entity_ids" length="2" type="integer">2 4</vector>
+        <vector name="entity_num_groups" length="2" type="ushort">1 1</vector>
+        <vector name="entity_groups" length="2" type="ushort">4 3</vector>
+      </entities_group>
+      <entities_group name="surfaces">
+        <vector name="entity_ids" length="2" type="integer">5 6</vector>
+        <vector name="entity_num_groups" length="2" type="ushort">2 1</vector>
+        <vector name="entity_groups" length="3" type="ushort">2 7 2</vector>
+      </entities_group>
+      <entities_group name="nodes">
+        <vector name="entity_ids" length="228" type="integer">1:228</vector>
+        <vector name="entity_num_groups" length="228" type="ushort">3 2 3 2 2 3 2x5 3 2x7 3 2x8 3 2x6 3 2x5 3 2 3 3 2x7 3 2x4 3 2x5 3 3 2x4 3 2x3 3 2x5 3 2 2 3 2 3 2x5 3 3 2x7 3 2x3 3 2 3 2x3 3 2x8 3 2 3 2x3 3 2x4 3 2 2 3 2x3 3 2x7 3 2x5 3 2x3 3 2x8 3 2x40 3 3 2 2 3 3 2 2 3 2x3 3 2 3 2 2 3 2 2 3 2 3 3</vector>
+        <vector name="entity_groups" length="502" type="ushort">3 2 7 2 7 3 2 7 2 7 2 7 3 2 7 2 7 2 7 2 7 2 7 2 7 3 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 3 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 3 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 6 2 7 2 7 2 7 2 7 2 7 2 7 6 2 6 3 2 7 2 7 6 2 7 2 7 2 7 2 7 2 7 2 7 2 6 2 7 6 2 6 2 7 2 7 2 7 2 7 6 2 7 2 6 2 7 2 7 2 6 2 7 6 3 2 7 2 7 2 6 2 7 2 7 2 7 6 2 7 2 7 2 6 2 7 6 2 6 2 7 2 7 2 7 2 7 2 7 6 2 6 2 6 2 7 6 2 7 3 2 7 2 7 2 7 2 7 2 7 2 6 2 7 6 2 7 6 2 6 2 7 2 7 2 7 2 6 2 7 2 7 2 7 6 2 6 2 7 2 7 2 7 6 2 6 3 2 7 2 7 2 7 2 7 2 7 6 2 7 2 7 2 7 2 7 2 7 2 6 2 6 2 7 2 7 6 2 6 2 7 6 2 7 2 7 2 6 2 7 6 2 7 2 7 2 6 2 7 3 2 7 2 7 2 7 2 7 6 2 6 2 7 2 7 2 7 6 2 7 2 7 2 6 2 7 2 7 2 7 2 6 2 7 6 2 7 2 7 2 7 2 7 2 7 2 7 6 2 6 2 7 2 7 2 7 6 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 6 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 4 2 7 4 2 7 2 7 2 7 4 2 7 4 2 7 2 7 2 7 4 2 7 2 7 2 7 2 7 4 2 7 2 7 4 2 7 2 7 2 7 4 2 7 2 7 2 7 4 2 7 2 7 4 2 7 4 2 7</vector>
+      </entities_group>
+      <entities_group name="elements">
+        <vector name="entity_ids" length="211" type="integer">1:211</vector>
+        <vector name="entity_num_groups" length="211" type="ushort">2x167 1x44</vector>
+        <vector name="entity_groups" length="378" type="ushort">2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2 7 2x24 4x10 3x10</vector>
+      </entities_group>
+    </entities_groups>
+  </pre>
+</gid>
