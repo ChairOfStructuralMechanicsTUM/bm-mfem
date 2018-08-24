@@ -101,3 +101,56 @@
 % % %            end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%        function [kx,miu] = propConst(obj,numberOfWaveNumbers) %obj kann auch entfernt werden -> dann muss die Funktion aber statisch sein!
+%            kx = linspace(0,pi,numberOfWaveNumbers);    %15 ist viel zu wenig
+%            miu = exp(i*kx); %kx:Phase
+%        end
+%           
+%        function R = transformationMatrix(obj,miu,index)
+%            nodeIdsRight = obj.rightNodes;
+%            nodeIdsLeft = obj.leftNodes; 
+%            leftDofs = obj.leftDofs;
+%            rightDofs = obj.rightDofs;
+%            M = obj.massMatrix;
+%            R = [eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs)); ...
+%                zeros(length(M)-2*length(leftDofs),length(leftDofs)), eye(length(M)-2*length(leftDofs));...
+%                miu(index)*eye(length(leftDofs)), zeros(length(leftDofs),length(M)-2*length(leftDofs))];
+% 
+%            if miu == exp(i*pi/2)
+%                disp('R_pi/2 = ')
+%                disp(R)
+%            end
+%        end          
+%         
+%        function [Ksorted,Msorted] = sortKandM(obj,K,M) 
+%            leftDofs = obj.leftDofs;
+%            rightDofs = obj.rightDofs;
+%            innerDofs = getInnerDofIds(obj);         
+%            vecdofs = [leftDofs,innerDofs,rightDofs];
+%            Ksorted = K(vecdofs,vecdofs);
+%            Msorted = M(vecdofs,vecdofs);
+%        end
+%        
+%        
+%        
+%        function [Kred,Mred] = reducedStiffnesAndMass (obj,K,M)
+%            numberOfWaveNumbers = 10;
+%             
+%            [kx,miu] = propConst(obj,numberOfWaveNumbers);
+%             Kred = cell(numberOfWaveNumbers,1);
+%             Mred = cell(numberOfWaveNumbers,1);
+%             
+%             
+%             for i=1:numberOfWaveNumbers
+%             
+%                 
+%             R = transformationMatrix(obj,miu,i);    
+% %             Kred{i,1} = conj(R)'*K*R;
+% %             Mred{i,1} = conj(R)'*M*R;
+%               Mred{i,1} = R'*M*R;
+%               Kred{i,1} = R'*K*R;
+%             end
+%        end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

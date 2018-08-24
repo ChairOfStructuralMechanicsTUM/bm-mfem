@@ -1005,6 +1005,9 @@ Begin SubModelPart Parts_structure // Group structure // Subtree Parts
     Begin SubModelPartConditions
     End SubModelPartConditions
 End SubModelPart
+Begin Conditions PointCondition3D1N// GUI group identifier: inner_112.5Grad
+End Conditions
+
 Begin SubModelPart GENERIC_leftNodes // Group leftNodes // Subtree GENERIC
     Begin SubModelPartNodes
             1
@@ -1043,7 +1046,7 @@ Begin SubModelPart GENERIC_rightNodes // Group rightNodes // Subtree GENERIC
     Begin SubModelPartConditions
     End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart GENERIC_innerNodes // Group innerNodes // Subtree GENERIC
+Begin SubModelPart GENERIC_springNodes // Group springNodes // Subtree GENERIC
     Begin SubModelPartNodes
            57
            60
@@ -1141,6 +1144,78 @@ Begin SubModelPart GENERIC_157.5Grad // Group 157.5Grad // Subtree GENERIC
     Begin SubModelPartNodes
            83
           140
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_0Grad // Group inner_0Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_22.5Grad // Group inner_22.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_45Grad // Group inner_45Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_67.5Grad // Group inner_67.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_90Grad // Group inner_90Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_112.5Grad // Group inner_112.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_135Grad // Group inner_135Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_inner_157.5Grad // Group inner_157.5Grad // Subtree GENERIC
+    Begin SubModelPartNodes
+    End SubModelPartNodes
+    Begin SubModelPartElements
+    End SubModelPartElements
+    Begin SubModelPartConditions
+    End SubModelPartConditions
+End SubModelPart
+Begin SubModelPart GENERIC_fixedNodes // Group fixedNodes // Subtree GENERIC
+    Begin SubModelPartNodes
     End SubModelPartNodes
     Begin SubModelPartElements
     End SubModelPartElements
