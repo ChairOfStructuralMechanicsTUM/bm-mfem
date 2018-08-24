@@ -102,10 +102,45 @@ ele49 = BarElement2d2n(49,[node19 node23]);
 ele50 = BarElement2d2n(50,[node19 node24]);
 ele51 = BarElement2d2n(51,[node20 node24]);
 ele52 = BarElement2d2n(52,[node20 node25]);
-%
 ele53 = BarElement2d2n(53,[node21 node22]);
+ele54 = BarElement2d2n(54,[node22 node23]);
+ele55 = BarElement2d2n(55,[node23 node24]);
+ele56 = BarElement2d2n(56,[node24 node25]);
+ele57 = BarElement2d2n(57,[node21 node26]);
+ele58 = BarElement2d2n(58,[node22 node26]);
+ele59 = BarElement2d2n(59,[node22 node27]);
+ele60 = BarElement2d2n(60,[node23 node27]);
+ele61 = BarElement2d2n(61,[node23 node28]);
+ele62 = BarElement2d2n(62,[node24 node28]);
+ele63 = BarElement2d2n(63,[node24 node29]);
+ele64 = BarElement2d2n(64,[node25 node29]);
+ele65 = BarElement2d2n(65,[node25 node30]);
+ele66 = BarElement2d2n(66,[node26 node27]);
+ele67 = BarElement2d2n(67,[node27 node28]);
+ele68 = BarElement2d2n(68,[node28 node29]);
+ele69 = BarElement2d2n(69,[node29 node30]);
+ele70 = BarElement2d2n(70,[node26 node31]);
+ele71 = BarElement2d2n(71,[node27 node31]);
+ele72 = BarElement2d2n(72,[node27 node32]);
+ele73 = BarElement2d2n(73,[node28 node32]);
+ele74 = BarElement2d2n(74,[node28 node33]);
+ele75 = BarElement2d2n(75,[node29 node23]);
+ele76 = BarElement2d2n(76,[node29 node34]);
+ele77 = BarElement2d2n(77,[node30 node34]);
+ele78 = BarElement2d2n(78,[node30 node35]);
+ele79 = BarElement2d2n(79,[node31 node32]);
+ele80 = BarElement2d2n(80,[node32 node33]);
+ele81 = BarElement2d2n(81,[node33 node34]);
+ele82 = BarElement2d2n(82,[node34 node35]);
 
 
-
-
-
+elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
+    ele10 ele11 ele12 ele13 ele14 ele15 ele16 ele17 ele18 ele19 ...
+    ele20 ele21 ele22 ele23 ele24 ele25 ele26 ele27 ele28 ele29 ele30 ...
+    ele31 ele32 ele33 ele34 ele35 ele36 ele37 ele38 ele39 ele40 ...
+    ele41 ele42 ele43 ele44 ele45 ele46 ele47 ele48 ele49 ele50 ...
+    ele51 ele52 ele53 ele54 ele55 ele56 ele57 ele58 ele59 ele60 ...
+    ele61 ele62 ele63 ele64 ele65 ele66 ele67 ele68 ele69 ele70 ...
+    ele71 ele72 ele73 ele74 ele75 ele76 ele77 ele78 ele79 ele80 ...
+    ele81 ele82
+    ];
