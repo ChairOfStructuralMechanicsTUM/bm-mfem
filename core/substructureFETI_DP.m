@@ -2,9 +2,9 @@ classdef substructureFETI_DP < handle
     
    %% properties
    properties (Access=private)
-       nodematrix  %Matrix der Knoten ids
-       nodearray
-       K           % cell array, speichert die Knoten ids jeder Substruktur
+       nodematrix=Node.empty  %Matrix der Knoten ids
+       nodearray=Node.empty
+       K        % cell array, speichert die Knoten ids jeder Substruktur
        bc
        br
        in
@@ -142,7 +142,7 @@ classdef substructureFETI_DP < handle
                         gbr1=cell2mat(br(j,i));
                         gin1=cell2mat(in(j,i));
                         
-                        %initialisieren, size mitlaifen lassen
+                        %size (gbc1...) läuft als Variable mit
                         
                         gbc(size(gbc,1)+1:size(gbc,1)+size(gbc1,1),1)=gbc1;  %globaler Vektor der Eckknoten
                         gbr(size(gbr,1)+1:size(gbr,1)+size(gbr1,1),1)=gbr1;  %globaler Vektor der interface Knoten
@@ -155,13 +155,19 @@ classdef substructureFETI_DP < handle
             end      
        
        
-       %% Verdopplung und Neubennenug der br Knoten und interface Elemente, speichern der neuen infos im femModel
+       %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
        
-       function [Ksort, brsort, nodeArray, elementArray]= restructureTheSubstrucures(femModel,K,bc,br,in)
-           
-           
-           
-           
+       function [doubleNodes,idVector]= getDoubleNodes(femModel,gbr)
+           k=1;
+           for i=1:length(gbr)
+           for j=i:length(gbr)
+               if gbr(i)==gbr(j)
+                   doubleNodes(k)=femModel.getNodes(j);
+                   idVector=[doubleNodes.getId];
+                   k=k+1;
+               end
+           end
+           end
        end
        
        
