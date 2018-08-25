@@ -3,10 +3,14 @@ classdef substructureFETI_DP < handle
    %% properties
    properties (Access=private)
        nodematrix  %Matrix der Knoten ids
+       nodearray
        K           % cell array, speichert die Knoten ids jeder Substruktur
        bc
        br
        in
+       gbc
+       gbr
+       gin
    end
    
    
@@ -31,7 +35,7 @@ classdef substructureFETI_DP < handle
        %% nodematrix
        function [nodematrix]=setupNodeMatrix(femModel,dim)
        nodearray=femModel.getAllNodes;
-       nodeIdArray=zeros(dim);
+       nodeIdArray=zeros(length(nodearray));
        for itnod = 1:length(nodearray)
            nodeIdArray(itnod)=nodearray(itnod).getId;
        end
@@ -50,7 +54,7 @@ classdef substructureFETI_DP < handle
        %% Unterteilung der nodematrix in Substrukturen Kij
        % Sortierung der Vektoren bc, br, in
        
-       function [K,bc,br,in]= substructureNodeMatrix(femModel,nodematrix,Ns,v,hz,dim)
+       function [K,bc,br,in,gbc,gbr,gin]= substructureNodeMatrix(femModel,nodematrix,Ns,v,hz,dim)
            
            if hz*v~=Ns
                 fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
@@ -66,12 +70,15 @@ classdef substructureFETI_DP < handle
             bc=cell(v,hz);
             br=cell(v,hz);
             in=cell(v,hz);
-                   
+            gbc=[];
+            gbr=[];
+            gin=[];
+            
             if or(a<2,b<2)
                 fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
             return
             else
- 
+            n=1;
             for i=1:hz
                 for j=1:v
                        if i==1 && j==1 %Fall 1: linke obere Ecke
@@ -83,7 +90,7 @@ classdef substructureFETI_DP < handle
                                 bc(j,i)={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
                                 br(j,i)={[nodematrix(a+1,2:b);nodematrix(2:a,b+1)]};
                                 K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
-                            end
+                        end
                         elseif i==1 && j~=1 && j~=v %Fall 2: erste Spalte Mitte
                             bc(j,i)={[nodematrix((j-1)*a+1,1);nodematrix((j-1)*a+1,b+1);nodematrix(j*a+1,1);nodematrix(j*a+1,b+1)]};
                             br(j,i)={[nodematrix((j-1)*a+1,2:b).';nodematrix(j*a+1,2:b).';nodematrix((j-1)*a+2:j*a,b+1)]};
@@ -116,7 +123,7 @@ classdef substructureFETI_DP < handle
                                 br(j,i)={nodematrix(2:a-1,dim(2)-b)};
                                 K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
                             else
-                                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b);nodematrix(a,dim(2))]};
+                                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a+1,dim(2)-b);nodematrix(a+1,dim(2))]};
                                 br(j,i)={[nodematrix(2:a,dim(2)-b);nodematrix(a+1,dim(2)-b+1:dim(2)-1).']};
                                 K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
                             end
@@ -130,14 +137,33 @@ classdef substructureFETI_DP < handle
                             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
                         end
                         in(j,i)={setdiff(cell2mat(K(j,i)),union(cell2mat(bc(j,i)),cell2mat(br(j,i))))};
-                    end
-                end
+                        
+                        gbc1=cell2mat(bc(j,i));
+                        gbr1=cell2mat(br(j,i));
+                        gin1=cell2mat(in(j,i));
+                        
+                        %initialisieren, size mitlaifen lassen
+                        
+                        gbc(size(gbc,1)+1:size(gbc,1)+size(gbc1,1),1)=gbc1;  %globaler Vektor der Eckknoten
+                        gbr(size(gbr,1)+1:size(gbr,1)+size(gbr1,1),1)=gbr1;  %globaler Vektor der interface Knoten
+                        gin(size(gin,1)+1:size(gin,1)+size(gin1,1),1)=gin1;  % globaler Vektor der internen Knoten
+                        n=n+1;
+                 end
+            end
             end  
-           end
-       end      
+            end
+            end      
        
        
-       %% 
+       %% Verdopplung und Neubennenug der br Knoten und interface Elemente, speichern der neuen infos im femModel
+       
+       function [Ksort, brsort, nodeArray, elementArray]= restructureTheSubstrucures(femModel,K,bc,br,in)
+           
+           
+           
+           
+       end
+       
        
        
        

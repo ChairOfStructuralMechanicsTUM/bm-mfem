@@ -178,7 +178,7 @@ Ns=6;
 v=2;
 hz=3;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
-[K,bc,br,in]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
+[K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
 
 
 %%
