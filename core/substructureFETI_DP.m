@@ -2,8 +2,8 @@ classdef substructureFETI_DP < handle
     
    %% properties
    properties (Access=private)
-       nodematrix
-       K
+       nodematrix  %Matrix der Knoten ids
+       K           % cell array, speichert die Knoten ids jeder Substruktur
        bc
        br
        in
