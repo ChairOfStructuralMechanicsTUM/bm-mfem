@@ -3,7 +3,10 @@ classdef substructureFETI_DP < handle
    %% properties
    properties (Access=private)
        nodematrix
-       
+       K
+       bc
+       br
+       in
    end
    
    
@@ -44,12 +47,97 @@ classdef substructureFETI_DP < handle
        end
        
        
-       %% nodematrix substructuring
+       %% Unterteilung der nodematrix in Substrukturen Kij
+       % Sortierung der Vektoren bc, br, in
+       
+       function [K,bc,br,in]= substructureNodeMatrix(femModel,nodematrix,Ns,v,hz,dim)
+           
+           if hz*v~=Ns
+                fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
+                return
+           elseif Ns==1
+                fprintf('keine Substrukturierung ausgewählt bitte Ns ungleich 1 wählen')
+                return
+           else
+               
+            K=cell(v,hz); %cell um die verschiedenen Substructures als arrays darin zu speichern
+            a=floor(size(nodematrix,1)/v); %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
+            b=floor(size(nodematrix,2)/hz); %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
+            bc=cell(v,hz);
+            br=cell(v,hz);
+            in=cell(v,hz);
+                   
+            if or(a<2,b<2)
+                fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
+            return
+            else
+ 
+            for i=1:hz
+                for j=1:v
+                       if i==1 && j==1 %Fall 1: linke obere Ecke
+                       if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
+                                bc(j,i)={[nodematrix(1,b+1);nodematrix(a,b+1)]};
+                                br(j,i)={nodematrix(2:a-1,b+1)};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
+                       else
+                                bc(j,i)={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
+                                br(j,i)={[nodematrix(a+1,2:b);nodematrix(2:a,b+1)]};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                            end
+                        elseif i==1 && j~=1 && j~=v %Fall 2: erste Spalte Mitte
+                            bc(j,i)={[nodematrix((j-1)*a+1,1);nodematrix((j-1)*a+1,b+1);nodematrix(j*a+1,1);nodematrix(j*a+1,b+1)]};
+                            br(j,i)={[nodematrix((j-1)*a+1,2:b).';nodematrix(j*a+1,2:b).';nodematrix((j-1)*a+2:j*a,b+1)]};
+                            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                        elseif i==1 && j==v %Fall 3 linke untere Ecke
+                            bc(j,i)={[nodematrix(dim(1)-(a),1);nodematrix(dim(1)-a,b+1);nodematrix(dim(1),b+1)]};
+                            br(j,i)={[nodematrix(dim(1)-a,2:b);nodematrix(dim(1)-a+1:dim(1)-1,b+1)]};
+                            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};  
+                        elseif j==1 && i~=1 && i~= hz    %Fall 4 erste Zeile Mitte
+                            if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
+                                bc(j,i)={[nodematrix(1,(i-1)*b+1);nodematrix(a,(i-1)*b+1);nodematrix(1,i*b+1);nodematrix(a,i*b+1)]};
+                                br(j,i)={[nodematrix(2:j*a-1,(i-1)*b+1);nodematrix(2:j*a-1,i*b+1)]};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
+                            else
+                                bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(j*a+1,i*b+1)]};
+                                br(j,i)={[nodematrix(2:j*a,(i-1)*b+1);nodematrix(a+1,(i-1)*b+2:i*b).';nodematrix(2:j*a,i*b+1)]};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                            end
+                        elseif i>1 && i<hz && j>1 && j<v %Fall 5 Mitte Mitte
+                            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(j*a+1,i*b+1)]};
+                            br(j,i)={[nodematrix((j-1)*a+2:j*a,(i-1)*b+1);nodematrix((j-1)*a+1,(i-1)*b+2:i*b).';nodematrix(j*a+1,(i-1)*b+2:i*b).';nodematrix((j-1)*a+2:j*a,i*b+1)]};
+                            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
+                        elseif j==v && i~=1 && i~= hz %Fall 6 unterste Zeile Mitte
+                            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(dim(1),(i-1)*b+1);nodematrix((j-1)*a+1,i*b+1);nodematrix(dim(1),i*b+1)]};
+                            br(j,i)={[nodematrix((j-1)*a+2:dim(1)-1,(i-1)*b+1);nodematrix((j-1)*a+1,(i-1)*b+2:i*b).';nodematrix((j-1)*a+2:dim(1)-1,i*b+1)]};
+                            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};
+                        elseif j==1 && i==hz %Fall 7 rechte obere Ecke
+                            if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
+                                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b)]};
+                                br(j,i)={nodematrix(2:a-1,dim(2)-b)};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
+                            else
+                                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b);nodematrix(a,dim(2))]};
+                                br(j,i)={[nodematrix(2:a,dim(2)-b);nodematrix(a+1,dim(2)-b+1:dim(2)-1).']};
+                                K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
+                            end
+                        elseif i==hz && j~=1 && j~=v %Fall 8 letzte Spalte Mitte
+                            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,dim(2));nodematrix(j*a+1,dim(2))]};
+                            br(j,i)={[nodematrix((j-1)*a+2:j*a,(i-1)*b+1);nodematrix((j-1)*a+1,dim(2)-b+1:dim(2)-1).';nodematrix(j*a+1,dim(2)-b+1:dim(2)-1).']};
+                            K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
+                        else %Fall 9 rechte untere Ecke
+                            bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(dim(1),(i-1)*b+1);nodematrix((j-1)*a+1,dim(2))]};
+                            br(j,i)={[nodematrix((j-1)*a+2:dim(1)-1,dim(2)-b);nodematrix(dim(1)-a,(dim(2)-b+1:dim(2)-1)).']};
+                            K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
+                        end
+                        in(j,i)={setdiff(cell2mat(K(j,i)),union(cell2mat(bc(j,i)),cell2mat(br(j,i))))};
+                    end
+                end
+            end  
+           end
+       end      
        
        
-       
-       
-       
+       %% 
        
        
        
