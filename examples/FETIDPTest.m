@@ -168,7 +168,7 @@ addPointLoad([node21 node26 node31],10,[0 -1]);
 
 
 model = FemModel(nodeArray, elementArray);
-assembling = SimpleAssembler(model);
+assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 forceVector = assembling.applyExternalForces(model);
 

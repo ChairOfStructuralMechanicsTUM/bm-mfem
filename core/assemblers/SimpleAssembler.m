@@ -3,10 +3,10 @@ classdef SimpleAssembler < Assembler
     %   Detailed explanation goes here
     
     properties
-%         stiffnessMatrix
-%         reducedStiffnessMatrix
-%         forceVector
-%         reducedForceVector
+%          stiffnessMatrix
+%          reducedStiffnessMatrix
+%          forceVector
+%          reducedForceVector
     end
     
     methods %test
