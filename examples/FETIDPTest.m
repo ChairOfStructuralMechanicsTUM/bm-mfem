@@ -1,46 +1,46 @@
 clear;
 
 node01=Node(1,0,0);
-node02=Node(2,5,0);
-node03=Node(3,10,0);
-node04=Node(4,15,0);
-node05=Node(5,20,0);
+node02=Node(2,0,-5);
+node03=Node(3,0,-10);
+node04=Node(4,0,-15);
+node05=Node(5,0,-20);
 %
-node06=Node(6,0,5);
-node07=Node(7,5,5);
-node08=Node(8,10,5);
-node09=Node(9,15,5);
-node10=Node(10,20,5);
+node06=Node(6,5,0);
+node07=Node(7,5,-5);
+node08=Node(8,5,-10);
+node09=Node(9,5,-15);
+node10=Node(10,5,-20);
 %
-node11=Node(11,0,10);
-node12=Node(12,5,10);
-node13=Node(13,10,10);
-node14=Node(14,15,10);
-node15=Node(15,20,10);
+node11=Node(11,10,0);
+node12=Node(12,10,-5);
+node13=Node(13,10,-10);
+node14=Node(14,10,-15);
+node15=Node(15,10,-20);
 %
-node16=Node(16,0,15);
-node17=Node(17,5,15);
-node18=Node(18,10,15);
-node19=Node(19,15,15);
-node20=Node(20,20,15);
+node16=Node(16,15,0);
+node17=Node(17,15,-5);
+node18=Node(18,15,-10);
+node19=Node(19,15,-15);
+node20=Node(20,15,-20);
 %
-node21=Node(21,0,20);
-node22=Node(22,5,20);
-node23=Node(23,10,20);
-node24=Node(24,15,20);
-node25=Node(25,20,20);
+node21=Node(21,20,0);
+node22=Node(22,20,-5);
+node23=Node(23,20,-10);
+node24=Node(24,20,-15);
+node25=Node(25,20,-20);
 %
-node26=Node(26,0,25);
-node27=Node(27,5,25);
-node28=Node(28,10,25);
-node29=Node(29,15,25);
-node30=Node(30,20,25);
+node26=Node(26,25,0);
+node27=Node(27,25,-5);
+node28=Node(28,25,-10);
+node29=Node(29,25,-15);
+node30=Node(30,25,-20);
 %
-node31=Node(31,0,30);
-node32=Node(32,5,30);
-node33=Node(33,10,30);
-node34=Node(34,15,30);
-node35=Node(35,20,30);
+node31=Node(31,30,0);
+node32=Node(32,30,-5);
+node33=Node(33,30,-10);
+node34=Node(34,30,-15);
+node35=Node(35,30,-20);
 
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
     node10 node11 node12 node13 node14 node15 node16 node17 node18 node19 node20 ...
@@ -124,7 +124,7 @@ ele71 = BarElement2d2n(71,[node27 node31]);
 ele72 = BarElement2d2n(72,[node27 node32]);
 ele73 = BarElement2d2n(73,[node28 node32]);
 ele74 = BarElement2d2n(74,[node28 node33]);
-ele75 = BarElement2d2n(75,[node29 node23]);
+ele75 = BarElement2d2n(75,[node29 node33]);
 ele76 = BarElement2d2n(76,[node29 node34]);
 ele77 = BarElement2d2n(77,[node30 node34]);
 ele78 = BarElement2d2n(78,[node30 node35]);
@@ -144,3 +144,65 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
     ele71 ele72 ele73 ele74 ele75 ele76 ele77 ele78 ele79 ele80 ...
     ele81 ele82
     ];
+
+
+elementArray.setPropertyValue('CROSS_SECTION',1);
+elementArray.setPropertyValue('YOUNGS_MODULUS',1000);
+
+elementIds = elementArray.getId;
+
+node01.fixDof('DISPLACEMENT_X');
+node01.fixDof('DISPLACEMENT_Y');
+
+node02.fixDof('DISPLACEMENT_X');
+node02.fixDof('DISPLACEMENT_Y');
+
+node04.fixDof('DISPLACEMENT_X');
+node04.fixDof('DISPLACEMENT_Y');
+
+node05.fixDof('DISPLACEMENT_X');
+node05.fixDof('DISPLACEMENT_Y');
+
+
+addPointLoad([node21 node26 node31],10,[0 -1]);
+
+
+model = FemModel(nodeArray, elementArray);
+assembling = SimpleAssembler(model);
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+forceVector = assembling.applyExternalForces(model);
+
+
+solver = SimpleSolvingStrategy(model);
+x = solver.solve();
+
+step = 1;
+
+%stressVector = computeElementStress(elementArray, step)';
+
+VerschiebungDofs = model.getDofArray.getValue(step);
+
+nodalForces = solver.getNodalForces(step);
+
+
+v = Visualization(model);
+%v.setScaling(10000000);
+v.plotUndeformed
+v.plotDeformed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
