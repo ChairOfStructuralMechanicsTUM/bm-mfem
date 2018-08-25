@@ -23,7 +23,7 @@ nodematrix=zeros(dim);
 k=1;
 for i=1:dim(2)
     for j=1:dim(1)
-        nodematrix(j,i)=nodearray(k);
+        nodematrix(j,i)=nodearray(getId(k));
         k=k+1;
     end
 end

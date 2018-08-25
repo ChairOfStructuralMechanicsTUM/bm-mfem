@@ -172,6 +172,15 @@ assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 forceVector = assembling.applyExternalForces(model);
 
+dim=[5,7];
+nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
+
+
+
+
+
+
+
 
 solver = SimpleSolvingStrategy(model);
 x = solver.solve();
