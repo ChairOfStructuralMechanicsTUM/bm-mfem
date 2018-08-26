@@ -157,15 +157,38 @@ classdef substructureFETI_DP < handle
        %% Zusammenbauen der Steifigkeitsmatrix jeder Substruktur
        
        %Knotenarray jeder Substruktur:
-       function [nodearray] = getSubstructureNodeArray(K,v,hz)
+       function [snodearray] = getSubstructureNodeArray(K,v,hz)
             for i=1:hz
                 for j=1:v
                     matrix=cell2mat(K(j,i));
-                    nodearray(j,i)={matrix(:)};                  
+                    snodearray(j,i)={matrix(:)};                  
                 end
             end
            
        end
+       
+       %Steifigkeitsmatrix jeder substruktur
+       function [substructureStiffnessMatrix, reducedSubstrucureStiffnessMatrix] = assembleSubstrucureStiffnessMatrix(femModel,snodearray)
+            elements = femModel.getAllElements;
+            ndofs = length(femModel.getDofArray);
+            stiffnessMatrix = zeros(ndofs);
+            
+            for itEle = 1:length(elements)
+               elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
+               elementalDofIds = elements(itEle).getDofList().getId;
+               stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
+                   stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
+            end
+            [~, fixedDofs] = femModel.getDofConstraints;
+            if ~ isempty(fixedDofs)
+                fixedDofIds = fixedDofs.getId();
+                reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
+            end
+        end 
+       
+       
+       
+       
        
        
        
