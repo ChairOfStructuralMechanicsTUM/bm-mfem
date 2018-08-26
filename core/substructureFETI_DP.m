@@ -205,17 +205,28 @@ classdef substructureFETI_DP < handle
        end
        
        %dof array jeder Substruktur:
-       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,sNodeArray,K,v,hz)
+       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,sNodeArray,sElementArray,K,v,hz)
+           %sDofArray=Dof.empty;
+           list=Dof.empty;
+           array=Dof.empty;
            for i=1:hz
                 for j=1:v
-                    sDofArray{j,i}=sNodearray{j,i}.getDofArray
-                    
+                    array=sNodeArray{j,i};
+                    c=1;
+                    for k=1:length(array)
+                    list(c:c+1)=array(k).getDofArray; 
+                    c=c+2;
+                    end
+                    sDofArray{j,i}=list;
                 end
            end
        end
    
        %Steifigkeitsmatrix jeder Substruktur
-       
+       function [stiffnessMatrix, reducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel)
+           
+           
+       end
        
        
        
