@@ -179,7 +179,7 @@ v=2;
 hz=3;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
-[DoubleNodes,IdVector]=substructureFETI_DP.getDoubleNodes(model,gbr);
+[DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
 
 %%
 

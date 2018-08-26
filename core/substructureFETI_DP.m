@@ -157,19 +157,19 @@ classdef substructureFETI_DP < handle
        
        %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
        
-       function [doubleNodes,idVector]= getDoubleNodes(femModel,gbr)
-           k=1;
-           for i=1:length(gbr)
-           for j=i:length(gbr)
-               if gbr(i)==gbr(j)
-                   doubleNodes(k)=femModel.getNodes(j);
-                   idVector=[doubleNodes.getId];
-                   k=k+1;
-               end
-           end
-           end
-       end
-       
+%        function [doubleNodes]= getDoubleNodes(femModel,gbr)
+%            k=1;
+%            for i=1:length(gbr)
+%            for j=i:length(gbr)
+%                if gbr(i)==gbr(j)
+%                    doubleNodes(k)=gbr(i);
+%                    %idVector=[doubleNodes.getId];
+%                    k=k+1;
+%                end
+%            end
+%            end
+%        end
+%        
        
        
        
