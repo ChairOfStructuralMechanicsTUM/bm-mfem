@@ -155,21 +155,29 @@ classdef substructureFETI_DP < handle
        end      
             
        %% Zusammenbauen der Steifigkeitsmatrix jeder Substruktur
-       
+      
        %Knotenarray jeder Substruktur:
-%        function [snodearray] = getSubstructureNodeArray(K,v,hz)
-%             for i=1:hz
-%                 for j=1:v
-%                     matrix=cell2mat(K(j,i));
-%                     snodearray(j,i)={matrix(:)};                  
-%                 end
-%             end
-%            
-%        end
-       
+       function [sNodeIdArray] = getSubstructureNodeIdArray(K,v,hz)
+            for i=1:hz
+                for j=1:v
+                    matrix=cell2mat(K(j,i));
+                    sNodeIdArray(j,i)={matrix(:)};                  
+                end
+            end
+           
+       end
+       %lege die Knoten des FemModels auf die Stelle der Id in K ab
+       function [sNodeArray] = getSubstructureNodeArray(femModel,sNodeIdArray,K,v,hz)
+           for i=1:hz
+                for j=1:v
+                   sNodeArray(j,i)={femModel.getNodes(cell2mat(sNodeIdArray(j,i)))};                  
+                end
+           end    
+       end
        %dof array jeder Substruktur:
-       
-       
+       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,K,v,hz)
+           
+       end
        
        
        

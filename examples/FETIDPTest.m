@@ -180,7 +180,8 @@ hz=3;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
 [DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
-[substrNodearray]=substructureFETI_DP.getSubstructureNodeArray(K,v,hz)
+[substrNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz)
+[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,substrNodeIdArray,K,v,hz)
 %%
 
 
