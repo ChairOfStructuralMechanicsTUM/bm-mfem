@@ -177,8 +177,9 @@ classdef substructureFETI_DP < handle
        end
        
        %element array jeder Substruktur
-       function [sElementArray] = getSubstructureElementArray(femModel,sNodeArray,sNodeIdArray,K,v,hz)
+       function [sElementArray,id,nodes] = getSubstructureElementArray(femModel,sNodeArray,sNodeIdArray,K,v,hz)
            elements=femModel.getAllElements;
+           array=elements.empty;
            for itEle = 1:length(elements)
                 nodes(itEle:itEle+1,1)=elements(itEle).getNodes;
                 id(itEle)=elements(itEle).getId;
@@ -187,10 +188,14 @@ classdef substructureFETI_DP < handle
           
            for i=1:hz
                 for j=1:v
-                    %über komplette nes id laufen lassen, skalarvergleici!
-                    if (find(cell2mat(sNodeIdArray(j,i)) == nodes(1).getId)>0) & (find (cell2mat(sNodeIdArray(j,i)) == nodes(2).getId)>0)
-                        sElementArray(j,i)={femModel.getElement(id)}; 
+                    k=1;
+                    for itEle=1:length(id)
+                    if (find(cell2mat(sNodeIdArray(j,i)) == nodes(itEle).getId)>0) &(find(cell2mat(sNodeIdArray(j,i)) == nodes(itEle+1).getId)>0)                   
+                        array(k)=femModel.getElement(id(itEle)); 
+                        k=k+1;
                     end
+                    end
+                    sElementArray(j,i)={array};
                 end
            end
            
