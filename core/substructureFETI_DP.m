@@ -176,24 +176,27 @@ classdef substructureFETI_DP < handle
            end    
        end
        
-       %element array jeder Substruktur
+       %element array jeder Substruktur  Anm: Id Aufruf mit: sElementArray{1,3}.getId
        function [sElementArray,id,nodes] = getSubstructureElementArray(femModel,sNodeArray,sNodeIdArray,K,v,hz)
            elements=femModel.getAllElements;
            array=elements.empty;
+           c=1;
            for itEle = 1:length(elements)
-                nodes(itEle:itEle+1,1)=elements(itEle).getNodes;
+                nodes(c:c+1,1)=elements(itEle).getNodes; %nodematrix, sortnodematrix?
                 id(itEle)=elements(itEle).getId;
+                c=c+2;
            end
-          %%sNode array mit nodes vergleichen und die elemente zuordnen
-          
+           
            for i=1:hz
                 for j=1:v
                     k=1;
+                    c=1;
                     for itEle=1:length(id)
-                    if (find(cell2mat(sNodeIdArray(j,i)) == nodes(itEle).getId)>0) &(find(cell2mat(sNodeIdArray(j,i)) == nodes(itEle+1).getId)>0)                   
+                    if (find(cell2mat(sNodeIdArray(j,i)) == nodes(c).getId)>0) &(find(cell2mat(sNodeIdArray(j,i)) == nodes(c+1).getId)>0)                   
                         array(k)=femModel.getElement(id(itEle)); 
                         k=k+1;
                     end
+                    c=c+2;
                     end
                     sElementArray(j,i)={array};
                 end
@@ -205,15 +208,13 @@ classdef substructureFETI_DP < handle
        function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,sNodeArray,K,v,hz)
            for i=1:hz
                 for j=1:v
-                    
+                    sDofArray{j,i}=sNodearray{j,i}.getDofArray
                     
                 end
            end
        end
-       %element array jeder Substruktur
-       
-       
-       %Steifigkeitsmatrix jeder substruktur
+   
+       %Steifigkeitsmatrix jeder Substruktur
        
        
        
