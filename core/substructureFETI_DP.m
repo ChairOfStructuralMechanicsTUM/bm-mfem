@@ -166,6 +166,7 @@ classdef substructureFETI_DP < handle
             end
            
        end
+       
        %lege die Knoten des FemModels auf die Stelle der Id in K ab
        function [sNodeArray] = getSubstructureNodeArray(femModel,sNodeIdArray,K,v,hz)
            for i=1:hz
@@ -174,11 +175,31 @@ classdef substructureFETI_DP < handle
                 end
            end    
        end
-       %dof array jeder Substruktur:
-       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,K,v,hz)
-           
+       
+       %element array jeder Substruktur
+       function [sElementArray] = getSubstructureElementArray(femModel,sNodeIdArray,K,v,hz)
+           elements=femModel.getAllElements;
+           for itEle = 1:length(elements)
+                nodes(:)=elements(itEle).getNodes;
+          %%sNode array mit nodes vergleichen und die elemente zuordnen
+           for i=1:hz
+                for j=1:v
+                   sElementArray(j,i)={femModel.getAllElements(cell2mat(sNodeIdArray(j,i)))};                  
+                end
+           end
+           end
        end
        
+       %dof array jeder Substruktur:
+       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,sNodeArray,K,v,hz)
+           for i=1:hz
+                for j=1:v
+                    
+                    
+                end
+           end
+       end
+       %element array jeder Substruktur
        
        
        %Steifigkeitsmatrix jeder substruktur
