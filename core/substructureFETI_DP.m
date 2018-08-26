@@ -150,9 +150,23 @@ classdef substructureFETI_DP < handle
                         n=n+1;
                  end
             end
-            end  
+            end   
+           end
+       end      
+            
+       %% Zusammenbauen der Steifigkeitsmatrix jeder Substruktur
+       
+       %Knotenarray jeder Substruktur:
+       function [nodearray] = getSubstructureNodeArray(K,v,hz)
+            for i=1:hz
+                for j=1:v
+                    matrix=cell2mat(K(j,i));
+                    nodearray(j,i)={matrix(:)};                  
+                end
             end
-            end      
+           
+       end
+       
        
        
        %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
@@ -168,8 +182,17 @@ classdef substructureFETI_DP < handle
                 end
             end
         end
-        
-        
+%         
+%         function [nodearray]=doubleTheNodes(femModel,gbr)
+%             nodearray=femModel.getAllNodes;
+%             for i=1:length(nodearray)
+%                 if any(nodearray(i),gbr)
+%                 end
+%             end
+%                 
+%             
+%             
+%         end
        
        
        
