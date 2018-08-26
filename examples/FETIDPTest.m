@@ -184,6 +184,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz)
 [sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz)
 [sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz)
+[gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz)
 %%
 
 
