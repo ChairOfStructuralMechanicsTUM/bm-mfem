@@ -1,4 +1,4 @@
-classdef BlochInverse1D < Solver
+classdef BlochInverse1D_mm < Solver
     
     properties (Access = private)
         femModel

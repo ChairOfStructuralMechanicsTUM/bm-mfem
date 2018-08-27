@@ -76,56 +76,46 @@ model.getNode(fixingNodeID).fixDof('DISPLACEMENT_Z');
 
 model.addNewElement('SpringDamperElement3d2n',fixingSpringID,[fixingNodeID massNodeID]);
 
-
 model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_STIFFNESS',10e20);
 model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_DAMPING',0);
 
-
-
-
-
 v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
-
-
-solver = BlochInverse1D_mm(model);
+ 
 assembling = SimpleAssembler(model);
 
-[stiffnessMatrix,Kred1] = assembling.assembleGlobalStiffnessMatrix(model);
-[massMatrix,Mred1] = assembling.assembleGlobalMassMatrix(model);
+%% Up to here everything is done as it would be set up of Standard FEM
 
-initialize(solver)
-[Ksorted,Msorted] = sortKandM(solver,Kred1,Mred1);
+% Create Bloch Solver
+solver = BlochInverse1D_mm(model);
 
+% define number of phases and number of bands
 numberOfPhases = 20;
+numberOfBands = 10;
 
-[Kred,Mred] = reducedStiffnesAndMass (solver,Ksorted,Msorted,numberOfPhases);  
-
-omega = cell(numberOfPhases,1);
-
-nob = 10;
-[kx,miu] = propConst(solver,numberOfPhases);
+% call the solve function of the solver
+% phases: contains the discret values of the phase
+% frequencies: contains the solution, each row of represents one band
+[phases,frequencies]=solver.solve(numberOfPhases,numberOfBands);
 
 
-figure(2)
+
+%% Visualize results
+figure()
+
+for i=1:numberOfBands
+    plot(phases,frequencies(i,:),'r')
+    hold on
+end
+
 title('DC, Kreis 22.5Grad - mit Feder fixiert')
+%legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
 xlabel('Phase k')
 ylabel('frequenzy f')
 xlim([0 pi])
-
 ylim([0 2e4])
 
-hold on
-for j = 1:nob
-    
-    for i = 1:numberOfPhases
-        omega{i,1} = solver.calcOmega(Kred{i,1},Mred{i,1},nob);
-        f(j,i) = omega{i,1}(j,1)/(2*pi);
 
-    end
-    plot(kx,f(j,:),'r')       
-    legend(['bandnumbers: ' num2str(j)],'Location','EastOutside')
-end
 % 
 % 
 % m = model.getElement(massID).getPropertyValue('ELEMENTAL_MASS');
