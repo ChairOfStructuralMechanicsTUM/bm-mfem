@@ -223,28 +223,34 @@ classdef substructureFETI_DP < handle
        end
    
        %Steifigkeitsmatrix jeder Substruktur
-       function [gstiffnessMatrix, reducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel,sElementArray,sDofArray,v,hz)        
+       function [gstiffnessMatrix, greducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel,sElementArray,sDofArray,v,hz)        
            for i=1:hz
                 for j=1:v
             elements = sElementArray{j,i};
             ndofs = length(sDofArray{j,i});
             stiffnessMatrix = zeros(ndofs);
-         
+
             for itEle = 1:length(elements)
                elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
-               %elementalDofIds;        %lokale dof ids in einer substruktur beginnt bei 1
+               %elementalDofIds= sDofArray{j,i}.getId;        %lokale dof ids eines Elements in einer substruktur beginnt bei 1
                elementalDofIds = elements(itEle).getDofList().getId;
-               stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
-               stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
-               
+               for l=1:4
+               localId(l)=find(sDofArray{j,i}.getId==elementalDofIds(l));
+               end
+               %stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
+               %stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
+               stiffnessMatrix(localId, localId) = ...
+               stiffnessMatrix(localId, localId) + elementalStiffnessMatrix;
             end
             gstiffnessMatrix{j,i}=stiffnessMatrix;
+            
+            %% wendet globale auflager auf alle substrukturen an--> reduziert von 18 auf 10 anstatt 14
             [~, fixedDofs] = femModel.getDofConstraints;
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
-                reducedStiffnessMatrix = applyMatrixBoundaryConditions(stiffnessMatrix, fixedDofIds);                
+                reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i}, fixedDofIds);                
             end
-            greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
+                greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
             end
         end
        end
