@@ -67,10 +67,17 @@ classdef AnsysInput < ModelIO
                 disp(['folder: ' folder])
                 disp(['filename: ' fileName])
                 disp(['filetype: ' extension])
+                disp('Running ANSYS ...')
             end
             
             model = FemModel;
             data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
+            
+            if obj.printOutput
+                disp('... done')
+                disp('Reading ANSYS model ...')
+                tic
+            end
             
             % Read restriction on the nodes
             data.nodeRest = obj.readRestrictions();
@@ -154,6 +161,10 @@ classdef AnsysInput < ModelIO
             catch
             end
             
+            if obj.printOutput
+                runtime = toc;
+                disp(['... done in ', num2str(runtime)])
+            end
         end
         
         function setPrintOutput(obj, print)
