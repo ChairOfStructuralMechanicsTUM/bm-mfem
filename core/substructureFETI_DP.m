@@ -39,11 +39,12 @@ classdef substructureFETI_DP < handle
        for itnod = 1:length(nodearray)
            nodeIdArray(itnod)=nodearray(itnod).getId;
        end
-       
-       nodematrix=zeros(dim);
+       nodematrix=zeros(size(dim));
+       %nodematrix=Node.empty;
        k=1;
        for i=1:dim(2)
            for j=1:dim(1)
+           %nodematrix(j,i)=nodearray(k);
            nodematrix(j,i)=nodeIdArray(k);
            k=k+1;
            end
@@ -137,6 +138,7 @@ classdef substructureFETI_DP < handle
                             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
                         end
                         in(j,i)={setdiff(cell2mat(K(j,i)),union(cell2mat(bc(j,i)),cell2mat(br(j,i))))};
+                       
                         
                         gbc1=cell2mat(bc(j,i));
                         gbr1=cell2mat(br(j,i));
@@ -252,8 +254,8 @@ classdef substructureFETI_DP < handle
                 c=1;
                 for k=1:length(fixedDofIds)
                     if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k)
-                        c=c+1
+                        sFixedDofId(c)=fixedDofIds(k);
+                        c=c+1;
                     end
                     
                 end
@@ -273,32 +275,64 @@ classdef substructureFETI_DP < handle
        end
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
-       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix(greducedStiffnessMatrix,v,hz,in,br,bc)
+       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix(femModel,greducedStiffnessMatrix,sDofArray,v,hz,in,br,bc)
            for i=1:hz
                 for j=1:v
-            %Knotenvektoren
-            u=[in{j,i};br{j,i};bc{j,i}];
-            r=[in{j,i};br{j,i}];
-            %DofVektoren
-            
-            %Umsortierte Stiefigkeitsmatrix
-            n=length(u);
-            Ksort=string(zeros(size(u)));
-            Kmatrix=greducedStiffnessMatrix{j,i};
-            for k=1:n
-                for l=1:n
-                    Ksort(k,l)=Kmatrix(u(k),u(l));
-                end
-            end
-            %Steifigkeitsmatrix der remainder (br und i): Krr
-            %Krr=string(zeros(size(r,1)));
-            Krr{j,i}=Ksort(1:size(r,1),1:size(r,1));
-            %Steifigkeitsmatrix der corner Freiheitsgrade (bc):Kcc
-            %Kcc=string(zeros(size(bc,1)));
-            Kcc{j,i}=Ksort(size(r,1)+1:size(r,1)+size(bc,1),size(r,1)+1:size(r,1)+size(bc,1));
-            %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
-            Krc{j,i}=Ksort(1:size(r,1),size(r,1)+1:size(Ksort,1));
-            Kcr{j,i}=Ksort(size(r,1)+1:size(Ksort,1),1:size(r,1));
+                    %setup der Dofs der corner und reminder Knoten,
+                    %globalen und lokale Dofs
+                    %Knoten Id vektoren
+                    u=[in{j,i};br{j,i};bc{j,i}]
+                    r=[in{j,i};br{j,i}]
+                    %Knotenvektoren
+                    un=femModel.getNodes(u)
+                    rn=femModel.getNodes(r)
+                    %DofVektoren
+                    c=1;
+                    for k=1:length(un)
+                    udof(c:c+1)=un(k).getDofArray
+                    c=c+2;
+                    end
+                    d=1;
+                    for l=1:length(rn)
+                    rdof(d:d+1)=rn(l).getDofArray
+                    d=d+2;
+                    end
+                    %DofIdVektoren globale dof Benennung
+                    uDofId=udof.getId()
+                    rDofId=rdof.getId()
+                    %DofIdVektoren lokale dof Benennung innerhalb einer Substruktur
+                    uDofIdLoc=[];
+                    rDofIdLoc=[];
+                    for m=1:length(uDofId)
+                    uDofIdLoc(m)=find(sDofArray{j,i}.getId==uDofId(m))
+                    end
+                    %Fehler!
+                    for n=1:length(rDofId)
+                    rDofIdLoc(n)=find(sDofArray{j,i}.getId==rDofId(n))
+                    end
+                    
+                    
+                    %festgehaltene Dofs entfernen!!!
+
+
+                    %Umsortierte Stiefigkeitsmatrix
+                    n=length(uDofIdLoc)
+                    %Ksort=Node.empty;
+                    Kmatrix=greducedStiffnessMatrix{j,i}
+                    for k=1:n
+                        for l=1:n
+                            Ksort(k,l)=Kmatrix(uDofIdLoc(k),uDofIdLoc(l))
+                        end
+                    end
+                    %Steifigkeitsmatrix der remainder (br und i): Krr
+                    %Krr=string(zeros(size(r,1)));
+                    Krr{j,i}=Ksort(1:size(r,1),1:size(r,1));
+                    %Steifigkeitsmatrix der corner Freiheitsgrade (bc):Kcc
+                    %Kcc=string(zeros(size(bc,1)));
+                    Kcc{j,i}=Ksort(size(r,1)+1:size(r,1)+size(bc,1),size(r,1)+1:size(r,1)+size(bc,1));
+                    %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
+                    Krc{j,i}=Ksort(1:size(r,1),size(r,1)+1:size(Ksort,1));
+                    Kcr{j,i}=Ksort(size(r,1)+1:size(Ksort,1),1:size(r,1));
                 end
            end
        end
