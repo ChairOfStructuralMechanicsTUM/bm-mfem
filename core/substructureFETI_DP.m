@@ -244,15 +244,31 @@ classdef substructureFETI_DP < handle
             end
             gstiffnessMatrix{j,i}=stiffnessMatrix;
             
-            %% wendet globale auflager auf alle substrukturen an--> reduziert von 18 auf 10 anstatt 14
+            % wendet globale auflager auf alle substrukturen an--> reduziert von 18 auf 10 anstatt 14
             [~, fixedDofs] = femModel.getDofConstraints;
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
+                sFixedDofId=[];
                 %local id wie oben
-                localfixedDofId;
-                reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i}, fixedDofIds);                
-            end
+                c=1;
+                for k=1:length(fixedDofIds)
+                    if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
+                        sFixedDofId(c)=fixedDofIds(k)
+                        c=c+1
+                    end
+                    
+                end
+                if ~ isempty(sFixedDofId)
+                for d=1:length(sFixedDofId)
+                    localFixedDofId(d)=find(sDofArray{j,i}.getId==sFixedDofId(d));
+                end
+                
+                reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i},localFixedDofId ); 
                 greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
+                else
+                greducedStiffnessMatrix{j,i}=gstiffnessMatrix{j,i};
+                end
+            end
             end
         end
        end
