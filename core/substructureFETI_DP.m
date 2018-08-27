@@ -275,7 +275,7 @@ classdef substructureFETI_DP < handle
        end
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
-       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix(femModel,greducedStiffnessMatrix,sDofArray,v,hz,in,br,bc)
+       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix(femModel,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)
            for i=1:hz
                 for j=1:v
                     %setup der Dofs der corner und reminder Knoten,
@@ -302,7 +302,8 @@ classdef substructureFETI_DP < handle
                     rDofId=rdof.getId()
                     
                     
-                    %festgehaltene Dofs entfernen
+                    %festgehaltene Dofs entfernen  %fixed dofs sind global
+                    %benannt!!!!
                     [freeDofs, fixedDofs] = femModel.getDofConstraints
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId()
@@ -315,14 +316,21 @@ classdef substructureFETI_DP < handle
                     end
                     end
                     if ~ isempty(sFixedDofId)
-                    for k=1:length(sFixedDofId)
-                    uDofId(sFixedDofId(i))=[]
+                    for k=1:length(uDofId)
+                        for l=1:length(sFixedDofId)
+                        if uDofId(k)==sFixedDofId(l)
+                        uDofId(k)=[]
+                        end
+                        end
                     end
-                    for k=1:length(sFixedDofId)
-                    rDofId(sFixedDofId(i))=[]
+                    for k=1:length(rDofId)
+                       for l=1:length(sFixedDofId)
+                       if rDofId(k)==sFixedDofId(l)
+                        rDofId(k)=[]
+                       end 
+                       end
                     end
                     end
-                    
                    
 
                     %DofIdVektoren lokale dof Benennung innerhalb einer
@@ -348,10 +356,10 @@ classdef substructureFETI_DP < handle
                     %Umsortierte Stiefigkeitsmatrix
                     n=length(uDofIdLoc)
                     %Ksort=Node.empty;
-                    Kmatrix=greducedStiffnessMatrix{j,i}
+                    Kmatrix=gstiffnessMatrix{j,i}
                     for k=1:n
                         for l=1:n
-                            Ksort(k,l)=Kmatrix(uDofIdLoc(k),uDofIdLoc(l))
+                            Ksort(k,l)=Kmatrix(uDofIdLoc(k),uDofIdLoc(l));
                         end
                     end
                     %Steifigkeitsmatrix der remainder (br und i): Krr
