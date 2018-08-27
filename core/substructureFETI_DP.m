@@ -281,6 +281,13 @@ classdef substructureFETI_DP < handle
                     %setup der Dofs der corner und reminder Knoten,
                     %globalen und lokale Dofs
                     %Knoten Id vektoren
+                    u=[]
+                    r=[]
+                    un=Node.empty
+                    rn=Node.empty
+                    udof=Dof.empty
+                    rdof=Dof.empty
+                    
                     u=[in{j,i};br{j,i};bc{j,i}]
                     r=[in{j,i};br{j,i}]
                     %Knotenvektoren
@@ -298,8 +305,10 @@ classdef substructureFETI_DP < handle
                     d=d+2;
                     end
                     %DofIdVektoren globale dof Benennung
-                    uDofId=udof.getId()
-                    rDofId=rdof.getId()
+                    uDofId=Dof.empty
+                    rDofId=Dof.empty
+                    uDofId=udof.getId
+                    rDofId=rdof.getId
                     
                     
                     %festgehaltene Dofs entfernen  %fixed dofs sind global
@@ -316,18 +325,32 @@ classdef substructureFETI_DP < handle
                     end
                     end
                     if ~ isempty(sFixedDofId)
-                    for k=1:length(uDofId)
+                    n=length(uDofId)
+                    m=length(rDofId)
+                    c=1
+                    for k=1:n
                         for l=1:length(sFixedDofId)
+                            if c>length(sFixedDofId)
+                                break
+                            else
                         if uDofId(k)==sFixedDofId(l)
                         uDofId(k)=[]
+                        c=c+1;
                         end
+                            end
                         end
                     end
-                    for k=1:length(rDofId)
+                    c=1
+                    for k=1:m
                        for l=1:length(sFixedDofId)
+                           if c>length(sFixedDofId)
+                                break
+                           else
                        if rDofId(k)==sFixedDofId(l)
                         rDofId(k)=[]
+                        c=c+1
                        end 
+                           end
                        end
                     end
                     end
@@ -347,7 +370,8 @@ classdef substructureFETI_DP < handle
                     rDofIdLoc(n)=find(sDofArray{j,i}.getId==rDofId(n))
                     end
                     
-                    %Neubennenung der reduzierten Vektoren
+                    %Neubennenung der reduzierten Vektoren: Versuch über
+                    %die Stiefikeitsmatrix geht nicht neuer versuc!
 %                     helpVektoru=[1:length(uDofIdLoc)];
 %                     helpVektorr=[1:length(rDofIdLoc)];
 %                     for n=1:length(uDofIdLoc)
