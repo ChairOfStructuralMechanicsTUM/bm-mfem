@@ -4,8 +4,8 @@ clear;
 % clc; 
 %% Initialization
 
-nx = 10;
-ny = 10;
+nx = 4;
+ny = 4;
 [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, nx, ny, 'elementType', 'ReissnerMindlinElement3d4n');
 model.getAllNodes.addDof(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
 support = [x0 xl y0 yl];
@@ -41,9 +41,9 @@ end
 % v.plotDeformed()
 
 tic
-v =  VisualizationParaview(model, 'test.vtk', 'DISPLACEMENT', 'ROTATION');
-v.vtkWrite();
+v =  VisualizationParaviewXML(model, 'VTU_test');
+v.pvdWrite();
 toc
 
-actualDisplacementZ = model.getNode(middle).getDofValue('DISPLACEMENT_Z','all');
+actualDisplacementZ = model.getNode(middle).getDofValue('DISPLACEMENT_Z',1);
 
