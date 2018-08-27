@@ -300,21 +300,51 @@ classdef substructureFETI_DP < handle
                     %DofIdVektoren globale dof Benennung
                     uDofId=udof.getId()
                     rDofId=rdof.getId()
-                    %DofIdVektoren lokale dof Benennung innerhalb einer Substruktur
+                    
+                    
+                    %festgehaltene Dofs entfernen
+                    [freeDofs, fixedDofs] = femModel.getDofConstraints
+                    if ~ isempty(fixedDofs)
+                    fixedDofIds = fixedDofs.getId()
+                    c=1;
+                    for k=1:length(fixedDofIds)
+                    if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
+                        sFixedDofId(c)=fixedDofIds(k)
+                        c=c+1;
+                    end
+                    end
+                    end
+                    if ~ isempty(sFixedDofId)
+                    for k=1:length(sFixedDofId)
+                    uDofId(sFixedDofId(i))=[]
+                    end
+                    for k=1:length(sFixedDofId)
+                    rDofId(sFixedDofId(i))=[]
+                    end
+                    end
+                    
+                   
+
+                    %DofIdVektoren lokale dof Benennung innerhalb einer
+                    %Substruktur, fixed dofs sind weg, Benneung startet
+                    %wieder bei 1, Umbenennen der dofs
                     uDofIdLoc=[];
                     rDofIdLoc=[];
                     for m=1:length(uDofId)
                     uDofIdLoc(m)=find(sDofArray{j,i}.getId==uDofId(m))
                     end
-                    %Fehler!
+                        %rdof lokal hat als element 11 und 12 die einträge 14,15 als lok. Fg
+                        %vorsicht bei Iteration!
                     for n=1:length(rDofId)
                     rDofIdLoc(n)=find(sDofArray{j,i}.getId==rDofId(n))
                     end
                     
-                    
-                    %festgehaltene Dofs entfernen!!!
-
-
+                    %Neubennenung der reduzierten Vektoren
+%                     helpVektoru=[1:length(uDofIdLoc)];
+%                     helpVektorr=[1:length(rDofIdLoc)];
+%                     for n=1:length(uDofIdLoc)
+%                         uDofIdLocSort(i)=
+%                  
                     %Umsortierte Stiefigkeitsmatrix
                     n=length(uDofIdLoc)
                     %Ksort=Node.empty;
