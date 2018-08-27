@@ -25,8 +25,6 @@ massID = length(allElements)+1;
 spring1ID = massID+1;
 spring2ID = massID+2;
 
-
-
 springNodes = model.getModelPart('GENERIC_22.5Grad').getNodes();
 
 leftSpringNode = springNodes(1,1);
