@@ -248,6 +248,8 @@ classdef substructureFETI_DP < handle
             [~, fixedDofs] = femModel.getDofConstraints;
             if ~ isempty(fixedDofs)
                 fixedDofIds = fixedDofs.getId();
+                %local id wie oben
+                localfixedDofId;
                 reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i}, fixedDofIds);                
             end
                 greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
