@@ -273,27 +273,32 @@ classdef substructureFETI_DP < handle
        end
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
-       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix[greducedStiffnessMatrix,v,hz,in,br,bc]
+       function [Ksort,Krr,Kcc,Krc,Kcr]=splitMatrix(greducedStiffnessMatrix,v,hz,in,br,bc)
            for i=1:hz
                 for j=1:v
-            u{j,i}=[i;br;bc];
-            %Umsortierte Stiefigkeitsmatrix
+            %Knotenvektoren
+            u=[in{j,i};br{j,i};bc{j,i}];
+            r=[in{j,i};br{j,i}];
+            %DofVektoren
             
-            Ksort=string(zeros(n,n));
-            for i=1:n
-                for j=1:n
-                    Ksort(i,j)=Kmatrix(u(i),u(j));
+            %Umsortierte Stiefigkeitsmatrix
+            n=length(u);
+            Ksort=string(zeros(size(u)));
+            Kmatrix=greducedStiffnessMatrix{j,i};
+            for k=1:n
+                for l=1:n
+                    Ksort(k,l)=Kmatrix(u(k),u(l));
                 end
             end
             %Steifigkeitsmatrix der remainder (br und i): Krr
             %Krr=string(zeros(size(r,1)));
-            Krr=Ksort(1:size(r,1),1:size(r,1));
+            Krr{j,i}=Ksort(1:size(r,1),1:size(r,1));
             %Steifigkeitsmatrix der corner Freiheitsgrade (bc):Kcc
             %Kcc=string(zeros(size(bc,1)));
-            Kcc=Ksort(size(r,1)+1:size(r,1)+size(bc,1),size(r,1)+1:size(r,1)+size(bc,1));
+            Kcc{j,i}=Ksort(size(r,1)+1:size(r,1)+size(bc,1),size(r,1)+1:size(r,1)+size(bc,1));
             %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
-            Krc=Ksort(1:size(r,1),size(r,1)+1:size(Ksort,1));
-            Kcr=Ksort(size(r,1)+1:size(Ksort,1),1:size(r,1));
+            Krc{j,i}=Ksort(1:size(r,1),size(r,1)+1:size(Ksort,1));
+            Kcr{j,i}=Ksort(size(r,1)+1:size(Ksort,1),1:size(r,1));
                 end
            end
        end
@@ -303,19 +308,19 @@ classdef substructureFETI_DP < handle
        
 
        %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
-%        
-%         function [doubleNodes]= getDoubleNodes(femModel,gbr)
-%            
-%             gsort=sort(gbr);
-%             k=1;
-%             for i=1:2:length(gsort)
-%                 if any(gsort,gsort(i))==1
-%                     doubleNodes(k)=gsort(i);
-%                     k=k+1;
-%                 end
-%             end
-%         end
-% %         
+       
+        function [doubleNodes]= getDoubleNodes(femModel,gbr)
+           
+            gsort=sort(gbr);
+            k=1;
+            for i=1:2:length(gsort)
+                if any(gsort,gsort(i))==1
+                    doubleNodes(k)=gsort(i);
+                    k=k+1;
+                end
+            end
+        end
+        
 %         function [nodearray]=doubleTheNodes(femModel,gbr)
 %             nodearray=femModel.getAllNodes;
 %             for i=1:length(nodearray)
@@ -323,7 +328,7 @@ classdef substructureFETI_DP < handle
 %                 end
 %             end
 %                 
-%             
+%            
 %             
 %         end
        
