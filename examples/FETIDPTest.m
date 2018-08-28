@@ -171,7 +171,7 @@ addPointLoad([node21 node26 node31],10,[0 -1]);
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
-forceVector = assembling.applyExternalForces(model);
+[forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 
 %% testcase substructuring
 dim=[5,7];
@@ -181,12 +181,12 @@ hz=3;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
 [DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
-[sNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz)
-[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz)
-[sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz)
-[sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz)
-[gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz)
-[Ksort,Krr,Kcc,Krc,Kcr]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)
+[sNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz);
+[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz);
+[sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz);
+[sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz);
+[gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz);
+[Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
 %%
 
 

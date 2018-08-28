@@ -275,7 +275,7 @@ classdef substructureFETI_DP < handle
        end
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
-       function [SortStiffnessmatrix,Krr,Kcc,Krc,Kcr]=splitMatrix(femModel,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)
+       function [SortStiffnessmatrix,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=splitMatrix(femModel,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)
            for i=1:hz
                 for j=1:v
                     %setup der Dofs der corner und reminder Knoten,
@@ -354,7 +354,8 @@ classdef substructureFETI_DP < handle
                        end
                     end
                     end
-                   
+                   suDofId{j,i}=uDofId;
+                   srDofId{j,i}=rDofId;
 
                     %DofIdVektoren lokale dof Benennung innerhalb einer
                     %Substruktur, fixed dofs sind weg, Benneung startet
@@ -369,9 +370,10 @@ classdef substructureFETI_DP < handle
                     for n=1:length(rDofId)
                     rDofIdLoc(n)=find(sDofArray{j,i}.getId==rDofId(n));
                     end
-                    
+                    suDofIdLoc{j,i}=uDofIdLoc;
+                    srDofIdLoc{j,i}=rDofIdLoc;
                     %Neubennenung der reduzierten Vektoren: Versuch über
-                    %die Stiefikeitsmatrix geht nicht neuer versuc!
+                    %die Stiefikeitsmatrix geht nicht neuer versuch!
 %                     helpVektoru=[1:length(uDofIdLoc)];
 %                     helpVektorr=[1:length(rDofIdLoc)];
 %                     for n=1:length(uDofIdLoc)
@@ -401,7 +403,13 @@ classdef substructureFETI_DP < handle
        end
        
        
-       
+       %% Aufstellen und Sortieren des Lastvektors jeder Substruktur
+       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,srDofId,suDofIdLoc,srDofIdLoc)
+           [forceVector, reducedForceVector] = Assembler.applyExternalForces;
+           %force und reduced force, dof ids bekommen
+           
+           
+       end
        
 
        %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
