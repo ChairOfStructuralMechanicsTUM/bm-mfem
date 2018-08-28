@@ -1,12 +1,12 @@
-BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/Federtests_Raute.gid/Federtests_Raute.vv
-   x -0.115573868155479431 0.340999126434326172
-   y 0.264704763889312744 -0.0332516953349113464
+BeginZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/Federtests_Raute.gid/Federtests_Raute.vv
+   x -0.0268447883427143097 0.324777483940124512
+   y 0.196875631809234619 -0.0354810841381549835
    z -0.388104379177093506 0.388104379177093506
    e 0.129368126392364502
    v 0 0 0
    r 1
    m 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
-   c 0.100000008940696716 0.0750000029802322388 0
+   c 0.100000008940696716 0.0750000178813934326 0
    pd 0
    pno 0
    pfo 0
@@ -29,7 +29,7 @@ BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/Federtests_Raute.gid/Federtest
    OGLStereo(EyeDistance) 0.075
    OGLStereo(LeftEyeDistance) 1 0 0 1
    OGLStereo(RightEyeDistance) 0 1 1 1
-EndZE C:/Users/ga78vuk/Desktop/GiD Testelements/Federtests_Raute.gid/Federtests_Raute.vv
+EndZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/Federtests_Raute.gid/Federtests_Raute.vv
 
 BeginMirror
    Mirror 0 Angle 0.0 AngleFake -15.0 SizeFactor 2.0 HeightOffset 0.25 Color #d9e5f24d Backlight Off EdgeStyle No Type Scene DrawMode Mirror

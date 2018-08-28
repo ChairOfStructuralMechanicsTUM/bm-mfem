@@ -13,13 +13,13 @@
       <group id="10" name="90Grad" color="#338080ff"/>
       <group id="11" name="112.5Grad" color="#4d4d80ff"/>
       <group id="12" name="135Grad" color="#ff4d4dff"/>
-      <group id="13" name="157.5 Grad" color="#4dff4dff"/>
+      <group id="13" name="157.5Grad" color="#4dff4dff"/>
     </groups>
     <entities_groups>
       <entities_group name="points">
-        <vector name="entity_ids" length="16" type="integer">5:8 21:24 26:29 31:34</vector>
+        <vector name="entity_ids" length="16" type="integer">5:8 25:28 30 31 33:38</vector>
         <vector name="entity_num_groups" length="16" type="ushort">1x16</vector>
-        <vector name="entity_groups" length="16" type="ushort">6 10 6 10 11 9 11 9 12 8 12 8 13 7 13 7</vector>
+        <vector name="entity_groups" length="16" type="ushort">6 10 6 10 8 11 7 12 7 9 12 9 11 13 13 8</vector>
       </entities_group>
       <entities_group name="lines">
         <vector name="entity_ids" length="2" type="integer">2 4</vector>
@@ -32,14 +32,14 @@
         <vector name="entity_groups" length="1" type="ushort">5</vector>
       </entities_group>
       <entities_group name="nodes">
-        <vector name="entity_ids" length="263" type="integer">1:263</vector>
-        <vector name="entity_num_groups" length="263" type="ushort">2 1 2 1 1 2 1x5 2 1x6 2 1x7 2 1x16 2 1x12 2 1x4 2 1x4 2 1 2 1x9 2 1x4 2 1 2 1x10 2 1 1 2 1x3 2 1x11 2 1x6 2 1x4 2 1x8 2 1x3 2 1x5 2 1x5 2 1x7 2 2 1x23 2 1x51 2 2 1x4 2 2 1 2 1x4 2 2 1x3 2 1 1 2 1 2 2</vector>
-        <vector name="entity_groups" length="301" type="ushort">1 5 5 1 5x3 1 5x6 1 5x7 1 5x8 1 5x17 1 5x13 6 5x5 7 5x5 8 5 5 1 5x10 9 5x5 10 5 5 13 5x11 1 5x3 11 5x4 12 5x12 12 5x7 11 5x5 1 5x9 13 5x4 10 5x6 9 5x6 8 5x8 1 5 7 5x24 6 5x52 2 5 2 5x5 2 5 2 5 5 2 5x5 2 5 2 5x4 2 5x3 2 5 5 2 5 2 5</vector>
+        <vector name="entity_ids" length="298" type="integer">1:298</vector>
+        <vector name="entity_num_groups" length="298" type="ushort">2 1 2 1 1 2 1x5 2 1x7 2 1x8 2 1x23 2 1x11 2 1x8 2 1x4 2 2 1x5 2 1x7 2 1 1 2 1x9 2 1x4 2 1x4 2 1x10 2 1x4 2 1x10 2 1x12 2 1x3 2 1x5 2 1x10 2 1x8 2 2 1x25 2 1x58 2 2 1 1 2 1 2 1 1 2 1 1 2 1 1 2 1x3 2 1 1 2 1 2 2</vector>
+        <vector name="entity_groups" length="336" type="ushort">2 5 5 2 5x3 2 5x6 2 5x8 2 5x9 2 5x24 2 5x12 6 5x9 13 5x5 12 5 2 5x6 11 5x8 10 5x3 7 5x10 2 5x5 9 5x5 8 5x11 8 5x5 9 5x11 2 5x13 7 5x4 10 5x6 11 5x11 12 5x9 2 5 13 5x26 6 5x59 1 5 1 5x3 1 5 5 1 5x3 1 5x3 1 5x3 1 5x4 1 5x3 1 5 5 1 5 1 5</vector>
       </entities_group>
       <entities_group name="elements">
-        <vector name="entity_ids" length="242" type="integer">1:222 238:247 263:272</vector>
-        <vector name="entity_num_groups" length="242" type="ushort">1x242</vector>
-        <vector name="entity_groups" length="242" type="ushort">5x222 2x10 1x10</vector>
+        <vector name="entity_ids" length="277" type="integer">1:257 273:282 298:307</vector>
+        <vector name="entity_num_groups" length="277" type="ushort">1x277</vector>
+        <vector name="entity_groups" length="277" type="ushort">5x257 2x10 1x10</vector>
       </entities_group>
     </entities_groups>
   </pre>
