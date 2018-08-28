@@ -403,7 +403,7 @@ classdef substructureFETI_DP < handle
        end
        
        
-       %% Aufstellen und Sortieren des Lastvektors jeder Substruktur
+       %% Aufstellen des Lastvektors jeder Substruktur
        function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
            [forceVector, reducedForceVector] = Assembler.applyExternalForces(femModel);
            for i=1:hz
@@ -417,6 +417,29 @@ classdef substructureFETI_DP < handle
            end
            
        end
+       
+       %% Sortieren des Lastvektors jeder Substruktur in fr und fbc
+       %Anm: sForcevector ist schon fertig wie u sortiert, muss nur noch
+       %gesplittet werden
+       function [gfr,gfbc]= sortSubstructureForceVector(sForceVector,srDofId,v,hz)
+           for i=1:hz
+               for j=1:v
+                   n=length(srDofId{j,i});
+                   sforceVector=sForceVector{j,i};
+                   m=length(sForceVector{j,i});
+                   fr=sforceVector(1:n);
+                   fbc=sforceVector(n+1:m);  
+                   gfr{j,i}=fr;
+                   gfbc{j,i}=fbc;
+               end
+           end
+       end
+       
+       
+       
+       
+       
+       
        
        
        

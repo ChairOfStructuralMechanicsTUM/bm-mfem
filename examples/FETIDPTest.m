@@ -188,6 +188,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz);
 [Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
+[gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
 %%
 
 
