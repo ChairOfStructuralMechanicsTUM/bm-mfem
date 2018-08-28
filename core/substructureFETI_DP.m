@@ -439,14 +439,65 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Br]=getInterfaceBooleanMatrix(suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Br,sinDofId]=getInterfaceBooleanMatrix(femModel,in,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
            for i=1:hz
                for j=1:v
-                  
-                 %lBr=;  
+                 lin=Node.empty;
+                 lin=femModel.getNodes(in{j,i});
+                 indof=Dof.empty;
+                    c=1;
+                    for k=1:length(lin)
+                    indof(c:c+1)=lin(k).getDofArray;
+                    c=c+2;
+                    end
+                 inDofId=Dof.empty;
+                 inDofId=indof.getId;
+                 
+                 [~, fixedDofs] = femModel.getDofConstraints;
+                    if ~ isempty(fixedDofs)
+                    fixedDofIds = fixedDofs.getId();
+                    c=1;
+                    for k=1:length(fixedDofIds)
+                    if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
+                        sFixedDofId(c)=fixedDofIds(k);
+                        c=c+1;
+                    end
+                    end
+                    end
+                    
+                    if ~ isempty(sFixedDofId)
+                    n=length(inDofId);
+                    c=1;
+                    for k=1:n
+                        for l=1:length(sFixedDofId)
+                            if c>length(sFixedDofId)
+                                break
+                            else
+                        if inDofId(k)==sFixedDofId(l)
+                        inDofId(k)=[];
+                        c=c+1;
+                        end
+                            end
+                        end
+                    end
+                    end
+                 sinDofId{j,i}=inDofId;
+                 
+                 k=length(sinDofId{j,i});
+                 m=length(srDofId{j,i});
+                 l=m-k;
+                 lBr=[zeros(l,k),eye(l,l)];
+                 %Vz Schema implementieren!! + - + 
+                 %                           - + - 
+                 if mod(i+j,2)==0
+                 Br{j,i}=lBr;
+                 else
+                 Br{j,i}=(-1)*lBr;
+                 end
+                
                end
            end
-           Br{j,i}=lBr;
+          
        end
        
        
