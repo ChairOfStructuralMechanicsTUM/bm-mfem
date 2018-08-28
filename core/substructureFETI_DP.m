@@ -389,15 +389,17 @@ classdef substructureFETI_DP < handle
                         end
                     end
                     SortStiffnessmatrix{j,i}=Ksort;
+                    r=length(rDofId);
+                    l=length(uDofId)-length(rDofId);
                     %Steifigkeitsmatrix der remainder (br und i): Krr
                     %Krr=string(zeros(size(r,1)));
-                    Krr{j,i}=Ksort(1:size(r,1),1:size(r,1));
+                    Krr{j,i}=Ksort(1:r,1:r);
                     %Steifigkeitsmatrix der corner Freiheitsgrade (bc):Kcc
                     %Kcc=string(zeros(size(bc,1)));
-                    Kcc{j,i}=Ksort(size(r,1)+1:size(r,1)+size(bc,1),size(r,1)+1:size(r,1)+size(bc,1));
+                    Kcc{j,i}=Ksort(r+1:r+l,r+1:r+l);
                     %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
-                    Krc{j,i}=Ksort(1:size(r,1),size(r,1)+1:size(Ksort,1));
-                    Kcr{j,i}=Ksort(size(r,1)+1:size(Ksort,1),1:size(r,1));
+                    Krc{j,i}=Ksort(1:r,r+1:r+l);
+                    Kcr{j,i}=Ksort(r+1:r+l,1:r);
                 end
            end
        end
