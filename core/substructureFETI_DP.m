@@ -437,7 +437,17 @@ classdef substructureFETI_DP < handle
            end
        end
        
-       
+       %% subdomain assembling
+       %define boolean Matrix Br
+       function[Br]=getInterfaceBooleanMatrix(suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+           for i=1:hz
+               for j=1:v
+                  
+                 %lBr=;  
+               end
+           end
+           Br{j,i}=lBr;
+       end
        
        
        
