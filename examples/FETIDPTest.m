@@ -190,6 +190,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
 [gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
 [Br,sinDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
+[Bc,bcg]=substructureFETI_DP.getCornerBooleanMatrix(bc,gbc,hz,v);
 %%
 
 

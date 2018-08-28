@@ -500,7 +500,22 @@ classdef substructureFETI_DP < handle
           
        end
        
-       
+       %define boolean Matrix Bc
+       function [Bc,bcg]=getCornerBooleanMatrix(bc,gbc,hz,v)
+           bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
+            for i=1:hz
+               for j=1:v
+                   sBc=zeros(length(bcg));
+                   sbc=bc{j,i};
+                   for k=1:length(bcg)
+                   if find(sbc==bcg(k))>0
+                       sBc(k,k)=1;
+                   end
+                   end
+                   Bc{j,i}=sBc;
+               end
+            end
+       end
        
        
        
