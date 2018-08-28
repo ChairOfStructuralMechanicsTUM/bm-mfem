@@ -404,12 +404,21 @@ classdef substructureFETI_DP < handle
        
        
        %% Aufstellen und Sortieren des Lastvektors jeder Substruktur
-       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,srDofId,suDofIdLoc,srDofIdLoc)
-           [forceVector, reducedForceVector] = Assembler.applyExternalForces;
-           %force und reduced force, dof ids bekommen
-           
+       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+           [forceVector, reducedForceVector] = Assembler.applyExternalForces(femModel);
+           for i=1:hz
+               for j=1:v 
+                   uDofId=suDofId{j,i};
+                   for k=1:length(uDofId)
+                   sforceVector(k)= forceVector(uDofId(k));
+                   end
+                   sForceVector{j,i}=sforceVector;
+               end
+           end
            
        end
+       
+       
        
 
        %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
