@@ -509,26 +509,28 @@ classdef substructureFETI_DP < handle
             %von Knoten auf dofs:
             c=1;
             for k=1:length(bcg1)
-            bcdof(c:c+1)=bcg1(k).getDofArray;
+            bcdof(c:c+1)=bcg1(k).getDofArray
             c=c+2;
             end
             for i=1:hz
                for j=1:v
-                   sbcdof=Dof.empty;
+                   sbcdof=Dof.empty
                    
-                   sbc=femModel.getNodes(bc{j,i});
+                   sbc=femModel.getNodes(bc{j,i})
                    c=1;
                    for k=1:length(sbc)
-                   sbcdof(c:c+1)=sbc(k).getDofArray;
-                   c=c+2;
+                   sbcdof(c:c+1)=sbc(k).getDofArray
+                   c=c+2
                    end
-                   sBc=zeros(length(sbcdof),length(bcdof));
+                   sBc=zeros(length(sbcdof),length(bcdof))
                    for k=1:length(bcdof)
                    if find(sbcdof==bcdof(k))>0
-                       sBc(k,k)=1;
+                       % wenn k k gewählt wird erweitert sich dimension!!
+                       % muss aber nach rechts rutschen!!!
+                       sBc(k,k)=1
                    end
                    end
-                   Bc{j,i}=sBc;
+                   Bc{j,i}=sBc
                end
             end
        end
@@ -539,26 +541,26 @@ classdef substructureFETI_DP < handle
            gfr{1,1}=gfr{1,1}.';
            gfbc{1,1}=gfbc{1,1}.';
            
-           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
-           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
-           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1};
-           fc=Bc{1,1}.'*gfbc{1,1};
-           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1};
+           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.'
+           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1}
+           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1}
+           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1}
+           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1}
+           fc=Bc{1,1}.'*gfbc{1,1}
+           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1}
            for i=1:hz
                for j=2:v
                    %Lastvektoren in Zeilenvektoren umwandeln:
-                   gfr{j,i}=gfr{j,i}.';
-                   gfbc{j,i}=gfbc{j,i}.';
+                   gfr{j,i}=gfr{j,i}.'
+                   gfbc{j,i}=gfbc{j,i}.'
                    
-                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*Br{j,i}.';
-                   FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
-                   Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i};
-                   Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
-                   dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i};
-                   fc=fc+Bc{j,i}.'*gfbc{j,i};
-                   fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};     
+                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*Br{j,i}.'
+                   FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
+                   Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i}
+                   Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
+                   dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i}
+                   fc=fc+Bc{j,i}.'*gfbc{j,i}
+                   fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};    
                end
            end
            Kccg=Kcc-Khelp;
