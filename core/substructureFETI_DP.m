@@ -74,6 +74,7 @@ classdef substructureFETI_DP < handle
             gbc=[];
             gbr=[];
             gin=[];
+            ur=[];
             
             if or(a<2,b<2)
                 fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
@@ -143,12 +144,14 @@ classdef substructureFETI_DP < handle
                         gbc1=cell2mat(bc(j,i));
                         gbr1=cell2mat(br(j,i));
                         gin1=cell2mat(in(j,i));
+ 
                         
                         %size (gbc1...) läuft als Variable mit
                         
                         gbc(size(gbc,1)+1:size(gbc,1)+size(gbc1,1),1)=gbc1;  %globaler Vektor der Eckknoten
                         gbr(size(gbr,1)+1:size(gbr,1)+size(gbr1,1),1)=gbr1;  %globaler Vektor der interface Knoten
-                        gin(size(gin,1)+1:size(gin,1)+size(gin1,1),1)=gin1;  % globaler Vektor der internen Knoten
+                        gin(size(gin,1)+1:size(gin,1)+size(gin1,1),1)=gin1;  % globaler Vektor der internen Knoten                      
+
                         n=n+1;
                  end
             end
@@ -439,7 +442,36 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Br,sinDofId]=getInterfaceBooleanMatrix(femModel,in,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Br,ur,sinDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+           % Aufsetzten von ur aus suDof Id einen Vektor machen: Dofs sind
+           % doppelt enthalten!!!
+           ur=[];
+           for i=1:hz
+               for j=1:v
+                   rDof=srDofId{j,i};
+                   n=length(ur);
+                   m=length(rDof);
+                   ur(n+1:n+m)=rDof;
+               end
+           end
+           
+           
+           %Knoten
+%            bc=unique(gbc);
+%            nodeIds=nodeArray.getId;
+%            k=1;
+%            m=1;
+%            for l=1:length(nodeIds)
+%                if nodeIds(l)==bc(k)
+%                    k=k+1;
+%                else
+%                    reminder(m)=nodeIds(l);
+%                    m=m+1;
+%                end
+%            end
+           %dofs
+           
+           
            for i=1:hz
                for j=1:v
                  lin=Node.empty;
@@ -483,12 +515,23 @@ classdef substructureFETI_DP < handle
                     end
                  sinDofId{j,i}=inDofId;
                  
-                 % Br in gloales Schema einordnen um assemblen zu können:
-                 % Schema: 0 I 0; 
                  k=length(sinDofId{j,i});
                  m=length(srDofId{j,i});
                  l=m-k;
                  lBr=[zeros(l,k),eye(l,l)];
+                
+                 % Br in gloales Schema einordnen um assemblen zu können:
+                 %Br^s ur^s =[0 ubr^s 0]^T
+                 % Schema: [0 lBr 0]^T; 
+                 %dimensions:
+                 q=length(ur);
+                 w=size(lBr,1);
+                 gBr=zeros(q,size(lBr,2));
+                 %Lbr am richtigen dof einordnen(global lokal aufpassen)!, dofs sind in ur doppelt enthalten!:
+                 ur2=unique(ur);
+                 %gBr;
+                 
+                 
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
                  if mod(i+j,2)==0
@@ -496,7 +539,8 @@ classdef substructureFETI_DP < handle
                  else
                  Br{j,i}=(-1)*lBr;
                  end
-                
+
+                 
                end
            end
           
