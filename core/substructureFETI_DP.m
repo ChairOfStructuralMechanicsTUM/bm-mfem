@@ -483,6 +483,8 @@ classdef substructureFETI_DP < handle
                     end
                  sinDofId{j,i}=inDofId;
                  
+                 % Br in gloales Schema einordnen um assemblen zu können:
+                 % Schema: 0 I 0; 
                  k=length(sinDofId{j,i});
                  m=length(srDofId{j,i});
                  l=m-k;
@@ -556,7 +558,7 @@ classdef substructureFETI_DP < handle
                    gfr{j,i}=gfr{j,i}.'
                    gfbc{j,i}=gfbc{j,i}.'
                    
-                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*Br{j,i}.'
+                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*(Br{j,i}).'
                    FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
                    Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i}
                    Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
