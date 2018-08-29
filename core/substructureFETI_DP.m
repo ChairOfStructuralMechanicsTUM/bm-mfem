@@ -509,30 +509,30 @@ classdef substructureFETI_DP < handle
             %von Knoten auf dofs:
             c=1;
             for k=1:length(bcg1)
-            bcdof(c:c+1)=bcg1(k).getDofArray
+            bcdof(c:c+1)=bcg1(k).getDofArray;
             c=c+2;
             end
             for i=1:hz
                for j=1:v
-                   sbcdof=Dof.empty
+                   sbcdof=Dof.empty;
                    
-                   sbc=femModel.getNodes(bc{j,i})
+                   sbc=femModel.getNodes(bc{j,i});
                    c=1;
                    for k=1:length(sbc)
-                   sbcdof(c:c+1)=sbc(k).getDofArray
-                   c=c+2
+                   sbcdof(c:c+1)=sbc(k).getDofArray;
+                   c=c+2;
                    end
-                   sBc=zeros(length(sbcdof),length(bcdof))
+                   sBc=zeros(length(sbcdof),length(bcdof));
                    d=1;
                    for k=1:length(bcdof)
                    if find(sbcdof==bcdof(k))>0
                        % wenn k k gewählt wird erweitert sich dimension!!
                        % muss aber nach rechts rutschen!!!
-                       sBc(d,k)=1
-                       d=d+1
+                       sBc(d,k)=1;
+                       d=d+1;
                    end
                    end
-                   Bc{j,i}=sBc
+                   Bc{j,i}=sBc;
                end
             end
        end
