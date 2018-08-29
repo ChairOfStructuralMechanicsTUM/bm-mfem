@@ -442,7 +442,7 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Br,ur,ur2,sinDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Bbr,ur,ur2,sinDofId,sbrDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
            % Aufsetzten von ur aus suDof Id einen Vektor machen: Dofs sind
            % doppelt enthalten!!!
            ur=[];
@@ -516,16 +516,30 @@ classdef substructureFETI_DP < handle
                  %Lbr am richtigen dof einordnen(global lokal aufpassen)!,
                  %dofs sind in ur doppelt enthalten, in ur2 nur einfach und
                  %beide male global und richtig sortiert
-                 
+                 %sbrDof Id bestimmen:
+                 srdofid=srDofId{j,i};
+                 t=1;
+                 for e=1:length(srdofid)
+                     if find (inDofId==srdofid(e))>0
+                     else
+                     sbrDofId(t)=srdofid(e);
+                     t=t+1;
+                     end
+                 end
+%                  s=1;
+%                  for z=1:length(sbrDofId)
+%                  gBr(sbrDofId(z))=lBr;
+%                  s=s+1;
+%                  end
                  %gBr;
-                 
+                 gBr(sbrDofId(1:l),:)=lBr;
                  
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
                  if mod(i+j,2)==0
-                 Br{j,i}=lBr;
+                 Bbr{j,i}=gBr;
                  else
-                 Br{j,i}=(-1)*lBr;
+                 Bbr{j,i}=(-1)*gBr;
                  end
 
                  
