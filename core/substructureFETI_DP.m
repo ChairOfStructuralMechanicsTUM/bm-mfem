@@ -501,14 +501,30 @@ classdef substructureFETI_DP < handle
        end
        
        %define boolean Matrix Bc
-       function [Bc,bcg]=getCornerBooleanMatrix(bc,gbc,hz,v)
-           bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
+       function [Bc,bcg1,bcdof]=getCornerBooleanMatrix(femModel,bc,gbc,hz,v)
+            bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
+            %von Knoten ids auf Knoten:
+            bcg1=femModel.getNodes(bcg);
+            
+            %von Knoten auf dofs:
+            c=1;
+            for k=1:length(bcg1)
+            bcdof(c:c+1)=bcg1(k).getDofArray;
+            c=c+2;
+            end
             for i=1:hz
                for j=1:v
-                   sBc=zeros(length(bcg));
-                   sbc=bc{j,i};
-                   for k=1:length(bcg)
-                   if find(sbc==bcg(k))>0
+                   sbcdof=Dof.empty;
+                   
+                   sbc=femModel.getNodes(bc{j,i});
+                   c=1;
+                   for k=1:length(sbc)
+                   sbcdof(c:c+1)=sbc(k).getDofArray;
+                   c=c+2;
+                   end
+                   sBc=zeros(length(sbcdof),length(bcdof));
+                   for k=1:length(bcdof)
+                   if find(sbcdof==bcdof(k))>0
                        sBc(k,k)=1;
                    end
                    end
@@ -517,7 +533,29 @@ classdef substructureFETI_DP < handle
             end
        end
        
-       
+       %% Assemble all Parameters
+       function [FIrr,FIrc,Kcc,Kccg,dr,fcg]=assembleAllParameters(Ns,v,hz,sKcc,Kcr,Krc,Krr,Bc,Br,gfr,gfbc)
+           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
+           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
+           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1};
+           fc=Bc{1,1}.'*gfbc{1,1};
+           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1};
+           for i=1:hz
+               for j=2:v
+                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*Br{j,i}.';
+                   FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
+                   Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i};
+                   Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
+                   dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i};
+                   fc=fc+Bc{j,i}.'*gfbc{j,i};
+                   fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};     
+               end
+           end
+           Kccg=Kcc-Khelp;
+           fcg=fc-fhelp;
+       end
        
        
        
