@@ -523,11 +523,13 @@ classdef substructureFETI_DP < handle
                    c=c+2
                    end
                    sBc=zeros(length(sbcdof),length(bcdof))
+                   d=1;
                    for k=1:length(bcdof)
                    if find(sbcdof==bcdof(k))>0
                        % wenn k k gewählt wird erweitert sich dimension!!
                        % muss aber nach rechts rutschen!!!
-                       sBc(k,k)=1
+                       sBc(d,k)=1
+                       d=d+1
                    end
                    end
                    Bc{j,i}=sBc
