@@ -442,7 +442,7 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Br,ur,sinDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Br,ur,ur2,sinDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
            % Aufsetzten von ur aus suDof Id einen Vektor machen: Dofs sind
            % doppelt enthalten!!!
            ur=[];
@@ -451,27 +451,13 @@ classdef substructureFETI_DP < handle
                    rDof=srDofId{j,i};
                    n=length(ur);
                    m=length(rDof);
-                   ur(n+1:n+m)=rDof;
+                   ur(n+1:n+m)=rDof;  %alle in und br dofs enthalten, br dofs kommen doppelt vor
                end
            end
-           
-           
-           %Knoten
-%            bc=unique(gbc);
-%            nodeIds=nodeArray.getId;
-%            k=1;
-%            m=1;
-%            for l=1:length(nodeIds)
-%                if nodeIds(l)==bc(k)
-%                    k=k+1;
-%                else
-%                    reminder(m)=nodeIds(l);
-%                    m=m+1;
-%                end
-%            end
-           %dofs
-           
-           
+           %eliminieren der doppelten br dofs:
+           ur2=unique(ur,'stable');
+           %ur2=ur(ia); %globaler Vektor aller in und br der substrukturen in der richtigen Reihenfolge nach substrukturen sortiert
+      
            for i=1:hz
                for j=1:v
                  lin=Node.empty;
@@ -521,14 +507,16 @@ classdef substructureFETI_DP < handle
                  lBr=[zeros(l,k),eye(l,l)];
                 
                  % Br in gloales Schema einordnen um assemblen zu können:
-                 %Br^s ur^s =[0 ubr^s 0]^T
+                 %Br^s ur2^s =[0 ubr2^s 0]^T
                  % Schema: [0 lBr 0]^T; 
                  %dimensions:
-                 q=length(ur);
+                 q=length(ur2);
                  w=size(lBr,1);
                  gBr=zeros(q,size(lBr,2));
-                 %Lbr am richtigen dof einordnen(global lokal aufpassen)!, dofs sind in ur doppelt enthalten!:
-                 ur2=unique(ur);
+                 %Lbr am richtigen dof einordnen(global lokal aufpassen)!,
+                 %dofs sind in ur doppelt enthalten, in ur2 nur einfach und
+                 %beide male global und richtig sortiert
+                 
                  %gBr;
                  
                  

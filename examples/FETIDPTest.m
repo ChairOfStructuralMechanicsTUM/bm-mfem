@@ -189,7 +189,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
 [gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
-[Br,ur,sinDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
+[Br,ur,ur2,sinDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
 [Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
 %[FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Br,gfr,gfbc);
 %%
