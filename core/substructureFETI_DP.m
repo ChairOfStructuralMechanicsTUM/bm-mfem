@@ -504,26 +504,31 @@ classdef substructureFETI_DP < handle
                  k=length(sinDofId{j,i});
                  m=length(srDofId{j,i});
                  l=m-k;
-                 lBr=[zeros(l,k),eye(l,l)];
+                 lBr=[zeros(l,k),eye(l,l)]
                 
                  % Br in gloales Schema einordnen um assemblen zu können:
                  %Br^s ur2^s =[0 ubr2^s 0]^T
                  % Schema: [0 lBr 0]^T; 
                  %dimensions:
-                 q=length(ur2);
-                 w=size(lBr,1);
-                 gBr=zeros(q,size(lBr,2));
+                 q=length(ur2)
+                 w=size(lBr,1)
+                 gBr=zeros(q,size(lBr,2))
                  %Lbr am richtigen dof einordnen(global lokal aufpassen)!,
                  %dofs sind in ur doppelt enthalten, in ur2 nur einfach und
                  %beide male global und richtig sortiert
                  %sbrDof Id bestimmen:
-                 srdofid=srDofId{j,i};
-                 t=1;
+                 srdofid=srDofId{j,i}  %globale Freiheitsgradnummern müssen in Reihenfolge von ur2 umgeändert werden
+                 %Bsp; ur2=[15 16 23 24] in globalen nummern, dann
+                 %enstrpicht 15 der 1 und  24 der 4 usw.
+                 sbrDofId=[];
+
+                 t=1
                  for e=1:length(srdofid)
+
                      if find (inDofId==srdofid(e))>0
                      else
-                     sbrDofId(t)=srdofid(e);
-                     t=t+1;
+                     sbrDofId(t)=find(ur2==srdofid(e))
+                     t=t+1
                      end
                  end
 %                  s=1;
@@ -532,7 +537,7 @@ classdef substructureFETI_DP < handle
 %                  s=s+1;
 %                  end
                  %gBr;
-                 gBr(sbrDofId(1:l),:)=lBr;
+                 gBr(sbrDofId(1:l),:)=lBr
                  
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
