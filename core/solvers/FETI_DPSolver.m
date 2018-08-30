@@ -76,7 +76,7 @@ methods (Static)
                    urfinal(n+1:n+m)=rDof;  %alle dof verschiebungen der internen und boundry reminder dofs, inerface dofs doppelt enthalten
                end
            end
-           [urfinal2,ia]=unique(urfinal,'stable');
+           urfinal2=uniquetol(urfinal,0.0001);  %toleranz ggf anpassen! Mögliche fehlerquelle!!!
            urIds=ur2.';
            ubcIds=unique(gbc,'stable');
            n=length(urIds)+length(ubcIds);
