@@ -65,7 +65,7 @@ methods (Static)
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
- function [ufinal2]=getResultVector(femModel,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz)
+ function [ufinal]=getResultVector(femModel,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz)
      %Werte der dofs den richtigen globalen dof ids zuordnen
      urfinal=[];
            for i=1:hz
@@ -93,20 +93,15 @@ methods (Static)
            %urfinal2=uniquetol(urfinal,0.0);  %toleranz ggf anpassen! Mögliche fehlerquelle!!!
            urIds=ur2.';
            %bcIds=unique(gbc,'stable') %Knotenids keine FGids!!!
-           ubcIds=bcdof.getId
-           n=length(urIds)+length(ubcIds)
-           ufinal=zeros(n,1);
+           ubcIds=bcdof.getId;
            x=1;
            y=1;
-           for k=1:n
-               if ubcIds(x)<urIds(y)
-               ufinal(n)= uc(x)
-               x=x+1;
-               else
-               ufinal(n)=urfinal2(y)
-               y=y+1;
-               end
-           end
+           ufinal=zeros(length(femModel.getDofArray),1)
+           m=length(ufinal)
+           
+           ufinal(ubcIds)=uc;
+           ufinal(urIds)=urfinal2;
+           
            
         
            

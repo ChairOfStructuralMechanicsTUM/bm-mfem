@@ -196,14 +196,10 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
 [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
 [ufinal]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz);
-SimpleAssembler.assignResultsToDofs(model, ufinal);
+%SimpleAssembler.assignResultsToDofs(model, ufinal);
 %%
 
-v = Visualization(model);
-%v.setScaling(10000000);
-f1=figure(1);
-v.plotUndeformed
-v.plotDeformed
+
 
 
 
@@ -222,15 +218,6 @@ nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
 %v.setScaling(10000000);
-f2=figure(2);
+
 v.plotUndeformed
 v.plotDeformed
-
-
-
-
-
-
-
-
-
