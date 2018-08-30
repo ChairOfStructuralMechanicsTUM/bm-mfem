@@ -56,7 +56,7 @@ methods (Static)
         uc=inv(Kccg)*(fcg+FIrc.'*lmd);
     end
     
-    function[ur]=solveReminderDofs(Krr,gfr,Krc,Bc,uc,Br,lmd,hz,v)
+    function[ur]=solveReminderDofs(Krr,gfr,Krc,Bc,uc,Br,lmd,v,hz)
         for i=1:hz
                for j=1:v
                    ur{j,i}=inv(Krr{j,i})*(gfr{j,i}.'-Krc{j,i}*Bc{j,i}*uc-Br{j,i}.'*lmd);
@@ -65,7 +65,7 @@ methods (Static)
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
- function [ufinal]=getResultVector(femModel,uc,ur,ur2,gbc,v,hz)
+ function [ufinal2]=getResultVector(femModel,uc,ur,ur2,gbc,srDofId,v,hz)
      %Werte der dofs den richtigen globalen dof ids zuordnen
      urfinal=[];
            for i=1:hz
@@ -73,10 +73,11 @@ methods (Static)
                    rDof=ur{j,i};
                    n=length(urfinal);
                    m=length(rDof);
-                   urfinal(n+1:n+m)=rDof;  %alle dof verschiebungen der internen und boundry reminder dofs
+                   urfinal(n+1:n+m)=rDof;  %alle dof verschiebungen der internen und boundry reminder dofs, inerface dofs doppelt enthalten
                end
            end
-           urIds=ur2;
+           [urfinal2,ia]=unique(urfinal,'stable');
+           urIds=ur2.';
            ubcIds=unique(gbc,'stable');
            n=length(urIds)+length(ubcIds);
            ufinal=zeros(n,1);
@@ -87,7 +88,7 @@ methods (Static)
                ufinal(n)= uc(x);
                x=x+1;
                else
-               ufinal(n)=urfinal(y);
+               ufinal(n)=urfinal2(y);
                y=y+1;
                end
            end

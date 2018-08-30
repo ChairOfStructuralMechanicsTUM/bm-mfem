@@ -194,8 +194,8 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg);
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
-[urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,hz,v);
-[ufinal]=FETI_DPSolver.getResultVector(model,uc,ur,ur2,gbc,v,hz);
+[urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
+[ufinal]=FETI_DPSolver.getResultVector(model,uc,urem,ur2,gbc,srDofId,v,hz);
 SimpleAssembler.assignResultsToDofs(femModel, ufinal);
 %%
 
