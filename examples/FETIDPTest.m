@@ -201,32 +201,9 @@ SimpleAssembler.assignResultsToDofs(model, ufinal);
 
 v = Visualization(model);
 %v.setScaling(10000000);
-f1=figure(1);
+f1=figure(1)
 v.plotUndeformed
 v.plotDeformed
-
-
-
-
-solver = SimpleSolvingStrategy(model);
-x = solver.solve();
-
-step = 1;
-
-%stressVector = computeElementStress(elementArray, step)';
-
-VerschiebungDofs = model.getDofArray.getValue(step);
-
-nodalForces = solver.getNodalForces(step);
-
-
-v = Visualization(model);
-%v.setScaling(10000000);
-f2=figure(2);
-v.plotUndeformed
-v.plotDeformed
-
-
 
 
 
