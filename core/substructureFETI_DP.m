@@ -442,20 +442,20 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Bbr,ur,ur2,sinDofId,sbrDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Bbr,urId,ur2,sinDofId,sbrDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
            % Aufsetzten von ur aus suDof Id einen Vektor machen: Dofs sind
            % doppelt enthalten!!!
-           ur=[];
+           urId=[];
            for i=1:hz
                for j=1:v
                    rDof=srDofId{j,i};
-                   n=length(ur);
+                   n=length(urId);
                    m=length(rDof);
-                   ur(n+1:n+m)=rDof;  %alle in und br dofs enthalten, br dofs kommen doppelt vor
+                   urId(n+1:n+m)=rDof;  %alle in und br dofs enthalten, br dofs kommen doppelt vor
                end
            end
            %eliminieren der doppelten br dofs:
-           ur2=unique(ur,'stable');
+           ur2=unique(urId,'stable');
            %ur2=ur(ia); %globaler Vektor aller in und br der substrukturen in der richtigen Reihenfolge nach substrukturen sortiert
       
            for i=1:hz

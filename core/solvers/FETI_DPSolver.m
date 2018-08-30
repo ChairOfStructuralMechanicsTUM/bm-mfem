@@ -64,6 +64,36 @@ methods
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
+ function [ufinal]=getResultVector(femModel,uc,ur,ur2,gbc)
+     %Werte der dofs den richtigen globalen dof ids zuordnen
+     urfinal=[];
+           for i=1:hz
+               for j=1:v
+                   rDof=ur{j,i};
+                   n=length(urfinal);
+                   m=length(rDof);
+                   urfinal(n+1:n+m)=rDof;  %alle dof verschiebungen der internen und boundry reminder dofs
+               end
+           end
+           urIds=ur2;
+           ubcIds=unique(gbc,'stable');
+           n=length(urIds)+length(ubcIds);
+           ufinal=zeros(n,1);
+           x=1;
+           y=1;
+           for k=1:n
+               if ubcIds(x)<urIds(y)
+               ufinal(n)= uc(x);
+               x=x+1;
+               else
+               ufinal(n)=urfinal(y);
+               y=y+1;
+               end
+           end
+           
+      SimpleAssembler.assignResultsToDofs(femModel, ufinal);     
+           
+ end
     
 end
     
