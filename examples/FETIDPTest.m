@@ -192,6 +192,10 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [Bbr,ur,ur2,sinDofId,sbrDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
 [Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Bbr,gfr,gfbc);
+[lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg);
+[uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
+
+
 %%
 
 

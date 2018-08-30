@@ -510,25 +510,25 @@ classdef substructureFETI_DP < handle
                  %Br^s ur2^s =[0 ubr2^s 0]^T
                  % Schema: [0 lBr 0]^T; 
                  %dimensions:
-                 q=length(ur2)
-                 w=size(lBr,1)
-                 gBr=zeros(q,size(lBr,2))
+                 q=length(ur2);
+                 w=size(lBr,1);
+                 gBr=zeros(q,size(lBr,2));
                  %Lbr am richtigen dof einordnen(global lokal aufpassen)!,
                  %dofs sind in ur doppelt enthalten, in ur2 nur einfach und
                  %beide male global und richtig sortiert
                  %sbrDof Id bestimmen:
-                 srdofid=srDofId{j,i}  %globale Freiheitsgradnummern müssen in Reihenfolge von ur2 umgeändert werden
+                 srdofid=srDofId{j,i};  %globale Freiheitsgradnummern müssen in Reihenfolge von ur2 umgeändert werden
                  %Bsp; ur2=[15 16 23 24] in globalen nummern, dann
                  %enstrpicht 15 der 1 und  24 der 4 usw.
                  sbrDofId=[];
 
-                 t=1
+                 t=1;
                  for e=1:length(srdofid)
 
                      if find (inDofId==srdofid(e))>0
                      else
-                     sbrDofId(t)=find(ur2==srdofid(e))
-                     t=t+1
+                     sbrDofId(t)=find(ur2==srdofid(e));
+                     t=t+1;
                      end
                  end
 %                  s=1;
@@ -537,7 +537,7 @@ classdef substructureFETI_DP < handle
 %                  s=s+1;
 %                  end
                  %gBr;
-                 gBr(sbrDofId(1:l),:)=lBr
+                 gBr(sbrDofId(1:l),:)=lBr;
                  
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
@@ -596,25 +596,25 @@ classdef substructureFETI_DP < handle
            gfr{1,1}=gfr{1,1}.';
            gfbc{1,1}=gfbc{1,1}.';
            
-           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.'
-           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1}
-           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1}
-           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1}
-           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1}
-           fc=Bc{1,1}.'*gfbc{1,1}
-           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1}
+           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
+           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
+           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1};
+           fc=Bc{1,1}.'*gfbc{1,1};
+           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1};
            for i=1:hz
                for j=2:v
                    %Lastvektoren in Zeilenvektoren umwandeln:
-                   gfr{j,i}=gfr{j,i}.'
-                   gfbc{j,i}=gfbc{j,i}.'
+                   gfr{j,i}=gfr{j,i}.';
+                   gfbc{j,i}=gfbc{j,i}.';
                    
-                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*(Br{j,i}).'
-                   FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
-                   Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i}
-                   Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i}
-                   dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i}
-                   fc=fc+Bc{j,i}.'*gfbc{j,i}
+                   FIrr=FIrr+Br{j,i}*inv(Krr{j,i})*(Br{j,i}).';
+                   FIrc=FIrc+Br{j,i}*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
+                   Kcc=Kcc+Bc{j,i}.'*sKcc{j,i}*Bc{j,i};
+                   Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
+                   dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i};
+                   fc=fc+Bc{j,i}.'*gfbc{j,i};
                    fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};    
                end
            end
