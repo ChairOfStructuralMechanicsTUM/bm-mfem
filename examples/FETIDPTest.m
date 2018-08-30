@@ -194,8 +194,9 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg);
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
-
-
+[urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,hz,v);
+[ufinal]=FETI_DPSolver.getResultVector(model,uc,ur,ur2,gbc,v,hz);
+SimpleAssembler.assignResultsToDofs(femModel, ufinal);
 %%
 
 
@@ -203,16 +204,16 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 
 
 
-solver = SimpleSolvingStrategy(model);
-x = solver.solve();
-
-step = 1;
-
-%stressVector = computeElementStress(elementArray, step)';
-
-VerschiebungDofs = model.getDofArray.getValue(step);
-
-nodalForces = solver.getNodalForces(step);
+% solver = SimpleSolvingStrategy(model);
+% x = solver.solve();
+% 
+% step = 1;
+% 
+% %stressVector = computeElementStress(elementArray, step)';
+% 
+% VerschiebungDofs = model.getDofArray.getValue(step);
+% 
+% nodalForces = solver.getNodalForces(step);
 
 
 v = Visualization(model);

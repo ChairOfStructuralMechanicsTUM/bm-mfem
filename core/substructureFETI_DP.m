@@ -504,7 +504,7 @@ classdef substructureFETI_DP < handle
                  k=length(sinDofId{j,i});
                  m=length(srDofId{j,i});
                  l=m-k;
-                 lBr=[zeros(l,k),eye(l,l)]
+                 lBr=[zeros(l,k),eye(l,l)];
                 
                  % Br in gloales Schema einordnen um assemblen zu können:
                  %Br^s ur2^s =[0 ubr2^s 0]^T
@@ -593,18 +593,24 @@ classdef substructureFETI_DP < handle
        %% Assemble all Parameters
        function [FIrr,FIrc,Kcc,Kccg,dr,fcg]=assembleAllParameters(Ns,v,hz,sKcc,Kcr,Krc,Krr,Bc,Br,gfr,gfbc)
            %Lastvektoren in Zeilenvektoren umwandeln:
-           gfr{1,1}=gfr{1,1}.';
-           gfbc{1,1}=gfbc{1,1}.';
-           
-           FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
-           FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-           Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
-           Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-           dr=Br{1,1}*inv(Krr{1,1})*gfr{1,1};
-           fc=Bc{1,1}.'*gfbc{1,1};
-           fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1};
+%            gfr{1,1}=gfr{1,1}.';
+%            gfbc{1,1}=gfbc{1,1}.';
+           %Matrizen initialisieren
+           FIrr=zeros(size(Br{1,1},1));
+           FIrc=zeros(size(Br{1,1},1),size(Bc{1,1},2));
+           Kcc=zeros(size(Bc{1,1},2),size(Bc{1,1},2));
+           Khelp=zeros(size(Kcc));
+           dr=zeros(size(Br{1,1},1),1);
+           fc=zeros(size(Bc{1,1},2),1);
+           fhelp=zeros(size(Bc{1,1},2),1);
+%            FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
+%            FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+%            Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
+%            Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
+%            fc=Bc{1,1}.'*gfbc{1,1};
+%            fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1}
            for i=1:hz
-               for j=2:v
+               for j=1:v  
                    %Lastvektoren in Zeilenvektoren umwandeln:
                    gfr{j,i}=gfr{j,i}.';
                    gfbc{j,i}=gfbc{j,i}.';
@@ -615,7 +621,7 @@ classdef substructureFETI_DP < handle
                    Khelp=Khelp+(Krc{j,i}*Bc{j,i}).'*inv(Krr{j,i})*Krc{j,i}*Bc{j,i};
                    dr=dr+Br{j,i}*inv(Krr{j,i})*gfr{j,i};
                    fc=fc+Bc{j,i}.'*gfbc{j,i};
-                   fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};    
+                   fhelp=fhelp+Bc{j,i}.'*Krc{j,i}.'*inv(Krr{j,i})*gfr{j,i};  
                end
            end
            Kccg=Kcc-Khelp;

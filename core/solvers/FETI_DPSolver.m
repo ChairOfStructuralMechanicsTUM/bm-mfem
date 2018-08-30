@@ -4,7 +4,7 @@ classdef FETI_DPSolver < handle
 properties
 end
 
-methods
+methods (Static)
    
     function [lmd]=PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg)
         %Initialisierinung
@@ -22,7 +22,8 @@ methods
         r=D-di;
         d=r;
         x=lmd;
-        while k<n || r>0.001 %Abbruchkriterium
+        k=1;
+        while k<n | r>0.001 %Abbruchkriterium
             
           di=FIrr*x;
           y=FIrc.'*x;
@@ -58,13 +59,13 @@ methods
     function[ur]=solveReminderDofs(Krr,gfr,Krc,Bc,uc,Br,lmd,hz,v)
         for i=1:hz
                for j=1:v
-                   ur{j,i}=inv(Krr{j,i})*(gfr{j,i}-Krc{j,i}*Bc{j,i}*uc-Br{j,i}.'*lmd);
+                   ur{j,i}=inv(Krr{j,i})*(gfr{j,i}.'-Krc{j,i}*Bc{j,i}*uc-Br{j,i}.'*lmd);
                end
         end
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
- function [ufinal]=getResultVector(femModel,uc,ur,ur2,gbc)
+ function [ufinal]=getResultVector(femModel,uc,ur,ur2,gbc,v,hz)
      %Werte der dofs den richtigen globalen dof ids zuordnen
      urfinal=[];
            for i=1:hz
@@ -91,7 +92,7 @@ methods
                end
            end
            
-      SimpleAssembler.assignResultsToDofs(femModel, ufinal);     
+        
            
  end
     
