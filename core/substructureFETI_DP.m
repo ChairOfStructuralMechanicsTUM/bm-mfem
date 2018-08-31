@@ -571,7 +571,7 @@ classdef substructureFETI_DP < handle
        end
        
        %define boolean Matrix Bc
-       function [Bc,bcg1,bcdof]=getCornerBooleanMatrix(femModel,bc,gbc,hz,v)
+       function [Bc,bcg1,bcdof]=getCornerBooleanMatrix(femModel,sDofArray,bc,gbc,hz,v)
             
             Bc=cell(v,hz);
             bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
@@ -582,7 +582,7 @@ classdef substructureFETI_DP < handle
             %von Knoten auf dofs:
             c=1;
             for k=1:length(bcg1)
-            bcdof(c:c+1)=bcg1(k).getDofArray;
+            bcdof(c:c+1)=bcg1(k).getDofArray;   %%%%fixed dofs schon weg???
             c=c+2;
             end
             for i=1:hz
@@ -595,6 +595,25 @@ classdef substructureFETI_DP < handle
                    sbcdof(c:c+1)=sbc(k).getDofArray;
                    c=c+2;
                    end
+                   %falls corner dofs festgehalten: entfernen!
+                   [~, fixedDofs] = femModel.getDofConstraints;
+                    if ~ isempty(fixedDofs)
+                    fixedDofIds = fixedDofs.getId();
+                    c=1;
+                    sFixedDofId=[]; 
+                    for k=1:length(fixedDofIds)
+                    if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
+                        sFixedDofId(c)=fixedDofIds(k); 
+                        c=c+1;
+                    end
+                    end
+                    end
+                    if ~ isempty(sFixedDofId)
+                    for c=1:length(sFixedDofId)
+                       sbcdof(find(sbcdof==sFixedDofId(c)))=[]
+                    end
+                    end
+         
                    sBc=zeros(length(sbcdof),length(bcdof));
                    d=1;
                    for k=1:length(bcdof)

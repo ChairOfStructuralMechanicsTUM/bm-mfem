@@ -166,6 +166,8 @@ node05.fixDof('DISPLACEMENT_Y');
 node35.fixDof('DISPLACEMENT_X');
 node35.fixDof('DISPLACEMENT_Y');
 
+node23.fixDof('DISPLACEMENT_X');
+node23.fixDof('DISPLACEMENT_Y');
 
 
 addPointLoad([node21 node26 node31],10,[0 -1]);

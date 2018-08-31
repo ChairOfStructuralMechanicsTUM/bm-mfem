@@ -166,6 +166,9 @@ node05.fixDof('DISPLACEMENT_Y');
 node35.fixDof('DISPLACEMENT_X');
 node35.fixDof('DISPLACEMENT_Y');
 
+node23.fixDof('DISPLACEMENT_X');
+node23.fixDof('DISPLACEMENT_Y');
+
 addPointLoad([node21 node26 node31],10,[0 -1]);
 
 
@@ -191,7 +194,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,v,hz);
 [gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
 [Bbr,ur,ur2,sinDofId,sbrDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,sDofArray,srDofId,v,hz);
-[Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
+[Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,sDofArray,bc,gbc,hz,v);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(v,hz,Kcc,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [Kbrbr]=substructureFETI_DP.getBoundryReminderMatrix(Krr,sinDofId,v,hz);
 [lP]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
