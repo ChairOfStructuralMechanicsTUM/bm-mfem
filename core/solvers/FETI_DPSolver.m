@@ -6,7 +6,7 @@ end
 
 methods (Static)
    
-    function [lmd]=PCG(FIrr,FIrc,Kccg,dr,fcg)
+    function [lmd]=PCG(FIrr,FIrc,Kccg,dr,fcg,lP)
         %Initialisierinung
         lmd=zeros(length(dr),1);
         D=dr-FIrc*inv(Kccg)*fcg;
@@ -20,7 +20,7 @@ methods (Static)
         di=di+z;
 
         r=D-di;
-        d=r;
+        d=lP*r;
         x=lmd;
         k=1;
         while k<n | r>0.001 %Abbruchkriterium
@@ -33,18 +33,16 @@ methods (Static)
 
           r=D-di;
             
-          alpha= (r.'*r)/(d.'*A*d);
+          alpha= (r.'*lP*r)/(d.'*A*d);
           x1=x+alpha*d;
           r1=r-alpha*A*d;
-          beta=(r1.'*r1)/(r.'*r);
-          d1=r1+beta*d;
+          beta=(r1.'*lP*r1)/(r.'*lP*r);
+          d1=lP*r1+beta*d;
           
           %Aufsetzten für nächsten Durchlauf
           x=x1;
           r=r1;
           d=d1;
-          
-          
           k=k+1;
   
         end

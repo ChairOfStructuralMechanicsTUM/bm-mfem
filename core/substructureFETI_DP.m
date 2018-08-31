@@ -665,7 +665,7 @@ classdef substructureFETI_DP < handle
        end
        
        
-       function[lPglobal]=assembleLumpedPreconditioner(lP)
+       function[lPglobal]=assembleLumpedPreconditioner(lP,v,hz)
            lPglobal=zeros(size(lP{1,1}));
             for i=1:hz
                for j=1:v
