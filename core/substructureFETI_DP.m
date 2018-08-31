@@ -347,33 +347,37 @@ classdef substructureFETI_DP < handle
                     if ~ isempty(sFixedDofId)
                     n=length(uDofId);
                     m=length(rDofId);
-                    c=1;
-                    for k=1:n
-                        for l=1:length(sFixedDofId)
-                            if c>length(sFixedDofId)
-                                break
-                            else
-                        if uDofId(k)==sFixedDofId(l)
-                        uDofId(k)=[];
-                        c=c+1;
-                        end
-                            end
-                        end
+                    %c=1;
+                    for c=1:length(sFixedDofId)
+                    uDofId(find(uDofId==sFixedDofId(c)))=[];
+                    rDofId(find(rDofId==sFixedDofId(c)))=[];
                     end
-                    c=1;
-                    for k=1:m
-                       for l=1:length(sFixedDofId)
-                           if c>length(sFixedDofId)
-                                break
-                           else
-                       if rDofId(k)==sFixedDofId(l)
-                        rDofId(k)=[];
-                        c=c+1;
-                       end 
-                           end
-                       end
-                    end
-                    end
+%                     for k=1:n
+%                         for l=1:length(sFixedDofId)
+%                             if c>length(sFixedDofId)
+%                                 break
+%                             else
+%                         if uDofId(k)==sFixedDofId(l)
+%                         uDofId(k)=[];  %orginalvektor wird verkürzt!!!
+%                         c=c+1;
+%                         end
+%                             end
+%                         end
+%                     end
+%                     c=1;
+%                     for k=1:m
+%                        for l=1:length(sFixedDofId)
+%                            if c>length(sFixedDofId)
+%                                 break
+%                            else
+%                        if rDofId(k)==sFixedDofId(l)
+%                         rDofId(k)=[];   %orginalvektor wird verkürzt!!!
+%                         c=c+1;
+%                        end 
+%                            end
+%                        end
+%                     end
+%                     end
                    suDofId{j,i}=uDofId;
                    srDofId{j,i}=rDofId;
 
@@ -413,17 +417,18 @@ classdef substructureFETI_DP < handle
                 end
            end
        end
-       
+    end
        
        %% Aufstellen des Lastvektors jeder Substruktur
        function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,v,hz)
-           [forceVector, ~] = Assembler.applyExternalForces(femModel);  %reduced force vector auch abfragbar!!!
+           [forceVector, reducedforceVector] = Assembler.applyExternalForces(femModel);  %reduced force vector auch abfragbar!!!
            sForceVector=cell(v,hz);
            for i=1:hz
                for j=1:v 
                    uDofId=suDofId{j,i};
+                   sforceVector=zeros(length(uDofId));
                    for k=1:length(uDofId)
-                   sforceVector(k)= forceVector(uDofId(k)); %für jede Substruktur andere Länge, nicht vorbelegen!
+                   sforceVector(k)=forceVector(uDofId(k)); %für jede Substruktur andere Länge
                    end
                    sForceVector{j,i}=sforceVector;
                end
@@ -499,19 +504,23 @@ classdef substructureFETI_DP < handle
                     if ~ isempty(sFixedDofId)
                     n=length(inDofId);
                     c=1;
-                    for k=1:n
-                        for l=1:length(sFixedDofId)
-                            if c>length(sFixedDofId)
-                                break
-                            else
-                        if inDofId(k)==sFixedDofId(l)
-                        inDofId(k)=[];
-                        c=c+1;
-                        end
-                            end
-                        end
+                    for c=1:length(sFixedDofId)
+                       inDofId(find(inDofId==sFixedDofId(c)))=[];
                     end
                     end
+%                     for k=1:n
+%                         for l=1:length(sFixedDofId)
+%                             if c>length(sFixedDofId)
+%                                 break
+%                             else
+%                         if inDofId(k)==sFixedDofId(l)
+%                         inDofId(k)=[];  %Vektor verkleinert sich!!!
+%                         c=c+1;
+%                         end
+%                             end
+%                         end
+%                     end
+%                     end
                  sinDofId{j,i}=inDofId;
                  
                  k=length(sinDofId{j,i});
