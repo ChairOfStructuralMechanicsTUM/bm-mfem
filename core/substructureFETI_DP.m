@@ -666,6 +666,12 @@ classdef substructureFETI_DP < handle
        
        
        function[lPglobal]=assembleLumpedPreconditioner(lP)
+           lPglobal=zeros(size(lP{1,1}));
+            for i=1:hz
+               for j=1:v
+                   lPglobal=lPglobal+lP{j,i};
+               end
+            end
        end
        %% Zusatzfunktion: doppelte Knoten (interface nodes) identifizieren
        
