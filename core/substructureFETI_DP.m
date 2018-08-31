@@ -631,8 +631,42 @@ classdef substructureFETI_DP < handle
        end
        
        
+       %% lumped-Preconditioner aufsetzten:
+       %Matrix der boundry reminders:
+       function[Kbrbr]=getBoundryReminderMatrix(Krr,sinDofId,v,hz)
+           %reduzierte Krr Matrix, in zueerst dann br
+           Kbrbr=cell(v,hz);
+           for i=1:hz
+               for j=1:v
+                   Krrhelp=Krr{j,i};
+                   sinDofIdhelp=sinDofId{j,i};
+                   Kbrbr{j,i}=Krrhelp(length(sinDofIdhelp)+1:size(Krrhelp,1),length(sinDofIdhelp)+1:size(Krrhelp,2));
+               end
+           end
+           
+       end
+       function [lP]=getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,v,hz)
+           %Matrix W wird als erster versuch als Einheitsmatrix
+           %implementiert, als zweiter versuch mit 0.5 auf der
+           %hauptdiagonalen
+           lP=cell(v,hz);
+            for i=1:hz
+               for j=1:v
+                   Bbrhelp=Bbr{j,i};
+                   %W=eye(size(srDofId{j,i},2));
+                   A=zeros(size(srDofId{j,i},2));
+                   A(size(sinDofId{j,i},2)+1:size(A,1),size(sinDofId{j,i},2)+1:size(A,2))=Kbrbr{j,i};
+                   slP=Bbrhelp*A*Bbrhelp.';
+                   lP{j,i}=slP;
+               end
+            end
+              
+           
+       end
        
-
+       
+       function[lPglobal]=assembleLumpedPreconditioner(lP)
+       end
        %% Zusatzfunktion: doppelte Knoten (interface nodes) identifizieren
        
         function [doubleNodes]= getDoubleNodes(gbr)
