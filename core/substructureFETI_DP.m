@@ -645,7 +645,7 @@ classdef substructureFETI_DP < handle
            end
            
        end
-       function [lP]=getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,v,hz)
+       function [lP]=getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz)
            %Matrix W wird als erster versuch als Einheitsmatrix
            %implementiert, als zweiter versuch mit 0.5 auf der
            %hauptdiagonalen
@@ -653,10 +653,10 @@ classdef substructureFETI_DP < handle
             for i=1:hz
                for j=1:v
                    Bbrhelp=Bbr{j,i};
-                   %W=eye(size(srDofId{j,i},2));
+                   W=0.5*eye(size(ur2,2));   %Testcase mit 1 und 0.5
                    A=zeros(size(srDofId{j,i},2));
                    A(size(sinDofId{j,i},2)+1:size(A,1),size(sinDofId{j,i},2)+1:size(A,2))=Kbrbr{j,i};
-                   slP=Bbrhelp*A*Bbrhelp.';
+                   slP=W*Bbrhelp*A*Bbrhelp.'*W;
                    lP{j,i}=slP;
                end
             end

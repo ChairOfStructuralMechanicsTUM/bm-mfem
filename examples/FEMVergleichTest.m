@@ -173,30 +173,30 @@ assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 
-%% testcase substructuring
-dim=[5,7];
-Ns=6;
-v=2;
-hz=3;
-nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
-[K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
-[DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
-[sNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz);
-[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz);
-[sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz);
-[sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz);
-[gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz);
-[Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
-[sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
-[gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
-[Bbr,ur,ur2,sinDofId,sbrDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
-[Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
-[FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Bbr,gfr,gfbc);
-[lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg);
-[uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
-[urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
-[ufinal]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz);
-%SimpleAssembler.assignResultsToDofs(model, ufinal);
+% %% testcase substructuring
+% dim=[5,7];
+% Ns=6;
+% v=2;
+% hz=3;
+% nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
+% [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
+% [DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
+% [sNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz);
+% [sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz);
+% [sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz);
+% [sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz);
+% [gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz);
+% [Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
+% [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
+% [gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
+% [Bbr,ur,ur2,sinDofId,sbrDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
+% [Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
+% [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(Ns,v,hz,Kcc,Kcr,Krc,Krr,Bc,Bbr,gfr,gfbc);
+% [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg);
+% [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
+% [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
+% [ufinal]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz);
+% %SimpleAssembler.assignResultsToDofs(model, ufinal);
 %%
 
 
@@ -209,7 +209,7 @@ x = solver.solve();
 
 step = 1;
 
-%stressVector = computeElementStress(elementArray, step)';
+% stressVector = computeElementStress(elementArray, step)';
 
 VerschiebungDofs = model.getDofArray.getValue(step);
 

@@ -169,7 +169,7 @@ addPointLoad([node21 node26 node31],10,[0 -1]);
 
 
 model = FemModel(nodeArray, elementArray);
-assembling = SimpleAssembler2(model);
+assembling = SimpleAssembler(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 
@@ -193,14 +193,16 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,bc,gbc,hz,v);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(v,hz,Kcc,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [Kbrbr]=substructureFETI_DP.getBoundryReminderMatrix(Krr,sinDofId,v,hz);
-[lP]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,v,hz);
+[lP]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
 [lPglobal]=substructureFETI_DP.assembleLumpedPreconditioner(lP,v,hz);
 [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kccg,dr,fcg,lPglobal);
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
 [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
-[ufinal]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdof,v,hz);
-SimpleAssembler.assignResultsToDofs(model, ufinal);
+[ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdof,v,hz);
+SimpleAssembler.assignResultsToDofs(model, ufinalred);
 %%
+
+
 
 v = Visualization(model);
 %v.setScaling(10000000);

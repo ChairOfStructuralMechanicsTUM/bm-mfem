@@ -64,7 +64,7 @@ methods (Static)
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
- function [ufinal]=getResultVector(femModel,uc,urem,ur,ur2,bcdof,v,hz)
+ function [ufinal,ufinalred]=getResultVector(femModel,uc,urem,ur,ur2,bcdof,v,hz)
      %Werte der dofs den richtigen globalen dof ids zuordnen
      urfinal=[];
            for i=1:hz
@@ -96,19 +96,15 @@ methods (Static)
            ufinal=zeros(length(femModel.getDofArray),1);
            ufinal(ubcIds)=uc;
            ufinal(urIds)=urfinal2;
-           
-           
-        
-           
+           %fixed dofs aus aufinal entfernen damit assembler richtig
+           %arbeitet!!
+           [~, fixedDofs] = femModel.getDofConstraints;
+           fixedId=fixedDofs.getId;
+           ufinalred=ufinal;
+           ufinalred(fixedId)=[];    
  end
     
 end
-    
-    
-    
-    
-    
-    
-    
+  
 end
     
