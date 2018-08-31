@@ -233,12 +233,15 @@ classdef substructureFETI_DP < handle
    
        %Steifigkeitsmatrix jeder Substruktur
        function [gstiffnessMatrix, greducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel,sElementArray,sDofArray,v,hz)        
+           gstiffnessMatrix=cell(v,hz);
+           greducedStiffnessMatrix=cell(v,hz);
+           
            for i=1:hz
                 for j=1:v
-            elements = sElementArray{j,i};
-            ndofs = length(sDofArray{j,i});
-            stiffnessMatrix = zeros(ndofs);
-            gstiffnessMatrix=cell(v,hz);
+                    elements = sElementArray{j,i};
+                    ndofs = length(sDofArray{j,i});
+                    stiffnessMatrix = zeros(ndofs);
+            
                     for itEle = 1:length(elements)
                        elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
                        %elementalDofIds= sDofArray{j,i}.getId;   %lokale dof ids eines Elements in einer substruktur beginnt bei 1
@@ -262,14 +265,14 @@ classdef substructureFETI_DP < handle
                         c=1;
                         for k=1:length(fixedDofIds)
                             if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                                sFixedDofId(c)=fixedDofIds(k);
+                                sFixedDofId(c)=fixedDofIds(k);   %nicht Vorbelegen, sfixedDofId muss jede Schleife seine Länge ändern!
                                 c=c+1;
                             end
 
                         end
                         if ~ isempty(sFixedDofId)
                             for d=1:length(sFixedDofId)
-                                localFixedDofId(d)=find(sDofArray{j,i}.getId==sFixedDofId(d));
+                                localFixedDofId(d)=find(sDofArray{j,i}.getId==sFixedDofId(d)); %nicht Vorbelegen, localfixedDofId muss jede Schleife seine Länge ändern!
                             end
 
                             reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i},localFixedDofId ); 
@@ -284,6 +287,15 @@ classdef substructureFETI_DP < handle
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
        function [SortStiffnessmatrix,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=splitMatrix(femModel,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)
+           suDofId=cell(v,hz);
+           srDofId=cell(v,hz);
+           suDofIdLoc=cell(v,hz);
+           srDofIdLoc=cell(v,hz);
+           SortStiffnessmatrix=cell(v,hz);
+           Krr=cell(v,hz);
+           Kcc=cell(v,hz);
+           Krc=cell(v,hz);
+           Kcr=cell(v,hz);
            for i=1:hz
                 for j=1:v
                     %setup der Dofs der corner und reminder Knoten,
@@ -320,14 +332,14 @@ classdef substructureFETI_DP < handle
                     
                     
                     %festgehaltene Dofs entfernen  %fixed dofs sind global
-                    %benannt!!!!
-                    [freeDofs, fixedDofs] = femModel.getDofConstraints;
+                    %benannt--> substructure fixed dofs identifizieren
+                    [~, fixedDofs] = femModel.getDofConstraints;
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId();
                     c=1;
                     for k=1:length(fixedDofIds)
                     if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k);
+                        sFixedDofId(c)=fixedDofIds(k);  %Länge voher unbekannt, keine Vorbelegung!
                         c=c+1;
                     end
                     end
@@ -366,30 +378,22 @@ classdef substructureFETI_DP < handle
                    srDofId{j,i}=rDofId;
 
                     %DofIdVektoren lokale dof Benennung innerhalb einer
-                    %Substruktur, fixed dofs sind weg, Benneung startet
-                    %wieder bei 1, Umbenennen der dofs
+                    %Substruktur, fixed dofs sind weg, Benennung startet
+                    %wieder bei 1, Umbenennen der dofs:
                     uDofIdLoc=[];
                     rDofIdLoc=[];
                     for m=1:length(uDofId)
                     uDofIdLoc(m)=find(sDofArray{j,i}.getId==uDofId(m));
                     end
-                        %rdof lokal hat als element 11 und 12 die einträge 14,15 als lok. Fg
-                        %vorsicht bei Iteration!
                     for n=1:length(rDofId)
                     rDofIdLoc(n)=find(sDofArray{j,i}.getId==rDofId(n));
                     end
                     suDofIdLoc{j,i}=uDofIdLoc;
                     srDofIdLoc{j,i}=rDofIdLoc;
-                    %Neubennenung der reduzierten Vektoren: Versuch über
-                    %die Stiefikeitsmatrix geht nicht neuer versuch!
-%                     helpVektoru=[1:length(uDofIdLoc)];
-%                     helpVektorr=[1:length(rDofIdLoc)];
-%                     for n=1:length(uDofIdLoc)
-%                         uDofIdLocSort(i)=
-%                  
+        
                     %Umsortierte Stiefigkeitsmatrix
                     n=length(uDofIdLoc);
-                    %Ksort=Node.empty;
+                    Ksort=zeros(n);
                     Kmatrix=gstiffnessMatrix{j,i};
                     for k=1:n
                         for l=1:n
@@ -400,10 +404,8 @@ classdef substructureFETI_DP < handle
                     r=length(rDofId);
                     l=length(uDofId)-length(rDofId);
                     %Steifigkeitsmatrix der remainder (br und i): Krr
-                    %Krr=string(zeros(size(r,1)));
                     Krr{j,i}=Ksort(1:r,1:r);
-                    %Steifigkeitsmatrix der corner Freiheitsgrade (bc):Kcc
-                    %Kcc=string(zeros(size(bc,1)));
+                    %Steifigkeitsmatrix der corner Freiheitsgrade (bc):vKcc
                     Kcc{j,i}=Ksort(r+1:r+l,r+1:r+l);
                     %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
                     Krc{j,i}=Ksort(1:r,r+1:r+l);
@@ -414,13 +416,14 @@ classdef substructureFETI_DP < handle
        
        
        %% Aufstellen des Lastvektors jeder Substruktur
-       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
-           [forceVector, reducedForceVector] = Assembler.applyExternalForces(femModel);
+       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,v,hz)
+           [forceVector, ~] = Assembler.applyExternalForces(femModel);  %reduced force vector auch abfragbar!!!
+           sForceVector=cell(v,hz);
            for i=1:hz
                for j=1:v 
                    uDofId=suDofId{j,i};
                    for k=1:length(uDofId)
-                   sforceVector(k)= forceVector(uDofId(k));
+                   sforceVector(k)= forceVector(uDofId(k)); %für jede Substruktur andere Länge, nicht vorbelegen!
                    end
                    sForceVector{j,i}=sforceVector;
                end
@@ -432,6 +435,8 @@ classdef substructureFETI_DP < handle
        %Anm: sForcevector ist schon fertig wie u sortiert, muss nur noch
        %gesplittet werden
        function [gfr,gfbc]= sortSubstructureForceVector(sForceVector,srDofId,v,hz)
+           gfr=cell(v,hz);
+           gfbc=cell(v,hz);
            for i=1:hz
                for j=1:v
                    n=length(srDofId{j,i});
@@ -447,10 +452,15 @@ classdef substructureFETI_DP < handle
        
        %% subdomain assembling
        %define boolean Matrix Br
-       function[Bbr,urId,ur2,sinDofId,sbrDofId]=getInterfaceBooleanMatrix(femModel,in,gbc,nodeArray,sDofArray,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz)
+       function[Bbr,urId,ur2,sinDofId,sbrDofId]=getInterfaceBooleanMatrix(femModel,in,sDofArray,srDofId,v,hz)
+           
            % Aufsetzten von ur aus suDof Id einen Vektor machen: Dofs sind
            % doppelt enthalten!!!
+           
+           Bbr=cell(v,hz);
            urId=[];
+           sinDofId=cell(v,hz);
+           
            for i=1:hz
                for j=1:v
                    rDof=srDofId{j,i};
@@ -460,12 +470,11 @@ classdef substructureFETI_DP < handle
                end
            end
            %eliminieren der doppelten br dofs:
-           ur2=unique(urId,'stable');
-           %ur2=ur(ia); %globaler Vektor aller in und br der substrukturen in der richtigen Reihenfolge nach substrukturen sortiert
+           ur2=unique(urId,'stable'); %globaler Vektor aller in und br der substrukturen in der richtigen Reihenfolge nach substrukturen sortiert
       
            for i=1:hz
                for j=1:v
-                 lin=Node.empty;
+
                  lin=femModel.getNodes(in{j,i});
                  indof=Dof.empty;
                     c=1;
@@ -473,16 +482,15 @@ classdef substructureFETI_DP < handle
                     indof(c:c+1)=lin(k).getDofArray;
                     c=c+2;
                     end
-                 inDofId=Dof.empty;
+                    
                  inDofId=indof.getId;
-                 
                  [~, fixedDofs] = femModel.getDofConstraints;
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId();
                     c=1;
                     for k=1:length(fixedDofIds)
                     if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k);
+                        sFixedDofId(c)=fixedDofIds(k); %für jede Substruktur andere Länge, nicht vorbelegen!
                         c=c+1;
                     end
                     end
@@ -516,11 +524,11 @@ classdef substructureFETI_DP < handle
                  % Schema: [0 lBr 0]^T; 
                  %dimensions:
                  q=length(ur2);
-                 w=size(lBr,1);
+                 %w=size(lBr,1);
                  gBr=zeros(q,size(lBr,2));
                  %Lbr am richtigen dof einordnen(global lokal aufpassen)!,
                  %dofs sind in ur doppelt enthalten, in ur2 nur einfach und
-                 %beide male global und richtig sortiert
+                 %beide Male global und richtig sortiert
                  %sbrDof Id bestimmen:
                  srdofid=srDofId{j,i};  %globale Freiheitsgradnummern müssen in Reihenfolge von ur2 umgeändert werden
                  %Bsp; ur2=[15 16 23 24] in globalen nummern, dann
@@ -529,23 +537,18 @@ classdef substructureFETI_DP < handle
 
                  t=1;
                  for e=1:length(srdofid)
-
                      if find (inDofId==srdofid(e))>0
                      else
-                     sbrDofId(t)=find(ur2==srdofid(e));
+                     sbrDofId(t)=find(ur2==srdofid(e));  %nicht vorbelegen, für jede substruktur andere Länge
                      t=t+1;
                      end
                  end
-%                  s=1;
-%                  for z=1:length(sbrDofId)
-%                  gBr(sbrDofId(z))=lBr;
-%                  s=s+1;
-%                  end
-                 %gBr;
+
                  gBr(sbrDofId(1:l),:)=lBr;
                  
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
+                 
                  if mod(i+j,2)==0
                  Bbr{j,i}=gBr;
                  else
@@ -560,8 +563,11 @@ classdef substructureFETI_DP < handle
        
        %define boolean Matrix Bc
        function [Bc,bcg1,bcdof]=getCornerBooleanMatrix(femModel,bc,gbc,hz,v)
+            
+            Bc=cell(v,hz);
             bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
             %von Knoten ids auf Knoten:
+            
             bcg1=femModel.getNodes(bcg);
             
             %von Knoten auf dofs:
@@ -584,8 +590,6 @@ classdef substructureFETI_DP < handle
                    d=1;
                    for k=1:length(bcdof)
                    if find(sbcdof==bcdof(k))>0
-                       % wenn k k gewählt wird erweitert sich dimension!!
-                       % muss aber nach rechts rutschen!!!
                        sBc(d,k)=1;
                        d=d+1;
                    end
@@ -596,10 +600,8 @@ classdef substructureFETI_DP < handle
        end
        
        %% Assemble all Parameters
-       function [FIrr,FIrc,Kcc,Kccg,dr,fcg]=assembleAllParameters(Ns,v,hz,sKcc,Kcr,Krc,Krr,Bc,Br,gfr,gfbc)
-           %Lastvektoren in Zeilenvektoren umwandeln:
-%            gfr{1,1}=gfr{1,1}.';
-%            gfbc{1,1}=gfbc{1,1}.';
+       function [FIrr,FIrc,Kcc,Kccg,dr,fcg]=assembleAllParameters(v,hz,sKcc,Krc,Krr,Bc,Br,gfr,gfbc)
+
            %Matrizen initialisieren
            FIrr=zeros(size(Br{1,1},1));
            FIrc=zeros(size(Br{1,1},1),size(Bc{1,1},2));
@@ -608,12 +610,7 @@ classdef substructureFETI_DP < handle
            dr=zeros(size(Br{1,1},1),1);
            fc=zeros(size(Bc{1,1},2),1);
            fhelp=zeros(size(Bc{1,1},2),1);
-%            FIrr=Br{1,1}*inv(Krr{1,1})*Br{1,1}.';
-%            FIrc=Br{1,1}*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-%            Kcc=Bc{1,1}.'*sKcc{1,1}*Bc{1,1};
-%            Khelp=(Krc{1,1}*Bc{1,1}).'*inv(Krr{1,1})*Krc{1,1}*Bc{1,1};
-%            fc=Bc{1,1}.'*gfbc{1,1};
-%            fhelp=Bc{1,1}.'*Krc{1,1}.'*inv(Krr{1,1})*gfr{1,1}
+           
            for i=1:hz
                for j=1:v  
                    %Lastvektoren in Zeilenvektoren umwandeln:
@@ -636,9 +633,9 @@ classdef substructureFETI_DP < handle
        
        
 
-       %% Verdopplung und Neubenneung der br Knoten und interface Elemente, speichern der neuen infos im femModel
+       %% Zusatzfunktion: doppelte Knoten (interface nodes) identifizieren
        
-        function [doubleNodes]= getDoubleNodes(femModel,gbr)
+        function [doubleNodes]= getDoubleNodes(gbr)
            
             gsort=sort(gbr);
             k=1;
@@ -649,54 +646,7 @@ classdef substructureFETI_DP < handle
                 end
             end
         end
-        
-%         function [nodearray]=doubleTheNodes(femModel,gbr)
-%             nodearray=femModel.getAllNodes;
-%             for i=1:length(nodearray)
-%                 if any(nodearray(i),gbr)
-%                 end
-%             end
-%                 
-%            
-%             
-%         end
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
+
+ 
    end
 end
