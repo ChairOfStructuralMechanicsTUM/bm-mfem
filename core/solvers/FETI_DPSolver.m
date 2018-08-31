@@ -6,7 +6,7 @@ end
 
 methods (Static)
    
-    function [lmd]=PCG(FIrr,FIrc,Kcc,Kccg,dr,fcg)
+    function [lmd]=PCG(FIrr,FIrc,Kccg,dr,fcg)
         %Initialisierinung
         lmd=zeros(length(dr),1);
         D=dr-FIrc*inv(Kccg)*fcg;
@@ -57,6 +57,7 @@ methods (Static)
     end
     
     function[urem]=solveReminderDofs(Krr,gfr,Krc,Bc,uc,Br,lmd,v,hz)
+        urem=cell(v,hz);
         for i=1:hz
                for j=1:v
                    urem{j,i}=inv(Krr{j,i})*(gfr{j,i}.'-Krc{j,i}*Bc{j,i}*uc-Br{j,i}.'*lmd);
@@ -65,7 +66,7 @@ methods (Static)
     end
     
  %alle Verschiebungen assemblen und zum plotten bereit machen:
- function [ufinal]=getResultVector(femModel,uc,urem,ur,ur2,gbc,srDofId,bcdof,v,hz)
+ function [ufinal]=getResultVector(femModel,uc,urem,ur,ur2,bcdof,v,hz)
      %Werte der dofs den richtigen globalen dof ids zuordnen
      urfinal=[];
            for i=1:hz
@@ -76,29 +77,25 @@ methods (Static)
                    urfinal(n+1:n+m)=rDof;  %alle dof verschiebungen der internen und boundry reminder dofs, inerface dofs doppelt enthalten
                end
            end
+           
            %doppelte dofs an den interfaces eliminieren
-           %mit find ur ur2
            h=1;
            for l=1:length(ur2)
            helpVector=find(ur==ur2(l));
            if length(helpVector)==2
-               dbnodes(h)=helpVector(1,2); %Einträge des globalen ur Vektore die doppelt vorkommen
+               dbnodes(h)=helpVector(1,2); %Einträge des globalen ur Nodes, die doppelt vorkommen
                h=h+1;
            end   
            end
            urfinal(dbnodes)=[];
-           urfinal2=urfinal
-               
-               
+           urfinal2=urfinal;
+
            %urfinal2=uniquetol(urfinal,0.0);  %toleranz ggf anpassen! Mögliche fehlerquelle!!!
            urIds=ur2.';
            %bcIds=unique(gbc,'stable') %Knotenids keine FGids!!!
            ubcIds=bcdof.getId;
-           x=1;
-           y=1;
-           ufinal=zeros(length(femModel.getDofArray),1)
-           m=length(ufinal)
-           
+
+           ufinal=zeros(length(femModel.getDofArray),1);
            ufinal(ubcIds)=uc;
            ufinal(urIds)=urfinal2;
            
