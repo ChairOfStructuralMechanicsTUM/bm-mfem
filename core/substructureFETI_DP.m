@@ -18,7 +18,7 @@ classdef substructureFETI_DP < handle
    %% test and constructor
    methods
        
-       function substructuring= substructureFETI_DP(femModel)
+       function substructuring= substructureFETI_DP(~)
              if (nargin > 0)
                 
             else
@@ -55,7 +55,7 @@ classdef substructureFETI_DP < handle
        %% Unterteilung der nodematrix in Substrukturen Kij
        % Sortierung der Vektoren bc, br, in
        
-       function [K,bc,br,in,gbc,gbr,gin]= substructureNodeMatrix(femModel,nodematrix,Ns,v,hz,dim)
+       function [K,bc,br,in,gbc,gbr,gin]= substructureNodeMatrix(nodematrix,Ns,v,hz,dim)
            
            if hz*v~=Ns
                 fprintf('unzulässige Substrukturierung, bitte Anzahl und Unterteilung der Substrukturen überprüfen')
@@ -74,7 +74,7 @@ classdef substructureFETI_DP < handle
             gbc=[];
             gbr=[];
             gin=[];
-            ur=[];
+      
             
             if or(a<2,b<2)
                 fprintf('Substrukturierung erzeugt zu kleine Substrukturen, bitte kleinere Anzahl an Substrukturen wählen!');
@@ -163,6 +163,7 @@ classdef substructureFETI_DP < handle
       
        %Knotenarray jeder Substruktur:
        function [sNodeIdArray] = getSubstructureNodeIdArray(K,v,hz)
+            sNodeIdArray=cell(v,hz);
             for i=1:hz
                 for j=1:v
                     matrix=cell2mat(K(j,i));
@@ -173,7 +174,8 @@ classdef substructureFETI_DP < handle
        end
        
        %lege die Knoten des FemModels auf die Stelle der Id in K ab
-       function [sNodeArray] = getSubstructureNodeArray(femModel,sNodeIdArray,K,v,hz)
+       function [sNodeArray] = getSubstructureNodeArray(femModel,sNodeIdArray,v,hz)
+           sNodeArray=cell(v,hz);
            for i=1:hz
                 for j=1:v
                    sNodeArray(j,i)={femModel.getNodes(cell2mat(sNodeIdArray(j,i)))};                  
@@ -182,16 +184,18 @@ classdef substructureFETI_DP < handle
        end
        
        %element array jeder Substruktur  Anm: Id Aufruf mit: sElementArray{1,3}.getId
-       function [sElementArray,id,nodes] = getSubstructureElementArray(femModel,sNodeArray,sNodeIdArray,K,v,hz)
+       function [sElementArray,id,nodes] = getSubstructureElementArray(femModel,sNodeIdArray,v,hz)
            elements=femModel.getAllElements;
            array=elements.empty;
            c=1;
+           id=zeros(length(elements),2);
            for itEle = 1:length(elements)
                 nodes(c:c+1,1)=elements(itEle).getNodes; %nodematrix, sortnodematrix?
                 id(itEle)=elements(itEle).getId;
                 c=c+2;
            end
            
+           sElementArray=cell(v,hz);
            for i=1:hz
                 for j=1:v
                     k=1;
@@ -210,10 +214,10 @@ classdef substructureFETI_DP < handle
        end
        
        %dof array jeder Substruktur:
-       function [sDofArray]= getSubstrucureDofArray(femModel,sNodeIdArray,sNodeArray,sElementArray,K,v,hz)
-           %sDofArray=Dof.empty;
+       function [sDofArray]= getSubstrucureDofArray(sNodeArray,v,hz)
+           sDofArray=cell(v,hz);
            list=Dof.empty;
-           array=Dof.empty;
+
            for i=1:hz
                 for j=1:v
                     array=sNodeArray{j,i};
@@ -234,48 +238,49 @@ classdef substructureFETI_DP < handle
             elements = sElementArray{j,i};
             ndofs = length(sDofArray{j,i});
             stiffnessMatrix = zeros(ndofs);
-
-            for itEle = 1:length(elements)
-               elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
-               %elementalDofIds= sDofArray{j,i}.getId;   %lokale dof ids eines Elements in einer substruktur beginnt bei 1
-               elementalDofIds = elements(itEle).getDofList().getId;
-               for l=1:4
-               localId(l)=find(sDofArray{j,i}.getId==elementalDofIds(l));
-               end
-               %stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
-               %stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
-               stiffnessMatrix(localId, localId) = ...
-               stiffnessMatrix(localId, localId) + elementalStiffnessMatrix;
-            end
-            gstiffnessMatrix{j,i}=stiffnessMatrix;
-            
-            [~, fixedDofs] = femModel.getDofConstraints;
-            if ~ isempty(fixedDofs)
-                fixedDofIds = fixedDofs.getId();
-                sFixedDofId=[];
-                %local id wie oben
-                c=1;
-                for k=1:length(fixedDofIds)
-                    if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k);
-                        c=c+1;
+            gstiffnessMatrix=cell(v,hz);
+                    for itEle = 1:length(elements)
+                       elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
+                       %elementalDofIds= sDofArray{j,i}.getId;   %lokale dof ids eines Elements in einer substruktur beginnt bei 1
+                       elementalDofIds = elements(itEle).getDofList().getId;
+                       localId=zeros(1,4);
+                       for l=1:4
+                       localId(l)=find(sDofArray{j,i}.getId==elementalDofIds(l));
+                       end
+                       %stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
+                       %stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
+                       stiffnessMatrix(localId, localId) = ...
+                       stiffnessMatrix(localId, localId) + elementalStiffnessMatrix;
                     end
-                    
+                    gstiffnessMatrix{j,i}=stiffnessMatrix;
+            
+                    [~, fixedDofs] = femModel.getDofConstraints;
+                    if ~ isempty(fixedDofs)
+                        fixedDofIds = fixedDofs.getId();
+                        sFixedDofId=[];
+                        %local id wie oben
+                        c=1;
+                        for k=1:length(fixedDofIds)
+                            if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
+                                sFixedDofId(c)=fixedDofIds(k);
+                                c=c+1;
+                            end
+
+                        end
+                        if ~ isempty(sFixedDofId)
+                            for d=1:length(sFixedDofId)
+                                localFixedDofId(d)=find(sDofArray{j,i}.getId==sFixedDofId(d));
+                            end
+
+                            reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i},localFixedDofId ); 
+                            greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
+                        else
+                            greducedStiffnessMatrix{j,i}=gstiffnessMatrix{j,i};
+                        end
+                    end
                 end
-                if ~ isempty(sFixedDofId)
-                for d=1:length(sFixedDofId)
-                    localFixedDofId(d)=find(sDofArray{j,i}.getId==sFixedDofId(d));
-                end
-                
-                reducedStiffnessMatrix = applyMatrixBoundaryConditions(gstiffnessMatrix{j,i},localFixedDofId ); 
-                greducedStiffnessMatrix{j,i}=reducedStiffnessMatrix;
-                else
-                greducedStiffnessMatrix{j,i}=gstiffnessMatrix{j,i};
-                end
-            end
             end
         end
-       end
        
        %% Zerlegung der Steifigkeitsmatrizen jeder Substruktur: Umsortierung nach i,br,bc
        function [SortStiffnessmatrix,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=splitMatrix(femModel,gstiffnessMatrix,sDofArray,v,hz,in,br,bc)

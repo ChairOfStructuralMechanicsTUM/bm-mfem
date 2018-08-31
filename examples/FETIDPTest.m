@@ -179,12 +179,12 @@ Ns=6;
 v=2;
 hz=3;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
-[K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(model,nodematrixtest,Ns,v,hz,dim);
+[K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(nodematrixtest,Ns,v,hz,dim);
 [DoubleNodes]=substructureFETI_DP.getDoubleNodes(model,gbr);
 [sNodeIdArray]=substructureFETI_DP.getSubstructureNodeIdArray(K,v,hz);
-[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,K,v,hz);
-[sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeArray,sNodeIdArray,K,v,hz);
-[sDofArray]= substructureFETI_DP.getSubstrucureDofArray(model,sNodeIdArray,sNodeArray,sElementArray,K,v,hz);
+[sNodeArray] = substructureFETI_DP.getSubstructureNodeArray(model,sNodeIdArray,v,hz);
+[sElementArray,id,nodes] = substructureFETI_DP.getSubstructureElementArray(model,sNodeIdArray,v,hz);
+[sDofArray]= substructureFETI_DP.getSubstrucureDofArray(sNodeArray,v,hz);
 [gstiffnessMatrix, greducedStiffnessMatrix] = substructureFETI_DP.assembleSubstructureStiffnessMatrix(model,sElementArray,sDofArray,v,hz);
 [Ksort,Krr,Kcc,Krc,Kcr,suDofId,srDofId,suDofIdLoc,srDofIdLoc]=substructureFETI_DP.splitMatrix(model,gstiffnessMatrix,sDofArray,v,hz,in,br,bc);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,srDofId,suDofIdLoc,srDofIdLoc,v,hz);
@@ -201,7 +201,7 @@ SimpleAssembler.assignResultsToDofs(model, ufinal);
 
 v = Visualization(model);
 %v.setScaling(10000000);
-f1=figure(1)
+f1=figure(1);
 v.plotUndeformed
 v.plotDeformed
 
