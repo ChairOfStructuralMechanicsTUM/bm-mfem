@@ -422,9 +422,22 @@ classdef substructureFETI_DP < handle
   
        
        %% Aufstellen des Lastvektors jeder Substruktur
-       function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,v,hz)
+       function [sForceVector,ubcId]=getSubstructureForceVector(femModel,Assembler,suDofId,gbc,v,hz)
            [forceVector, reducedforceVector] = Assembler.applyExternalForces(femModel);  %reduced force vector auch abfragbar!!!
            sForceVector=cell(v,hz);
+           % Lastvektor an Knoten aufteilen, unterscheiden zwischen 2
+           % wertigen und 4 wertigen knoten, mit ubc vergleichen
+           nbc=femModel.getNodes(gbc);
+           c=1;
+           for k=1:length(nbc)
+           ubc(c:c+1)=nbc(k).getDofArray;
+           c=c+2;
+           end
+           ubcId=ubc.getId;
+           %herausfinden an welchen fg eine kraft wirkt, falls einer dieser
+           %fg im ubcid vektor vorkommt, anzahl ermitteln und last durch
+           %anzahl teilen
+            
            for i=1:hz
                for j=1:v 
                    uDofId=suDofId{j,i};
@@ -435,7 +448,7 @@ classdef substructureFETI_DP < handle
                    sForceVector{j,i}=sforceVector;
                end
            end
-           
+
        end
        
        %% Sortieren des Lastvektors jeder Substruktur in fr und fbc
