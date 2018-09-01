@@ -325,8 +325,8 @@ classdef substructureFETI_DP < handle
                     d=d+2;
                     end
                     %DofIdVektoren globale dof Benennung
-                    uDofId=Dof.empty;
-                    rDofId=Dof.empty;
+                    uDofId=[];
+                    rDofId=[];
                     uDofId=udof.getId;
                     rDofId=rdof.getId;
                     
@@ -334,12 +334,13 @@ classdef substructureFETI_DP < handle
                     %festgehaltene Dofs entfernen  %fixed dofs sind global
                     %benannt--> substructure fixed dofs identifizieren
                     [~, fixedDofs] = femModel.getDofConstraints;
+                    sFixedDofId=[];
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId();
                     c=1;
                     for k=1:length(fixedDofIds)
                     if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k);  %Länge voher unbekannt, keine Vorbelegung!
+                        sFixedDofId(c)=fixedDofIds(k);  
                         c=c+1;
                     end
                     end
@@ -351,6 +352,7 @@ classdef substructureFETI_DP < handle
                     for c=1:length(sFixedDofId)
                     uDofId(find(uDofId==sFixedDofId(c)))=[];
                     rDofId(find(rDofId==sFixedDofId(c)))=[];
+                    end
                     end
 %                     for k=1:n
 %                         for l=1:length(sFixedDofId)
@@ -414,10 +416,10 @@ classdef substructureFETI_DP < handle
                     %Steifigkeitsmatrizen der Kombinierten Freiheitsgrade rbc, bcr: Krc, Kcr
                     Krc{j,i}=Ksort(1:r,r+1:r+l);
                     Kcr{j,i}=Ksort(r+1:r+l,1:r);
+                    end
                 end
-           end
-       end
-    end
+          end
+  
        
        %% Aufstellen des Lastvektors jeder Substruktur
        function [sForceVector]=getSubstructureForceVector(femModel,Assembler,suDofId,v,hz)
@@ -488,14 +490,15 @@ classdef substructureFETI_DP < handle
                     c=c+2;
                     end
                     
-                 inDofId=indof.getId;
-                 [~, fixedDofs] = femModel.getDofConstraints;
+                    inDofId=indof.getId;
+                    sFixedDofId=[];
+                    [~, fixedDofs] = femModel.getDofConstraints;
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId();
                     c=1;
                     for k=1:length(fixedDofIds)
                     if find(sDofArray{j,i}.getId==fixedDofIds(k))>0
-                        sFixedDofId(c)=fixedDofIds(k); %für jede Substruktur andere Länge, nicht vorbelegen!
+                        sFixedDofId(c)=fixedDofIds(k);
                         c=c+1;
                     end
                     end
@@ -575,17 +578,18 @@ classdef substructureFETI_DP < handle
             
             Bc=cell(v,hz);
             bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
+           
             %von Knoten ids auf Knoten:
-            
-            bcg1=femModel.getNodes(bcg);
+            bcg1=femModel.getNodes(bcg); 
             
             %von Knoten auf dofs:
             c=1;
             for k=1:length(bcg1)
-            bcdof(c:c+1)=bcg1(k).getDofArray;   %%%%fixed dofs schon weg???
+            bcdof(c:c+1)=bcg1(k).getDofArray;  
             c=c+2;
             end
-            %aus globalem bd fixed dofs entfernen:
+            %aus globalem bcdof fixed dofs entfernen, auf globale Knoten
+            %Ids umstellen
             [~, fixedDofs] = femModel.getDofConstraints;
             if ~ isempty(fixedDofs)
             fixedDofIds = fixedDofs.getId();
@@ -593,11 +597,12 @@ classdef substructureFETI_DP < handle
             bcdofId= bcdof.getId;
             if ~ isempty(fixedDofIds)
             for c=1:length(fixedDofIds)
-            bcdofId(find(bcdofId==fixedDofIds(c)))=[];
+            bcdofId(find(bcdofId==fixedDofIds(c)))=[];  %Vektor der globalen bc dofs ohne die fixed dofs
             end
             end
             
-
+            % Bc dofs für jede Substruktur berechnen, aus globalen bc und
+            % sbc für jede Substruktur Bc aufstellen
             for i=1:hz
                for j=1:v
                    sbcdof=Dof.empty;
@@ -636,7 +641,7 @@ classdef substructureFETI_DP < handle
                    end
                    Bc{j,i}=sBc;
                end
-            end
+           end
        end
        
        %% Assemble all Parameters
