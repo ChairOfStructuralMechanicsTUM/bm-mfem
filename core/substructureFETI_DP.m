@@ -232,18 +232,32 @@ classdef substructureFETI_DP < handle
        end
    
        %Steifigkeitsmatrix jeder Substruktur
-       function [gstiffnessMatrix, greducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel,sElementArray,sDofArray,v,hz)        
+       function [gstiffnessMatrix, greducedStiffnessMatrix] = assembleSubstructureStiffnessMatrix(femModel,sElementArray,sDofArray,gbr,v,hz)        
            gstiffnessMatrix=cell(v,hz);
            greducedStiffnessMatrix=cell(v,hz);
-           
+           br=unique(gbr,'stable');
            for i=1:hz
                 for j=1:v
                     elements = sElementArray{j,i};
                     ndofs = length(sDofArray{j,i});
                     stiffnessMatrix = zeros(ndofs);
-            
+                    enodes=Node.empty;
+                    enodeId=[];
                     for itEle = 1:length(elements)
                        elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
+                       %Elementsteifigkeitsmatrix der boundry reminder
+                       %halbieren: 
+                       enodes=elements(itEle).getNodes;
+                       enodeId=enodes.getId;
+                       for g=1:length(enodeId)
+                           if find(br==enodeId(g))>0
+                               elementalStiffnessMatrix=0.5*elementalStiffnessMatrix;
+                           end
+                       end
+                       
+                       
+                       
+                       
                        %elementalDofIds= sDofArray{j,i}.getId;   %lokale dof ids eines Elements in einer substruktur beginnt bei 1
                        elementalDofIds = elements(itEle).getDofList().getId;
                        localId=zeros(1,4);
@@ -397,7 +411,7 @@ classdef substructureFETI_DP < handle
                     suDofIdLoc{j,i}=uDofIdLoc;
                     srDofIdLoc{j,i}=rDofIdLoc;
         
-                    %Umsortierte Stiefigkeitsmatrix
+                    %Umsortierte Steifigkeitsmatrix
                     n=length(uDofIdLoc);
                     Ksort=zeros(n);
                     Kmatrix=gstiffnessMatrix{j,i};
@@ -577,7 +591,7 @@ classdef substructureFETI_DP < handle
                      t=t+1;
                      end
                  end
-
+                 
                  gBr(sbrDofId(1:l),:)=lBr;
                  
                  %Vz Schema implementieren!! + - + 
