@@ -194,7 +194,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [sForceVector]=substructureFETI_DP.getSubstructureForceVector(model,assembling,suDofId,v,hz);
 [gfr,gfbc]=substructureFETI_DP.sortSubstructureForceVector(sForceVector,srDofId,v,hz);
 [Bbr,ur,ur2,sinDofId,sbrDofId]=substructureFETI_DP.getInterfaceBooleanMatrix(model,in,sDofArray,srDofId,v,hz);
-[Bc,bcgl,bcdof]=substructureFETI_DP.getCornerBooleanMatrix(model,sDofArray,bc,gbc,hz,v);
+[Bc,bcgl,bcdofId]=substructureFETI_DP.getCornerBooleanMatrix(model,sDofArray,bc,gbc,hz,v);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(v,hz,Kcc,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [Kbrbr]=substructureFETI_DP.getBoundryReminderMatrix(Krr,sinDofId,v,hz);
 [lP]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
@@ -202,7 +202,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kccg,dr,fcg,lPglobal);
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
 [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
-[ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdof,v,hz);
+[ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdofId,v,hz);
 SimpleAssembler.assignResultsToDofs(model, ufinalred);
 %%
 

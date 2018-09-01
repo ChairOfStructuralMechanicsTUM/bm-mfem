@@ -571,7 +571,7 @@ classdef substructureFETI_DP < handle
        end
        
        %define boolean Matrix Bc
-       function [Bc,bcg1,bcdof]=getCornerBooleanMatrix(femModel,sDofArray,bc,gbc,hz,v)
+       function [Bc,bcg1,bcdofId]=getCornerBooleanMatrix(femModel,sDofArray,bc,gbc,hz,v)
             
             Bc=cell(v,hz);
             bcg = unique(gbc); %globaler Vektor der Eckknoten ids, aufsteigend sortiert, entspricht der Reihenfolge der subdomains
@@ -585,10 +585,22 @@ classdef substructureFETI_DP < handle
             bcdof(c:c+1)=bcg1(k).getDofArray;   %%%%fixed dofs schon weg???
             c=c+2;
             end
+            %aus globalem bd fixed dofs entfernen:
+            [~, fixedDofs] = femModel.getDofConstraints;
+            if ~ isempty(fixedDofs)
+            fixedDofIds = fixedDofs.getId();
+            end
+            bcdofId= bcdof.getId;
+            if ~ isempty(fixedDofIds)
+            for c=1:length(fixedDofIds)
+            bcdofId(find(bcdofId==fixedDofIds(c)))=[];
+            end
+            end
+            
+
             for i=1:hz
                for j=1:v
                    sbcdof=Dof.empty;
-                   
                    sbc=femModel.getNodes(bc{j,i});
                    c=1;
                    for k=1:length(sbc)
@@ -596,7 +608,7 @@ classdef substructureFETI_DP < handle
                    c=c+2;
                    end
                    %falls corner dofs festgehalten: entfernen!
-                   [~, fixedDofs] = femModel.getDofConstraints;
+                    [~, fixedDofs] = femModel.getDofConstraints;
                     if ~ isempty(fixedDofs)
                     fixedDofIds = fixedDofs.getId();
                     c=1;
@@ -608,16 +620,16 @@ classdef substructureFETI_DP < handle
                     end
                     end
                     end
+                    sbcdofId=sbcdof.getId;
                     if ~ isempty(sFixedDofId)
                     for c=1:length(sFixedDofId)
-                       sbcdof(find(sbcdof==sFixedDofId(c)))=[]
+                       sbcdofId(find(sbcdofId==sFixedDofId(c)))=[];
                     end
                     end
-         
-                   sBc=zeros(length(sbcdof),length(bcdof));
+                   sBc=zeros(length(sbcdofId),length(bcdofId));
                    d=1;
-                   for k=1:length(bcdof)
-                   if find(sbcdof==bcdof(k))>0
+                   for k=1:length(bcdofId)
+                   if find(sbcdofId==bcdofId(k))>0
                        sBc(d,k)=1;
                        d=d+1;
                    end
