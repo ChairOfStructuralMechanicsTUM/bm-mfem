@@ -66,8 +66,8 @@ classdef substructureFETI_DP < handle
            else
                
             K=cell(v,hz); %cell um die verschiedenen Substructures als arrays darin zu speichern
-            a=floor(size(nodematrix,1)/v); %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
-            b=floor(size(nodematrix,2)/hz); %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
+            a=floor(size(nodematrix,1)/v) %Anzahl Knoten einer Spalte einer Substtruktur, Zeilenanzahl
+            b=floor(size(nodematrix,2)/hz) %%Anzahl Knoten einer Zeile einer Substtruktur, Spaltenanzahl
             bc=cell(v,hz);
             br=cell(v,hz);
             in=cell(v,hz);
@@ -741,18 +741,18 @@ classdef substructureFETI_DP < handle
             end
        end
        %% Zusatzfunktion: doppelte Knoten (interface nodes) identifizieren
-       
-        function [doubleNodes]= getDoubleNodes(gbr)
-           
-            gsort=sort(gbr);
-            k=1;
-            for i=1:2:length(gsort)
-                if any(gsort,gsort(i))==1
-                    doubleNodes(k)=gsort(i);
-                    k=k+1;
-                end
-            end
-        end
+%        
+%         function [doubleNodes]= getDoubleNodes(gbr)
+%            
+%             gsort=sort(gbr);
+%             k=1;
+%             for i=1:2:length(gsort)
+%                 if any(gsort,gsort(i))==1
+%                     doubleNodes(k)=gsort(i);
+%                     k=k+1;
+%                 end
+%             end
+%         end
 
  
    end
