@@ -433,10 +433,19 @@ classdef substructureFETI_DP < handle
            ubc(c:c+1)=nbc(k).getDofArray;
            c=c+2;
            end
-           ubcId=ubc.getId;
+           ubcId=ubc.getId; %Dof Ids der Eckknoten jeder Subsdomain, mehrfachvorkommende Dofs!
            %herausfinden an welchen fg eine kraft wirkt, falls einer dieser
            %fg im ubcid vektor vorkommt, anzahl ermitteln und last durch
            %anzahl teilen
+           for k=1:length(ubcId)
+               x=0;
+               x=length(find(ubcId==ubcId(k)));  %Mehrfachauffindung!
+               if x>0 & ubcId(k)~=0
+               forceVector(ubcId(k))=forceVector(ubcId(k))/x;  %Kraft am Knoten durch Wertigkeit des Knotens teilen
+               end
+               ubcId(find(ubcId==ubcId(k)))=0;
+           end
+           
             
            for i=1:hz
                for j=1:v 

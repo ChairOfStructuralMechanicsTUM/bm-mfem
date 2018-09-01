@@ -151,18 +151,19 @@ elementArray.setPropertyValue('YOUNGS_MODULUS',1000);
 
 elementIds = elementArray.getId;
 
-% node01.fixDof('DISPLACEMENT_X');
-% node01.fixDof('DISPLACEMENT_Y');
-% 
-% node02.fixDof('DISPLACEMENT_X');
-% node02.fixDof('DISPLACEMENT_Y');
-% 
-% node04.fixDof('DISPLACEMENT_X');
-% node04.fixDof('DISPLACEMENT_Y');
+node01.fixDof('DISPLACEMENT_X');
+node01.fixDof('DISPLACEMENT_Y');
+
+node02.fixDof('DISPLACEMENT_X');
+node02.fixDof('DISPLACEMENT_Y');
+
+node04.fixDof('DISPLACEMENT_X');
+node04.fixDof('DISPLACEMENT_Y');
 
 node05.fixDof('DISPLACEMENT_X');
 node05.fixDof('DISPLACEMENT_Y');
-node31.fixDof('DISPLACEMENT_X');
+
+% node31.fixDof('DISPLACEMENT_X');
 
 %node35.fixDof('DISPLACEMENT_X');
 %node35.fixDof('DISPLACEMENT_Y');
@@ -179,9 +180,9 @@ node31.fixDof('DISPLACEMENT_X');
 % node03.fixDof('DISPLACEMENT_Y');
 
 
-% addPointLoad([node21 node26 node31],10,[0 -1]);
+addPointLoad([node21 node26 node31],10,[0 -1]);
 % addPointLoad([node06 node23 node35],20,[1 -1]);
-addPointLoad([node23],300,[0 -1]);
+% addPointLoad([node23],300,[0 -1]);
 
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler(model);
