@@ -104,11 +104,11 @@ clear all;
 model = FemModel();
 
 % Dimension of the structure
-Lx=5;
-Ly=5;
+Lx=2;
+Ly=1;
 
 % Number of elements in specific directions
-nx=10;
+nx=20;
 ny=10;
 
 % Calculation of the dimension of the elements (defined via L and n)
@@ -142,7 +142,7 @@ for j=1:ny
         model.addNewElement('TotalPorousElement2d4n',id,[a, a+1, a+1+(nx+1), a+(nx+1)]);
     end
 end
-
+ff = 100;
 % assignment of material properties
 model.getAllElements.setPropertyValue('DENSITY_SOLID',30);
 model.getAllElements.setPropertyValue('LAMBDA_SOLID',905357);
@@ -161,7 +161,7 @@ model.getAllElements.setPropertyValue('FLOW_RESISTIVITY',32e3);
 model.getAllElements.setPropertyValue('VISCOUS_LENGHT',90);
 model.getAllElements.setPropertyValue('THERMAL_LENGTH',165);
 
-% model.getAllElements.setPropertyValue('FREQUENCY',200);
+model.getAllElements.setPropertyValue('FREQUENCY',ff);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 
 % Definition of BCs
@@ -181,7 +181,7 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
 % Solving
-solver = SimpleHarmonicSolvingStrategy(model,200);
+solver = SimpleHarmonicSolvingStrategy(model,ff);
 x = solver.solve();
 
 step = 1;
@@ -190,11 +190,37 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 
 nodalForces = solver.getNodalForces(step);
 
-v = Visualization(model);
-v.setScaling(1e5);
-v.plotUndeformed
-v.plotDeformed
+% v = Visualization(model);
+% v.setScaling(3e5);
+% v.plotUndeformed
+% v.plotDeformed
+xx = model.getAllNodes.getX();
+yy = model.getAllNodes.getY();
+ux = model.getAllNodes.getDofValue('DISPLACEMENT_SOLID_X');
+uy = model.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
+scaling = 3e3;
+% z = reshape(sqrt(angle(ux).^2+angle(uy).^2),21,11);
+z = reshape(angle(ux),21,11);
+% z = reshape(angle(uy),21,11);
+xxx = reshape(xx+scaling*abs(ux.'),21,11);
+yyy = reshape(yy+scaling*abs(uy.'),21,11);
+figure()
+subplot(2,1,1)
+surf(xxx,yyy,z,'FaceColor','interp')
+colorbar
+view(0,90)
 
+subplot(2,1,2)
+uxf = model.getAllNodes.getDofValue('DISPLACEMENT_TOTAL_X');
+uyf = model.getAllNodes.getDofValue('DISPLACEMENT_TOTAL_Y');
+% zf = reshape(sqrt(angle(uxf).^2+angle(uyf).^2),21,11);
+zf = reshape(angle(uxf),21,11);
+% zf = reshape(angle(uyf),21,11);
+xxxf = reshape(xx+scaling*abs(uxf.'),21,11);
+yyyf = reshape(yy+scaling*abs(uyf.'),21,11);
+surf(xxxf,yyyf,zf,'FaceColor','interp')
+colorbar
+view(0,90)
 %% Mixed
 
 clc;
@@ -203,11 +229,11 @@ clear all;
 model = FemModel();
 
 % Dimension of the structure
-Lx=5;
-Ly=5;
+Lx=2;
+Ly=1;
 
 % Number of elements in specific directions
-nx=10;
+nx=20;
 ny=10;
 
 % Calculation of the dimension of the elements (defined via L and n)
@@ -260,7 +286,7 @@ model.getAllElements.setPropertyValue('FLOW_RESISTIVITY',32e3);
 model.getAllElements.setPropertyValue('VISCOUS_LENGHT',90);
 model.getAllElements.setPropertyValue('THERMAL_LENGTH',165);
 
-% model.getAllElements.setPropertyValue('FREQUENCY',200);
+model.getAllElements.setPropertyValue('FREQUENCY',200);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 
 % Definition of BCs
@@ -302,6 +328,11 @@ VerschiebungDofs = model.getDofArray.getValue(step);
 nodalForces = solver.getNodalForces(step);
 
 v = Visualization(model);
-v.setScaling(1e5);
+v.setScaling(3e4);
 v.plotUndeformed
 v.plotDeformed
+
+%% Schnipsel
+rea=real(VerschiebungDofs);
+im=imag(VerschiebungDofs);
+scatter(rea,im)
