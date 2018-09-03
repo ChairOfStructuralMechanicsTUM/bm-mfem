@@ -90,7 +90,7 @@ classdef substructureFETI_DP < handle
                                 K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
                        else
                                 bc(j,i)={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
-                                br(j,i)={[nodematrix(a+1,2:b);nodematrix(2:a,b+1)]};
+                                br(j,i)={[nodematrix(a+1,2:b).';nodematrix(2:a,b+1)]};
                                 K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
                         end
                         elseif i==1 && j~=1 && j~=v %Fall 2: erste Spalte Mitte
@@ -99,7 +99,7 @@ classdef substructureFETI_DP < handle
                             K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
                         elseif i==1 && j==v %Fall 3 linke untere Ecke
                             bc(j,i)={[nodematrix(dim(1)-(a),1);nodematrix(dim(1)-a,b+1);nodematrix(dim(1),b+1)]};
-                            br(j,i)={[nodematrix(dim(1)-a,2:b);nodematrix(dim(1)-a+1:dim(1)-1,b+1)]};
+                            br(j,i)={[nodematrix(dim(1)-a,2:b).';nodematrix(dim(1)-a+1:dim(1)-1,b+1)]};
                             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};  
                         elseif j==1 && i~=1 && i~= hz    %Fall 4 erste Zeile Mitte
                             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
@@ -247,13 +247,13 @@ classdef substructureFETI_DP < handle
                        elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
                        %Elementsteifigkeitsmatrix der boundry reminder
                        %halbieren: 
-                       enodes=elements(itEle).getNodes;
-                       enodeId=enodes.getId;
-                       for g=1:length(enodeId)
-                           if find(br==enodeId(g))>0
-                               elementalStiffnessMatrix=0.5*elementalStiffnessMatrix;
-                           end
-                       end
+%                        enodes=elements(itEle).getNodes;
+%                        enodeId=enodes.getId;
+%                        for g=1:length(enodeId)
+%                            if find(br==enodeId(g))>0
+%                                elementalStiffnessMatrix=0.5*elementalStiffnessMatrix;
+%                            end
+%                        end
                        
                        
                        

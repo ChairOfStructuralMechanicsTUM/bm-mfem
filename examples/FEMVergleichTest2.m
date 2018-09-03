@@ -279,10 +279,10 @@ nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08 node09 ...
     node51 node52 node53 node54 node55 node56 node57 node58 node59 node60 ...
     node61 node62 node63 node64 node65 node66 node67 node68 node69 node70 ...
     node71 node72 node73 node74 node75 node76 node77 node78 node79 node80 ...
-    node81 node82 node83 node84 node85];
-%     node86 node87 node88 node89 node90 ...
-%     node91 node92 node93 node94 node95 node96 node97 node98 node99 node100 ...
-%     node101 node102 node103 node104 node105 node106 node107 node108 node109 node110 ...
+    node81 node82 node83 node84 node85 node86 node87 node88 node89 node90 ...
+    node91 node92 node93 node94 node95 node96 node97 node98 node99 node100 ...
+    node101 node102 ];
+%     node103 node104 node105 node106 node107 node108 node109 node110 ...
 %     node111 node112 node113 node114 node115 node116 node117 node118 node119 node120 ...
 %     node121 node122 node123 node124 node125 node126 node127 node128 node129 node130 ...
 %     node131 node132 node133 node134 node135 node136 node137 node138 node139 node140 ...
@@ -532,42 +532,58 @@ ele210 = BarElement2d2n(210,[node82 node83]);
 ele211 = BarElement2d2n(211,[node83 node84]);
 ele212 = BarElement2d2n(212,[node84 node85]);
 
-%horizontale und schräge Elemente:33 pro Spalte
-% ele164 = BarElement2d2n(164,[node52 node69]);
-% ele165 = BarElement2d2n(165,[node53 node69]);
-% ele166 = BarElement2d2n(166,[node53 node70]);
-% ele167 = BarElement2d2n(167,[node54 node70]);
-% ele168 = BarElement2d2n(168,[node54 node71]);
-% ele169 = BarElement2d2n(169,[node55 node71]);
-% ele170 = BarElement2d2n(170,[node55 node72]);
-% ele171 = BarElement2d2n(171,[node56 node72]);
-% ele172 = BarElement2d2n(172,[node56 node73]);
-% ele173 = BarElement2d2n(173,[node57 node73]);
-% ele174 = BarElement2d2n(174,[node57 node74]);
-% ele175 = BarElement2d2n(175,[node58 node74]);
-% ele176 = BarElement2d2n(176,[node58 node75]);
-% ele177 = BarElement2d2n(177,[node59 node75]);
-% ele178 = BarElement2d2n(178,[node59 node76]);
-% ele179 = BarElement2d2n(179,[node60 node76]);
-% ele180 = BarElement2d2n(180,[node60 node77]);
-% ele181 = BarElement2d2n(181,[node61 node77]);
-% ele182 = BarElement2d2n(182,[node61 node78]);
-% ele183 = BarElement2d2n(183,[node62 node78]);
-% ele184 = BarElement2d2n(184,[node62 node79]);
-% ele185 = BarElement2d2n(185,[node63 node79]);
-% ele186 = BarElement2d2n(186,[node63 node80]);
-% ele187 = BarElement2d2n(187,[node64 node80]);
-% ele188 = BarElement2d2n(188,[node64 node81]);
-% ele189 = BarElement2d2n(189,[node65 node81]);
-% ele190 = BarElement2d2n(190,[node65 node82]);
-% ele191 = BarElement2d2n(191,[node66 node82]);
-% ele192 = BarElement2d2n(192,[node66 node83]);
-% ele193 = BarElement2d2n(193,[node67 node83]);
-% ele194 = BarElement2d2n(194,[node67 node84]);
-% ele195 = BarElement2d2n(195,[node68 node84]);
-% ele196 = BarElement2d2n(196,[node68 node85]);
+% horizontale und schräge Elemente:33 pro Spalte
+ele213 = BarElement2d2n(213,[node69 node86]);
+ele214 = BarElement2d2n(214,[node70 node86]);
+ele215 = BarElement2d2n(215,[node70 node87]);
+ele216 = BarElement2d2n(216,[node71 node87]);
+ele217 = BarElement2d2n(217,[node71 node88]);
+ele218 = BarElement2d2n(218,[node72 node88]);
+ele219 = BarElement2d2n(219,[node72 node89]);
+ele220 = BarElement2d2n(220,[node73 node89]);
+ele221 = BarElement2d2n(221,[node73 node90]);
+ele222 = BarElement2d2n(222,[node74 node90]);
+ele223 = BarElement2d2n(223,[node74 node91]);
+ele224 = BarElement2d2n(224,[node75 node91]);
+ele225 = BarElement2d2n(225,[node75 node92]);
+ele226 = BarElement2d2n(226,[node76 node92]);
+ele227 = BarElement2d2n(227,[node76 node93]);
+ele228 = BarElement2d2n(228,[node77 node93]);
+ele229 = BarElement2d2n(229,[node77 node94]);
+ele230 = BarElement2d2n(230,[node78 node94]);
+ele231 = BarElement2d2n(231,[node78 node95]);
+ele232 = BarElement2d2n(232,[node79 node95]);
+ele233 = BarElement2d2n(233,[node79 node96]);
+ele234 = BarElement2d2n(234,[node80 node96]);
+ele235 = BarElement2d2n(235,[node80 node97]);
+ele236 = BarElement2d2n(236,[node81 node97]);
+ele237 = BarElement2d2n(237,[node81 node98]);
+ele238 = BarElement2d2n(238,[node82 node98]);
+ele239 = BarElement2d2n(239,[node82 node99]);
+ele240 = BarElement2d2n(240,[node83 node99]);
+ele241 = BarElement2d2n(241,[node83 node100]);
+ele242 = BarElement2d2n(242,[node84 node100]);
+ele243 = BarElement2d2n(243,[node84 node101]);
+ele244 = BarElement2d2n(244,[node85 node101]);
+ele245 = BarElement2d2n(245,[node85 node102]);
 
-
+%vertikale Elemente:16 pro Spalte
+ele246 = BarElement2d2n(246,[node86 node87]);
+ele247 = BarElement2d2n(247,[node87 node88]);
+ele248 = BarElement2d2n(248,[node88 node89]);
+ele249 = BarElement2d2n(249,[node89 node90]);
+ele250 = BarElement2d2n(250,[node90 node91]);
+ele251 = BarElement2d2n(251,[node91 node92]);
+ele252 = BarElement2d2n(252,[node92 node93]);
+ele253 = BarElement2d2n(253,[node93 node94]);
+ele254 = BarElement2d2n(254,[node94 node95]);
+ele255 = BarElement2d2n(255,[node95 node96]);
+ele256 = BarElement2d2n(256,[node96 node97]);
+ele257 = BarElement2d2n(257,[node97 node98]);
+ele258 = BarElement2d2n(258,[node98 node99]);
+ele259 = BarElement2d2n(259,[node99 node100]);
+ele260 = BarElement2d2n(260,[node100 node101]);
+ele261 = BarElement2d2n(261,[node101 node102]);
 
 
 elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
@@ -591,7 +607,39 @@ elementArray = [ele01 ele02 ele03 ele04 ele05 ele06 ele07 ele08 ele09 ...
     ele181 ele182 ele183 ele184 ele185 ele186 ele187 ele188 ele189 ele190 ...
     ele191 ele192 ele193 ele194 ele195 ele196 ele197 ele198 ele199 ele200 ...
     ele201 ele202 ele203 ele204 ele205 ele206 ele207 ele208 ele209 ele210 ...
-    ele211 ele212];
+    ele211 ele212 ele213 ele214 ele215 ele216 ele217 ele218 ele219 ele220 ...
+    ele221 ele222 ele223 ele224 ele225 ele226 ele227 ele228 ele229 ele230 ...
+    ele231 ele232 ele233 ele234 ele235 ele236 ele237 ele238 ele239 ele240 ...
+    ele241 ele242 ele243 ele244 ele245 ele246 ele247 ele248 ele249 ele250 ...
+    ele251 ele252 ele253 ele254 ele255 ele256 ele257 ele258 ele259 ele260 ...
+    ele261];
+
+
+elementArray.setPropertyValue('CROSS_SECTION',1);
+elementArray.setPropertyValue('YOUNGS_MODULUS',1000);
+
+elementIds = elementArray.getId;
+
+node01.fixDof('DISPLACEMENT_X');
+node01.fixDof('DISPLACEMENT_Y');
+
+node02.fixDof('DISPLACEMENT_X');
+node02.fixDof('DISPLACEMENT_Y');
+
+node16.fixDof('DISPLACEMENT_X');
+node16.fixDof('DISPLACEMENT_Y');
+
+node17.fixDof('DISPLACEMENT_X');
+node17.fixDof('DISPLACEMENT_Y');
+
+addPointLoad([node35 node53 node69 ],300,[0 -1]);
+
+
+
+model = FemModel(nodeArray, elementArray);
+assembling = SimpleAssembler(model);
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+[forceVector,reducedForceVector] = assembling.applyExternalForces(model);
    
 
 elementArray.setPropertyValue('CROSS_SECTION',1);
