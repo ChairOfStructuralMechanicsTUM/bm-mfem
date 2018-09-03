@@ -632,7 +632,10 @@ node16.fixDof('DISPLACEMENT_Y');
 node17.fixDof('DISPLACEMENT_X');
 node17.fixDof('DISPLACEMENT_Y');
 
-addPointLoad([node35 node53 node69 node54],300,[0 -1]);
+node84.fixDof('DISPLACEMENT_X');
+node62.fixDof('DISPLACEMENT_Y');
+
+addPointLoad([node35 node53 node69 node54 node24],300,[1 -1]);
 
 
 
@@ -662,9 +665,9 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [Bc,bcgl,bcdofId]=substructureFETI_DP.getCornerBooleanMatrix(model,sDofArray,bc,gbc,hz,v);
 [FIrr,FIrc,Kcc,Kccg,dr,fcg]=substructureFETI_DP.assembleAllParameters(v,hz,Kcc,Krc,Krr,Bc,Bbr,gfr,gfbc);
 [Kbrbr]=substructureFETI_DP.getBoundryReminderMatrix(Krr,sinDofId,v,hz);
-[lP]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
+[lP,A]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
 [lPglobal]=substructureFETI_DP.assembleLumpedPreconditioner(lP,v,hz);
-[lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kccg,dr,fcg,1);  %Preconditioner falsch!!!!!
+[lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kccg,dr,fcg,1);  %Preconditioner funktioniert in diesem Bsp nicht--> wird zu 1 gesetzt
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
 [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
 [ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdofId,v,hz);

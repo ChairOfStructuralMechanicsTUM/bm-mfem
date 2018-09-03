@@ -758,7 +758,7 @@ classdef substructureFETI_DP < handle
            end
            
        end
-       function [lP]=getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz)
+       function [lP,A]=getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz)
            %Matrix W wird als erster versuch als Einheitsmatrix
            %implementiert, als zweiter versuch mit 0.5 auf der
            %hauptdiagonalen

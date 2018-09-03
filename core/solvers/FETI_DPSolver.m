@@ -7,11 +7,11 @@ end
 methods (Static)
    
     function [lmd]=PCG(FIrr,FIrc,Kccg,dr,fcg,lP)
-        %Initialisierinung
+        %Initialisierinung von d
         lmd=zeros(length(dr),1);
         D=dr-FIrc*inv(Kccg)*fcg;
         A=(FIrr+FIrc*inv(Kccg)*FIrc.');
-        n=length(lmd);
+        n=size(A,1);
         
         di=FIrr*lmd;
         y=FIrc.'*lmd;
@@ -21,9 +21,10 @@ methods (Static)
 
         r=D-di;
         d=lP*r;
+        
         x=lmd;
         k=1;
-        while k<n | r>0.001 %Abbruchkriterium
+        while k<n | r>0.0000000000000001 %Abbruchkriterium
             
           di=FIrr*x;
           y=FIrc.'*x;
@@ -46,7 +47,7 @@ methods (Static)
           k=k+1;
   
         end
-        lmd=x;
+        lmd=x
         
     end
     
