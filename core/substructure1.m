@@ -23,7 +23,7 @@ nodematrix=zeros(dim);
 k=1;
 for i=1:dim(2)
     for j=1:dim(1)
-        nodematrix(j,i)=nodearray(getId(k));
+        nodematrix(j,i)=nodearray(k)
         k=k+1;
     end
 end
@@ -55,7 +55,7 @@ for i=1:hz
                 K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:i*b+1)};
             else
                 bc(j,i)={[nodematrix(a+1,1);nodematrix(1,b+1);nodematrix(a+1,b+1)]};
-                br(j,i)={[nodematrix(a+1,2:b);nodematrix(2:a,b+1)]};
+                br(j,i)={[nodematrix(a+1,2:b).';nodematrix(2:a,b+1)]};
                 K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
             end
         elseif i==1 && j~=1 && j~=v %Fall 2: erste Spalte Mitte
@@ -63,8 +63,8 @@ for i=1:hz
             br(j,i)={[nodematrix((j-1)*a+1,2:b).';nodematrix(j*a+1,2:b).';nodematrix((j-1)*a+2:j*a,b+1)]};
             K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:i*b+1)};
         elseif i==1 && j==v %Fall 3 linke untere Ecke
-            bc(j,i)={[nodematrix(dim(1)-(a),1);nodematrix(dim(1)-a,b+1);nodematrix(dim(1),b+1)]};
-            br(j,i)={[nodematrix(dim(1)-a,2:b);nodematrix(dim(1)-a+1:dim(1)-1,b+1)]};
+            bc(j,i)={[nodematrix((j-1)*a+1,1);nodematrix((j-1)*a+1,b+1);nodematrix(dim(1),b+1)]};
+            br(j,i)={[nodematrix((j-1)*a+1,2:b).';nodematrix((j-1)*a+2:dim(1)-1,b+1)]};
             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};  
         elseif j==1 && i~=1 && i~= hz    %Fall 4 erste Zeile Mitte
             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
@@ -86,21 +86,21 @@ for i=1:hz
             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:i*b+1)};
         elseif j==1 && i==hz %Fall 7 rechte obere Ecke
             if v==1 %falls nur eine Substruktur in vertikale Richtung vorhanden ist
-                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b)]};
-                br(j,i)={nodematrix(2:a-1,dim(2)-b)};
+                bc(j,i)={[nodematrix(1,(i-1)*b+1);nodematrix(a+1,(i-1)*b+1)]};
+                br(j,i)={nodematrix(2:a,(i-1)*b+1)};
                 K(j,i)={nodematrix((j-1)*a+1:j*a,(i-1)*b+1:dim(2))};
             else
-                bc(j,i)={[nodematrix(1,dim(2)-b);nodematrix(a,dim(2)-b);nodematrix(a,dim(2))]};
-                br(j,i)={[nodematrix(2:a,dim(2)-b);nodematrix(a+1,dim(2)-b+1:dim(2)-1).']};
+                bc(j,i)={[nodematrix(1,(i-1)*b+1);nodematrix(a+1,(i-1)*b+1);nodematrix(a+1,dim(2))]};
+                br(j,i)={[nodematrix(2:a,(i-1)*b+1);nodematrix(a+1,(i-1)*b+2:dim(2)-1).']};
                 K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
             end
         elseif i==hz && j~=1 && j~=v %Fall 8 letzte Spalte Mitte
             bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(j*a+1,(i-1)*b+1);nodematrix((j-1)*a+1,dim(2));nodematrix(j*a+1,dim(2))]};
-            br(j,i)={[nodematrix((j-1)*a+2:j*a,(i-1)*b+1);nodematrix((j-1)*a+1,dim(2)-b+1:dim(2)-1).';nodematrix(j*a+1,dim(2)-b+1:dim(2)-1).']};
+            br(j,i)={[nodematrix((j-1)*a+2:j*a,(i-1)*b+1);nodematrix((j-1)*a+1,(i-1)*b+1+1:dim(2)-1).';nodematrix(j*a+1,(i-1)*b+2:dim(2)-1).']};
             K(j,i)={nodematrix((j-1)*a+1:j*a+1,(i-1)*b+1:dim(2))};
         else %Fall 9 rechte untere Ecke
             bc(j,i)={[nodematrix((j-1)*a+1,(i-1)*b+1);nodematrix(dim(1),(i-1)*b+1);nodematrix((j-1)*a+1,dim(2))]};
-            br(j,i)={[nodematrix((j-1)*a+2:dim(1)-1,dim(2)-b);nodematrix(dim(1)-a,(dim(2)-b+1:dim(2)-1)).']};
+            br(j,i)={[nodematrix((j-1)*a+2:dim(1)-1,(i-1)*b+1);nodematrix((j-1)*a+1,((i-1)*b+2:dim(2)-1)).']};
             K(j,i)={nodematrix((j-1)*a+1:dim(1),(i-1)*b+1:dim(2))};
         end
         in(j,i)={setdiff(cell2mat(K(j,i)),union(cell2mat(bc(j,i)),cell2mat(br(j,i))))};
