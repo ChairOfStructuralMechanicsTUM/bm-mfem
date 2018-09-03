@@ -255,18 +255,18 @@ classdef substructureFETI_DP < handle
                     enodeId=[];
                     for itEle = 1:length(elements)
                        elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
-%                        Elementsteifigkeitsmatrix der boundry reminder
-%                        halbieren: 
+                       
+%                    Steifigkeiten der boundry reminder halbieren: 
 
 
-%                        enodes=elements(itEle).getNodes;
-%                        enodeId=enodes.getId;
-%                        for g=1:length(enodeId)
-%                            if find(br==enodeId(g))>0
-%                                elementalStiffnessMatrix=0.5*elementalStiffnessMatrix;
-%                            end
-%                        end
-%                        
+                       enodes=elements(itEle).getNodes;
+                       enodeId=enodes.getId;
+                       for g=1:length(enodeId)
+                           if find(br==enodeId(g))>0
+                               elementalStiffnessMatrix=0.5*elementalStiffnessMatrix;
+                           end
+                       end
+                        
                        
                        
                        
@@ -448,7 +448,7 @@ classdef substructureFETI_DP < handle
   
        
        %% Aufstellen des Lastvektors jeder Substruktur
-       function [sForceVector,ubcId]=getSubstructureForceVector(femModel,Assembler,suDofId,gbc,v,hz)
+       function [sForceVector,ubcId]=getSubstructureForceVector(femModel,Assembler,suDofId,gbc,gbr,v,hz)
            [forceVector, reducedforceVector] = Assembler.applyExternalForces(femModel);  %reduced force vector auch abfragbar!!!
            sForceVector=cell(v,hz);
            % Lastvektor an Knoten aufteilen, unterscheiden zwischen 2
@@ -459,7 +459,9 @@ classdef substructureFETI_DP < handle
            ubc(c:c+1)=nbc(k).getDofArray;
            c=c+2;
            end
-           ubcId=ubc.getId; %Dof Ids der Eckknoten jeder Subsdomain, mehrfachvorkommende Dofs!
+           
+           ubcId=ubc.getId; 
+           %Dof Ids der Eckknoten jeder Subsdomain, mehrfachvorkommende Dofs!
            %herausfinden an welchen fg eine kraft wirkt, falls einer dieser
            %fg im ubcid vektor vorkommt, anzahl ermitteln und last durch
            %anzahl teilen
@@ -473,11 +475,29 @@ classdef substructureFETI_DP < handle
                ubcId(find(ubcId==ubcId(k)))=0;
            end
            
-            
+           %bei Belastungen auf FG an den br Knoten: Last halbieren:
+           nbr=femModel.getNodes(gbr);
+           c=1;
+           for k=1:length(nbr)
+           ubr(c:c+1)=nbr(k).getDofArray;
+           c=c+2;
+           end 
+           ubrId=ubr.getId;
+           for k=1:length(ubrId)
+               x=0;
+               x=length(find(ubrId==ubrId(k)));  %Mehrfachauffindung!
+               if x>0 & ubrId(k)~=0
+               forceVector(ubrId(k))=forceVector(ubrId(k))/2;  %Kraft am br Dof halbiert
+               end
+               ubrId(find(ubrId==ubrId(k)))=0;
+           end
+           
+           
+           
            for i=1:hz
                for j=1:v 
                    uDofId=suDofId{j,i};
-                   sforceVector=zeros(length(uDofId));
+                   sforceVector=zeros(1,length(uDofId));
                    for k=1:length(uDofId)
                    sforceVector(k)=forceVector(uDofId(k)); %für jede Substruktur andere Länge
                    end
@@ -605,8 +625,7 @@ classdef substructureFETI_DP < handle
                      end
                  end
                  
-                 gBr(sbrDofId(1:l),:)=lBr;
-                 
+                 gBr(sbrDofId(1:l),:)=lBr;          
                  %Vz Schema implementieren!! + - + 
                  %                           - + - 
                  
@@ -747,7 +766,7 @@ classdef substructureFETI_DP < handle
             for i=1:hz
                for j=1:v
                    Bbrhelp=Bbr{j,i};
-                   W=0.5*eye(size(ur2,2));   %Testcase mit 1 und 0.5
+                   W=0.5*eye(size(ur2,2));   
                    A=zeros(size(srDofId{j,i},2));
                    A(size(sinDofId{j,i},2)+1:size(A,1),size(sinDofId{j,i},2)+1:size(A,2))=Kbrbr{j,i};
                    slP=W*Bbrhelp*A*Bbrhelp.'*W;
