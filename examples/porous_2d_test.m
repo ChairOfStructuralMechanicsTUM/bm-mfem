@@ -108,8 +108,8 @@ Lx=2;
 Ly=1;
 
 % Number of elements in specific directions
-nx=20;
-ny=10;
+nx=40;
+ny=20;
 
 % Calculation of the dimension of the elements (defined via L and n)
 dx=Lx/nx;
@@ -142,7 +142,7 @@ for j=1:ny
         model.addNewElement('TotalPorousElement2d4n',id,[a, a+1, a+1+(nx+1), a+(nx+1)]);
     end
 end
-ff = 100;
+ff = 510;
 % assignment of material properties
 model.getAllElements.setPropertyValue('DENSITY_SOLID',30);
 model.getAllElements.setPropertyValue('LAMBDA_SOLID',905357);
@@ -194,16 +194,25 @@ nodalForces = solver.getNodalForces(step);
 % v.setScaling(3e5);
 % v.plotUndeformed
 % v.plotDeformed
+
+%SOLID
+%Auslesen von Knotenkoordinaten
 xx = model.getAllNodes.getX();
 yy = model.getAllNodes.getY();
+%Auslesen von Knotenverschiebungen
 ux = model.getAllNodes.getDofValue('DISPLACEMENT_SOLID_X');
 uy = model.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
-scaling = 3e3;
-% z = reshape(sqrt(angle(ux).^2+angle(uy).^2),21,11);
-z = reshape(angle(ux),21,11);
-% z = reshape(angle(uy),21,11);
-xxx = reshape(xx+scaling*abs(ux.'),21,11);
-yyy = reshape(yy+scaling*abs(uy.'),21,11);
+%Skalierung zur besseren Visualisierung der Ergebnisse (damit man was
+%sieht)
+scaling = 3e4;
+%Berechnen der Phase bzgl. ux oder uy; 41 und 21 sind hier die Anzahl der
+%Knoten in x- bzw. y-Richtung.
+z = reshape(angle(ux),41,21);
+%z = reshape(angle(uy),41,21);
+%Berechnen der Knotenkoordinaten im Verformten System
+xxx = reshape(xx+scaling*(-1)*real(ux.'),41,21);
+yyy = reshape(yy+scaling*(-1)*real(uy.'),41,21);
+%Abbilden der Ergebnisse
 figure()
 subplot(2,1,1)
 surf(xxx,yyy,z,'FaceColor','interp')
@@ -214,10 +223,10 @@ subplot(2,1,2)
 uxf = model.getAllNodes.getDofValue('DISPLACEMENT_TOTAL_X');
 uyf = model.getAllNodes.getDofValue('DISPLACEMENT_TOTAL_Y');
 % zf = reshape(sqrt(angle(uxf).^2+angle(uyf).^2),21,11);
-zf = reshape(angle(uxf),21,11);
-% zf = reshape(angle(uyf),21,11);
-xxxf = reshape(xx+scaling*abs(uxf.'),21,11);
-yyyf = reshape(yy+scaling*abs(uyf.'),21,11);
+%zf = reshape(angle(uxf),41,21);
+zf = reshape(angle(uyf),41,21);
+xxxf = reshape(xx+scaling*real(uxf.'),41,21);
+yyyf = reshape(yy+scaling*real(uyf.'),41,21);
 surf(xxxf,yyyf,zf,'FaceColor','interp')
 colorbar
 view(0,90)
