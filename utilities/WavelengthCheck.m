@@ -1,4 +1,4 @@
-function WavelengthCheck(OMEGA,TORTUOSITY,ETA_F,DENSITY_F,DENSITY_S,STATIC_FLOW_RESISTIVITY,VISCOUS_CHARACT_LENGTH,POROSITY,HEAT_CAPACITY_RATIO,PRESSURE_0,...
+function minLambda = WavelengthCheck(OMEGA,TORTUOSITY,ETA_F,DENSITY_F,DENSITY_S,STATIC_FLOW_RESISTIVITY,VISCOUS_CHARACT_LENGTH,POROSITY,HEAT_CAPACITY_RATIO,PRESSURE_0,...
     PRANDL_NUMBER,THERMAL_CHARACT_LENGTH,ETA_S,LAMBDA,MUE,Lx,Ly,nx,ny)
 
 % G_J(OMEGA) = flow resistivity of air particles in the pores:
@@ -35,10 +35,11 @@ lambda1=1/k1;
 lambda2=1/k2;
 lambda3=1/k3;
 
-if 10*min([lambda1,lambda2,lambda3])<max([Lx/nx,Ly/ny])
-    fprintf("error: Wavelength-Ratio: 10*lambda < max(dx,dy) \n ")
-    return
-end
+minLambda = min([lambda1,lambda2,lambda3]);
+% if 10<min([lambda1,lambda2,lambda3])/max([Lx/nx,Ly/ny])
+%     fprintf("error: Wavelength-Ratio: lambda < (max(dx,dy))/10 \n ")
+%     return
+% end
 
 
 end

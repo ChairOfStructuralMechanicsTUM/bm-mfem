@@ -81,9 +81,9 @@ classdef DazelElement2d4n < PorousElement2d4n
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [~, ~, Be, ~, J] = computeShapeFunction(totalporousElement2d4n, xi, eta);
-                    K_0=K_0+(w(i)*w(j)*det(J)*transpose(Be)*(D_0*Be));
-                    K_1=K_1+(w(i)*w(j)*det(J)*transpose(Be)*(D_1*Be));
+                    [~, ~, ~, B, Jdet] = computeShapeFunction(totalporousElement2d4n, xi, eta);
+                    K_0=K_0+(w(i)*w(j)*Jdet*transpose(B)*(D_0*B));
+                    K_1=K_1+(w(i)*w(j)*Jdet*transpose(B)*(D_1*B));
                 end
             end
             
@@ -130,8 +130,8 @@ classdef DazelElement2d4n < PorousElement2d4n
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [N_mat, ~, ~, ~, J] = computeShapeFunction(totalporousElement2d4n, xi, eta);
-                    ElementmassMatrix = ElementmassMatrix + (w(i) * w(j) * transpose(N_mat) * N_mat * det(J));
+                    [N_mat, ~, ~, ~, detJ] = computeShapeFunction(totalporousElement2d4n, xi, eta);
+                    ElementmassMatrix = ElementmassMatrix + (w(i) * w(j) * transpose(N_mat) * N_mat * detJ);
                 end
             end
             

@@ -100,7 +100,7 @@ classdef BiotAllardElement2d4n <  PorousElement2d4n
         
         function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(biot2d4n)
             
-            
+
             ETA_S = biot2d4n.getPropertyValue('ETA_S');
             LAMBDA = biot2d4n.getPropertyValue('LAMBDA_S');
             MU = biot2d4n.getPropertyValue('MUE_S');
@@ -154,16 +154,16 @@ classdef BiotAllardElement2d4n <  PorousElement2d4n
             % stiffness-matrices for solid, fluid and coupling phases:
             for xi = 1 : p
                 for eta = 1 : p
-                    [~, ~,Be,~, Jdet] = computeShapeFunction(biot2d4n,g(xi),g(eta));
+                    [~, ~, ~, B, Jdet] = computeShapeFunction(biot2d4n,g(xi),g(eta));
                     
                     stiffnessMatrix_s = stiffnessMatrix_s +...
-                        Be' * D_s * Be * Jdet * w(xi) * w(eta);
+                        B' * D_s * B * Jdet * w(xi) * w(eta);
                     
                     stiffnessMatrix_f = stiffnessMatrix_f +             ...
-                        Be' * D_f * Be * Jdet * w(xi) * w(eta);
+                        B' * D_f * B * Jdet * w(xi) * w(eta);
                     
                     stiffnessMatrix_sf = stiffnessMatrix_sf +             ...
-                        Be' * D_sf * Be * Jdet * w(xi) * w(eta);
+                        B' * D_sf * B * Jdet * w(xi) * w(eta);
                     
                 end
             end
@@ -221,8 +221,8 @@ classdef BiotAllardElement2d4n <  PorousElement2d4n
                 xi=g(n);
                 for m=1:p
                     eta=g(m);
-                    [N, ~, ~, ~, Jdet] = computeShapeFunction(biot2d4n,xi,eta);
-                    M = M + (w(n)*w(m)*transpose(N)*N*Jdet);
+                    [Nmat, ~, ~, ~, Jdet] = computeShapeFunction(biot2d4n,xi,eta);
+                    M = M + (w(n)*w(m)*transpose(Nmat)*Nmat*Jdet);
                     
                 end
             end

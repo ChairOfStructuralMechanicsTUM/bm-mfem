@@ -1,14 +1,14 @@
-%% SET PARAMETERS
+ %% SET PARAMETERS
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
-
-
+%function
+clc
 Lx = 1;
 Ly = 0.2;
 
-nx = 100;
-ny = 20;
+nx = 20;
+ny = 4;
 
 LoadValue = 1;
 LoadDirection = [0 -1];
@@ -44,7 +44,7 @@ WavelengthCheck(p.OMEGA,p.TORTUOSITY,p.ETA_F,p.DENSITY_F,DENSITY_S,p.STATIC_FLOW
 
 %% Standard (u_s,u_f) displacement
 clc
-clear model ans solver stiffnessMatrix massMatrix 
+clear model ans solver stiffnessMatrix massMatrix DisplacementAllard DisplacementAllardSolid
 
 model = FemModel();
 
@@ -113,40 +113,40 @@ end
 
 
 
-addPointLoadPorous(model.getNode(numnodes),LoadValue,LoadDirection);
- 
+addPointLoadPorous(model.getNode(numnodes),LoadValue,LoadDirection); 
 assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);     
+fprintf('Assembling Stiffness \n')
+stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
+fprintf('Assembling Mass \n')
 massMatrix = assembling.assembleGlobalMassMatrix(model);
 
-
+fprintf('Solving \n')
 solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
 x = solver.solve();
-   
 step = 1;
-    
-
+fprintf('Solved \n')
+%DisplacementAllard = sparse(nx*ny*4,1);
 DisplacementAllard(:,1) = model.getDofArray.getValue(step);
-% DisplacementAllard(:,2) = real(model.getDofArray.getValue(step)); 
-% DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
-% DisplacementAllard(:,4) = sqrt((DisplacementAllard(:,2)).^2 + (DisplacementAllard(:,3)).^2);
-% DisplacementAllard(:,5) = atan(DisplacementAllard(:,3)./DisplacementAllard(:,2));
+%DisplacementAllard(:,2) = real(model.getDofArray.getValue(step)); 
+%DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
+%DisplacementAllard(:,4) = sqrt((DisplacementAllard(:,2)).^2 + (DisplacementAllard(:,3)).^2);
+%DisplacementAllard(:,5) = atan(DisplacementAllard(:,3)./DisplacementAllard(:,2));
 
-
+%DisplacementAllardSolid = zeros(nx*ny*2,1);
 u=0;
 for i=1:4:size(DisplacementAllard,1)
     u=u+1;
-    DisplacementAllardSolid(u,1)=DisplacementAllard(i,1); %Solid_x_Komplex
-%     DisplacementAllardSolid(u,2)=DisplacementAllard(i,4); %Solid_x_Betrag   
-%     DisplacementAllardSolid(u,3)=DisplacementAllard(i,5); %Solid_x_Phasenwinkel
+    %DisplacementAllardSolid(u,1)=DisplacementAllard(i,1); %Solid_x_Komplex
+    %DisplacementAllardSolid(u,2)=DisplacementAllard(i,4); %Solid_x_Betrag   
+    %DisplacementAllardSolid(u,3)=DisplacementAllard(i,5); %Solid_x_Phasenwinkel
 end
 u=0;
 
 for i=2:4:size(DisplacementAllard,1)
     u=u+1;
-    DisplacementAllardSolid(u,4)=DisplacementAllard(i,1); %Solid_y_Komplex
-%     DisplacementAllardSolid(u,5)=DisplacementAllard(i,4); %Solid_y_Betrag   
-%     DisplacementAllardSolid(u,6)=DisplacementAllard(i,5); %Solid_y_Phasenwinkel
+    %DisplacementAllardSolid(u,4)=DisplacementAllard(i,1); %Solid_y_Komplex
+    %DisplacementAllardSolid(u,5)=DisplacementAllard(i,4); %Solid_y_Betrag   
+    %DisplacementAllardSolid(u,6)=DisplacementAllard(i,5); %Solid_y_Phasenwinkel
 end
 
 clear u
@@ -154,10 +154,10 @@ clear u
 %nodalForces_biot = (solver.getNodalForces(step));
  
 
-% v = Visualization(model);
-% v.setScaling(1e3);
-% %v.plotUndeformed
-% v.plotDeformed;
+ v = Visualization(model);
+ v.setScaling(1e3);
+ v.plotUndeformed
+ %v.plotDeformed;
 
 
 %% Mixed (u_s,p) displacement
@@ -280,10 +280,10 @@ end
 clear u
 
 % 
-% v2 = Visualization(model);
-% v2.setScaling(1e3);
-% %v2.plotUndeformed
-% v2.plotDeformed;
+ v2 = Visualization(model);
+ v2.setScaling(1e3);
+ v2.plotUndeformed
+ v2.plotDeformed;
 % 
 % 
 

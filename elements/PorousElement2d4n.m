@@ -35,15 +35,15 @@ classdef PorousElement2d4n < Element
         end
         
         % member functions
-        function [N, Nf, Be, B, Jdet] = computeShapeFunction(porousElement2d4n,xi,eta)
+        function [Nmat, Nf, Be, B, Jdet] = computeShapeFunction(porousElement2d4n,xi,eta)
             % Shape Function and Derivatives
             Nf = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
                 -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];   
             
-            N = sparse(2,8);
-            N(1,1:2:end) = Nf(:);
-            N(2,2:2:end) = Nf(:);
+            Nmat = sparse(2,8);
+            Nmat(1,1:2:end) = Nf(:);
+            Nmat(2,2:2:end) = Nf(:);
             
             % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
@@ -57,13 +57,13 @@ classdef PorousElement2d4n < Element
             Jdet = det(J);
             
             % Calculation of B-Matrix
-            B=J\N_Diff_Par;
-            Bx=B(1,1:4);
-            By=B(2,1:4);
+            Be=J\N_Diff_Par;
+            Be_x=Be(1,1:4);
+            Be_y=Be(2,1:4);
             
-            Be=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
-                0,By(1),0,By(2),0,By(3),0,By(4);
-                By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+            B=[Be_x(1),0,Be_x(2),0,Be_x(3),0,Be_x(4),0;
+                0,Be_y(1),0,Be_y(2),0,Be_y(3),0,Be_y(4);
+                Be_y(1),Be_x(1),Be_y(2),Be_x(2),Be_y(3),Be_x(3),Be_y(4),Be_x(4)];
         end
         
         function pl = draw(obj)

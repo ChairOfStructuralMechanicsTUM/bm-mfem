@@ -4,8 +4,6 @@ classdef AtallaElement2d4n < PorousElement2d4n
     end
     
     
-    
-    
     methods
         
         % Constructor
@@ -164,14 +162,14 @@ classdef AtallaElement2d4n < PorousElement2d4n
     
             for zeta=1:p
                 for eta=1:p
-                    % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
+                    % N = 2x8 , Nf = 1x4, Be = 2x4, B = 3x8
                     [N, ~, Be, B, Jdet] = computeShapeFunction(mixed2d4n,g(zeta),g(eta));
-                    % K = B_b'*B_b = 8x3 * 3x8 = 8x8
-                    K_Matrix = K_Matrix + (w(zeta) * w(eta) * Jdet * Be' * D * Be);
-                    % C = N'*B = 8x2 * 2x4 = 8x4
-                    C_Matrix = C_Matrix + (w(zeta) * w(eta) * Jdet * GAMMA * N' * B);
-                    % H = B'*B = 4x2 * 2x4 = 4x4
-                    H_Matrix = H_Matrix + (w(zeta) * w(eta) * (POROSITY^2/EQ_DENSITY_F) * Jdet * B' * B);
+                    % K = B'*B = 8x3 * 3x8 = 8x8
+                    K_Matrix = K_Matrix + (w(zeta) * w(eta) * Jdet * B' * D * B);
+                    % C = N'*Be = 8x2 * 2x4 = 8x4
+                    C_Matrix = C_Matrix + (w(zeta) * w(eta) * Jdet * GAMMA * N' * Be);
+                    % H = Be'*Be = 4x2 * 2x4 = 4x4
+                    H_Matrix = H_Matrix + (w(zeta) * w(eta) * (POROSITY^2/EQ_DENSITY_F) * Jdet * Be' * Be);
             
                   
                 end
@@ -233,14 +231,14 @@ classdef AtallaElement2d4n < PorousElement2d4n
             
             for zeta=1:p
                 for eta=1:p
-                    % N = 2x8 , Nf = 1x4, B = 2x4, B_b = 3x8
-                    [N, Nf, ~, B, Jdet] = computeShapeFunction(mixed2d4n,g(zeta),g(eta));
+                    % Nmat = 2x8 , Nf = 1x4, Be = 2x4, B = 3x8
+                    [Nmat, Nf, Be, ~, Jdet] = computeShapeFunction(mixed2d4n,g(zeta),g(eta));
                     % M = N'*N = 8x2 * 2x8 = 8x8
-                    M_Matrix = M_Matrix + (w(zeta) * w(eta) * Jdet * EQ_DENSITY_TOTAL * N' * N);
+                    M_Matrix = M_Matrix + (w(zeta) * w(eta) * Jdet * EQ_DENSITY_TOTAL * Nmat' * Nmat);
                     % Q = Nf'*Nf = 4x1 * 1x4 = 4x4
                     Q_Matrix = Q_Matrix + (w(zeta) * w(eta) * Jdet * (POROSITY^2/R) * Nf' * (Nf));
                     % C = N'*B = 8x2 * 2x4 = 8x4
-                    C_Matrix = C_Matrix + (w(zeta) * w(eta) * Jdet * GAMMA * N' * B);
+                    C_Matrix = C_Matrix + (w(zeta) * w(eta) * Jdet * GAMMA * Nmat' * Be);
                     
                 end
             end

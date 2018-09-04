@@ -43,15 +43,45 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             checkConvexity(quadrilateralElement2d4n);
         end
         
-        function [N_mat, N, Be, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
+%         function [N_mat, N, Be, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
+%             % Shape Function and Derivatives
+%             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
+%             N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+%                 -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+%             
+%             N_mat = sparse(2,8);
+%             N_mat(1,1:2:end) = N(:);
+%             N_mat(2,2:2:end) = N(:);
+%             
+%             % Coordinates of the nodes forming one element
+%             ele_coords = zeros(4,2);
+%             for i=1:4
+%                 ele_coords(i,1) = quadrilateralElement2d4n.nodeArray(i).getX;
+%                 ele_coords(i,2) = quadrilateralElement2d4n.nodeArray(i).getY;
+%             end
+%             
+%             % Jacobian
+%             J = N_Diff_Par * ele_coords;
+%             
+%             % Calculation of B-Matrix
+%             B=J\N_Diff_Par;%/Jdet;
+%             Bx=B(1,1:4);
+%             By=B(2,1:4);
+%             
+%             Be=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
+%                 0,By(1),0,By(2),0,By(3),0,By(4);
+%                 By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+%         end
+        
+       function [Nmat, Nf, Be, B, Jdet] = computeShapeFunction(quadrilateralElement2d4n,xi,eta)
             % Shape Function and Derivatives
-            N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
+            Nf = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
             N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
-                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];   
             
-            N_mat = sparse(2,8);
-            N_mat(1,1:2:end) = N(:);
-            N_mat(2,2:2:end) = N(:);
+            Nmat = sparse(2,8);
+            Nmat(1,1:2:end) = Nf(:);
+            Nmat(2,2:2:end) = Nf(:);
             
             % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
@@ -62,17 +92,20 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             
             % Jacobian
             J = N_Diff_Par * ele_coords;
+            Jdet = det(J);
             
             % Calculation of B-Matrix
-            B=J\N_Diff_Par;%/Jdet;
-            Bx=B(1,1:4);
-            By=B(2,1:4);
+            Be=J\N_Diff_Par;
+            Be_x=Be(1,1:4);
+            Be_y=Be(2,1:4);
             
-            Be=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
-                0,By(1),0,By(2),0,By(3),0,By(4);
-                By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+            B=[Be_x(1),0,Be_x(2),0,Be_x(3),0,Be_x(4),0;
+                0,Be_y(1),0,Be_y(2),0,Be_y(3),0,Be_y(4);
+                Be_y(1),Be_x(1),Be_y(2),Be_x(2),Be_y(3),Be_x(3),Be_y(4),Be_x(4)];
         end
-        
+
+
+
         function stiffnessMatrix = computeLocalStiffnessMatrix(quadrilateralElement2d4n)
             EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
             PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
@@ -86,14 +119,14 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [~, ~, B, J] = computeShapeFunction(quadrilateralElement2d4n, xi, eta);
-                    stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*det(J)*transpose(B)*(Emat*B));
+                    [~, ~, ~, B, Jdet] = computeShapeFunction(quadrilateralElement2d4n, xi, eta);
+                    stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*Jdet*transpose(B)*(Emat*B));
                 end
             end
         end
         
         function massMatrix = computeLocalMassMatrix(quadrilateralElement2d4n)
-            roh = quadrilateralElement2d4n.getPropertyValue('DENSITY');
+            rho = quadrilateralElement2d4n.getPropertyValue('DENSITY');
             p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             massMatrix=zeros(8,8);
             [w,g]=returnGaussPoint(p);
@@ -102,8 +135,8 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                 xi=g(i);
                 for j=1:p
                     eta=g(j);
-                    [N_mat, ~, ~, J] = computeShapeFunction(quadrilateralElement2d4n,xi,eta);
-                    massMatrix=massMatrix + (w(i)*w(j)*roh*transpose(N_mat)*N_mat*det(J));
+                    [Nmat, ~, ~, ~, Jdet] = computeShapeFunction(quadrilateralElement2d4n,xi,eta);
+                    massMatrix=massMatrix + (w(i)*w(j)*rho*transpose(Nmat)*Nmat*Jdet);
                 end
             end
         end

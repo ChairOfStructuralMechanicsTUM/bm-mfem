@@ -3,7 +3,7 @@ classdef FemModel < handle
     %   femModel = FemModel(nodeArray, elementArray, femModelParts)
     %   This class keeps track over all entities in the model
     
-    properties (Access = private)
+   properties (Access = private)
         nodeArray = Node.empty
         elementArray = Element.empty
         femModelParts = containers.Map
