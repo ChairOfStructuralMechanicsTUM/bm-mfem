@@ -1,14 +1,15 @@
 clear all
 clc
 
-Lx = .1;
-Ly = 0.02;
-u=0;
+Lx = .05;
+Ly = Lx/5;
+u=15;
 
-for i = 1: 1 : 15
+for i = 16: 1 : 20
     u=u+1;
-    nx = Lx/Ly*i;
+    nx = 5*i;
     ny = i;
-    minLambda(u,1) = ModelTestForGridCovergence(Lx,Ly,nx,ny);
-    minLambda(u,2) = real(minLambda(u,1))/max([Lx/nx,Ly/ny]);
+    DisplacementPorousEndNode(u,:) = ModelTestForGridCovergence(Lx,Ly,nx,ny);
+    
 end
+fprintf("end")
