@@ -24,7 +24,7 @@ methods (Static)
         
         x=lmd;
         k=1;
-        while k<50 | r>0.0000000000000001 %Abbruchkriterium
+        while k<n | r>0.0000000000000001 %Abbruchkriterium
             
           di=FIrr*x;
           y=FIrc.'*x;
