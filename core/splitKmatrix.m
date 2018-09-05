@@ -14,17 +14,17 @@ function [Ksort,Krr,Kcc,Krc,Kcr]=splitKmatrix (Kmatrix,n)
 %     end
 % end
 %bc: Freiheitsgrade der Eckknoten
-bc=[1;2];
+bc=[4;5;8;9];
 %br
-br=[3;4];
+br=[6;7];
 %i
-i=[5;6;7;8];
+i=[1;2;3];
 %r
 r=[i;br];
 %Vektor der Verschiebungsfreiheitsgrade
 u=[i;br;bc];
 %Umsortierte Stiefigkeitsmatrix
-Ksort=string(zeros(n,n));
+Ksort=zeros(n,n);
 for i=1:n
     for j=1:n
         Ksort(i,j)=Kmatrix(u(i),u(j));
