@@ -41,7 +41,7 @@ elementIds = elementArray.getId;
 % node01.fixDof('DISPLACEMENT_Y');
 % 
 % node03.fixDof('DISPLACEMENT_X');
-% addPointLoad(node04,100,[0 -1]);
+%addPointLoad(node04,100,[0 -1]);
 
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler2(model);

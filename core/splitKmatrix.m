@@ -14,11 +14,11 @@ function [Ksort,Krr,Kcc,Krc,Kcr]=splitKmatrix (Kmatrix,n)
 %     end
 % end
 %bc: Freiheitsgrade der Eckknoten
-bc=[4;5;8;9];
+bc=[1;2;5;6];
 %br
-br=[6;7];
+br=[3;4];
 %i
-i=[1;2;3];
+i=[7;8;9;10;11;12];
 %r
 r=[i;br];
 %Vektor der Verschiebungsfreiheitsgrade
