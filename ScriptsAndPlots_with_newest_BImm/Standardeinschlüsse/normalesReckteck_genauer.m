@@ -1,7 +1,7 @@
-
+2    
 clear
 
-io=MdpaInput('Rechteck_hoch.mdpa'); %specify input file   
+io=MdpaInput('Normales_Rechteck.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -33,14 +33,13 @@ numberOfBands = 10;
 
 
 %% Visualize results
-figure()
-
+figure
 for i=1:numberOfBands
     plot(phases,frequencies(i,:),'r')
     hold on
 end
 
-title('Hohes Rechteck - ohne Federn')
+title('Normales Rechteck - Meshlänge 0.004m')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
 xlabel('Phase k')
 ylabel('Frequenz f')

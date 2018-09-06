@@ -87,7 +87,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -105,12 +105,12 @@ for i=1:numberOfBands
     hold on
 end
 
-title('Raute ohne Feder')
+title('Rechteck ohne Feder')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
 xlabel('Phase k')
-ylabel('frequenzy f')
+ylabel('Frequenz f')
 xlim([0 pi])
-ylim([0 2e4])
+ylim([0 1.5e4])
 
 
 % 
