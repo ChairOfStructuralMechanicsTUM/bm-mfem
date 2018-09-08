@@ -51,7 +51,7 @@ node01.fixDof('DISPLACEMENT_Y');
 node03.fixDof('DISPLACEMENT_X');
 
 
-addPointLoad(node07,100,[0 -1]);
+addPointLoad(node07,100,[0 1]);
 
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler2(model);
