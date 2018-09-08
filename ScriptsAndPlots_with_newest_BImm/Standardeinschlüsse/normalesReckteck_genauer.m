@@ -1,4 +1,4 @@
-2    
+ 
 clear
 
 io=MdpaInput('Normales_Rechteck.mdpa'); %specify input file   
@@ -16,9 +16,9 @@ v.plotUndeformed()  %visualize
  
 assembling = SimpleAssembler(model);
 
-%% Up to here everything is done as it would be set up of Standard FEM
+% Up to here everything is done as it would be set up of Standard FEM
 
-% Create Bloch Solver
+% % Create Bloch Solver
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands

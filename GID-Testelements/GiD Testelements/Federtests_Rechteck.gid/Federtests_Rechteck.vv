@@ -12,7 +12,7 @@ BeginZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testeleme
    pfo 0
    pf 4
    pv 0
-   NowUse 0
+   NowUse 1
    DrawingType 0
    LightVector 90 90 150 0
    OGLShadow(UseShadows) 0

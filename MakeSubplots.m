@@ -9,7 +9,6 @@ copyobj(allchild(ax1), ax3);
 
 ax4 = subplot(1,2,2);
 copyobj(allchild(ax2), ax4); 
-title('Rechteck ohne Feder')
 
 xlabel('Phase k')
 ylabel('Frequenz f')
