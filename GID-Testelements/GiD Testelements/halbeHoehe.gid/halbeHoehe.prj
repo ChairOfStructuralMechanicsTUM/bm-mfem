@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gid version="13.5">
+  <pre>
+    <layer_to_use name="Layer0"/>
+    <groups>
+      <group id="1" name="Cell" color="#34ceffff"/>
+      <group id="2" name="rightNodes" color="#008000ff"/>
+      <group id="4" name="leftNodes" color="#00ffffff"/>
+    </groups>
+    <entities_groups>
+      <entities_group name="lines">
+        <vector name="entity_ids" length="2" type="integer">2 4</vector>
+        <vector name="entity_num_groups" length="2" type="ushort">1 1</vector>
+        <vector name="entity_groups" length="2" type="ushort">2 4</vector>
+      </entities_group>
+      <entities_group name="surfaces">
+        <vector name="entity_ids" length="1" type="integer">1</vector>
+        <vector name="entity_num_groups" length="1" type="ushort">1</vector>
+        <vector name="entity_groups" length="1" type="ushort">1</vector>
+      </entities_group>
+      <entities_group name="nodes">
+        <vector name="entity_ids" length="169" type="integer">1:169</vector>
+        <vector name="entity_num_groups" length="169" type="ushort">2 2 1 1 2 1x4 2 1x5 2 1x7 2 1x7 2 1x7 2 1x8 2 1x109 2x3 1 2 2 1 2x4</vector>
+        <vector name="entity_groups" length="187" type="ushort">4 1 4 1x3 4 1x5 4 1x6 4 1x8 4 1x8 4 1x8 4 1x9 4 1x110 2 1 2 1 2 1 1 2 1 2 1 1 2 1 2 1 2 1 2 1</vector>
+      </entities_group>
+      <entities_group name="elements">
+        <vector name="entity_ids" length="156" type="integer">1:156</vector>
+        <vector name="entity_num_groups" length="156" type="ushort">1x156</vector>
+        <vector name="entity_groups" length="156" type="ushort">1x140 2x8 4x8</vector>
+      </entities_group>
+    </entities_groups>
+  </pre>
+</gid>

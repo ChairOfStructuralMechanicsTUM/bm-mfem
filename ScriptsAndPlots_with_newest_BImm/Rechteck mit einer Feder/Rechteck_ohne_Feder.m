@@ -105,9 +105,9 @@ for i=1:numberOfBands
     hold on
 end
 
-title('Rechteck ohne Feder')
+title('Rechteck')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
+xlabel('Phase Im(k)')
 ylabel('Frequenz f')
 xlim([0 pi])
 ylim([0 1.5e4])
