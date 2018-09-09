@@ -71,9 +71,9 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 %% testcase substructuring
 dim=[10,10];
-Ns=25;
-v=5;
-hz=5;
+Ns=16;
+v=4;
+hz=4;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(nodematrixtest,Ns,v,hz,dim);
 %[DoubleNodes]=substructureFETI_DP.getDoubleNodes(gbr);
