@@ -642,24 +642,6 @@ stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
    
 
-elementArray.setPropertyValue('CROSS_SECTION',1);
-elementArray.setPropertyValue('YOUNGS_MODULUS',1000);
-
-elementIds = elementArray.getId;
-
-node01.fixDof('DISPLACEMENT_X');
-node01.fixDof('DISPLACEMENT_Y');
-
-node02.fixDof('DISPLACEMENT_X');
-node02.fixDof('DISPLACEMENT_Y');
-
-node16.fixDof('DISPLACEMENT_X');
-node16.fixDof('DISPLACEMENT_Y');
-
-node17.fixDof('DISPLACEMENT_X');
-node17.fixDof('DISPLACEMENT_Y');
-
-addPointLoad([node35 node53 node69 node54 ],300,[0 -1]);
 
 
 
