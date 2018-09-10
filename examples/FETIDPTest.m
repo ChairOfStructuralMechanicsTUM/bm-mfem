@@ -163,26 +163,26 @@ node04.fixDof('DISPLACEMENT_Y');
 node05.fixDof('DISPLACEMENT_X');
 node05.fixDof('DISPLACEMENT_Y');
 
-% node31.fixDof('DISPLACEMENT_X');
+%node31.fixDof('DISPLACEMENT_X');
 
 %node35.fixDof('DISPLACEMENT_X');
 %node35.fixDof('DISPLACEMENT_Y');
 % node35.fixDof('DISPLACEMENT_X');
 % node35.fixDof('DISPLACEMENT_Y');
 % 
-% node23.fixDof('DISPLACEMENT_X');
-% node23.fixDof('DISPLACEMENT_Y');
+%node23.fixDof('DISPLACEMENT_X');
+%node23.fixDof('DISPLACEMENT_Y');
 % 
-% node14.fixDof('DISPLACEMENT_X');
-% node14.fixDof('DISPLACEMENT_Y');
+%node22.fixDof('DISPLACEMENT_X');
+%node22.fixDof('DISPLACEMENT_Y');
 
-% node03.fixDof('DISPLACEMENT_X');
-% node03.fixDof('DISPLACEMENT_Y');
+node35.fixDof('DISPLACEMENT_X');
+node35.fixDof('DISPLACEMENT_Y');
 
 
-addPointLoad([node21 node26 node31],10,[0 -1]);
-% addPointLoad([node06 node23 node35],20,[1 -1]);
-% addPointLoad([node23],300,[0 -1]);
+addPointLoad([node12,node13,node23],100,[1 -1]);
+%addPointLoad([node06 node23 node35],20,[1 -1]);
+%addPointLoad([node23],300,[0 -1]);
 
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler(model);

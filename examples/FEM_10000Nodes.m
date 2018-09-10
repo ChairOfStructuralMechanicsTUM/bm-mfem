@@ -3,7 +3,7 @@ clear
 
 %NODES:
 
-n=10;   % n= #Number of Nodes each row/col
+n=100;   % n= #Number of Nodes each row/col
 
    %z=0;
    x=0:2:2*n-2;  % n Coordinates each row

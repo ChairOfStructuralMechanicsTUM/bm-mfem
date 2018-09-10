@@ -3,7 +3,7 @@ clear
 
 %NODES:
 
-n=10;   % n= #Number of Nodes each row/col
+n=100;   % n= #Number of Nodes each row/col
 
    %z=0;
    x=0:2:2*n-2;  % n Coordinates each row
@@ -70,10 +70,10 @@ assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 %% testcase substructuring
-dim=[10,10];
-Ns=16;
-v=4;
-hz=4;
+dim=[100,100];
+Ns=576;
+v=24;
+hz=24;
 nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [K,bc,br,in,gbc,gbr,gin]=substructureFETI_DP.substructureNodeMatrix(nodematrixtest,Ns,v,hz,dim);
 %[DoubleNodes]=substructureFETI_DP.getDoubleNodes(gbr);
@@ -97,7 +97,7 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdofId,v,hz);
 SimpleAssembler.assignResultsToDofs(model, ufinalred);
 %%
-t=toc
+t=toc;
 
 
 v = Visualization(model);
