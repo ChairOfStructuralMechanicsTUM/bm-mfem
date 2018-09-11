@@ -15,7 +15,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         function quadrilateralElement2d4n = QuadrilateralElement2d4n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
-                "NUMBER_GAUSS_POINT","DENSITY"]);
+                "NUMBER_GAUSS_POINT","DENSITY","THICKNESS"]);
             
             % define the arguments for the super class constructor call
             if nargin == 0
@@ -83,8 +83,9 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             EModul = obj.getPropertyValue('YOUNGS_MODULUS');
             PoissonRatio = obj.getPropertyValue('POISSON_RATIO');
             p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            t = obj.getPropertyValue('THICKNESS');
             % Calculate Materialmatrix
-            Emat = EModul/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
+            Emat = EModul*t/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
             stiffnessMatrix=zeros(8,8);
             [w,g]=returnGaussPoint(p);
             
