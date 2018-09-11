@@ -1,7 +1,7 @@
     
 clear
 
-io=MdpaInput('Raute_hoch.mdpa'); %specify input file   
+io=MdpaInput('SpringHorizontal_raute_hoch.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -22,7 +22,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -40,10 +40,10 @@ for i=1:numberOfBands
     hold on
 end
 
-title('Hohe Raute - ohne Federn')
+title('Hohe Raute')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
-ylabel('frequenzy f')
+xlabel('Phase Im(k)')
+ylabel('Frequenz f')
 xlim([0 pi])
 ylim([0 2e4])
 

@@ -1,12 +1,12 @@
-BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/Ellipse_flach.gid/Ellipse_flach.vv
-   x -0.137715622782707214 0.396612465381622314
-   y 0.331035524606704712 -0.00885168835520744324
-   z -0.251983523368835449 0.251983523368835449
+BeginZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/Ellipse_flach.gid/Ellipse_flach.vv
+   x 0.0054155462421476841 0.083490811288356781
+   y 0.108879812061786652 0.0572869516909122467
+   z -0.217288225889205933 0.217288225889205933
    e 0.129368126392364502
    v 0 0 0
    r 1
    m 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
-   c 0.0967923775315284729 0.0752713456749916077 0
+   c 0.0391309261322021484 0.0787319093942642212 0
    pd 0
    pno 0
    pfo 0
@@ -29,7 +29,7 @@ BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/Ellipse_flach.gid/Ellipse_flac
    OGLStereo(EyeDistance) 0.075
    OGLStereo(LeftEyeDistance) 1 0 0 1
    OGLStereo(RightEyeDistance) 0 1 1 1
-EndZE C:/Users/ga78vuk/Desktop/GiD Testelements/Ellipse_flach.gid/Ellipse_flach.vv
+EndZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/Ellipse_flach.gid/Ellipse_flach.vv
 
 BeginMirror
    Mirror 0 Angle 0.0 AngleFake -15.0 SizeFactor 2.0 HeightOffset 0.25 Color #d9e5f24d Backlight Off EdgeStyle No Type Scene DrawMode Mirror

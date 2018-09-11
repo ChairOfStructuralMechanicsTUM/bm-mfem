@@ -10,7 +10,7 @@ copyobj(allchild(ax1), ax3);
 ax4 = subplot(1,2,2);
 copyobj(allchild(ax2), ax4); 
 
-xlabel('Phase k')
-ylabel('Frequenz f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
 ylim([0 1.5e4]) 

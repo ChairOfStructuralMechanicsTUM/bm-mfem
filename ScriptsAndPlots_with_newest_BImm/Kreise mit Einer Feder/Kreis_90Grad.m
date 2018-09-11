@@ -2,7 +2,7 @@
 clear
 
 
-io=MdpaInput('Federtests_Kreis_withInner_0Grad.mdpa'); %specify input file   
+io=MdpaInput('Federtests_Kreis_withInner_90Grad.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -24,7 +24,7 @@ massID = length(allElements)+1;
 spring1ID = massID+1;
 spring2ID = massID+2;
 
-springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
+springNodes = model.getModelPart('GENERIC_90Grad').getNodes();
 
 leftSpringNode = springNodes(1,1);
 leftSNCoords = getCoords(leftSpringNode);
@@ -87,7 +87,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver

@@ -1,12 +1,12 @@
-BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/SpringHorizontal_raute_hoch.gid/SpringHorizontal_raute_hoch.vv
-   x -0.0229355096817016602 0.311671942472457886
-   y 0.205164223909378052 -0.0156516414135694504
+BeginZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/SpringHorizontal_raute_hoch.gid/SpringHorizontal_raute_hoch.vv
+   x -0.0276534482836723328 0.335385292768478394
+   y 0.214127987623214722 -0.0257714018225669861
    z -0.388104379177093506 0.388104379177093506
    e 0.129368126392364502
    v 0 0 0
    r 1
    m 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
-   c 0.0971586853265762329 0.0740209296345710754 0
+   c 0.0965003073215484619 0.0747895911335945129 0
    pd 0
    pno 0
    pfo 0
@@ -29,7 +29,7 @@ BeginZE C:/Users/ga78vuk/Desktop/GiD Testelements/SpringHorizontal_raute_hoch.gi
    OGLStereo(EyeDistance) 0.075
    OGLStereo(LeftEyeDistance) 1 0 0 1
    OGLStereo(RightEyeDistance) 0 1 1 1
-EndZE C:/Users/ga78vuk/Desktop/GiD Testelements/SpringHorizontal_raute_hoch.gid/SpringHorizontal_raute_hoch.vv
+EndZE C:/Users/ga78vuk/Documents/GitHub/bm-mfem/GID-Testelements/GiD Testelements/SpringHorizontal_raute_hoch.gid/SpringHorizontal_raute_hoch.vv
 
 BeginMirror
    Mirror 0 Angle 0.0 AngleFake -15.0 SizeFactor 2.0 HeightOffset 0.25 Color #d9e5f24d Backlight Off EdgeStyle No Type Scene DrawMode Mirror

@@ -42,14 +42,14 @@
         <vector name="entity_groups" length="1" type="ushort">5</vector>
       </entities_group>
       <entities_group name="nodes">
-        <vector name="entity_ids" length="267" type="integer">1:267</vector>
-        <vector name="entity_num_groups" length="267" type="ushort">2 1 2 1 1 2 1x6 2 1x5 2 1x6 2 1x12 2 1x17 3 1 1 3 1x5 3 1 2 3 1x12 3 3 1x9 2 1 1 3 1x6 3 1x13 3 1x3 3 1x5 2 1x12 3 1 1 3 1x12 3 1x4 3 1x6 3 3 1 1 2 1x71 2 1 2 1 2 2 1 2 1x4 2 2 1x3 2 1 1 2 1 2 2</vector>
-        <vector name="entity_groups" length="321" type="ushort">1 5 5 1 5x3 1 5x7 1 5x6 1 5x7 1 5x13 1 5x18 9 6 5x3 8 6 5x6 10 6 5 5 1 5 7 6 5x13 6 11 5 14 6 5x10 1 5x3 12 6 5x7 13 6 5x14 13 6 5x4 12 6 5x6 1 5x13 14 6 5x3 11 6 5x13 7 6 5x5 10 6 5x7 8 6 5 9 6 5x3 1 5x72 2 5 5 2 5 5 2 5 2 5 5 2 5x5 2 5 2 5x4 2 5x3 2 5 5 2 5 2 5</vector>
+        <vector name="entity_ids" length="797" type="integer">1:797</vector>
+        <vector name="entity_num_groups" length="797" type="ushort">2 1 2 1 1 2 1x4 2 1x5 2 1x6 2 1x7 2 1x10 2 1x10 2 1x10 2 1x13 2 1x10 2 1x13 2 1x7 2 1x12 2 1x14 2 1x7 2 1x16 2 1x14 2 1x12 2 1x18 2 1 3 1x3 3 1x11 3 1x3 2 1x4 3 1x13 2 1x9 3 1x5 3 1 1 2 1x21 2 1x5 3 1 1 3 1x5 2 1x19 2 1 1 3 1x4 3 1x3 2 1x23 3 1x3 2 1x11 3 1x17 2 1x4 3 1x5 3 1x12 3 1x4 3 1 1 2 1x233 2x3 1 1 2 1x4 2 1 2 1x5 2 1 2 1x4 2 1x3 2 1x3 2 1x7 2 1x4 2 1x6 2 1x6 2 1x4 2 1x4 2 1x7 2 1x3 2 1x7 2 1x4 2 1 1 2 1x5 2 1x4 2 1x4 2 1x4 2 1x3 2 1 1 2 1 1 2 1 2 2</vector>
+        <vector name="entity_groups" length="891" type="ushort">1 5 5 1 5x3 1 5x5 1 5x6 1 5x7 1 5x8 1 5x11 1 5x11 1 5x11 1 5x14 1 5x11 1 5x14 1 5x8 1 5x13 1 5x15 1 5x8 1 5x17 1 5x15 1 5x13 1 5x19 1 5 5 13 6 5x4 14 6 5x12 12 6 5x4 1 5x5 7 6 5x14 1 5x10 11 6 5x6 8 6 5x3 1 5x22 1 5x6 10 6 5x3 9 6 5x6 1 5x20 1 5x3 9 6 5x5 10 6 5x4 1 5x24 8 6 5x4 1 5x12 6 11 5x18 1 5x5 7 6 5x6 12 6 5x13 14 6 5x5 13 6 5x3 1 5x234 2 5 2 5 2 5x3 2 5x5 2 5 5 2 5x6 2 5 5 2 5x5 2 5x4 2 5x4 2 5x8 2 5x5 2 5x7 2 5x7 2 5x5 2 5x5 2 5x8 2 5x4 2 5x8 2 5x5 2 5x3 2 5x6 2 5x5 2 5x5 2 5x5 2 5x4 2 5x3 2 5x3 2 5 5 2 5 2 5</vector>
       </entities_group>
       <entities_group name="elements">
-        <vector name="entity_ids" length="246" type="integer">1:226 242:251 267:276</vector>
-        <vector name="entity_num_groups" length="246" type="ushort">1x246</vector>
-        <vector name="entity_groups" length="246" type="ushort">5x226 2x10 1x10</vector>
+        <vector name="entity_ids" length="771" type="integer">1:711 752:781 822:851</vector>
+        <vector name="entity_num_groups" length="771" type="ushort">1x771</vector>
+        <vector name="entity_groups" length="771" type="ushort">5x711 2x30 1x30</vector>
       </entities_group>
     </entities_groups>
   </pre>

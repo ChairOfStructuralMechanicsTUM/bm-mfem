@@ -61,20 +61,20 @@ model.getElement(massID).setPropertyValue('VOLUME_ACCELERATION',10);
 
 % % % Fixing Displacement Y
 
-fixingNode = model.getModelPart('GENERIC_fixedNodes').getNodes();
-fixingNodeID = getId(fixingNode);
-fixingSpringID = massID + 3;
-
-model.getNode(fixingNodeID).addDof("DISPLACEMENT_Z");
-
-model.getNode(fixingNodeID).fixDof('DISPLACEMENT_X');
-model.getNode(fixingNodeID).fixDof('DISPLACEMENT_Y');
-model.getNode(fixingNodeID).fixDof('DISPLACEMENT_Z');
-
-model.addNewElement('SpringDamperElement3d2n',fixingSpringID,[fixingNodeID massNodeID]);
-
-model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_STIFFNESS',10e20);
-model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_DAMPING',0);
+% % fixingNode = model.getModelPart('GENERIC_fixedNodes').getNodes();
+% % fixingNodeID = getId(fixingNode);
+% % fixingSpringID = massID + 3;
+% % 
+% % model.getNode(fixingNodeID).addDof("DISPLACEMENT_Z");
+% % 
+% % model.getNode(fixingNodeID).fixDof('DISPLACEMENT_X');
+% % model.getNode(fixingNodeID).fixDof('DISPLACEMENT_Y');
+% % model.getNode(fixingNodeID).fixDof('DISPLACEMENT_Z');
+% % 
+% % model.addNewElement('SpringDamperElement3d2n',fixingSpringID,[fixingNodeID massNodeID]);
+% % 
+% % model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_STIFFNESS',10e20);
+% % model.getElement(fixingSpringID).setPropertyValue('ELEMENTAL_DAMPING',0);
 
 v=Visualization(model); %set up visualization
 v.plotUndeformed()  %visualize
@@ -87,7 +87,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -107,8 +107,8 @@ end
 
 title('Kreis 22.5Grad - fixiertMitFeder')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
-ylabel('frequenzy f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
 ylim([0 2e4])
 

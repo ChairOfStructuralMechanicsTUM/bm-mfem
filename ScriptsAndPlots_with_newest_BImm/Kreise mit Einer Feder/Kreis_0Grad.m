@@ -14,52 +14,52 @@ model.getAllElements.setPropertyValue('DENSITY',2699);
 model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_Y');
 model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_X');
 % % % 
-% a=model.getAllModelParts;
-% 
-% allNodes = model.getAllNodes();
-% massNodeID = length(allNodes)+1;
-% 
-% allElements = model.getAllElements();
-% massID = length(allElements)+1;
-% spring1ID = massID+1;
-% spring2ID = massID+2;
-% 
-% springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
-% 
-% leftSpringNode = springNodes(1,1);
-% % % leftSNCoords = getCoords(leftSpringNode);
-% leftSNId = getId(leftSpringNode);
-% rightSpringNode = springNodes(1,2);
-% % % rightSNCoords = getCoords(rightSpringNode);
-% rightSNId = getId(rightSpringNode);
-% 
-% 
-% % %% 2 springs, 1 mass
-% model.addNewNode(massNodeID,0.1,0.075,0);
-% model.addNewElement('SpringDamperElement3d2n',spring1ID,[leftSNId massNodeID]);
-% model.addNewElement('SpringDamperElement3d2n',spring2ID,[massNodeID rightSNId]);
-% model.addNewElement('ConcentratedMassElement3d1n',massID, massNodeID);
-% 
-% model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
-% model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
-% model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMENT_Z"]);
-% 
-% 
-% model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
-% model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
-% model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
-% 
-% 
-% model.getElement(spring1ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
-% model.getElement(spring1ID).setPropertyValue('ELEMENTAL_DAMPING',0);
-% model.getElement(spring2ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
-% model.getElement(spring2ID).setPropertyValue('ELEMENTAL_DAMPING',0);
-% 
-% model.getElement(massID).setPropertyValue('ELEMENTAL_MASS',7e0);
-% model.getElement(massID).setPropertyValue('VOLUME_ACCELERATION',10);
+a=model.getAllModelParts;
 
-% % % Fixing Displacement Y
+allNodes = model.getAllNodes();
+massNodeID = length(allNodes)+1;
+
+allElements = model.getAllElements();
+massID = length(allElements)+1;
+spring1ID = massID+1;
+spring2ID = massID+2;
+
+springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
+
+leftSpringNode = springNodes(1,1);
+% % leftSNCoords = getCoords(leftSpringNode);
+leftSNId = getId(leftSpringNode);
+rightSpringNode = springNodes(1,2);
+% % rightSNCoords = getCoords(rightSpringNode);
+rightSNId = getId(rightSpringNode);
+
+
+% %% 2 springs, 1 mass
+model.addNewNode(massNodeID,0.1,0.075,0);
+model.addNewElement('SpringDamperElement3d2n',spring1ID,[leftSNId massNodeID]);
+model.addNewElement('SpringDamperElement3d2n',spring2ID,[massNodeID rightSNId]);
+model.addNewElement('ConcentratedMassElement3d1n',massID, massNodeID);
+
+model.getNode(leftSNId).addDof("DISPLACEMENT_Z");
+model.getNode(rightSNId).addDof("DISPLACEMENT_Z");
+model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMENT_Z"]);
+
+
+model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
+model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
+% model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
+
+
+model.getElement(spring1ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring1ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+model.getElement(spring2ID).setPropertyValue('ELEMENTAL_STIFFNESS',8.6359e+8);
+model.getElement(spring2ID).setPropertyValue('ELEMENTAL_DAMPING',0);
+
+model.getElement(massID).setPropertyValue('ELEMENTAL_MASS',7e0);
+model.getElement(massID).setPropertyValue('VOLUME_ACCELERATION',10);
+
+% % Fixing Displacement Y
 
 % fixingNode = model.getModelPart('GENERIC_fixedNodes').getNodes();
 % fixingNodeID = getId(fixingNode);
@@ -105,10 +105,10 @@ for i=1:numberOfBands
     hold on
 end
 
-title('Kreis - ohne Feder und Masse')
+title('Kreis ')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase Im(k)')
-ylabel('Frequenz f')
+xlabel('Phase')
+ylabel('Frequenz ')
 xlim([0 pi])
 ylim([0 1.5e4])
 

@@ -16,34 +16,34 @@ v.plotUndeformed()  %visualize
  
 assembling = SimpleAssembler(model);
 
-%% Up to here everything is done as it would be set up of Standard FEM
+% Up to here everything is done as it would be set up of Standard FEM
 
-% Create Bloch Solver
-% solver = BlochInverse1D_mm(model);
-% 
-% % define number of phases and number of bands
-% numberOfPhases = 50;
-% numberOfBands = 10;
-% 
-% % call the solve function of the solver
-% % phases: contains the discret values of the phase
-% % frequencies: contains the solution, each row of represents one band
-% [phases,frequencies]=solver.solve(numberOfPhases,numberOfBands);
-% 
-% 
-% 
-% %% Visualize results
-% figure
-% for i=1:numberOfBands
-%     plot(phases,frequencies(i,:),'r')
-%     hold on
-% end
-% 
-% title('Hohes Rechteck - Meshlänge 0.005m')
-% %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-% xlabel('Phase k')
-% ylabel('Frequenz f')
-% xlim([0 pi])
-% ylim([0 1.5e4])
+Create Bloch Solver
+solver = BlochInverse1D_mm(model);
+
+% define number of phases and number of bands
+numberOfPhases = 50;
+numberOfBands = 10;
+
+% call the solve function of the solver
+% phases: contains the discret values of the phase
+% frequencies: contains the solution, each row of represents one band
+[phases,frequencies]=solver.solve(numberOfPhases,numberOfBands);
+
+
+
+%% Visualize results
+figure
+for i=1:numberOfBands
+    plot(phases,frequencies(i,:),'r')
+    hold on
+end
+
+title('Hohes Rechteck - Meshlänge 0.005m')
+%legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
+xlabel('Phase k')
+ylabel('Frequenz f')
+xlim([0 pi])
+ylim([0 1.5e4])
 
 
