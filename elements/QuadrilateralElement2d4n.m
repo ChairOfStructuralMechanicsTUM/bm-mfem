@@ -13,7 +13,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         % Constructor
         function quadrilateralElement2d4n = QuadrilateralElement2d4n(id,nodeArray)
             
-            requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
+            requiredPropertyNames = cellstr(["LAMBDA", "MU", ...
                 "NUMBER_GAUSS_POINT","DENSITY"]);
             
             % define the arguments for the super class constructor call
@@ -107,11 +107,15 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
 
 
         function stiffnessMatrix = computeLocalStiffnessMatrix(quadrilateralElement2d4n)
-            EModul = quadrilateralElement2d4n.getPropertyValue('YOUNGS_MODULUS');
-            PoissonRatio = quadrilateralElement2d4n.getPropertyValue('POISSON_RATIO');
+            lambda = quadrilateralElement2d4n.getPropertyValue('LAMBDA');
+            mu = quadrilateralElement2d4n.getPropertyValue('MU');
             p = quadrilateralElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            % Calculate Young's Modulus
+            E = mu*(2*mu+3*lambda)/(mu+lambda);
+            % Calculate Poisson Ratio
+            PoissonRatio = lambda/(2*(lambda+mu));
             % Calculate Materialmatrix
-            Emat = EModul/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
+            Emat = E/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
             stiffnessMatrix=zeros(8,8);
             [w,g]=returnGaussPoint(p);
             
@@ -123,7 +127,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
                     stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*Jdet*transpose(B)*(Emat*B));
                 end
             end
-        end
+            end
         
         function massMatrix = computeLocalMassMatrix(quadrilateralElement2d4n)
             rho = quadrilateralElement2d4n.getPropertyValue('DENSITY');

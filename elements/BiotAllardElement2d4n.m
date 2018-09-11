@@ -99,58 +99,41 @@ classdef BiotAllardElement2d4n <  PorousElement2d4n
         % end
         
         function [totalElementStiffnessMatrix] = computeLocalStiffnessMatrix(biot2d4n)
-            
-
-            ETA_S = biot2d4n.getPropertyValue('ETA_S');
-            LAMBDA = biot2d4n.getPropertyValue('LAMBDA_S');
-            MU = biot2d4n.getPropertyValue('MUE_S');
-            OMEGA = biot2d4n.getPropertyValue('OMEGA');
-            POROSITY = biot2d4n.getPropertyValue('POROSITY');
-            
-            
-            HEAT_CAPACITY_RATIO= biot2d4n.getPropertyValue('HEAT_CAPACITY_RATIO_F');
-            PRESSURE_0 = biot2d4n.getPropertyValue('PRESSURE_0_F');
-            ETA_F = biot2d4n.getPropertyValue('ETA_F');
-            PRANDL_NUMBER = biot2d4n.getPropertyValue('PRANDL_NUMBER_F');
-            THERMAL_CHARACT_LENGTH = biot2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
-            DENSITY_F = biot2d4n.getPropertyValue('DENSITY_F');
-            
+            % Initialize properties:
+            eta_s = biot2d4n.getPropertyValue('ETA_S');
+            lambda = biot2d4n.getPropertyValue('LAMBDA_S');
+            mu = biot2d4n.getPropertyValue('MUE_S');
+            omega = biot2d4n.getPropertyValue('OMEGA');
+            phi = biot2d4n.getPropertyValue('POROSITY');
+            gamma = biot2d4n.getPropertyValue('HEAT_CAPACITY_RATIO_F');
+            P_0 = biot2d4n.getPropertyValue('PRESSURE_0_F');
+            eta_f = biot2d4n.getPropertyValue('ETA_F');
+            Pr = biot2d4n.getPropertyValue('PRANDL_NUMBER_F');
+            Lambda_t = biot2d4n.getPropertyValue('THERMAL_CHARACT_LENGTH');
+            rho_f = biot2d4n.getPropertyValue('DENSITY_F');
             p = biot2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            
             % Calculate Bulk-Modulus K_f:
-            K_f = (HEAT_CAPACITY_RATIO*PRESSURE_0)/(HEAT_CAPACITY_RATIO-(HEAT_CAPACITY_RATIO-1)*...
-                (1+(8*ETA_F)/(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)*...
-                (1+(1i*OMEGA*PRANDL_NUMBER*THERMAL_CHARACT_LENGTH^2*DENSITY_F)/(16*ETA_F))^(0.5))^(-1));
-            
-            % Hysteretic proportional damping model:
-            LameCoeff = (1+1i*ETA_S)*LAMBDA;
-            ShearModulus = (1+1i*ETA_S)*MU;
-            
-            
-            % Biot's Elasticity Coefficients:
-            R = POROSITY*K_f;
-            Q = (1-POROSITY)*K_f;
-            A = LameCoeff+(1-POROSITY)^2/POROSITY*K_f;
-            
-            
+            K_f = (gamma*P_0)/(gamma-(gamma-1)*...
+                (1+(8*eta_f)/(1i*omega*Pr*Lambda_t^2*rho_f)*...
+                (1+(1i*omega*Pr*Lambda_t^2*rho_f)/(16*eta_f))^(0.5))^(-1)); 
+            % Calculate Lame coefficients:
+            Lame_lambda = (1+1i*eta_s)*lambda;
+            Lame_mu = (1+1i*eta_s)*mu;
+            % Calculate Biot's elasticity coefficients:
+            R = phi*K_f;
+            Q = (1-phi)*K_f;
+            A = Lame_lambda+(1-phi)^2/phi*K_f;
             % Elasticity Tensors:
-            D_s = [A+2*MU,A,0;A,A+2*MU,0;0,0,MU];
+            D_s = [A+2*Lame_mu,A,0;A,A+2*Lame_mu,0;0,0,Lame_mu];
             D_sf = [Q,Q,0;Q,Q,0;0,0,0];
             D_f = [R,R,0;R,R,0;0,0,0];
-            
-            
-            
             % Get gauss integration factors:
             [w,g]=returnGaussPoint(p);
-            
-            
             % Generate empty partial stiffness-matrices:
             stiffnessMatrix_s=sparse(8,8);
             stiffnessMatrix_f=sparse(8,8);
             stiffnessMatrix_sf = sparse(8,8);
-            
-            
-            % Execute full Gauss-Integration to obtain partial
+            % Execute gauss integration to obtain partial
             % stiffness-matrices for solid, fluid and coupling phases:
             for xi = 1 : p
                 for eta = 1 : p
@@ -167,76 +150,53 @@ classdef BiotAllardElement2d4n <  PorousElement2d4n
                     
                 end
             end
-            
-            
-            
             % Assemble total element stiffness matrix:
             totalElementStiffnessMatrix = [stiffnessMatrix_s, stiffnessMatrix_sf;...
-                stiffnessMatrix_sf,stiffnessMatrix_f];
-            
-            
-            
+                stiffnessMatrix_sf,stiffnessMatrix_f];   
         end
         
         
         function [totalElementMassMatrix] = computeLocalMassMatrix(biot2d4n)
-            
-            STATIC_FLOW_RESISTIVITY = biot2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
-            POROSITY = biot2d4n.getPropertyValue('POROSITY');
-            OMEGA = biot2d4n.getPropertyValue('OMEGA');
-            TORTUOSITY = biot2d4n.getPropertyValue('TORTUOSITY');
-            ETA_F = biot2d4n.getPropertyValue('ETA_F');
-            DENSITY_F = biot2d4n.getPropertyValue('DENSITY_F');
-            DENSITY_S = biot2d4n.getPropertyValue('DENSITY_S');
-            VISCOUS_CHARACT_LENGTH = biot2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
+            % Initialize properties:
+            sigma = biot2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
+            phi = biot2d4n.getPropertyValue('POROSITY');
+            omega = biot2d4n.getPropertyValue('OMEGA');
+            alpha_inf = biot2d4n.getPropertyValue('TORTUOSITY');
+            eta_f = biot2d4n.getPropertyValue('ETA_F');
+            rho_f = biot2d4n.getPropertyValue('DENSITY_F');
+            rho_s = biot2d4n.getPropertyValue('DENSITY_S');
+            Lambda_v = biot2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
             p = biot2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            
-            % G_J(OMEGA) = flow resistivity of air particles in the pores:
-            AirFlowResistivity = (1+(4*1i*OMEGA*TORTUOSITY^2*ETA_F*DENSITY_F)/...
-                (STATIC_FLOW_RESISTIVITY^2*VISCOUS_CHARACT_LENGTH^2*POROSITY^2))^(0.5);
-            
-            
-            % Viscous Drag accounts for viscous body forces interacting between solid and fluid phases,
-            % proportional to the relative velocity:
-            ViscousDrag = STATIC_FLOW_RESISTIVITY*POROSITY^2*AirFlowResistivity;
-            
-            
-            % Inertial coupling term, related to the tortuosity, increases the fluid density  to model the motion
-            % of fluid particles vibrating around the structural frame:
-            Rho_a = POROSITY*DENSITY_F*(TORTUOSITY-1);
-            
-            % Equivalent densities for expressing the elastodynamic coupled equations in condensed form:
-            Rho_sf = -Rho_a+1i*(ViscousDrag)/(OMEGA);
-            Rho_s = (1-POROSITY)*DENSITY_S-Rho_sf;
-            Rho_f = POROSITY*DENSITY_F-Rho_sf;
-            
-            % Generate empty mass-matrices:
+            % Calculate flow resistivity of air particles in the pores:
+            G_J = (1+(4*1i*omega*alpha_inf^2*eta_f*rho_f)/...
+                (sigma^2*Lambda_v^2*phi^2))^(0.5);
+            % Calculate viscous drag:
+            bF = sigma*phi^2*G_J;
+            % Calculate inertial coupling term:
+            Rho_a = phi*rho_f*(alpha_inf-1);
+            % Calculate equivalent densities:
+            Rho_sf = -Rho_a+1i*(bF)/(omega);
+            Rho_ss = (1-phi)*rho_s-Rho_sf;
+            Rho_ff = phi*rho_f-Rho_sf;
+            % Generate empty mass-matrix:
             M=zeros(8,8);
-            
-            
-            % Calculate geometric-only mass matrix:
+            % Get gauss integration factors:
             [w,g]=returnGaussPoint(p);
-            
+            % Execute gauss integration to obtain geometric-only mass matrix:
             for n=1:p
                 xi=g(n);
                 for m=1:p
                     eta=g(m);
                     [Nmat, ~, ~, ~, Jdet] = computeShapeFunction(biot2d4n,xi,eta);
-                    M = M + (w(n)*w(m)*transpose(Nmat)*Nmat*Jdet);
-                    
+                    M = M + (w(n)*w(m)*transpose(Nmat)*Nmat*Jdet); 
                 end
             end
-            
-            
-            % Calculate solid-, fluid- and coupling-mass matrices:
-            M_s = Rho_s*M;
-            M_f = Rho_f*M;
+            % Calculate solid-, fluid- and coupling partial mass matrices:
+            M_s = Rho_ss*M;
+            M_f = Rho_ff*M;
             M_sf = Rho_sf*M;
-            
-            % Assemble total element mass matrix:
+            % Assemble element mass matrix:
             totalElementMassMatrix = [M_s,M_sf;M_sf,M_f];
-            
-            
         end
         
         % Define possible DOF in the node-array:

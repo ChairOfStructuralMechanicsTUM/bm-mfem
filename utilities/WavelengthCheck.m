@@ -1,4 +1,4 @@
-function minLambda = WavelengthCheck(omega,alpha_inf,eta_f,rho_f,rho_s,Xi,Lambda_v,phi,gamma,P_0,...
+function [ratio1, ratio2, ratio3] = WavelengthCheck(omega,alpha_inf,eta_f,rho_f,rho_s,Xi,Lambda_v,phi,gamma,P_0,...
     Pr,Lambda_t,eta_s,lambda,mu,Lx,Ly,nx,ny)
 
 % G_J(OMEGA) = flow resistivity of air particles in the pores:
@@ -32,10 +32,13 @@ lambda2=1/k2;
 lambda3=1/k3;
 
 minLambda = min([lambda1,lambda2,lambda3]);
-% if 10<min([lambda1,lambda2,lambda3])/max([Lx/nx,Ly/ny])
-%     fprintf("error: Wavelength-Ratio: lambda < (max(dx,dy))/10 \n ")
-%     return
-% end
+ratio1=lambda1/(Lx/nx)
+ratio2=lambda2/(Lx/nx)
+ratio3=lambda3/(Lx/nx)
+%   if 10>min([lambda1,lambda2,lambda3])/max([Lx/nx,Ly/ny])
+%       fprintf("error: Wavelength-Ratio: lambda < (max(dx,dy))/10 \n ")
+%       return
+%   end
 
 
 end

@@ -2,10 +2,10 @@
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
-function DisplacementPorousEndNode=ModelTestForGridCovergence(Lx,Ly,nx,ny)
+function DisplacementPorousEndNode=ModelTestForGridCovergence(OMEGA,LoadValue,Lx,Ly,nx,ny)
 clc
 
-tic 
+
 % Lx = 1;
 % Ly = 0.2;
 % nx = 20;
@@ -13,14 +13,14 @@ tic
 
 
 
-LoadValue = 1;
+%LoadValue = 0.1;
 LoadDirection = [0 -1];
 
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
-POROSITY = 0.99;
-OMEGA = 10;
+POROSITY = 0.96;
+%OMEGA = 100;
 NUMBER_GAUSS_POINT = 2;
 %Properties
 p.DENSITY_S = DENSITY_S;
@@ -41,7 +41,7 @@ p.OMEGA = OMEGA;
 p.NUMBER_GAUSS_POINT = NUMBER_GAUSS_POINT;
 
 
-minLambda = WavelengthCheck(p.OMEGA,p.TORTUOSITY,p.ETA_F,p.DENSITY_F,DENSITY_S,p.STATIC_FLOW_RESISTIVITY,p.VISCOUS_CHARACT_LENGTH,p.POROSITY,p.HEAT_CAPACITY_RATIO_F,p.PRESSURE_0_F,...
+ratio = WavelengthCheck(p.OMEGA,p.TORTUOSITY,p.ETA_F,p.DENSITY_F,DENSITY_S,p.STATIC_FLOW_RESISTIVITY,p.VISCOUS_CHARACT_LENGTH,p.POROSITY,p.HEAT_CAPACITY_RATIO_F,p.PRESSURE_0_F,...
     p.PRANDL_NUMBER_F,p.THERMAL_CHARACT_LENGTH,p.ETA_S,p.LAMBDA_S,p.MUE_S,Lx,Ly,nx,ny);
 
 
@@ -49,7 +49,7 @@ minLambda = WavelengthCheck(p.OMEGA,p.TORTUOSITY,p.ETA_F,p.DENSITY_F,DENSITY_S,p
 %% Standard (u_s,u_f) displacement
 clc
 clear model ans solver stiffnessMatrix massMatrix DisplacementAllard DisplacementAllardSolid
-
+tic
 model = FemModel();
 
 dx = Lx/nx;
@@ -128,11 +128,12 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
 x = solver.solve();
 step = 1;
+Allardtime=toc;
 %fprintf('Solved \n')
 %DisplacementAllard = sparse(nx*ny*4,1);
 %DisplacementAllard(:,1) = model.getDofArray.getValue(step);
 DisplacementAllard(:,2) = real(model.getDofArray.getValue(step)); 
-DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
+%DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
 DisplacementAllard(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
 %DisplacementAllard(:,5) = atan(DisplacementAllard(:,3)./DisplacementAllard(:,2));
 
@@ -152,22 +153,23 @@ for i=2:4:size(DisplacementAllard,1)
     %DisplacementAllardSolid(u,4)=DisplacementAllard(i,1); %Solid_y_Komplex
     DisplacementAllardSolid(u,5)=DisplacementAllard(i,4); %Solid_y_Betrag   
     %DisplacementAllardSolid(u,6)=DisplacementAllard(i,5); %Solid_y_Phasenwinkel
+    DisplacementAllardSolid(u,7)=DisplacementAllard(i,2); %Solid_y_Real
 end
 clear u
 
 %nodalForces_biot = (solver.getNodalForces(step));
  
 
- v = Visualization(model);
- v.setScaling(1e3);
+ %v = Visualization(model);
+ %v.setScaling(1);
  %v.plotUndeformed
  %v.plotDeformed;
 
-
+%
 %% Mixed (u_s,p) displacement
 clc
 clear model ans solver stiffnessMatrix massMatrix 
-
+tic
 model = FemModel();
 
 dx = Lx/nx;
@@ -252,13 +254,13 @@ solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
 x = solver.solve();
 %fprintf('Solved \n')   
 step = 1;
-
+Atallatime = toc;
 %nodalForces_atalla = solver.getNodalForces(step);
   
 %VerschiebungDofs_atalla = (model.getDofArray.getValue(step));
 
 %DisplacementAtalla(:,1) = model.getDofArray.getValue(step);
-% DisplacementAtalla(:,2) = real(model.getDofArray.getValue(step)); 
+DisplacementAtalla(:,2) = real(model.getDofArray.getValue(step)); 
 % DisplacementAtalla(:,3) = imag(model.getDofArray.getValue(step));
  DisplacementAtalla(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
 % DisplacementAtalla(:,5) = atan(DisplacementAtalla(:,3)./DisplacementAtalla(:,2));
@@ -278,13 +280,14 @@ for i=2:3:size(DisplacementAtalla,1)
 %     DisplacementAtallaSolid(u,4)=DisplacementAtalla(i,1); %Solid_y_Komplex
      DisplacementAtallaSolid(u,5)=DisplacementAtalla(i,4); %Solid_y_Betrag   
 %     DisplacementAtallaSolid(u,6)=DisplacementAtalla(i,5); %Solid_y_Phasenwinkel
+      DisplacementAtallaSolid(u,7)=DisplacementAtalla(i,2); %Solid_y_Real
 end
 clear u
 
 % 
- v2 = Visualization(model);
- v2.setScaling(1e3);
- %v2.plotUndeformed
+ %v2 = Visualization(model);
+ %v2.setScaling(1);
+ %%v2.plotUndeformed
  %v2.plotDeformed;
 % 
 % 
@@ -297,7 +300,7 @@ clear u
 clc
 clear model ans solver stiffnessMatrix massMatrix 
 close all
-
+tic
 
 model = FemModel();
 
@@ -377,12 +380,13 @@ massMatrix = assembling.assembleGlobalMassMatrix(model);
 %fprintf('Solving Dazel \n')
 solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
 x = solver.solve();
-%fprintf('Solved \n')   
+%fprintf('Solved \n')  
+Dazeltime=toc;
 step = 1;
 
 
 % DisplacementDazel(:,1) = model.getDofArray.getValue(step);
-% DisplacementDazel(:,2) = real(model.getDofArray.getValue(step)); 
+ DisplacementDazel(:,2) = real(model.getDofArray.getValue(step)); 
 % DisplacementDazel(:,3) = imag(model.getDofArray.getValue(step));
  DisplacementDazel(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
 % DisplacementDazel(:,5) = atan(DisplacementDazel(:,3)./DisplacementDazel(:,2));
@@ -392,15 +396,16 @@ u=0;
 for i=1:4:size(DisplacementDazel,1)
     u=u+1;
 %     DisplacementDazelSolid(u,1)=DisplacementDazel(i,1); %Solid_x_Komplex
-     DisplacementDazelSolid(u,2)=DisplacementDazel(i,4); %Solid_x_Betrag   
+%     DisplacementDazelSolid(u,2)=DisplacementDazel(i,4); %Solid_x_Betrag   
 %     DisplacementDazelSolid(u,3)=DisplacementDazel(i,5); %Solid_x_Phasenwinkel
 end
 u=0;
 for i=2:4:size(DisplacementDazel,1)
     u=u+1;
 %     DisplacementDazelSolid(u,4)=DisplacementDazel(i,1); %Solid_y_Komplex
-     DisplacementDazelSolid(u,5)=DisplacementDazel(i,4); %Solid_y_Betrag   
+      DisplacementDazelSolid(u,5)=DisplacementDazel(i,4); %Solid_y_Betrag   
 %     DisplacementDazelSolid(u,6)=DisplacementDazel(i,5); %Solid_y_Phasenwinkel
+      DisplacementDazelSolid(u,7)=DisplacementDazel(i,2); %Solid_y_Real
 end
 clear u
 
@@ -408,123 +413,123 @@ clear u
 
 %nodalForces_dazel = solver.getNodalForces(step);
  
- v3 = Visualization(model);
- v3.setScaling(1e3);
- %v3.plotUndeformed
+ %v3 = Visualization(model);
+ %v3.setScaling(1);
+ %%v3.plotUndeformed
  %v3.plotDeformed;
 
 
 
 
-%% Homogenous Non-Porous Element
-
-clc
-clear model ans solver stiffnessMatrix massMatrix 
-
-model = FemModel();
-
-dx = Lx/nx;
-dy = Ly/ny;
-
-numnodes = (nx + 1) * (ny+1);
-numele = nx*ny;
-
-id = 0;
-
-for j = 1:(ny+1)
-    for i= 1:(nx+1)
-        id = id+1;
-        model.addNewNode(id,(i-1)*dx,(j-1)*dy);
-    end
-end
-
-
-model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
-
-id = 0;
-
-for j = 1:ny
-    for i = 1:nx
-        id = id+1;
-        a=i + (j-1)*(nx+1);
-        model.addNewElement('QuadrilateralElement2d4n',id,[a,a+1,a+1+(nx+1),a+(nx+1)]);
-    end
-end
-
-
-
-POISSON_RATIO = p.LAMBDA_S/(2*(p.LAMBDA_S+p.MUE_S));
-K = p.LAMBDA_S*(1+POISSON_RATIO)/(3*POISSON_RATIO);
-E = 3*K*(1-2*POISSON_RATIO);
-
-model.getAllElements.setPropertyValue('YOUNGS_MODULUS',E);
-model.getAllElements.setPropertyValue('POISSON_RATIO',POISSON_RATIO);
-model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
-model.getAllElements.setPropertyValue('DENSITY',30);
-
-% for i = 1:(ny+1)
-%     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_SOLID_X')
-%     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_SOLID_Y')
-%     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_FLUID_X')
-%     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_FLUID_Y')
+% %% Homogenous Non-Porous Element
+% 
+% clc
+% clear model ans solver stiffnessMatrix massMatrix 
+% 
+% model = FemModel();
+% 
+% dx = Lx/nx;
+% dy = Ly/ny;
+% 
+% numnodes = (nx + 1) * (ny+1);
+% numele = nx*ny;
+% 
+% id = 0;
+% 
+% for j = 1:(ny+1)
+%     for i= 1:(nx+1)
+%         id = id+1;
+%         model.addNewNode(id,(i-1)*dx,(j-1)*dy);
+%     end
 % end
-
-
-for i = 1:1+nx:numnodes
-    model.getNode(i).fixDof('DISPLACEMENT_X')
-    model.getNode(i).fixDof('DISPLACEMENT_Y')
-
-end
-
-
-
-addPointLoad(model.getNode(numnodes),LoadValue,LoadDirection);
- 
-assembling = SimpleAssembler(model);
-stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);     
-massMatrix = assembling.assembleGlobalMassMatrix(model);
-
-%fprintf('Solving Homogenous \n')
-solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
-x = solver.solve();
-%fprintf('Solved \n')   
-step = 1;
-    
-
-%DisplacementHomogenous(:,1) = model.getDofArray.getValue(step);
-%DisplacementHomogenous(:,2) = real(model.getDofArray.getValue(step)); 
-%DisplacementHomogenous(:,3) = imag(model.getDofArray.getValue(step));
-DisplacementHomogenous(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
-%DisplacementHomogenous(:,5) = atan(DisplacementHomogenous(:,3)./DisplacementHomogenous(:,2));
-
-
-u=0;
-for i=1:2:size(DisplacementHomogenous,1)
-    u=u+1;
-%     DisplacementHomogenousSolid(u,1)=DisplacementHomogenous(i,1); %Solid_x_Komplex
-     DisplacementHomogenousSolid(u,2)=DisplacementHomogenous(i,4); %Solid_x_Betrag   
-%     DisplacementHomogenousSolid(u,3)=DisplacementHomogenous(i,5); %Solid_x_Phasenwinkel
-end
-u=0;
-
-for i=2:2:size(DisplacementHomogenous,1)
-    u=u+1;
-%     DisplacementHomogenousSolid(u,4)=DisplacementHomogenous(i,1); %Solid_y_Komplex
-     DisplacementHomogenousSolid(u,5)=DisplacementHomogenous(i,4); %Solid_y_Betrag   
-%     DisplacementHomogenousSolid(u,6)=DisplacementHomogenous(i,5); %Solid_y_Phasenwinkel
-end
-clear u;
-
-%nodalForces_homogenous = (solver.getNodalForces(step));
- 
-
-%AllardPlot = figure('Name','AllardPlot');
-
-v = Visualization(model);
-v.setScaling(1e3);
-%v.plotUndeformed
-%v.plotDeformed;
-
+% 
+% 
+% model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+% 
+% id = 0;
+% 
+% for j = 1:ny
+%     for i = 1:nx
+%         id = id+1;
+%         a=i + (j-1)*(nx+1);
+%         model.addNewElement('QuadrilateralElement2d4n',id,[a,a+1,a+1+(nx+1),a+(nx+1)]);
+%     end
+% end
+% 
+% 
+% 
+% POISSON_RATIO = p.LAMBDA_S/(2*(p.LAMBDA_S+p.MUE_S));
+% K = p.LAMBDA_S*(1+POISSON_RATIO)/(3*POISSON_RATIO);
+% E = 3*K*(1-2*POISSON_RATIO);
+% 
+% model.getAllElements.setPropertyValue('YOUNGS_MODULUS',E);
+% model.getAllElements.setPropertyValue('POISSON_RATIO',POISSON_RATIO);
+% model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
+% model.getAllElements.setPropertyValue('DENSITY',30);
+% 
+% % for i = 1:(ny+1)
+% %     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_SOLID_X')
+% %     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_SOLID_Y')
+% %     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_FLUID_X')
+% %     model.getNode(i+(i-1)*(nx+1)).fixDof('DISPLACEMENT_FLUID_Y')
+% % end
+% 
+% 
+% for i = 1:1+nx:numnodes
+%     model.getNode(i).fixDof('DISPLACEMENT_X')
+%     model.getNode(i).fixDof('DISPLACEMENT_Y')
+% 
+% end
+% 
+% 
+% 
+% addPointLoad(model.getNode(numnodes),LoadValue,LoadDirection);
+%  
+% assembling = SimpleAssembler(model);
+% stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);     
+% massMatrix = assembling.assembleGlobalMassMatrix(model);
+% 
+% %fprintf('Solving Homogenous \n')
+% solver = SimpleHarmonicSolvingStrategy(model,p.OMEGA);
+% x = solver.solve();
+% %fprintf('Solved \n')   
+% step = 1;
+%     
+% 
+% %DisplacementHomogenous(:,1) = model.getDofArray.getValue(step);
+% %DisplacementHomogenous(:,2) = real(model.getDofArray.getValue(step)); 
+% %DisplacementHomogenous(:,3) = imag(model.getDofArray.getValue(step));
+% DisplacementHomogenous(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
+% %DisplacementHomogenous(:,5) = atan(DisplacementHomogenous(:,3)./DisplacementHomogenous(:,2));
+% 
+% 
+% u=0;
+% for i=1:2:size(DisplacementHomogenous,1)
+%     u=u+1;
+% %     DisplacementHomogenousSolid(u,1)=DisplacementHomogenous(i,1); %Solid_x_Komplex
+%      DisplacementHomogenousSolid(u,2)=DisplacementHomogenous(i,4); %Solid_x_Betrag   
+% %     DisplacementHomogenousSolid(u,3)=DisplacementHomogenous(i,5); %Solid_x_Phasenwinkel
+% end
+% u=0;
+% 
+% for i=2:2:size(DisplacementHomogenous,1)
+%     u=u+1;
+% %     DisplacementHomogenousSolid(u,4)=DisplacementHomogenous(i,1); %Solid_y_Komplex
+%      DisplacementHomogenousSolid(u,5)=DisplacementHomogenous(i,4); %Solid_y_Betrag   
+% %     DisplacementHomogenousSolid(u,6)=DisplacementHomogenous(i,5); %Solid_y_Phasenwinkel
+% end
+% clear u;
+% 
+% %nodalForces_homogenous = (solver.getNodalForces(step));
+%  
+% 
+% %AllardPlot = figure('Name','AllardPlot');
+% 
+% v = Visualization(model);
+% v.setScaling(1);
+% %v.plotUndeformed
+% %v.plotDeformed;
+% 
 
 
 %% EVALUATION
@@ -538,15 +543,16 @@ v.setScaling(1e3);
 % DisplacementPorous(:,3)= DisplacementDazelSolid(:,1);
 % DisplacementPorousSum = sum(DisplacementPorous);
 
-DisplacementPorousEndNode(1,1)=DisplacementAllardSolid(nx,2);
-DisplacementPorousEndNode(1,2)=DisplacementAllardSolid(nx,5);
-DisplacementPorousEndNode(1,3)=DisplacementAtallaSolid(nx,2);
-DisplacementPorousEndNode(1,4)=DisplacementAtallaSolid(nx,5);
-DisplacementPorousEndNode(1,5)=DisplacementDazelSolid(nx,2);
-DisplacementPorousEndNode(1,6)=DisplacementDazelSolid(nx,5);
-DisplacementPorousEndNode(1,7)=real(minLambda)/max([Lx/nx,Ly/ny]);
-DisplacementPorousEndNode(1,8)=toc;
-
+DisplacementPorousEndNode(1,1)=DisplacementAllardSolid(nx,5);
+DisplacementPorousEndNode(1,2)=DisplacementAllardSolid(nx,7);
+DisplacementPorousEndNode(1,3)=DisplacementAtallaSolid(nx,5);
+DisplacementPorousEndNode(1,4)=DisplacementAtallaSolid(nx,7);
+DisplacementPorousEndNode(1,5)=DisplacementDazelSolid(nx,5);
+DisplacementPorousEndNode(1,6)=DisplacementDazelSolid(nx,7);
+DisplacementPorousEndNode(1,12)=ratio;
+DisplacementPorousEndNode(1,8)=Allardtime;
+DisplacementPorousEndNode(1,9)=Atallatime;
+DisplacementPorousEndNode(1,10)=Dazeltime;
 % DisplacementDifferenceNonPorous(:,1) = DisplacementAllardSolid(:,1) - DisplacementHomogenousSolid(:,1);
 % DisplacementDifferenceNonPorous(:,2) = DisplacementAtallaSolid(:,1) - DisplacementHomogenousSolid(:,1);
 % DisplacementDifferenceNonPorous(:,3) = DisplacementDazelSolid(:,1) - DisplacementHomogenousSolid(:,1);
