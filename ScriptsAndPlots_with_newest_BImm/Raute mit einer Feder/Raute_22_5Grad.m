@@ -24,7 +24,7 @@ massID = length(allElements)+1;
 spring1ID = massID+1;
 spring2ID = massID+2;
 
-springNodes = model.getModelPart('GENERIC_22.5Grad').getNodes();
+springNodes = model.getModelPart('GENERIC_45Grad').getNodes();
 
 leftSpringNode = springNodes(1,1);
 % % leftSNCoords = getCoords(leftSpringNode);
@@ -107,10 +107,10 @@ end
 
 title('Raute 22.5Grad - unfixiert')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
-ylabel('frequenzy f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
-ylim([0 2e4])
+ylim([0 1.5e4])
 
 
 % 

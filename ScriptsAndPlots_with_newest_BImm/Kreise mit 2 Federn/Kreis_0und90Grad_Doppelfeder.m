@@ -104,7 +104,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -124,10 +124,10 @@ end
 
 title('Kreis 0und90Grad - Doppelfeder')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
-ylabel('frequenzy f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
-ylim([0 2e4])
+ylim([0 1.5e4])
 
 
 % 

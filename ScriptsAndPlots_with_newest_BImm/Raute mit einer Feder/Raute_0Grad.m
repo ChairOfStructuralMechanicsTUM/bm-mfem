@@ -47,7 +47,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-% % % % model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
+model.getNode(massNodeID).fixDof('DISPLACEMENT_Y');
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 
@@ -87,7 +87,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -110,7 +110,7 @@ title('Raute 0Grad - unfixiert')
 xlabel('Phase k')
 ylabel('frequenzy f')
 xlim([0 pi])
-ylim([0 2e4])
+ylim([0 1.5e4])
 
 
 % 

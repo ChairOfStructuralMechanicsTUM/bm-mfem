@@ -104,7 +104,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver

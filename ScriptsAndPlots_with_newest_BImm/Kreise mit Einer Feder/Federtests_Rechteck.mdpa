@@ -965,7 +965,7 @@ Begin SubModelPart GENERIC_135Grad // Group 135Grad // Subtree GENERIC
     Begin SubModelPartConditions
     End SubModelPartConditions
 End SubModelPart
-Begin SubModelPart GENERIC_157.5_Grad // Group 157.5 Grad // Subtree GENERIC
+Begin SubModelPart GENERIC_157.5Grad // Group 157.5 Grad // Subtree GENERIC
     Begin SubModelPartNodes
            63
           121

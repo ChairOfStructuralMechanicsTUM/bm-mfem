@@ -14,7 +14,7 @@ model.getAllElements.setPropertyValue('DENSITY',2699);
 % model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_Y');
 % model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_X');
 % % % 
-% a=model.getAllModelParts;
+a=model.getAllModelParts;
 % 
 allNodes = model.getAllNodes();
 massNodeID = length(allNodes)+1;
@@ -47,7 +47,7 @@ model.getNode(massNodeID).addDof(["DISPLACEMENT_X","DISPLACEMENT_Y","DISPLACEMEN
 
 model.getNode(leftSNId).fixDof('DISPLACEMENT_Z');
 model.getNode(rightSNId).fixDof('DISPLACEMENT_Z');
-% % model.getNode(massNodeID).fixDof('DISPLACEMENT_X');
+model.getNode(massNodeID).fixDof('DISPLACEMENT_X');
 model.getNode(massNodeID).fixDof('DISPLACEMENT_Z');
 
 
@@ -87,7 +87,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 20;
+numberOfPhases = 80;
 numberOfBands = 10;
 
 % call the solve function of the solver
