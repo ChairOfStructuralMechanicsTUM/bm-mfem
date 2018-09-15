@@ -2,7 +2,7 @@
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
-function DisplacementPorousEndNode=ModelTestForGridCovergence(OMEGA,LoadValue,Lx,Ly,nx,ny)
+function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime, DisplacementPorousRatio] = ModelTestForGridCovergence(OMEGA,LoadValue,Lx,Ly,nx,ny)
 clc
 
 
@@ -131,18 +131,18 @@ step = 1;
 Allardtime=toc;
 %fprintf('Solved \n')
 %DisplacementAllard = sparse(nx*ny*4,1);
-%DisplacementAllard(:,1) = model.getDofArray.getValue(step);
-DisplacementAllard(:,2) = real(model.getDofArray.getValue(step)); 
-%DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
-DisplacementAllard(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
-%DisplacementAllard(:,5) = atan(DisplacementAllard(:,3)./DisplacementAllard(:,2));
+DisplacementAllard(:,1) = model.getDofArray.getValue(step);
+% DisplacementAllard(:,2) = real(model.getDofArray.getValue(step)); 
+% DisplacementAllard(:,3) = imag(model.getDofArray.getValue(step));
+% DisplacementAllard(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
+% DisplacementAllard(:,5) = atan(DisplacementAllard(:,3)./DisplacementAllard(:,2));
 
 %DisplacementAllardSolid = zeros(nx*ny*2,1);
 u=0;
 for i=1:4:size(DisplacementAllard,1)
     u=u+1;
     %DisplacementAllardSolid(u,1)=DisplacementAllard(i,1); %Solid_x_Komplex
-    DisplacementAllardSolid(u,2)=DisplacementAllard(i,4); %Solid_x_Betrag   
+    %DisplacementAllardSolid(u,2)=DisplacementAllard(i,4); %Solid_x_Betrag   
     %DisplacementAllardSolid(u,3)=DisplacementAllard(i,5); %Solid_x_Phasenwinkel
 end
 u=0;
@@ -150,10 +150,11 @@ u=0;
 
 for i=2:4:size(DisplacementAllard,1)
     u=u+1;
-    %DisplacementAllardSolid(u,4)=DisplacementAllard(i,1); %Solid_y_Komplex
-    DisplacementAllardSolid(u,5)=DisplacementAllard(i,4); %Solid_y_Betrag   
-    %DisplacementAllardSolid(u,6)=DisplacementAllard(i,5); %Solid_y_Phasenwinkel
-    DisplacementAllardSolid(u,7)=DisplacementAllard(i,2); %Solid_y_Real
+    DisplacementAllardSolid(u,4)=DisplacementAllard(i,1); %Solid_y_Komplex
+%     DisplacementAllardSolid(u,5)=DisplacementAllard(i,4); %Solid_y_Betrag   
+%     DisplacementAllardSolid(u,6)=DisplacementAllard(i,5); %Solid_y_Phasenwinkel
+%     DisplacementAllardSolid(u,7)=DisplacementAllard(i,2); %Solid_y_Real
+%     DisplacementAllardSolid(u,8)=DisplacementAllard(i,2); %Solid_y_Imag
 end
 clear u
 
@@ -259,28 +260,28 @@ Atallatime = toc;
   
 %VerschiebungDofs_atalla = (model.getDofArray.getValue(step));
 
-%DisplacementAtalla(:,1) = model.getDofArray.getValue(step);
-DisplacementAtalla(:,2) = real(model.getDofArray.getValue(step)); 
-% DisplacementAtalla(:,3) = imag(model.getDofArray.getValue(step));
- DisplacementAtalla(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
-% DisplacementAtalla(:,5) = atan(DisplacementAtalla(:,3)./DisplacementAtalla(:,2));
+DisplacementAtalla(:,1) = model.getDofArray.getValue(step);
+% DisplacementAtalla(:,2) = real(model.getDofArray.getValue(step)); 
+%  DisplacementAtalla(:,3) = imag(model.getDofArray.getValue(step));
+%  DisplacementAtalla(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
+%  DisplacementAtalla(:,5) = atan(DisplacementAtalla(:,3)./DisplacementAtalla(:,2));
 
 
 u=0;
 for i=1:3:size(DisplacementAtalla,1)
     u=u+1;
 %     DisplacementAtallaSolid(u,1)=DisplacementAtalla(i,1); %Solid_x_Komplex
-     DisplacementAtallaSolid(u,2)=DisplacementAtalla(i,4); %Solid_x_Betrag   
+%      DisplacementAtallaSolid(u,2)=DisplacementAtalla(i,4); %Solid_x_Betrag   
 %     DisplacementAtallaSolid(u,3)=DisplacementAtalla(i,5); %Solid_x_Phasenwinkel
 end
 
 u=0;
 for i=2:3:size(DisplacementAtalla,1)
     u=u+1;
-%     DisplacementAtallaSolid(u,4)=DisplacementAtalla(i,1); %Solid_y_Komplex
-     DisplacementAtallaSolid(u,5)=DisplacementAtalla(i,4); %Solid_y_Betrag   
+     DisplacementAtallaSolid(u,4)=DisplacementAtalla(i,1); %Solid_y_Komplex
+%      DisplacementAtallaSolid(u,5)=DisplacementAtalla(i,4); %Solid_y_Betrag   
 %     DisplacementAtallaSolid(u,6)=DisplacementAtalla(i,5); %Solid_y_Phasenwinkel
-      DisplacementAtallaSolid(u,7)=DisplacementAtalla(i,2); %Solid_y_Real
+%       DisplacementAtallaSolid(u,7)=DisplacementAtalla(i,2); %Solid_y_Real
 end
 clear u
 
@@ -385,10 +386,10 @@ Dazeltime=toc;
 step = 1;
 
 
-% DisplacementDazel(:,1) = model.getDofArray.getValue(step);
- DisplacementDazel(:,2) = real(model.getDofArray.getValue(step)); 
+ DisplacementDazel(:,1) = model.getDofArray.getValue(step);
+%  DisplacementDazel(:,2) = real(model.getDofArray.getValue(step)); 
 % DisplacementDazel(:,3) = imag(model.getDofArray.getValue(step));
- DisplacementDazel(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
+%  DisplacementDazel(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
 % DisplacementDazel(:,5) = atan(DisplacementDazel(:,3)./DisplacementDazel(:,2));
 
 
@@ -402,10 +403,10 @@ end
 u=0;
 for i=2:4:size(DisplacementDazel,1)
     u=u+1;
-%     DisplacementDazelSolid(u,4)=DisplacementDazel(i,1); %Solid_y_Komplex
-      DisplacementDazelSolid(u,5)=DisplacementDazel(i,4); %Solid_y_Betrag   
+     DisplacementDazelSolid(u,4)=DisplacementDazel(i,1); %Solid_y_Komplex
+%       DisplacementDazelSolid(u,5)=DisplacementDazel(i,4); %Solid_y_Betrag   
 %     DisplacementDazelSolid(u,6)=DisplacementDazel(i,5); %Solid_y_Phasenwinkel
-      DisplacementDazelSolid(u,7)=DisplacementDazel(i,2); %Solid_y_Real
+%       DisplacementDazelSolid(u,7)=DisplacementDazel(i,2); %Solid_y_Real
 end
 clear u
 
@@ -543,16 +544,25 @@ clear u
 % DisplacementPorous(:,3)= DisplacementDazelSolid(:,1);
 % DisplacementPorousSum = sum(DisplacementPorous);
 
-DisplacementPorousEndNode(1,1)=DisplacementAllardSolid(nx,5);
-DisplacementPorousEndNode(1,2)=DisplacementAllardSolid(nx,7);
-DisplacementPorousEndNode(1,3)=DisplacementAtallaSolid(nx,5);
-DisplacementPorousEndNode(1,4)=DisplacementAtallaSolid(nx,7);
-DisplacementPorousEndNode(1,5)=DisplacementDazelSolid(nx,5);
-DisplacementPorousEndNode(1,6)=DisplacementDazelSolid(nx,7);
-DisplacementPorousEndNode(1,12)=ratio;
-DisplacementPorousEndNode(1,8)=Allardtime;
-DisplacementPorousEndNode(1,9)=Atallatime;
-DisplacementPorousEndNode(1,10)=Dazeltime;
+DisplacementPorousNode4(1,1)=DisplacementAllardSolid(nx+1,4);
+DisplacementPorousNode4(1,2)=DisplacementAtallaSolid(nx+1,4);
+DisplacementPorousNode4(1,3)=DisplacementDazelSolid(nx+1,4);
+DisplacementPorousNode3(1,1)=DisplacementAllardSolid(round((nx+1)*3/4,0),4);
+DisplacementPorousNode3(1,2)=DisplacementAtallaSolid(round((nx+1)*3/4,0),4);
+DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4),4);
+DisplacementPorousNode2(1,1)=DisplacementAllardSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,2)=DisplacementAtallaSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4),4);
+DisplacementPorousNode1(1,1)=DisplacementAllardSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,2)=DisplacementAtallaSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4),4);
+
+DisplacementPorousTime(1,1)=Allardtime;
+DisplacementPorousTime(1,2)=Atallatime;
+DisplacementPorousTime(1,3)=Dazeltime;
+
+DisplacementPorousRatio(1,1)=ratio;
+
 % DisplacementDifferenceNonPorous(:,1) = DisplacementAllardSolid(:,1) - DisplacementHomogenousSolid(:,1);
 % DisplacementDifferenceNonPorous(:,2) = DisplacementAtallaSolid(:,1) - DisplacementHomogenousSolid(:,1);
 % DisplacementDifferenceNonPorous(:,3) = DisplacementDazelSolid(:,1) - DisplacementHomogenousSolid(:,1);

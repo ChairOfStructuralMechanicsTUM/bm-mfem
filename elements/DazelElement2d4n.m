@@ -59,12 +59,9 @@ classdef DazelElement2d4n < PorousElement2d4n
             p = totalporousElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             
             % Determine Coefficients needed
-             K_EQ = gamma * P_0 / (gamma - (gamma -1)*... %Franzis Version
+             K_EQ = gamma * P_0 / (gamma - (gamma -1)*... 
                 (1 + (8 * eta_f / ( 1i * Lambda_t * Pr * omega * rho_f))*...
-                (1 + (1i * rho_f * omega * Pr * Lambda_t^2)/(16 * eta_f))^0.5))
-%             K_EQ = (gamma*P_0)/(gamma-(gamma-1)*... %Nach Rumpler s.24
-%                 (1+(8*eta_f)/(1i*omega*Pr*Lambda_t^2*rho_f)*...
-%                 (1+(1i*omega*Pr*Lambda_t^2*rho_f)/(16*eta_f))^(0.5))^(-1))
+                (1 + (1i * rho_f * omega * Pr * Lambda_t^2)/(16 * eta_f))^0.5));
             Lame_mu = mue * ( 1 + 1i * eta_s);
             Lame_lambda = lambda * ( 1 + 1i * eta_s);
             P = Lame_lambda + 2 * Lame_mu;
@@ -113,16 +110,10 @@ classdef DazelElement2d4n < PorousElement2d4n
             DENSITY_12 = - phi * rho_f * (alpha_inf - 1);
             
          
-            alpha = 1 - 1i * phi * Xi / (alpha_inf * rho_f * omega) * ... % Franzis Version
+            alpha = 1 - 1i * phi * Xi / (alpha_inf * rho_f * omega) * ... 
                 (1- (4 * 1i * alpha_inf ^2 * eta_f * rho_f * omega)/(Xi * Lambda_v * phi))^0.5;
-
-%             %Modified nach Rumpler s.21:
-%             G_J = (1+(4*1i*omega*alpha_inf^2*eta_f*rho_f)/...
-%             (Xi^2*Lambda_v^2*phi^2))^(0.5);
-%             alpha = alpha_inf*rho_f*(1+(Xi*phi)/(1i*omega*rho_f*alpha_inf)*G_J);
-%             %Modified End
             
-            b = 1i * omega * phi * rho_f * (alpha - alpha_inf); %woher kommt b?
+            b = 1i * omega * phi * rho_f * (alpha - alpha_inf); 
             
             COMPLEX_DENSITY_12 = DENSITY_12 - b/(1i * omega);
             COMPLEX_DENSITY_22 = DENSITY_2 -COMPLEX_DENSITY_12; 

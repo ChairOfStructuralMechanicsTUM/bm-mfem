@@ -7,8 +7,8 @@ clc
 
 Lx = 0.05;
 Ly = 0.01;
-ny = 5;
-nx = 25;
+ny = 10;
+nx = 50;
 
 
 %Ideal:
@@ -47,14 +47,14 @@ nx = 25;
 %  ny = 10;
 %  nx = 200;
 
-LoadValue = 10;
+LoadValue = 1;
 LoadDirection = [0 -1];
 loadposition = (nx+1)*(ny+1);
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
-POROSITY = 0.00000000000000000000000001;
-OMEGA = 100;
+POROSITY = 0.96;
+OMEGA = 1000;
 NUMBER_GAUSS_POINT = 2;
 %Properties
 p.DENSITY_S = DENSITY_S;
@@ -562,7 +562,7 @@ clear u;
 %AllardPlot = figure('Name','AllardPlot');
 
 v = Visualization(model);
-v.setScaling(1e3);
+v.setScaling(1);
 %v.plotUndeformed
 v.plotDeformed;
 
