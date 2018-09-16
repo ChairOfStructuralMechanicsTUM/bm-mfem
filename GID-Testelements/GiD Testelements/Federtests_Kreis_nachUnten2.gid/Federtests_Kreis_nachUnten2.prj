@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gid version="13.5">
+  <pre>
+    <layer_to_use name="Layer0"/>
+    <groups>
+      <group id="1" name="structure" color="#ff00ffff"/>
+      <group id="2" name="Spring Nodes" color="#008000ff"/>
+      <group id="3" name="0Grad" color="#ffff00ff"/>
+      <group id="4" name="22.5Grad" color="#ffa500ff"/>
+      <group id="5" name="45Grad" color="#ffc0cbff"/>
+      <group id="6" name="67.5Grad" color="#cdc0b0ff"/>
+      <group id="7" name="90Grad" color="#76eec6ff"/>
+      <group id="8" name="112.5Grad" color="#8a2be2ff"/>
+      <group id="9" name="135Grad" color="#8b2323ff"/>
+      <group id="10" name="157.5Grad" color="#ee6a50ff"/>
+    </groups>
+    <entities_groups>
+      <entities_group name="points">
+        <vector name="entity_ids" length="16" type="integer">5:20</vector>
+        <vector name="entity_num_groups" length="16" type="ushort">2x16</vector>
+        <vector name="entity_groups" length="32" type="ushort">2 7 2 6 2 5 2 4 2 3 2 10 2 9 2 8 2 7 2 6 2 5 2 4 2 3 2 10 2 9 2 8</vector>
+      </entities_group>
+      <entities_group name="nodes">
+        <vector name="entity_ids" length="16" type="integer">169 176 177 200 201 227 228 263 264 296 297 319 320 339 340 350</vector>
+        <vector name="entity_num_groups" length="16" type="ushort">2x16</vector>
+        <vector name="entity_groups" length="32" type="ushort">2 5 2 4 2 6 2 3 2 7 2 10 2 8 2 9 2 9 2 10 2 8 2 3 2 7 2 6 2 4 2 5</vector>
+      </entities_group>
+    </entities_groups>
+  </pre>
+</gid>

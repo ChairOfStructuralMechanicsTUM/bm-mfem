@@ -6,7 +6,6 @@ figure(3)       %<-Neue Figure
 ax3 = subplot(1,2,1);      %<- Handle des Subplots
 copyobj(allchild(ax1), ax3);
 
-
 ax4 = subplot(1,2,2);
 copyobj(allchild(ax2), ax4); 
 

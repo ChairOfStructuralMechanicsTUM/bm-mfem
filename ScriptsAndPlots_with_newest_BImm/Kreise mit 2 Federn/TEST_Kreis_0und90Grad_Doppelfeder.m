@@ -2,7 +2,7 @@
 clear
 
 
-io=MdpaInput('Federtests_Raute.mdpa'); %specify input file   
+io=MdpaInput('Federtests_Kreis_nachUnten2.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -10,7 +10,7 @@ model.getAllElements.setPropertyValue('YOUNGS_MODULUS',7e10);
 model.getAllElements.setPropertyValue('POISSON_RATIO',0.34);
 model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
 model.getAllElements.setPropertyValue('DENSITY',2699);
-
+% 
 % model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_Y');
 % model.getModelPart('GENERIC_fixedNodes').getNodes.fixDof('DISPLACEMENT_X');
 % % 
@@ -27,13 +27,13 @@ spring3ID = massID+3;
 spring4ID = massID+4;
 
 
-springNodes = model.getModelPart('GENERIC_0Grad').getNodes();
+springNodes = model.getModelPart('GENERIC_67.5Grad').getNodes();
 leftSpringNode = springNodes(1,1);
 leftSNId = getId(leftSpringNode);
 rightSpringNode = springNodes(1,2);
 rightSNId = getId(rightSpringNode);
 
-springNodes2 = model.getModelPart('GENERIC_90Grad').getNodes();
+springNodes2 = model.getModelPart('GENERIC_157.5Grad').getNodes();
 upperSpringNode = springNodes2(1,1);
 upperSNId = getId(upperSpringNode);
 lowerSpringNode = springNodes2(1,2);
@@ -41,7 +41,7 @@ lowerSNId = getId(lowerSpringNode);
 
 
 % %% 2 springs, 1 mass
-model.addNewNode(massNodeID,0.1,0.075,0);
+model.addNewNode(massNodeID,0.1,0.05,0);
 model.addNewElement('SpringDamperElement3d2n',spring1ID,[leftSNId massNodeID]);
 model.addNewElement('SpringDamperElement3d2n',spring2ID,[massNodeID rightSNId]);
 model.addNewElement('SpringDamperElement3d2n',spring3ID,[massNodeID upperSNId]);
@@ -104,7 +104,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 80;
+numberOfPhases = 50;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -122,12 +122,12 @@ for i=1:numberOfBands
     hold on
 end
 
-title('Raute 0und90Grad - Doppelfeder')
+title('Kreis 67.5 und 157.5')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase')
-ylabel('Frequenz')
+xlabel('Phase k')
+ylabel('frequenzy f')
 xlim([0 pi])
-ylim([0 1.5e4])
+ylim([0 2e4])
 
 
 % 
