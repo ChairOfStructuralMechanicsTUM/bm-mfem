@@ -7,8 +7,8 @@ clc
 
 Lx = 0.05;
 Ly = 0.01;
-ny = 10;
-nx = 50;
+ny = 4;
+nx = 20;
 
 
 %Ideal:
@@ -193,8 +193,8 @@ clear u
 
  v = Visualization(model);
  v.setScaling(1);
- %v.plotUndeformed
- v.plotDeformed;
+ v.plotUndeformed
+ %v.plotDeformed;
 time = toc
 fprintf("Finished")
 

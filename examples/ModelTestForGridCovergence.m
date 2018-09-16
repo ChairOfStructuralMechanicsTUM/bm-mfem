@@ -2,24 +2,25 @@
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
-function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime, DisplacementPorousRatio] = ModelTestForGridCovergence(OMEGA,LoadValue,Lx,Ly,nx,ny)
+function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime, DisplacementPorousRatio] = ModelTestForGridCovergence(Porosity)
 clc
 
 
-% Lx = 1;
-% Ly = 0.2;
-% nx = 20;
-% ny = 4;
+Lx = 0.05;
+Ly = 0.01;
+ny = 18;
+nx = 18*5;
 
 
 
-%LoadValue = 0.1;
+
+LoadValue = 10;
 LoadDirection = [0 -1];
 
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
-POROSITY = 0.96;
+POROSITY = Porosity;
 %OMEGA = 100;
 NUMBER_GAUSS_POINT = 2;
 %Properties

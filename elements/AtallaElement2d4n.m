@@ -151,7 +151,7 @@ classdef AtallaElement2d4n < PorousElement2d4n
             H_M = zeros(4,4);
             % Get gauss integration factors:
             [w,g]=returnGaussPoint(p);
-            % Execute full Gauss-Integration 
+            % Execute Gauss-Integration 
             for zeta=1:p
                 for eta=1:p
                     % N = 2x8 , Nf = 1x4, Be = 2x4, B = 3x8

@@ -93,41 +93,35 @@ classdef DazelElement2d4n < PorousElement2d4n
         function massMatrix = computeLocalMassMatrix(totalporousElement2d4n)
             % Read Material Properties
             rho_s = totalporousElement2d4n.getPropertyValue('DENSITY_S');
-            
             rho_f = totalporousElement2d4n.getPropertyValue('DENSITY_F');
             eta_f = totalporousElement2d4n.getPropertyValue('ETA_F');
-            
             phi = totalporousElement2d4n.getPropertyValue('POROSITY');
             alpha_inf = totalporousElement2d4n.getPropertyValue('TORTUOSITY');
             Xi = totalporousElement2d4n.getPropertyValue('STATIC_FLOW_RESISTIVITY');
             Lambda_v = totalporousElement2d4n.getPropertyValue('VISCOUS_CHARACT_LENGTH');
-            
             omega = totalporousElement2d4n.getPropertyValue('OMEGA');
-            
-            % Determine relevant densities
+            p = totalporousElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            % Calculate relevant densities
             DENSITY_1 = (1 - phi) * rho_s;
             DENSITY_2 = phi * rho_f;
             DENSITY_12 = - phi * rho_f * (alpha_inf - 1);
-            
-         
+            % Calculate Dazel-alpha
             alpha = 1 - 1i * phi * Xi / (alpha_inf * rho_f * omega) * ... 
                 (1- (4 * 1i * alpha_inf ^2 * eta_f * rho_f * omega)/(Xi * Lambda_v * phi))^0.5;
-            
+            % Calculate viscous drag:
             b = 1i * omega * phi * rho_f * (alpha - alpha_inf); 
-            
+            % Calculate complex densities and gamma           
             COMPLEX_DENSITY_12 = DENSITY_12 - b/(1i * omega);
             COMPLEX_DENSITY_22 = DENSITY_2 -COMPLEX_DENSITY_12; 
             COMPLEX_DENSITY = DENSITY_1 - COMPLEX_DENSITY_12 - COMPLEX_DENSITY_12^2/(DENSITY_2 - COMPLEX_DENSITY_12);
-            
             DENSITY_EQ = COMPLEX_DENSITY_22/(phi^2);
             GAMMA = phi * (COMPLEX_DENSITY_12/COMPLEX_DENSITY_22 - (1 - phi)/phi);
             DENSITY_S = COMPLEX_DENSITY + GAMMA^2 * DENSITY_EQ;
-          
+            % Generate empty mass matrix:
             ElementmassMatrix=zeros(8,8);
-            
-            p = totalporousElement2d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            % Get gauss integration factors:           
             [w,g]=returnGaussPoint(p);
-            
+            % Execute Gauss-Integration 
             for i=1:p                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                 xi=g(i);
                 for j=1:p
@@ -136,10 +130,9 @@ classdef DazelElement2d4n < PorousElement2d4n
                     ElementmassMatrix = ElementmassMatrix + (w(i) * w(j) * transpose(N_mat) * N_mat * detJ);
                 end
             end
-            
+            % Assemble equvalent mass matrix
             massMatrix = [DENSITY_S * ElementmassMatrix, GAMMA * DENSITY_EQ * ElementmassMatrix; ...
-                GAMMA * DENSITY_EQ * ElementmassMatrix, DENSITY_EQ * ElementmassMatrix];
-            
+                GAMMA * DENSITY_EQ * ElementmassMatrix, DENSITY_EQ * ElementmassMatrix];   
         end
         
         function dampingMatrix = computeLocalDampingMatrix(totalporousElement2d4n)
