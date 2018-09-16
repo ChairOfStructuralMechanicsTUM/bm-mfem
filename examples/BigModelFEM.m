@@ -87,4 +87,6 @@ v = Visualization(model);
 %v.setScaling(10000000);
 % 
 % v.plotUndeformed
-% v.plotDeformed
+ v.plotDeformed
+xlabel('x')
+ylabel('y')

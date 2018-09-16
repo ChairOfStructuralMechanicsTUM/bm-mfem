@@ -9,5 +9,15 @@ y2 = [-0.988237161514868;-0.0777925901750615;-1.05889771391312;-0.12073459534921
 plot(x,y2,'.')
 
 legend('u_{FEM}','u_{FETI-DP}','Location','southwest')
-xlabel('Verschiebungsfreiheitsgrade')
-ylabel('Verschiebung')
+xlabel('Nummer der Verschiebungsfreiheitsgrade')
+ylabel('Absolutwert der Verschiebung [m]')
+
+% xlabel('Nummer der Verschiebungsfreiheitsgrade')
+% ylabel('Prozentuale Abweichung')
+% ylim([0,100])
+% %xlabel('Nummer der Verschiebungsfreiheitsgrade')
+% %ylabel('Absoluter Fehler [m]')
+% diff=y2-y1;
+% div=abs(diff)./abs(y1)*100;
+% %plot(x,diff.','.')
+% plot(x,div.','.')

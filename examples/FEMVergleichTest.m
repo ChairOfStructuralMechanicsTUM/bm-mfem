@@ -173,11 +173,11 @@ node05.fixDof('DISPLACEMENT_Y');
 % node14.fixDof('DISPLACEMENT_X');
 % node14.fixDof('DISPLACEMENT_Y');
 
-node35.fixDof('DISPLACEMENT_X');
-node35.fixDof('DISPLACEMENT_Y');
+% node35.fixDof('DISPLACEMENT_X');
+% node35.fixDof('DISPLACEMENT_Y');
 
 
-addPointLoad([node12,node13,node23],100,[1 -1]);
+addPointLoad([node21,node26,node31],10,[0 -1]);
 %addPointLoad([node21 node26 node31],10,[0 -1]);
 % addPointLoad([node06 node23 node35],20,[1 -1]);
 % addPointLoad([node23],300,[0 -1]);
@@ -238,3 +238,5 @@ v = Visualization(model);
 
 v.plotUndeformed
 v.plotDeformed
+xlabel('x')
+ylabel('y')

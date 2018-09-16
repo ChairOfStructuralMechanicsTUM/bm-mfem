@@ -64,13 +64,13 @@ addPointLoad(nodeArray(100),100,[0 -1]);
 nodeArray(1).fixDof('DISPLACEMENT_X');
 nodeArray(n^2-n+1).fixDof('DISPLACEMENT_X');
 nodeArray(n^2-n+1).fixDof('DISPLACEMENT_Y');
-tic
+
 model = FemModel(nodeArray, elementArray);
 assembling = SimpleAssembler2(model);
 stiffnessMatrix = assembling.assembleGlobalStiffnessMatrix(model);
 [forceVector,reducedForceVector] = assembling.applyExternalForces(model);
 %% testcase substructuring
-dim=[10,10];
+dim=[n,n];
 Ns=16;
 v=4;
 hz=4;
@@ -91,13 +91,15 @@ nodematrixtest=substructureFETI_DP.setupNodeMatrix(model,dim);
 [Kbrbr]=substructureFETI_DP.getBoundryReminderMatrix(Krr,sinDofId,v,hz);
 [lP,A]=substructureFETI_DP.getLumpedPreconditioner(Bbr,Kbrbr,sinDofId,srDofId,ur2,v,hz);
 [lPglobal]=substructureFETI_DP.assembleLumpedPreconditioner(lP,v,hz);
+tic
 [lmd]=FETI_DPSolver.PCG(FIrr,FIrc,Kccg,dr,fcg,1);  %Preconditioner funktioniert in diesem Bsp nicht--> wird zu 1 gesetzt
 [uc]=FETI_DPSolver.solveCornerDofs(Kccg,fcg,FIrc,lmd);
 [urem]=FETI_DPSolver.solveReminderDofs(Krr,gfr,Krc,Bc,uc,Bbr,lmd,v,hz);
 [ufinal,ufinalred]=FETI_DPSolver.getResultVector(model,uc,urem,ur,ur2,bcdofId,v,hz);
+t=toc
 SimpleAssembler.assignResultsToDofs(model, ufinalred);
 %%
-t=toc
+
 
 
 v = Visualization(model);
@@ -105,3 +107,5 @@ v = Visualization(model);
 f1=figure(1);
 %v.plotUndeformed
 v.plotDeformed
+xlabel('x')
+ylabel('y')
