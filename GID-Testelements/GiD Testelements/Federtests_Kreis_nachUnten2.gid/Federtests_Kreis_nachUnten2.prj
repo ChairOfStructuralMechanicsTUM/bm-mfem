@@ -20,10 +20,20 @@
         <vector name="entity_num_groups" length="16" type="ushort">2x16</vector>
         <vector name="entity_groups" length="32" type="ushort">2 7 2 6 2 5 2 4 2 3 2 10 2 9 2 8 2 7 2 6 2 5 2 4 2 3 2 10 2 9 2 8</vector>
       </entities_group>
+      <entities_group name="surfaces">
+        <vector name="entity_ids" length="1" type="integer">3</vector>
+        <vector name="entity_num_groups" length="1" type="ushort">1</vector>
+        <vector name="entity_groups" length="1" type="ushort">1</vector>
+      </entities_group>
       <entities_group name="nodes">
-        <vector name="entity_ids" length="16" type="integer">169 176 177 200 201 227 228 263 264 296 297 319 320 339 340 350</vector>
-        <vector name="entity_num_groups" length="16" type="ushort">2x16</vector>
-        <vector name="entity_groups" length="32" type="ushort">2 5 2 4 2 6 2 3 2 7 2 10 2 8 2 9 2 9 2 10 2 8 2 3 2 7 2 6 2 4 2 5</vector>
+        <vector name="entity_ids" length="518" type="integer">1:518</vector>
+        <vector name="entity_num_groups" length="518" type="ushort">1x168 3 1x6 3 3 1x22 3 3 1x25 3 3 1x34 3 3 1x31 3 3 1x21 3 3 1x18 3 3 1x9 3 1x168</vector>
+        <vector name="entity_groups" length="550" type="ushort">1x168 2 5 1x7 2 4 1 2 6 1x23 2 3 1 2 7 1x26 2 10 1 2 8 1x35 2 9 1 2 9 1x32 2 10 1 2 8 1x22 2 3 1 2 7 1x19 2 6 1 2 4 1x10 2 5 1x169</vector>
+      </entities_group>
+      <entities_group name="elements">
+        <vector name="entity_ids" length="458" type="integer">1:458</vector>
+        <vector name="entity_num_groups" length="458" type="ushort">1x458</vector>
+        <vector name="entity_groups" length="458" type="ushort">1x458</vector>
       </entities_group>
     </entities_groups>
   </pre>
