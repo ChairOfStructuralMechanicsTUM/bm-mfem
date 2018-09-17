@@ -3,13 +3,13 @@
 
 figure1 = figure("Name","Solid y-Displacements");
 hold on
-% plot([1:1:91],imag(DisplacementAllardSolid([1:1:91],4)),'*k')
-plot([1:1:91],imag(DisplacementAtallaSolid([1:1:91],4)),'xb')
-plot([1:1:91],imag(DisplacementDazelSolid([1:1:91],4)),'.r')
+plot([1:1:91],imag(DisplacementAllardSolid([1:1:91],1)),'*k')
+%plot([1:1:91],imag(DisplacementAtallaSolid([1:1:91],4)),'xb')
+%plot([1:1:91],imag(DisplacementDazelSolid([1:1:91],4)),'.r')
 %plot([1:1:20],DisplacementPorousEndNodeOmega100_F10_Betrag_Real(:,4),'xk')
 %plot([1:1:20],DisplacementPorousEndNodeOmega100_F10_Betrag_Real(:,6),'xk')
 xlabel("Knoten-Id")
-ylabel("Im(u_s_x)")
+ylabel("Im(u_s_y)")
 legend("(u_s,u_f)-Formulierung","(u_s,p)-Formulierung","(u_s,u_t)-Formulierung")
 % figure2 = figure("Name","Solid y-Displacement Differences between Formulations");
 % hold on
