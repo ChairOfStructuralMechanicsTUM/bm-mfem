@@ -2,14 +2,16 @@ classdef VisualizationParaviewXML < handle
     properties (Access = private)
         model
         filename
+        dofname
     end
     
     methods
         
         % constructor
-        function obj = VisualizationParaviewXML(femModel, filename)
+        function obj = VisualizationParaviewXML(femModel, filename,varargin)
             obj.model = femModel;
             obj.filename = filename;
+            obj.dofname = varargin;
         end
         
         function vtkWrite(obj)
@@ -19,11 +21,10 @@ classdef VisualizationParaviewXML < handle
             dofs = obj.model.getAllNodes.getDofMap.keys;
             nTsteps = length(obj.model.getNode(1).getDofValue(dofs{1},'all'));
             
-            if ~exist(obj.filename, 'dir')
-                mkdir(obj.filename);
-            else
-                warning('Folder already exists');
+            if exist(obj.filename, 'dir')
+                rmdir(obj.filename, 's');
             end
+            mkdir(obj.filename);
             
             for tstep = 1 : nTsteps
                 fid = fopen(fullfile(obj.filename,[obj.filename, '_', num2str(tstep), '.vtu']), 'w');
@@ -131,50 +132,35 @@ classdef VisualizationParaviewXML < handle
                 
                 fprintf(fid,['\t\t\t\t</DataArray>\n'...
                     '\t\t\t</Cells>\n']);
+                
                 % Point Data
                 
-                % Displacements
-                fprintf(fid, ['\t\t\t<PointData>\n'...
-                    '\t\t\t\t<DataArray type="Float32" Name="Displacement" '...
-                    'NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="0">\n']);
+                fprintf(fid, '\t\t\t<PointData>\n');
                 
-                disp = zeros(nPoints,3);
-                
-                if  ismember( 'DISPLACEMENT_X', dofs)
-                    disp(:,1) = obj.model.getAllNodes.getDofValue('DISPLACEMENT_X',tstep);
-                end
-                if  ismember( 'DISPLACEMENT_Y', dofs)
-                    disp(:,2) = obj.model.getAllNodes.getDofValue('DISPLACEMENT_Y',tstep);
-                end
-                if  ismember( 'DISPLACEMENT_Z', dofs)
-                    disp(:,3) = obj.model.getAllNodes.getDofValue('DISPLACEMENT_Z',tstep);
-                end
-                
-                for j = 1 : nPoints
-                    fprintf(fid, '\t\t\t\t\t%f \t %f \t %f \n', disp(j,1), disp(j,2), disp(j,3));
-                end
-                fprintf(fid, ['\t\t\t\t</DataArray>\n'...
-                    '\t\t\t\t<DataArray type="Float32" Name="Rotation" '...
-                    'NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="0">\n']);
-                
-                %Rotations
-                rot = zeros(nPoints,3);
-                if  ismember( 'ROTATION_X', dofs)
-                    rot(:,1) = obj.model.getAllNodes.getDofValue('ROTATION_X',tstep);
-                end
-                if  ismember( 'ROTATION_Y', dofs)
-                    rot(:,2) = obj.model.getAllNodes.getDofValue('ROTATION_Y',tstep);
-                end
-                if  ismember( 'ROTATION_Z', dofs)
-                    rot(:,3) = obj.model.getAllNodes.getDofValue('ROTATION_Z',tstep);
+                for i = 1 : length(obj.dofname)
+                    
+                    fprintf(fid, ['\t\t\t\t<DataArray type="Float32" Name="',obj.dofname{i} , '" '...
+                        'NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="0">\n']);
+                    
+                    sol = zeros(nPoints,3);
+                    
+                    if  ismember([obj.dofname{i} , '_X'], dofs)
+                        sol(:,1) = obj.model.getAllNodes.getDofValue([obj.dofname{i} , '_X'], tstep);
+                    end
+                    if  ismember([obj.dofname{i} , '_Y'], dofs)
+                        sol(:,2) = obj.model.getAllNodes.getDofValue([obj.dofname{i} , '_Y'], tstep);
+                    end
+                    if  ismember([obj.dofname{i} , '_Z'], dofs)
+                        sol(:,3) = obj.model.getAllNodes.getDofValue([obj.dofname{i} , '_Z'], tstep);
+                    end
+                    
+                    for j = 1 : nPoints
+                        fprintf(fid, '\t\t\t\t\t%f \t %f \t %f \n', sol(j,1), sol(j,2), sol(j,3));
+                    end    
+                    fprintf(fid, '\t\t\t\t</DataArray>\n');
                 end
                 
-                for j = 1 : nPoints
-                    fprintf(fid, '\t\t\t\t\t%f \t %f \t %f \n', rot(j,1), rot(j,2), rot(j,3));
-                end
-                
-                fprintf(fid, ['\t\t\t\t</DataArray>\n'...
-                    '\t\t\t</PointData>\n']);
+                fprintf(fid, '\t\t\t</PointData>\n');
                 
                 % Appendix
                 
