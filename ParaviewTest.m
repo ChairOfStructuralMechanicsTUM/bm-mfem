@@ -4,8 +4,8 @@ clear;
 % clc; 
 %% Initialization
 
-nx = 4;
-ny = 4;
+nx = 20;
+ny = 20;
 [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, nx, ny, 'elementType', 'ReissnerMindlinElement3d4n');
 model.getAllNodes.addDof(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
 support = [x0 xl y0 yl];
@@ -41,7 +41,7 @@ end
 % v.plotDeformed()
 
 tic
-v =  VisualizationParaviewXML(model, 'VTU_test');
+v =  VisualizationParaviewXML(model, 'VTU_test', 'DISPLACEMENT');
 v.pvdWrite();
 toc
 
