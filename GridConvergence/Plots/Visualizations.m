@@ -2,15 +2,15 @@
 
 %Auslesen von Knotenkoordinaten
 
-xx = modelAllard.getAllNodes.getX();
+xx = modelAtalla.getAllNodes.getX();
 
-yy = modelAllard.getAllNodes.getY();
+yy = modelAtalla.getAllNodes.getY();
 
 %Auslesen von Knotenverschiebungen
 
-ux = modelAllard.getAllNodes.getDofValue('DISPLACEMENT_SOLID_X');
+ux = modelAtalla.getAllNodes.getDofValue('DISPLACEMENT_SOLID_X');
 
-uy = modelAllard.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
+uy = modelAtalla.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
 
 %Skalierung zur besseren Visualisierung der Ergebnisse (damit man was
 
@@ -22,7 +22,7 @@ scaling = 1;
 
 %Knoten in x- bzw. y-Richtung.
 
-z = reshape(imag(ux),91,19);
+z = reshape(imag(uy),91,19);
 
 %z = reshape(angle(uy),41,21);
 
@@ -42,6 +42,6 @@ surf(xxx,yyy,z,'FaceColor','interp')
 
 xlabel("x [m]")
 ylabel("y [m]")
-colorbar
-
+c = colorbar
+c.Limits = [-pi pi] 
 view(0,90)

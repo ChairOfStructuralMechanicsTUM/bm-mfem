@@ -498,10 +498,10 @@ x = solver.solve();
 step = 1;
     
 
-%DisplacementHomogenous(:,1) = model.getDofArray.getValue(step);
+DisplacementHomogenous(:,1) = model.getDofArray.getValue(step);
 %DisplacementHomogenous(:,2) = real(model.getDofArray.getValue(step)); 
 %DisplacementHomogenous(:,3) = imag(model.getDofArray.getValue(step));
-DisplacementHomogenous(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
+%DisplacementHomogenous(:,4) = sqrt((real(model.getDofArray.getValue(step))).^2 + (imag(model.getDofArray.getValue(step))).^2);
 %DisplacementHomogenous(:,5) = atan(DisplacementHomogenous(:,3)./DisplacementHomogenous(:,2));
 
 
@@ -509,16 +509,17 @@ u=0;
 for i=1:2:size(DisplacementHomogenous,1)
     u=u+1;
 %     DisplacementHomogenousSolid(u,1)=DisplacementHomogenous(i,1); %Solid_x_Komplex
-     DisplacementHomogenousSolid(u,2)=DisplacementHomogenous(i,4); %Solid_x_Betrag   
+ %    DisplacementHomogenousSolid(u,2)=DisplacementHomogenous(i,4); %Solid_x_Betrag   
 %     DisplacementHomogenousSolid(u,3)=DisplacementHomogenous(i,5); %Solid_x_Phasenwinkel
 end
 u=0;
 
 for i=2:2:size(DisplacementHomogenous,1)
     u=u+1;
-%     DisplacementHomogenousSolid(u,4)=DisplacementHomogenous(i,1); %Solid_y_Komplex
-     DisplacementHomogenousSolid(u,5)=DisplacementHomogenous(i,4); %Solid_y_Betrag   
+     DisplacementHomogenousSolid(u,4)=DisplacementHomogenous(i,1); %Solid_y_Komplex
+ %    DisplacementHomogenousSolid(u,5)=DisplacementHomogenous(i,4); %Solid_y_Betrag   
 %     DisplacementHomogenousSolid(u,6)=DisplacementHomogenous(i,5); %Solid_y_Phasenwinkel
+      
 end
 clear u;
 

@@ -2,26 +2,45 @@
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
+<<<<<<< HEAD:GridConvergence/ModelTestForGridCovergence.m
 function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime] = ModelTestForGridCovergence(Lx,Ly,nx,ny)
 clc
 
 % 
+=======
+function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime, DisplacementPorousRatio] = ModelTestForGridCovergence(omega,LoadValue,Lx,Ly,nx,ny);  
+clc
+
+
+>>>>>>> cbb824cb0bf6330a0bc383d69cf1349c690b7122:examples/ModelTestForGridCovergence.m
 % Lx = 0.05;
 % Ly = 0.01;
 % ny = 18;
 % nx = 18*5;
+<<<<<<< HEAD:GridConvergence/ModelTestForGridCovergence.m
 
 
 
 
 LoadValue = 10;
+=======
+% 
+% 
+% 
+% 
+% LoadValue = 10;
+>>>>>>> cbb824cb0bf6330a0bc383d69cf1349c690b7122:examples/ModelTestForGridCovergence.m
 LoadDirection = [0 -1];
 
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
 POROSITY = 0.96;
+<<<<<<< HEAD:GridConvergence/ModelTestForGridCovergence.m
 OMEGA = 100;
+=======
+%OMEGA = 100;
+>>>>>>> cbb824cb0bf6330a0bc383d69cf1349c690b7122:examples/ModelTestForGridCovergence.m
 NUMBER_GAUSS_POINT = 2;
 %Properties
 p.DENSITY_S = DENSITY_S;
@@ -38,7 +57,7 @@ p.TORTUOSITY = 1.7;
 p.STATIC_FLOW_RESISTIVITY = 32e3;
 p.VISCOUS_CHARACT_LENGTH = 90;
 p.THERMAL_CHARACT_LENGTH = 165;
-p.OMEGA = OMEGA;
+p.OMEGA = omega;
 p.NUMBER_GAUSS_POINT = NUMBER_GAUSS_POINT;
 
 
@@ -142,7 +161,7 @@ DisplacementAllard(:,1) = model.getDofArray.getValue(step);
 u=0;
 for i=1:4:size(DisplacementAllard,1)
     u=u+1;
-    %DisplacementAllardSolid(u,1)=DisplacementAllard(i,1); %Solid_x_Komplex
+    DisplacementAllardSolid(u,1)=DisplacementAllard(i,1); %Solid_x_Komplex
     %DisplacementAllardSolid(u,2)=DisplacementAllard(i,4); %Solid_x_Betrag   
     %DisplacementAllardSolid(u,3)=DisplacementAllard(i,5); %Solid_x_Phasenwinkel
 end
@@ -271,7 +290,7 @@ DisplacementAtalla(:,1) = model.getDofArray.getValue(step);
 u=0;
 for i=1:3:size(DisplacementAtalla,1)
     u=u+1;
-%     DisplacementAtallaSolid(u,1)=DisplacementAtalla(i,1); %Solid_x_Komplex
+     DisplacementAtallaSolid(u,1)=DisplacementAtalla(i,1); %Solid_x_Komplex
 %      DisplacementAtallaSolid(u,2)=DisplacementAtalla(i,4); %Solid_x_Betrag   
 %     DisplacementAtallaSolid(u,3)=DisplacementAtalla(i,5); %Solid_x_Phasenwinkel
 end
@@ -397,7 +416,7 @@ step = 1;
 u=0;
 for i=1:4:size(DisplacementDazel,1)
     u=u+1;
-%     DisplacementDazelSolid(u,1)=DisplacementDazel(i,1); %Solid_x_Komplex
+     DisplacementDazelSolid(u,1)=DisplacementDazel(i,1); %Solid_x_Komplex
 %     DisplacementDazelSolid(u,2)=DisplacementDazel(i,4); %Solid_x_Betrag   
 %     DisplacementDazelSolid(u,3)=DisplacementDazel(i,5); %Solid_x_Phasenwinkel
 end
@@ -548,8 +567,13 @@ clear u
 DisplacementPorousNode4(1,1)=DisplacementAllardSolid(nx+1,4);
 DisplacementPorousNode4(1,2)=DisplacementAtallaSolid(nx+1,4);
 DisplacementPorousNode4(1,3)=DisplacementDazelSolid(nx+1,4);
+DisplacementPorousNode4(1,4)=DisplacementAllardSolid(nx+1,1);
+DisplacementPorousNode4(1,5)=DisplacementAtallaSolid(nx+1,1);
+DisplacementPorousNode4(1,6)=DisplacementDazelSolid(nx+1,1);
+
 DisplacementPorousNode3(1,1)=DisplacementAllardSolid(round((nx+1)*3/4,0),4);
 DisplacementPorousNode3(1,2)=DisplacementAtallaSolid(round((nx+1)*3/4,0),4);
+<<<<<<< HEAD:GridConvergence/ModelTestForGridCovergence.m
 DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4,0),4);
 DisplacementPorousNode2(1,1)=DisplacementAllardSolid(round((nx+1)*2/4,0),4);
 DisplacementPorousNode2(1,2)=DisplacementAtallaSolid(round((nx+1)*2/4,0),4);
@@ -557,6 +581,26 @@ DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4,0),4);
 DisplacementPorousNode1(1,1)=DisplacementAllardSolid(round((nx+1)*1/4,0),4);
 DisplacementPorousNode1(1,2)=DisplacementAtallaSolid(round((nx+1)*1/4,0),4);
 DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4,0),4);
+=======
+DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4),4);
+DisplacementPorousNode3(1,4)=DisplacementAllardSolid(round((nx+1)*3/4,0),1);
+DisplacementPorousNode3(1,5)=DisplacementAtallaSolid(round((nx+1)*3/4,0),1);
+DisplacementPorousNode3(1,6)=DisplacementDazelSolid(round((nx+1)*3/4),1);
+
+DisplacementPorousNode2(1,1)=DisplacementAllardSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,2)=DisplacementAtallaSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4),4);
+DisplacementPorousNode2(1,4)=DisplacementAllardSolid(round((nx+1)*2/4,0),1);
+DisplacementPorousNode2(1,5)=DisplacementAtallaSolid(round((nx+1)*2/4,0),1);
+DisplacementPorousNode2(1,6)=DisplacementDazelSolid(round((nx+1)*2/4),1);
+
+DisplacementPorousNode1(1,1)=DisplacementAllardSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,2)=DisplacementAtallaSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4),4);
+DisplacementPorousNode1(1,4)=DisplacementAllardSolid(round((nx+1)*1/4,0),1);
+DisplacementPorousNode1(1,5)=DisplacementAtallaSolid(round((nx+1)*1/4,0),1);
+DisplacementPorousNode1(1,6)=DisplacementDazelSolid(round((nx+1)*1/4),1);
+>>>>>>> cbb824cb0bf6330a0bc383d69cf1349c690b7122:examples/ModelTestForGridCovergence.m
 
 DisplacementPorousTime(1,1)=Allardtime;
 DisplacementPorousTime(1,2)=Atallatime;
