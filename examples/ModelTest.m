@@ -7,8 +7,8 @@ clc
 
 Lx = 0.05;
 Ly = 0.01;
-ny = 4;
-nx = 20;
+ny = 2;
+nx = 10;
 
 
 %Ideal:

@@ -2,14 +2,14 @@
 
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
-function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime, DisplacementPorousRatio] = ModelTestForGridCovergence(Porosity)
+function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime] = ModelTestForGridCovergence(Lx,Ly,nx,ny)
 clc
 
-
-Lx = 0.05;
-Ly = 0.01;
-ny = 18;
-nx = 18*5;
+% 
+% Lx = 0.05;
+% Ly = 0.01;
+% ny = 18;
+% nx = 18*5;
 
 
 
@@ -20,8 +20,8 @@ LoadDirection = [0 -1];
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
-POROSITY = Porosity;
-%OMEGA = 100;
+POROSITY = 0.96;
+OMEGA = 100;
 NUMBER_GAUSS_POINT = 2;
 %Properties
 p.DENSITY_S = DENSITY_S;
@@ -550,19 +550,18 @@ DisplacementPorousNode4(1,2)=DisplacementAtallaSolid(nx+1,4);
 DisplacementPorousNode4(1,3)=DisplacementDazelSolid(nx+1,4);
 DisplacementPorousNode3(1,1)=DisplacementAllardSolid(round((nx+1)*3/4,0),4);
 DisplacementPorousNode3(1,2)=DisplacementAtallaSolid(round((nx+1)*3/4,0),4);
-DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4),4);
+DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4,0),4);
 DisplacementPorousNode2(1,1)=DisplacementAllardSolid(round((nx+1)*2/4,0),4);
 DisplacementPorousNode2(1,2)=DisplacementAtallaSolid(round((nx+1)*2/4,0),4);
-DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4),4);
+DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4,0),4);
 DisplacementPorousNode1(1,1)=DisplacementAllardSolid(round((nx+1)*1/4,0),4);
 DisplacementPorousNode1(1,2)=DisplacementAtallaSolid(round((nx+1)*1/4,0),4);
-DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4),4);
+DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4,0),4);
 
 DisplacementPorousTime(1,1)=Allardtime;
 DisplacementPorousTime(1,2)=Atallatime;
 DisplacementPorousTime(1,3)=Dazeltime;
 
-DisplacementPorousRatio(1,1)=ratio;
 
 % DisplacementDifferenceNonPorous(:,1) = DisplacementAllardSolid(:,1) - DisplacementHomogenousSolid(:,1);
 % DisplacementDifferenceNonPorous(:,2) = DisplacementAtallaSolid(:,1) - DisplacementHomogenousSolid(:,1);
