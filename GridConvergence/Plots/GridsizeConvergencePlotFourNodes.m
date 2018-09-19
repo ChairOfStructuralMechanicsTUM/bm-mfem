@@ -7,6 +7,8 @@ plot([1:1:20],real(DisplacementPorousNode1(:,3)),'.r')
 xlabel("Ly/dy")
 ylabel("Re(u_s_y(A))")
 legend("(u_s,u_f)-Formulierung","(u_s,p)-Formulierung","(u_s,u_t)-Formulierung")
+ylim([-7*10E-4 0])
+
 
 figure2 = figure("Name","Solid y-Displacements");
 hold on
@@ -16,6 +18,7 @@ plot([1:1:20],real(DisplacementPorousNode2(:,3)),'.r')
 xlabel("Ly/dy")
 ylabel("Re(u_s_y(B))")
 legend("(u_s,u_f)-Formulierung","(u_s,p)-Formulierung","(u_s,u_t)-Formulierung")
+ylim([-7*10E-4 0])
 
 figure3 = figure("Name","Solid y-Displacements");
 hold on
@@ -25,6 +28,7 @@ plot([1:1:20],real(DisplacementPorousNode3(:,3)),'.r')
 xlabel("Ly/dy")
 ylabel("Re(u_s_y(C))")
 legend("(u_s,u_f)-Formulierung","(u_s,p)-Formulierung","(u_s,u_t)-Formulierung")
+ylim([-7*10E-4 0])
 
 figure4 = figure("Name","Solid y-Displacements");
 hold on
@@ -34,7 +38,7 @@ plot([1:1:20],real(DisplacementPorousNode4(:,3)),'.r')
 xlabel("Ly/dy")
 ylabel("Re(u_s_y(D))")
 legend("(u_s,u_f)-Formulierung","(u_s,p)-Formulierung","(u_s,u_t)-Formulierung")
-
+ylim([-7*10E-4 0])
 
 % Plot der Rechnenzeiten der Elemente abhängig von der Feinheit der Diskretisierung
 figure4 = figure("Name","Solid y-Displacements");
