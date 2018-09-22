@@ -6,10 +6,6 @@ figure(3)       %<-Neue Figure
 ax3 = subplot(1,2,1);      %<- Handle des Subplots
 copyobj(allchild(ax1), ax3);
 
-xlabel('Phase')
-ylabel('Frequenz')
-xlim([0 pi])
-ylim([0 1.25e4]) 
 
 ax4 = subplot(1,2,2);
 copyobj(allchild(ax2), ax4); 
@@ -17,4 +13,4 @@ copyobj(allchild(ax2), ax4);
 xlabel('Phase')
 ylabel('Frequenz')
 xlim([0 pi])
-ylim([0 1.25e4]) 
+ylim([0 1.5e4]) 

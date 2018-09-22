@@ -2,7 +2,7 @@
 clear
 
 
-io=MdpaInput('Federtests_Raute_feiner.mdpa'); %specify input file   
+io=MdpaInput('Federtests_Raute.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -23,7 +23,7 @@ assembling = SimpleAssembler(model);
 solver = BlochInverse1D_mm(model);
 
 % define number of phases and number of bands
-numberOfPhases = 50;
+numberOfPhases = 150;
 numberOfBands = 10;
 
 % call the solve function of the solver
@@ -43,8 +43,8 @@ end
 
 title('Raute')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase Im(k)')
-ylabel('Frequenz f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
 ylim([0 1.5e4])
 

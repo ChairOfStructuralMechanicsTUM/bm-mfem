@@ -107,8 +107,8 @@ end
 
 title('Raute 0Grad - unfixiert')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase k')
-ylabel('frequenzy f')
+xlabel('Phase')
+ylabel('Frequenz')
 xlim([0 pi])
 ylim([0 1.5e4])
 

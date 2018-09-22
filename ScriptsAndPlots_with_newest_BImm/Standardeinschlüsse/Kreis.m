@@ -2,7 +2,7 @@
 clear
 
 
-io=MdpaInput('Federtests_Kreis_genauer.mdpa'); %specify input file   
+io=MdpaInput('Federtests_Kreis.mdpa'); %specify input file   
 model = io.readModel(); %read the model
 model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y"]);
 
@@ -45,8 +45,8 @@ end
 
 title('Kreis - ohne Feder und Masse')
 %legend(['bandnumbers: ' numberOfBands],'Location','EastOutside')
-xlabel('Phase Im(k)')
-ylabel('Frequenz f')
+xlabel('Phase ')
+ylabel('Frequenz')
 xlim([0 pi])
 ylim([0 1.5e4])
 
