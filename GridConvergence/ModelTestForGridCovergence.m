@@ -3,18 +3,47 @@
 
 %function [Answer,lambda1,lambda2,lambda3] = ModelTest(POROSITY, DENSITY_S, DENSITY_F, OMEGA, NUMBER_GAUSS_POINT)
 
+<<<<<<< HEAD
 function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime] = ModelTestForGridCovergence(Lx,Ly,nx,ny)
 clc
 
 LoadValue = 10;
+=======
+% function [DisplacementPorousNode1, DisplacementPorousNode2, DisplacementPorousNode3, DisplacementPorousNode4, DisplacementPorousTime] = ModelTestForGridCovergence(Lx,Ly,nx,ny)
+% clc
+
+
+
+Lx = 0.05;
+Ly = 0.01;
+ny = 9;
+nx = 9*5;
+
+
+
+
+
+LoadValue = 10;
+
+% LoadValue = 10;
+
+>>>>>>> 59a973af27af5aacae8d1aeee79d4d59927c9076
 LoadDirection = [0 -1];
 
 
 DENSITY_S = 30;
 DENSITY_F = 1.21;
 POROSITY = 0.96;
+<<<<<<< HEAD
 OMEGA = 100;
 NUMBER_GAUSS_POINT = 2;
+=======
+
+
+
+%OMEGA = 100;
+
+>>>>>>> 59a973af27af5aacae8d1aeee79d4d59927c9076
 %Properties
 p.DENSITY_S = DENSITY_S;
 p.LAMBDA_S = 905357;
@@ -30,10 +59,18 @@ p.TORTUOSITY = 1.7;
 p.STATIC_FLOW_RESISTIVITY = 32e3;
 p.VISCOUS_CHARACT_LENGTH = 90;
 p.THERMAL_CHARACT_LENGTH = 165;
-p.OMEGA = omega;
-p.NUMBER_GAUSS_POINT = NUMBER_GAUSS_POINT;
+p.OMEGA = 100;
+p.NUMBER_GAUSS_POINT = 2;
+
+<<<<<<< HEAD
+=======
+% 
+% ratio = WavelengthCheck(p.OMEGA,p.TORTUOSITY,p.ETA_F,p.DENSITY_F,DENSITY_S,p.STATIC_FLOW_RESISTIVITY,p.VISCOUS_CHARACT_LENGTH,p.POROSITY,p.HEAT_CAPACITY_RATIO_F,p.PRESSURE_0_F,...
+%     p.PRANDL_NUMBER_F,p.THERMAL_CHARACT_LENGTH,p.ETA_S,p.LAMBDA_S,p.MUE_S,Lx,Ly,nx,ny);
 
 
+
+>>>>>>> 59a973af27af5aacae8d1aeee79d4d59927c9076
 %% Standard (u_s,u_f) displacement
 clc
 clear model ans solver stiffnessMatrix massMatrix DisplacementAllard DisplacementAllardSolid
@@ -105,10 +142,10 @@ x = solver.solve();
 step = 1;
 Allardtime=toc;
 
- %v = Visualization(model);
- %v.setScaling(1);
+v = Visualization(model);
+ v.setScaling(1);
  %v.plotUndeformed
- %v.plotDeformed;
+ v.plotDeformed;
 
 %
 %% Mixed (u_s,p) displacement
@@ -295,7 +332,31 @@ uyAtalla = modelAtalla.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
 
 uxDazel = modelDazel.getAllNodes.getDofValue('DISPLACEMENT_SOLID_X');
 
+<<<<<<< HEAD
 uyDazel = modelDazel.getAllNodes.getDofValue('DISPLACEMENT_SOLID_Y');
+=======
+% DisplacementDifferencePorous(:,1) = DisplacementAllardSolid(:,2) - DisplacementAtallaSolid(:,2);
+% DisplacementDifferencePorous(:,2) = DisplacementAtallaSolid(:,2) - DisplacementDazelSolid(:,2);
+% DisplacementDifferencePorous(:,3) = DisplacementDazelSolid(:,2) - DisplacementAllardSolid(:,2);
+
+% DisplacementPorous(:,1)= DisplacementAllardSolid(:,1);
+% DisplacementPorous(:,2)= DisplacementAtallaSolid(:,1);
+% DisplacementPorous(:,3)= DisplacementDazelSolid(:,1);
+% DisplacementPorousSum = sum(DisplacementPorous);
+
+DisplacementPorousNode4(1,1)=DisplacementAllardSolid(nx+1,4);
+DisplacementPorousNode4(1,2)=DisplacementAtallaSolid(nx+1,4);
+DisplacementPorousNode4(1,3)=DisplacementDazelSolid(nx+1,4);
+DisplacementPorousNode3(1,1)=DisplacementAllardSolid(round((nx+1)*3/4,0),4);
+DisplacementPorousNode3(1,2)=DisplacementAtallaSolid(round((nx+1)*3/4,0),4);
+DisplacementPorousNode3(1,3)=DisplacementDazelSolid(round((nx+1)*3/4,0),4);
+DisplacementPorousNode2(1,1)=DisplacementAllardSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,2)=DisplacementAtallaSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode2(1,3)=DisplacementDazelSolid(round((nx+1)*2/4,0),4);
+DisplacementPorousNode1(1,1)=DisplacementAllardSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,2)=DisplacementAtallaSolid(round((nx+1)*1/4,0),4);
+DisplacementPorousNode1(1,3)=DisplacementDazelSolid(round((nx+1)*1/4,0),4);
+>>>>>>> 59a973af27af5aacae8d1aeee79d4d59927c9076
 
 DisplacementPorousNode4(1,1)=uxAllard(nx+1);
 DisplacementPorousNode4(1,2)=uyAllard(nx+1);
@@ -331,4 +392,4 @@ DisplacementPorousTime(1,3)=Dazeltime;
 
 
 
-end
+%end
