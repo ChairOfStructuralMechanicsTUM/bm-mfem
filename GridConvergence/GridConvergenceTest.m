@@ -8,3 +8,5 @@ for i = 11: 1 : 20
    [DisplacementPorousNode1(u,:), DisplacementPorousNode2(u,:), DisplacementPorousNode3(u,:), DisplacementPorousNode4(u,:), DisplacementPorousTime(u,:)] = ModelTestForGridCovergence(Lx,Ly,nx,ny);  
 end
 fprintf("end")
+
+GridsizeConvergencePlotFourNodes()
