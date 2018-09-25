@@ -398,8 +398,7 @@ classdef ShellElement3d4n < QuadrilateralElement
                 ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
-            lumpArea = computeLength(ele_coords(1,:), ele_coords(4,:)) * ...
-                computeLength(ele_coords(1,:), ele_coords(2,:));
+            lumpArea = polyarea(obj.getNodes.getX(), obj.getNodes.getY()); 
             
             if use_cmm
                 inertia = density*thickness;
