@@ -398,6 +398,8 @@ classdef ShellElement3d4n < QuadrilateralElement
                 ele_coords(i,2) = obj.nodeArray(i).getY;
             end
             
+            lumpArea = polyarea(obj.getNodes.getX(), obj.getNodes.getY()); 
+            
             if use_cmm
                 inertia = density*thickness;
                 rot_inertia = density*thickness^3/12;
