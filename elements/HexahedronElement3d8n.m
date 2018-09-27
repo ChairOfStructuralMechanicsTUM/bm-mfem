@@ -40,15 +40,14 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         end
         
         
-        % Check Convexity of quad (Barycenter is not correct implemented
-        % for a general hexahedron --> convexity test fails!
-% % %         function checkConvexity(hexahedron3d8n)
-% % %             try
-% % %                 [~] = hexahedron3d8n.barycenter();
-% % %             catch
-% % %                 error('Element %i is not convex', hexahedron3d8n.getId());
-% % %             end
-% % %         end
+        % Check Convexity of quad
+        function checkConvexity(hexahedron3d8n)
+            try
+                [~] = hexahedron3d8n.barycenter();
+            catch
+                error('Element %i is not convex', hexahedron3d8n.getId());
+            end
+        end
         
         %Initialization
         function initialize(hexahedron3d8n)
@@ -61,7 +60,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
             hexahedron3d8n.lengthY = computeLength(hexahedron3d8n.nodeArray(1).getCoords, ...
                 hexahedron3d8n.nodeArray(5).getCoords);
             
-% % %             checkConvexity(hexahedron3d8n);
+            checkConvexity(hexahedron3d8n);
         end
 
         % member functions
