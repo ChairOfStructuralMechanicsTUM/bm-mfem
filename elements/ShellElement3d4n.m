@@ -391,8 +391,6 @@ classdef ShellElement3d4n < QuadrilateralElement
             use_cmm = obj.getPropertyValue('USE_CONSISTENT_MASS_MATRIX');
             nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
 
-            
-
             if use_cmm
                 inertia = density*thickness;
                 rot_inertia = density*thickness^3/12;
