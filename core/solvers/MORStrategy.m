@@ -24,7 +24,7 @@ classdef MORStrategy < Solver
         function strategy = MORStrategy(femModel, method, varargin)
             if nargin > 0
                 strategy.femModel = femModel;
-                strategy.assembler = SimpleAssembler(femModel);
+                strategy.assembler = SimpleAssembler();
                 strategy.MORmethod = method;
                 strategy.isInitialized = false;
             else

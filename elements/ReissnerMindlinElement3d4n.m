@@ -211,7 +211,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         function vals = getValuesVector(element, step)
-            vals = zeros(1,12);
+            vals = sparse(1,12);
             
             vals([1 4 7 10]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
             vals([2 5 8 11]) = element.nodeArray.getDofValue('ROTATION_X',step);
@@ -219,7 +219,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         function vals = getFirstDerivativesVector(element, step)
-            vals = zeros(1,12);
+            vals = sparse(1,12);
             
             [~, vals([1 4 7 10]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
             [~, vals([2 5 8 11]), ~] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
@@ -227,7 +227,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,12);            
+            vals = sparse(1,12);            
             
             [~, ~, vals([1 4 7 10])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
             [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
@@ -235,7 +235,7 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         function F = computeLocalForceVector(quadrilateralElement)
-            F = zeros(1,12);
+            F = sparse(1,12);
         end
    
     end

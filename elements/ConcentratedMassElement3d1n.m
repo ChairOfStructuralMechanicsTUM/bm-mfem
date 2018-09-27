@@ -29,7 +29,7 @@ classdef ConcentratedMassElement3d1n < Element
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(element)
-            stiffnessMatrix = zeros(3);
+            stiffnessMatrix = sparse(3);
         end
         
         function forceVector = computeLocalForceVector(ele)
@@ -40,14 +40,14 @@ classdef ConcentratedMassElement3d1n < Element
         
         function massMatrix = computeLocalMassMatrix(element)
            mass = element.getPropertyValue('ELEMENTAL_MASS');
-           massMatrix = zeros(3);
+           massMatrix = sparse(3);
            massMatrix(1,1) = mass;
            massMatrix(2,2) = mass;
            massMatrix(3,3) = mass;
         end
         
         function dampingMatrix = computeLocalDampingMatrix(element)
-            dampingMatrix = zeros(3);
+            dampingMatrix = sparse(3);
         end
         
         function dofs = getDofList(element)

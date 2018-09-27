@@ -25,7 +25,7 @@ classdef EigensolverStrategy < Solver
         function obj = EigensolverStrategy(femModel)
             if nargin > 0
                 obj.femModel = femModel;
-                obj.assembler = SimpleAssembler(femModel);
+                obj.assembler = SimpleAssembler();
                 obj.isInitialized = false;
             else
                 error("Error (EigensolverStratey): no fem model defined!")

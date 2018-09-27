@@ -66,7 +66,7 @@ classdef BarElement2d2n < LinearElement
         
         function responseDoF = getResponseDofArray(barElement)
             
-            responseDoF = zeros(4,1);
+            responseDoF = spalloc(4,1,1);
             
             for itNodes = 1:1:2
                 nodalDof = barElement.nodeArray(itNodes).getDofArray;
@@ -92,10 +92,10 @@ classdef BarElement2d2n < LinearElement
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             x21 = dist(1);
             y21 = dist(2);
-            stiffnessMatrix = [x21*x21 x21*y21 -x21*x21 -x21*y21; ...
+            stiffnessMatrix = sparse([x21*x21 x21*y21 -x21*x21 -x21*y21; ...
                 x21*y21 y21*y21 -x21*y21 -y21*y21; ...
                 -x21*x21 -x21*y21 x21*x21 x21*y21; ...
-                -x21*y21 -y21*y21 x21*y21 y21*y21];
+                -x21*y21 -y21*y21 x21*y21 y21*y21]);
             factor = (barElement.getProperties().getValue('YOUNGS_MODULUS') ...
                 * barElement.getProperties().getValue('CROSS_SECTION')) ...
                 / (barElement.length^3);
@@ -103,7 +103,7 @@ classdef BarElement2d2n < LinearElement
         end
         
         function forceVector = computeLocalForceVector(barElement)
-            forceVector = zeros(1,6);
+            forceVector = spalloc(1,6,1);
         end
         
         function massMatrix = computeLocalMassMatrix(element)
@@ -114,7 +114,7 @@ classdef BarElement2d2n < LinearElement
             length = element.length;
             area = element.getProperties().getValue('CROSS_SECTION');
             mass = density * length * area;
-            massMatrix = mass * diag([.5 .5 .5 .5]);
+            massMatrix = sparse(mass * diag([.5 .5 .5 .5]));
         end
         
         % Computation of the Element Stress
@@ -124,7 +124,7 @@ classdef BarElement2d2n < LinearElement
             sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
             stressValue = barElement.getProperties().getValue('YOUNGS_MODULUS') ...
-                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
+                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel ï¿½berprï¿½fen stets positiv
             
         end
         

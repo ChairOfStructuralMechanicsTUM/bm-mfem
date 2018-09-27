@@ -356,8 +356,8 @@ classdef ShellElement3d4n < QuadrilateralElement
             
             [w,g] = returnGaussPoint(nr_gauss_points);
             
-            stiffnessMatrixMemb = zeros(12,12);
-            stiffnessMatrixBend = zeros(12,12);
+            stiffnessMatrixMemb = sparse(12,12);
+            stiffnessMatrixBend = sparse(12,12);
             stiffnessMatrix = sparse(24,24);
             
             for xi = 1 : nr_gauss_points

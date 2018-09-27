@@ -7,7 +7,7 @@ classdef SimpleAssembler < Assembler
     
     methods %test
         
-        function assembling = SimpleSparseAssembler(femModel)
+        function assembling = SimpleAssembler(femModel)
             if (nargin < 1)
                 error('input model is missing');
             end
@@ -30,7 +30,7 @@ classdef SimpleAssembler < Assembler
             end
             
             ndofs = length(femModel.getDofArray);
-            stiffnessMatrix = spalloc(ndofs,ndofs,ndofs*ndofs);
+            stiffnessMatrix = zeros(ndofs);
             
             for itEle = 1:length(elements)
                elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
@@ -61,7 +61,7 @@ classdef SimpleAssembler < Assembler
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
-            forceVector = spalloc(1,nDofs,1);
+            forceVector = zeros(1,nDofs);
             [~, fixedDofs] = femModel.getDofConstraints();
             
             % get the external load on the dofs
@@ -205,7 +205,7 @@ classdef SimpleAssembler < Assembler
             end
             
             ndofs = length(femModel.getDofArray);
-            massMatrix = spalloc(ndofs,ndofs,ndofs*ndofs);
+            massMatrix = zeros(ndofs);
             
             for itEle = 1:length(elements)
                elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
@@ -223,7 +223,7 @@ classdef SimpleAssembler < Assembler
         function dampingMatrix = assembleGlobalDampingMatrix(femModel)
             elements = femModel.getAllElements;
             ndofs = length(femModel.getDofArray);
-            dampingMatrix = spalloc(ndofs,ndofs,ndofs*ndofs);
+            dampingMatrix = zeros(ndofs);
             
             for itEle = 1:length(elements)
                elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;

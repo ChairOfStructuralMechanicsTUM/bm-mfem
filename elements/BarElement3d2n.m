@@ -37,7 +37,7 @@ classdef BarElement3d2n < LinearElement
         
         function responseDoF = getResponseDofArray(barElement, step)
             
-            responseDoF = zeros(6,1);
+            responseDoF = spalloc(6,1,1);
             
             for itNodes = 1:1:2
                 nodalDof = barElement.nodeArray(itNodes).getDofArray;
@@ -56,12 +56,12 @@ classdef BarElement3d2n < LinearElement
             x21 = dist(1);
             y21 = dist(2);
             z21 = dist(3);
-            stiffnessMatrix = [x21*x21 x21*y21 x21*z21 -x21*x21 -x21*y21 -x21*z21; ...
+            stiffnessMatrix = sparse([x21*x21 x21*y21 x21*z21 -x21*x21 -x21*y21 -x21*z21; ...
                 x21*y21 y21*y21 y21*z21 -x21*y21 -y21*y21 -y21*z21; ...
                 x21*z21 y21*z21 z21*z21 -x21*z21 -y21*z21 -z21*z21; ...
                 -x21*x21 -x21*y21 -x21*z21 x21*x21 x21*y21 x21*z21; ...
                 -x21*y21 -y21*y21 -y21*z21 x21*y21 y21*y21 y21*z21; ...
-                -x21*z21 -y21*z21 -z21*z21 x21*z21 y21*z21 z21*z21];
+                -x21*z21 -y21*z21 -z21*z21 x21*z21 y21*z21 z21*z21]);
             factor = (barElement.getProperties().getValue('YOUNGS_MODULUS') ...
                 * barElement.getProperties().getValue('CROSS_SECTION')) ...
                 / (barElement.length^3);
@@ -69,7 +69,7 @@ classdef BarElement3d2n < LinearElement
         end
         
         function forceVector = computeLocalForceVector(element)
-            forceVector = zeros(1,6);
+            forceVector = spalloc(1,6,1);
         end
         
         function massMatrix = computeLocalMassMatrix(element)
@@ -81,11 +81,11 @@ classdef BarElement3d2n < LinearElement
             length = element.length;
             area = element.getProperties().getValue('CROSS_SECTION');
             mass = density * length * area;
-            massMatrix = mass * diag([.5 .5 .5 .5 .5 .5]);
+            massMatrix = sparse(mass * diag([.5 .5 .5 .5 .5 .5]));
         end
         
         function dampingMatrix = computeLocalDampingMatrix(element)
-            dampingMatrix = zeros(6);
+            dampingMatrix = spalloc(6,6,36);
         end
 
         function dofs = getDofList(element)
@@ -129,7 +129,7 @@ classdef BarElement3d2n < LinearElement
                 CZ = dist(3)/barElement.length;
                 nodalDisplacement = getResponseDofArray(barElement, step);
                 stressValue(ii) = barElement.getProperties().getValue('YOUNGS_MODULUS')...
-                    /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ] * nodalDisplacement;  %Winkel überprüfen stets positiv
+                    /barElement.length * [-CX  -CY  -CZ  CX  CY  CZ] * nodalDisplacement;  %Winkel ï¿½berprï¿½fen stets positiv
             end
         end
      

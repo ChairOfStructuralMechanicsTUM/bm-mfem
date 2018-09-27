@@ -15,10 +15,10 @@ classdef ElementTests < matlab.unittest.TestCase
             ele01.setPropertyValue('YOUNGS_MODULUS',1000);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
-            expectedSolution = [36 48 -36 -48; ...
+            expectedSolution = sparse([36 48 -36 -48; ...
                 48 64 -48 -64; ...
                 -36 -48 36 48; ...
-                -48 -64 48 64];
+                -48 -64 48 64]);
             testCase.verifyEqual(actualSolution, expectedSolution)
         end
         
@@ -30,12 +30,12 @@ classdef ElementTests < matlab.unittest.TestCase
             ele01.setPropertyValue('YOUNGS_MODULUS',343);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
-            expectedSolution = [40 60 120 -40 -60 -120; ...
+            expectedSolution = sparse([40 60 120 -40 -60 -120; ...
                 60 90 180 -60 -90 -180; ...
                 120 180 360 -120 -180 -360; ...
                 -40 -60 -120 40 60 120; ...
                 -60 -90 -180 60 90 180; ...
-                -120 -180 -360 120 180 360];
+                -120 -180 -360 120 180 360]);
             testCase.verifyEqual(actualSolution, expectedSolution)
         end
         
@@ -246,7 +246,7 @@ classdef ElementTests < matlab.unittest.TestCase
             
             %eigenfrequencies in Hz
             actualEigenfrequenciesCantilever = solver.getEigenfrequencies ./ (2*pi);
-            expectedEigenfrequenciesCantilever = [0.915242085421142;5.73511288165053;16.0584347115302;31.4797553897702;52.0975276397135];
+            expectedEigenfrequenciesCantilever = sparse([0.915242085421142;5.73511288165053;16.0584347115302;31.4797553897702;52.0975276397135]);
 
             testCase.assertThat(actualEigenfrequenciesCantilever, IsEqualTo(expectedEigenfrequenciesCantilever, ...
                 'Within', AbsoluteTolerance(1e-5)))
@@ -732,8 +732,8 @@ classdef ElementTests < matlab.unittest.TestCase
             
             % Assertion
             actualEigenfrequencies = solver.getEigenfrequencies('Hz');
-            expectedEigenfrequencies = [46.1882586911365;103.709269817444;...
-                103.709269817444;154.684851632199;197.188070901913];
+            expectedEigenfrequencies = sparse([46.1882586911365;103.709269817444;...
+                103.709269817444;154.684851632199;197.188070901913]);
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))

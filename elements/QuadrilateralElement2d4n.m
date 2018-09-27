@@ -85,7 +85,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             % Calculate Materialmatrix
             Emat = EModul/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
-            stiffnessMatrix=zeros(8,8);
+            stiffnessMatrix=sparse(8,8);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
@@ -101,7 +101,7 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
         function massMatrix = computeLocalMassMatrix(obj)
             roh = obj.getPropertyValue('DENSITY');
             p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
-            massMatrix=zeros(8,8);
+            massMatrix=sparse(8,8);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p

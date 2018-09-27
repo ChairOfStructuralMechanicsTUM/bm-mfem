@@ -132,7 +132,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
             b=Emodul*PoissonRatio/( (1-2*PoissonRatio)*(1+PoissonRatio) );
             c=Emodul/(2*(1+PoissonRatio));
             Emat=[a,b,b,0,0,0;b,a,b,0,0,0;b,b,a,0,0,0;0,0,0,c,0,0;0,0,0,0,c,0;0,0,0,0,0,c];
-            stiffnessMatrix=zeros(24,24);
+            stiffnessMatrix=sparse(24,24);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
@@ -151,7 +151,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         function massMatrix = computeLocalMassMatrix(hexahedron3d8n)
             roh = hexahedron3d8n.getPropertyValue('DENSITY');
             p = hexahedron3d8n.getPropertyValue('NUMBER_GAUSS_POINT');
-            massMatrix=zeros(24,24);
+            massMatrix=sparse(24,24);
             [w,g]=returnGaussPoint(p);
             
             for i=1:p

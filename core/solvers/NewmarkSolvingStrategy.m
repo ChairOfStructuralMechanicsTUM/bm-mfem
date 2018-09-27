@@ -1,7 +1,7 @@
 classdef NewmarkSolvingStrategy < Solver
     %NEWMARKSOLVINGSTRATEGY A time integration method based on the Newmark
     %method
-    %   Newmark's method as outlined in Géradin, Michel, and Daniel J. 
+    %   Newmark's method as outlined in Gï¿½radin, Michel, and Daniel J. 
     %   Rixen. Mechanical vibrations: theory and application to structural
     %   dynamics. John Wiley & Sons, 2014.
     
@@ -29,7 +29,7 @@ classdef NewmarkSolvingStrategy < Solver
         function solver = NewmarkSolvingStrategy(femModel, dt, varargin)
             solver.femModel = femModel;
             solver.dt = dt;
-            solver.assembler = SimpleAssembler(femModel);
+            solver.assembler = SimpleAssembler();
             solver.isInitialized = false;
             
             numvarargs = length(varargin);
@@ -65,7 +65,8 @@ classdef NewmarkSolvingStrategy < Solver
                     - solver.dampingMatrix * (velOld + ((1 - solver.gamma) .* solver.dt) * accOld) ...
                     - solver.stiffnessMatrix * (dispOld + solver.dt .* velOld + ((0.5 - solver.beta) * power(solver.dt,2)) .* accOld);
                 
-                accNew = linsolve(solver.lhs, rhs);
+%                 accNew = linsolve(solver.lhs, rhs);
+                accNew = solver.lhs \ rhs;
                 velNew = velOld + ((1 - solver.gamma) * solver.dt) .* accOld + (solver.gamma * solver.dt) .* accNew;
                 dispNew = dispOld + solver.dt .* velOld + (power(solver.dt, 2) * (0.5 - solver.beta)) .* accOld + (power(solver.dt, 2) * solver.beta) .* accNew;
                 
@@ -112,8 +113,8 @@ classdef NewmarkSolvingStrategy < Solver
             vel = solver.assembler.assembleFirstDerivativesVector(solver.femModel, step);
             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             
-%             acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
-            acc0 = linsolve(solver.massMatrix, (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0));
+            acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+%             acc0 = linsolve(solver.massMatrix, (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0));
             solver.assembler.setSecondDerivativeValuesToDofs(solver.femModel, acc0);
             solver.isInitialized = true;
             
