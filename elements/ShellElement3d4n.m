@@ -390,7 +390,9 @@ classdef ShellElement3d4n < QuadrilateralElement
             thickness = obj.getPropertyValue('THICKNESS');
             use_cmm = obj.getPropertyValue('USE_CONSISTENT_MASS_MATRIX');
             nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
-           
+
+            
+
             if use_cmm
                 inertia = density*thickness;
                 rot_inertia = density*thickness^3/12;
@@ -406,8 +408,9 @@ classdef ShellElement3d4n < QuadrilateralElement
                 end
                 
             else
+
                  lumpArea = polyarea(obj.getNodes.getX(), obj.getNodes.getY()); 
-            
+           
                 nodalMass = 0.25 * density * thickness * lumpArea;
                 i = [1 2 3 7 8 9 13 14 15 19 20 21];
                 
