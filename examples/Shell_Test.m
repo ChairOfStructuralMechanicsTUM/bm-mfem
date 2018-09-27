@@ -17,6 +17,7 @@ model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',4);
 model.getAllElements.setPropertyValue('DENSITY',7860);
 model.getAllElements.addProperty('RAYLEIGH_ALPHA',4);
 model.getAllElements.addProperty('RAYLEIGH_BETA',4e-4);
+
 % model.getAllElements.setPropertyValue('SHEAR_CORRECTION_FACTOR',5/6);
 % model.getAllElements.addProperty('FULL_INTEGRATION',false);
 
@@ -26,10 +27,10 @@ support = [x0 xl y0 yl];
 % support.fixAllDofs();
 support.fixAllDofs();
 
-% s = EigensolverStrategy(model); 
-% s.solve(10);
-% s.assignModeShapes;
-% ef=s.getEigenfrequencies
+s = EigensolverStrategy(model); 
+s.solve(10);
+s.assignModeShapes;
+ef=s.getEigenfrequencies
 
 if 1<0
     v=Visualization(model)
