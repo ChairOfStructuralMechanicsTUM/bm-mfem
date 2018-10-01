@@ -1,6 +1,12 @@
 clc;
 clear all;
 
+% EXAMPLES for FEM-Calculations with 3D Tetrahedron Elements
+% TetrahedronElement3d4n: Tetraeder with 4 nodes in 3D (linear)
+
+% SetUp of Geometry up to now only manually
+
+
 % %  ========================= %
 % %% GEOMETRY BY MANUELL INPUT %
 % %  ========================= %
@@ -16,48 +22,42 @@ node07 = Node(7,1,1,1);
 node08 = Node(8,0,1,1);
 
 nodeArray = [node01 node02 node03 node04 node05 node06 node07 node08];
-nodeArray_test = [node01 node06 node08 node05];
+
 
 % Assignment DOFs
 nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
 
 
 % Assignment of Elements
-ele01 = TetrahedronElement3d4n(1,nodeArray_test);
+ele01 = TetrahedronElement3d4n(1,[node01 node06 node08 node05]);
 ele02 = TetrahedronElement3d4n(2,[node01 node02 node03 node06]);
 ele03 = TetrahedronElement3d4n(3,[node06 node03 node07 node08]);
 ele04 = TetrahedronElement3d4n(4,[node03 node04 node01 node08]);
 ele05 = TetrahedronElement3d4n(5,[node01 node06 node08 node03]);
 
 elementArray = [ele01 ele02 ele03 ele04 ele05];
-%
+
+
+% Assignment of Material Properties
+elementArray.setPropertyValue('YOUNGS_MODULUS',7e10);
+elementArray.setPropertyValue('POISSON_RATIO',0.34);
+elementArray.setPropertyValue('NUMBER_GAUSS_POINT',2);
+elementArray.setPropertyValue('DENSITY',2699);
+
+
+% Assignment of BCs
+node01.fixAllDofs();
+node02.fixAllDofs();
+node03.fixAllDofs();
+node04.fixAllDofs();
+
+
+% Definition of Loads
+addPointLoad([node05 node06],100,[0 -1 0]);
+
+
+% Definition of the femModel
 model = FemModel(nodeArray, elementArray);
-
-v = Visualization(model);
-v.setScaling(10000);
-v.plotUndeformed(0)    %Insert 0: NoLabel / 1: WithLabels
-
-% 
-% % Assignment of Material Properties
-% ele01.setPropertyValue('YOUNGS_MODULUS',7e10);
-% ele01.setPropertyValue('POISSON_RATIO',0.34);
-% ele01.setPropertyValue('NUMBER_GAUSS_POINT',2);
-% ele01.setPropertyValue('DENSITY',2699);
-% 
-% 
-% % Assignment of BCs
-% node01.fixAllDofs();
-% node02.fixAllDofs();
-% node03.fixAllDofs();
-% node04.fixAllDofs();
-% 
-% 
-% % Definition of Loads
-% addPointLoad([node05 node06],100,[0 -1 0]);
-% 
-% 
-% % Definition of the femModel
-% model = FemModel(nodeArray, ele01);
 
 
 
