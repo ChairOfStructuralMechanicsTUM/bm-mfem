@@ -61,7 +61,7 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
         end
 
         % member functions
-        function [N, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4)
+        function [Nf, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4)
             
             % Calculation of shape functions
             Nf = [theta_1; theta_2; theta_3; theta_4];
@@ -73,38 +73,39 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
                 N(3,3*(l-1)+3)=Nf(l);
             end
             
-            % Calculation of shape function derivatives
-            dNzeta = 1/8 *[(-1)*(1-eta)*(1-mue),(1-eta)*(1-mue),(1+eta)*(1-mue),(-1)*(1+eta)*(1-mue),(-1)*(1-eta)*(1+mue),(1-eta)*(1+mue),(1+eta)*(1+mue),(-1)*(1+eta)*(1+mue)];
-            dNeta = 1/8 *[(1- zeta)*(-1)*(1-mue),(1+zeta)*(-1)*(1-mue),(1+ zeta)*(1-mue),(1-zeta)*(1-mue),(1- zeta)*(-1)*(1+mue),(1+zeta)*(-1)*(1+mue),(1+ zeta)*(1+mue),(1- zeta)*(1+mue)];
-            dNmue = 1/8 *[(1-zeta)*(1-eta)*(-1),(1+zeta)*(1-eta)*(-1),(1+zeta)*(1+eta)*(-1),(1-zeta)*(1+eta)*(-1),(1- zeta)*(1-eta),(1+zeta)*(1-eta),(1+ zeta)*(1+eta),(1-zeta)*(1+eta)];
-            
-            % Calculation of Jacobian matrix
-            coords=zeros(8,3);
-            for i=1:1:8
-                coords(i,1:3)=hexahedron3d8n.nodeArray(i).getCoords;
+            % Calculation of Determinant of Jacobian Matrix
+            for i = 1:4
+                for j = 1:4
+                    xDiff(i,j) = tetrahedron3d4n.nodeArray(i).getX - tetrahedron3d4n.nodeArray(j).getX;
+                    yDiff(i,j) = tetrahedron3d4n.nodeArray(i).getY - tetrahedron3d4n.nodeArray(j).getY;
+                    zDiff(i,j) = tetrahedron3d4n.nodeArray(i).getZ - tetrahedron3d4n.nodeArray(j).getZ;
+                end
             end
+                
+%             J = [1 1 1 1;... 
+%                  tetrahedron3d4n.nodeArray(1).getX   tetrahedron3d4n.nodeArray(2).getX   tetrahedron3d4n.nodeArray(3).getX   tetrahedron3d4n.nodeArray(4).getX;...  
+%                  tetrahedron3d4n.nodeArray(1).getY   tetrahedron3d4n.nodeArray(2).getY   tetrahedron3d4n.nodeArray(3).getY   tetrahedron3d4n.nodeArray(4).getY;... 
+%                  tetrahedron3d4n.nodeArray(1).getZ   tetrahedron3d4n.nodeArray(2).getZ   tetrahedron3d4n.nodeArray(3).getZ   tetrahedron3d4n.nodeArray(4).getZ];
+%              
+%              Jdet = det(J);
+             Jdet = xDiff(2,1)*(yDiff(2,3)*zDiff(3,4)-yDiff(3,4)*zDiff(2,3))+xDiff(3,2)*(yDiff(3,4)*zDiff(1,2)-yDiff(1,2)*zDiff(3,4))+xDiff(4,3)*(yDiff(1,2)*zDiff(2,3)-yDiff(2,3)*zDiff(1,2));
             
-            xn=coords(1:8,1);
-            yn=coords(1:8,2);
-            zn=coords(1:8,3);
+
+            % Calculation of the derivatives of the Shape Functions
+            a = [yDiff(4,2)*zDiff(3,2)-yDiff(3,2)*zDiff(4,2)   yDiff(3,1)*zDiff(4,3)-yDiff(4,3)*zDiff(3,1)    yDiff(2,4)*zDiff(1,4)-yDiff(1,4)*zDiff(2,4)   yDiff(1,3)*zDiff(2,1)-yDiff(1,3)*zDiff(2,1)];  % Derivatives w.r.t. x
+            b = [xDiff(3,2)*zDiff(4,2)-xDiff(4,2)*zDiff(3,2)   xDiff(4,3)*zDiff(3,1)-xDiff(3,1)*zDiff(4,3)    xDiff(1,4)*zDiff(2,4)-xDiff(2,4)*zDiff(1,4)   xDiff(2,1)*zDiff(1,3)-xDiff(2,1)*zDiff(1,3)];  % Derivatives w.r.t. y
+            c = [xDiff(3,2)*yDiff(4,2)-xDiff(4,2)*yDiff(3,2)   xDiff(4,3)*yDiff(3,1)-xDiff(3,1)*yDiff(4,3)    xDiff(1,4)*yDiff(2,4)-xDiff(2,4)*yDiff(1,4)   xDiff(2,1)*yDiff(1,3)-xDiff(2,1)*yDiff(1,3)];  % Derivatives w.r.t. z
             
-            J11=dNzeta*xn;
-            J12=dNzeta*yn;
-            J13=dNzeta*zn;
-            J21=dNeta*xn;
-            J22=dNeta*yn;
-            J23=dNeta*zn;
-            J31=dNmue*xn;
-            J32=dNmue*yn;
-            J33=dNmue*zn;
+            Nf = [a; b; c];
             
-            J=[J11, J12, J13; J21, J22, J23; J31, J32, J33];
-            Jdet=det(J);
-            Jinv=[J22*J33-J32*J23, J32*J13-J12*J33, J12*J23-J22*J13;
-                J31*J23-J21*J33, J11*J33-J31*J13, J21*J13-J11*J23;
-                J21*J32-J31*J22, J31*J12-J11*J32, J11*J22-J21*J12 ];
+            
+            
             
             % Calculation of B-Matrix
+            Jinv=[J22*J33-J32*J23, J32*J13-J12*J33, J12*J23-J22*J13;
+            J31*J23-J21*J33, J11*J33-J31*J13, J21*J13-J11*J23;
+            J21*J32-J31*J22, J31*J12-J11*J32, J11*J22-J21*J12 ];
+            
             B=Jinv*[dNzeta;dNeta;dNmue]/Jdet;
             Bx=B(1,1:8);
             By=B(2,1:8);
@@ -129,17 +130,23 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
             b=Emodul*PoissonRatio/( (1-2*PoissonRatio)*(1+PoissonRatio) );
             c=Emodul/(2*(1+PoissonRatio));
             Emat=[a,b,b,0,0,0;b,a,b,0,0,0;b,b,a,0,0,0;0,0,0,c,0,0;0,0,0,0,c,0;0,0,0,0,0,c];
-            stiffnessMatrix=zeros(24,24);
+            stiffnessMatrix=zeros(12,12);
+            
+            %%%%%%%%%%%%%% AB HIER WEITER %%%%%%%%%%%%%%%%%%%%%
+            
             [w,g]=returnGaussPoint(p);
             
             for i=1:p
-                zeta=g(i);
+                theta_1=g(i);
                 for j=1:p
-                    eta=g(j);
+                    theta_2=g(j);
                     for k=1:p
-                        mue=g(k);
-                        [~, Be, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
-                        stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*w(k)*Jdet*transpose(Be)*(Emat*Be));
+                        theta_3=g(k);
+                        for l=1:p
+                            theta_4=g(l);
+                                [~, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4);
+                                stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*w(k)*w(l)*Jdet*transpose(Be)*(Emat*Be));
+                        end
                     end
                 end
             end
