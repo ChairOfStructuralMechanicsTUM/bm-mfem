@@ -167,10 +167,28 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
 % % %             end
         end
           
-% % %         function massMatrix = computeLocalMassMatrix(tetrahedron3d4n)
-% % %             roh = tetrahedron3d4n.getPropertyValue('DENSITY');
+        
+        function massMatrix = computeLocalMassMatrix(tetrahedron3d4n)
+           
+        roh = tetrahedron3d4n.getPropertyValue('DENSITY');
+        massMatrix = zeros(12,12);
+
+         Jdet = xDiff(2,1)*(yDiff(2,3)*zDiff(3,4)-yDiff(3,4)*zDiff(2,3))+xDiff(3,2)*(yDiff(3,4)*zDiff(1,2)-yDiff(1,2)*zDiff(3,4))+xDiff(4,3)*(yDiff(1,2)*zDiff(2,3)-yDiff(2,3)*zDiff(1,2));
+         V = 1/6*Jdet;
+         massMatrix = roh*V/20 * [2 0 0 1 0 0 1 0 0 1 0 0;...
+                                  0 2 0 0 1 0 0 1 0 0 1 0;...
+                                  0 0 2 0 0 1 0 0 1 0 0 1;...
+                                  1 0 0 2 0 0 1 0 0 1 0 0;...
+                                  0 1 0 0 2 0 0 1 0 0 1 0;...
+                                  0 0 1 0 0 2 0 0 1 0 0 1;...
+                                  1 0 0 1 0 0 2 0 0 1 0 0;...
+                                  0 1 0 0 1 0 0 2 0 0 1 0;...
+                                  0 0 1 0 0 1 0 0 2 0 0 1;...
+                                  1 0 0 1 0 0 1 0 0 2 0 0;...
+                                  0 1 0 0 1 0 0 1 0 0 2 0;...
+                                  0 0 1 0 0 1 0 0 1 0 0 2];
+
 % % %             p = hexahedron3d8n.getPropertyValue('NUMBER_GAUSS_POINT');
-% % %             massMatrix=zeros(24,24);
 % % %             [w,g]=returnGaussPoint(p);
 % % %             
 % % %             for i=1:p
@@ -185,23 +203,24 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
 % % %                 end
 % % %             end
 % % %             
-% % %         end
+        end
         
-% % %         function dampingMatrix = computeLocalDampingMatrix(e)
-% % %             eProperties = e.getProperties;
-% % %             dampingMatrix = sparse(12,12);
-% % %             
-% % %             if (eProperties.hasValue('RAYLEIGH_ALPHA'))
-% % %                 alpha = eProperties.getValue('RAYLEIGH_ALPHA');
-% % %                 dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
-% % %             end
-% % %             
-% % %             if (eProperties.hasValue('RAYLEIGH_BETA'))
-% % %                 beta = eProperties.getValue('RAYLEIGH_BETA');
-% % %                 dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
-% % %             end
-% % %             
-% % %         end
+        function dampingMatrix = computeLocalDampingMatrix(e)
+            % up to now only Rayleigh-Damping
+            eProperties = e.getProperties;
+            dampingMatrix = sparse(12,12);
+            
+            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+            end
+            
+            if (eProperties.hasValue('RAYLEIGH_BETA'))
+                beta = eProperties.getValue('RAYLEIGH_BETA');
+                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+            end
+            
+        end
         
         function dofs = getDofList(element)
             dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_X');
