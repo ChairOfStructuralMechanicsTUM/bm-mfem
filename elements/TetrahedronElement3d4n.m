@@ -61,19 +61,23 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
         end
 
         % member functions
-        function [Nf, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4)
+        function [NfDiff, Jdet] = computeShapeFunction(tetrahedron3d4n)
             
-            % Calculation of shape functions
-            Nf = [theta_1; theta_2; theta_3; theta_4];
-            N=zeros(3,3*4);
-            
-            for l=1:4
-                N(1,3*(l-1)+1)=Nf(l);
-                N(2,3*(l-1)+2)=Nf(l);
-                N(3,3*(l-1)+3)=Nf(l);
-            end
+%             % Calculation of shape functions
+%             Nf = [theta_1; theta_2; theta_3; theta_4];
+%             N=zeros(3,3*4);
+%             
+%             for l=1:4
+%                 N(1,3*(l-1)+1)=Nf(l);
+%                 N(2,3*(l-1)+2)=Nf(l);
+%                 N(3,3*(l-1)+3)=Nf(l);
+%             end
             
             % Calculation of Determinant of Jacobian Matrix
+            xDiff = zeros(4,4);
+            yDiff = zeros(4,4);
+            zDiff = zeros(4,4);
+            
             for i = 1:4
                 for j = 1:4
                     xDiff(i,j) = tetrahedron3d4n.nodeArray(i).getX - tetrahedron3d4n.nodeArray(j).getX;
@@ -92,64 +96,75 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
             
 
             % Calculation of the derivatives of the Shape Functions
-            a = [yDiff(4,2)*zDiff(3,2)-yDiff(3,2)*zDiff(4,2)   yDiff(3,1)*zDiff(4,3)-yDiff(4,3)*zDiff(3,1)    yDiff(2,4)*zDiff(1,4)-yDiff(1,4)*zDiff(2,4)   yDiff(1,3)*zDiff(2,1)-yDiff(1,3)*zDiff(2,1)];  % Derivatives w.r.t. x
-            b = [xDiff(3,2)*zDiff(4,2)-xDiff(4,2)*zDiff(3,2)   xDiff(4,3)*zDiff(3,1)-xDiff(3,1)*zDiff(4,3)    xDiff(1,4)*zDiff(2,4)-xDiff(2,4)*zDiff(1,4)   xDiff(2,1)*zDiff(1,3)-xDiff(2,1)*zDiff(1,3)];  % Derivatives w.r.t. y
-            c = [xDiff(3,2)*yDiff(4,2)-xDiff(4,2)*yDiff(3,2)   xDiff(4,3)*yDiff(3,1)-xDiff(3,1)*yDiff(4,3)    xDiff(1,4)*yDiff(2,4)-xDiff(2,4)*yDiff(1,4)   xDiff(2,1)*yDiff(1,3)-xDiff(2,1)*yDiff(1,3)];  % Derivatives w.r.t. z
+            NfDiffX = [yDiff(4,2)*zDiff(3,2)-yDiff(3,2)*zDiff(4,2)   yDiff(3,1)*zDiff(4,3)-yDiff(3,4)*zDiff(1,3)    yDiff(2,4)*zDiff(1,4)-yDiff(1,4)*zDiff(2,4)   yDiff(1,3)*zDiff(2,1)-yDiff(1,2)*zDiff(3,1)];  % Derivatives w.r.t. x
+            NfDiffY = [xDiff(3,2)*zDiff(4,2)-xDiff(4,2)*zDiff(3,2)   xDiff(4,3)*zDiff(3,1)-xDiff(1,3)*zDiff(3,4)    xDiff(1,4)*zDiff(2,4)-xDiff(2,4)*zDiff(1,4)   xDiff(2,1)*zDiff(1,3)-xDiff(3,1)*zDiff(1,2)];  % Derivatives w.r.t. y
+            NfDiffZ = [xDiff(4,2)*yDiff(3,2)-xDiff(3,2)*yDiff(4,2)   xDiff(3,1)*yDiff(4,3)-xDiff(3,4)*yDiff(1,3)    xDiff(2,4)*yDiff(1,4)-xDiff(1,4)*yDiff(2,4)   xDiff(1,3)*yDiff(2,1)-xDiff(1,2)*yDiff(3,1)];  % Derivatives w.r.t. z
             
-            Nf = [a; b; c];
-            
-            
+            NfDiff = [NfDiffX; NfDiffY; NfDiffZ];    
             
             
-            % Calculation of B-Matrix
-            Jinv=[J22*J33-J32*J23, J32*J13-J12*J33, J12*J23-J22*J13;
-            J31*J23-J21*J33, J11*J33-J31*J13, J21*J13-J11*J23;
-            J21*J32-J31*J22, J31*J12-J11*J32, J11*J22-J21*J12 ];
-            
-            B=Jinv*[dNzeta;dNeta;dNmue]/Jdet;
-            Bx=B(1,1:8);
-            By=B(2,1:8);
-            Bz=B(3,1:8);
-            
-            Be=[Bx(1),0,0,Bx(2),0,0,Bx(3),0,0,Bx(4),0,0,Bx(5),0,0,Bx(6),0,0,Bx(7),0,0,Bx(8),0,0;
-                0,By(1),0,0,By(2),0,0,By(3),0,0,By(4),0,0,By(5),0,0,By(6),0,0,By(7),0,0,By(8),0;
-                0,0,Bz(1),0,0,Bz(2),0,0,Bz(3),0,0,Bz(4),0,0,Bz(5),0,0,Bz(6),0,0,Bz(7),0,0,Bz(8);
-                By(1),Bx(1),0,By(2),Bx(2),0,By(3),Bx(3),0,By(4),Bx(4),0,By(5),Bx(5),0,By(6),Bx(6),0,By(7),Bx(7),0,By(8),Bx(8),0;
-                0,Bz(1),By(1),0,Bz(2),By(2),0,Bz(3),By(3),0,Bz(4),By(4),0,Bz(5),By(5),0,Bz(6),By(6),0,Bz(7),By(7),0,Bz(8),By(8);
-                Bz(1),0,Bx(1),Bz(2),0,Bx(2),Bz(3),0,Bx(3),Bz(4),0,Bx(4),Bz(5),0,Bx(5),Bz(6),0,Bx(6),Bz(7),0,Bx(7),Bz(8),0,Bx(8)];
+           % Calculation of B-Matrix
+% % %             Jinv=[J22*J33-J32*J23, J32*J13-J12*J33, J12*J23-J22*J13;
+% % %             J31*J23-J21*J33, J11*J33-J31*J13, J21*J13-J11*J23;
+% % %             J21*J32-J31*J22, J31*J12-J11*J32, J11*J22-J21*J12 ];
+% % %             
+% % %             B=Jinv*[dNzeta;dNeta;dNmue]/Jdet;
+% % %             Bx=B(1,1:8);
+% % %             By=B(2,1:8);
+% % %             Bz=B(3,1:8);
+% % %             
+% % %             Be=[Bx(1),0,0,Bx(2),0,0,Bx(3),0,0,Bx(4),0,0,Bx(5),0,0,Bx(6),0,0,Bx(7),0,0,Bx(8),0,0;
+% % %                 0,By(1),0,0,By(2),0,0,By(3),0,0,By(4),0,0,By(5),0,0,By(6),0,0,By(7),0,0,By(8),0;
+% % %                 0,0,Bz(1),0,0,Bz(2),0,0,Bz(3),0,0,Bz(4),0,0,Bz(5),0,0,Bz(6),0,0,Bz(7),0,0,Bz(8);
+% % %                 By(1),Bx(1),0,By(2),Bx(2),0,By(3),Bx(3),0,By(4),Bx(4),0,By(5),Bx(5),0,By(6),Bx(6),0,By(7),Bx(7),0,By(8),Bx(8),0;
+% % %                 0,Bz(1),By(1),0,Bz(2),By(2),0,Bz(3),By(3),0,Bz(4),By(4),0,Bz(5),By(5),0,Bz(6),By(6),0,Bz(7),By(7),0,Bz(8),By(8);
+% % %                 Bz(1),0,Bx(1),Bz(2),0,Bx(2),Bz(3),0,Bx(3),Bz(4),0,Bx(4),Bz(5),0,Bx(5),Bz(6),0,Bx(6),Bz(7),0,Bx(7),Bz(8),0,Bx(8)];
             
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(tetrahedron3d4n)
+            
+            [NfDiff, Jdet] = computeShapeFunction(tetrahedron3d4n);
+            
+            % Compute B-Matrix
+            Be = [NfDiff(1,1),0,0,            NfDiff(1,2),0,0,            NfDiff(1,3),0,0,            NfDiff(1,4),0,0;...
+                  0,NfDiff(2,1),0,            0,NfDiff(2,2),0,            0,NfDiff(2,3),0,            0,NfDiff(2,4),0;...
+                  0,0,NfDiff(3,1),            0,0,NfDiff(3,2),            0,0,NfDiff(3,3),            0,0,NfDiff(3,4);...
+                  NfDiff(2,1),NfDiff(1,1),0,  NfDiff(2,2),NfDiff(1,2),0,  NfDiff(2,3),NfDiff(1,3),0,  NfDiff(2,4),NfDiff(1,4),0;...
+                  0,NfDiff(3,1),NfDiff(2,1),  0,NfDiff(3,2),NfDiff(2,2),  0,NfDiff(3,3),NfDiff(2,3),  0,NfDiff(3,4),NfDiff(2,4);...
+                  NfDiff(3,1),0,NfDiff(1,1),   NfDiff(3,2),0,NfDiff(1,2), NfDiff(3,3),0,NfDiff(1,3),  NfDiff(3,4),0,NfDiff(1,4)];
+  
+            % Compute Emat-Matrix (for isotropic material only)
             Emodul = tetrahedron3d4n.getPropertyValue('YOUNGS_MODULUS');
             PoissonRatio = tetrahedron3d4n.getPropertyValue('POISSON_RATIO');
-            p = tetrahedron3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
             
-            % Matrix valid for isotropic material only
             a=Emodul*(1-PoissonRatio)/( (1-2*PoissonRatio)*(1+PoissonRatio) );
             b=Emodul*PoissonRatio/( (1-2*PoissonRatio)*(1+PoissonRatio) );
             c=Emodul/(2*(1+PoissonRatio));
+            
             Emat=[a,b,b,0,0,0;b,a,b,0,0,0;b,b,a,0,0,0;0,0,0,c,0,0;0,0,0,0,c,0;0,0,0,0,0,c];
-            stiffnessMatrix=zeros(12,12);
-            
-            %%%%%%%%%%%%%% AB HIER WEITER %%%%%%%%%%%%%%%%%%%%%
-            
-            [w,g]=returnGaussPoint(p);
-            
-            for i=1:p
-                theta_1=g(i);
-                for j=1:p
-                    theta_2=g(j);
-                    for k=1:p
-                        theta_3=g(k);
-                        for l=1:p
-                            theta_4=g(l);
-                                [~, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4);
-                                stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*w(k)*w(l)*Jdet*transpose(Be)*(Emat*Be));
-                        end
-                    end
-                end
-            end
+                   
+              
+            % Compute Element Stiffness Matrix
+            stiffnessMatrix=zeros(12,12);  
+            stiffnessMatrix=(1/(6*Jdet))*(transpose(Be)*(Emat*Be));
+             
+           
+% % %             [w,g]=returnGaussPoint(class(tetrahedron3d4n), p);
+% % %             for i=1:p
+% % %                 theta_1=g(i);
+% % %                 for j=1:p
+% % %                     theta_2=g(j);
+% % %                     for k=1:p
+% % %                         theta_3=g(k);
+% % %                         for l=1:p
+% % %                             theta_4=g(l);
+% % %                                 [~, Be, Jdet] = computeShapeFunction(tetrahedron3d4n, theta_1, theta_2, theta_3, theta_4);
+% % %                                 stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*w(k)*w(l)*Jdet*transpose(Be)*(Emat*Be));
+% % %                         end
+% % %                     end
+% % %                 end
+% % %             end
         end
           
         function massMatrix = computeLocalMassMatrix(tetrahedron3d4n)
