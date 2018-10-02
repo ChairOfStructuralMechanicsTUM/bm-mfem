@@ -170,7 +170,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         
         function dampingMatrix = computeLocalDampingMatrix(e)
             eProperties = e.getProperties;
-            dampingMatrix = sparse(12,12);
+            dampingMatrix = sparse(24,24);
             
             if (eProperties.hasValue('RAYLEIGH_ALPHA'))
                 alpha = eProperties.getValue('RAYLEIGH_ALPHA');
@@ -199,7 +199,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         end
         
         function vals = getFirstDerivativesVector(element, step)
-            vals = zeros(1,12);
+            vals = zeros(1,24);
             
             [~, vals([1 4 7 10 13 16 19 22]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, vals([2 5 8 11 14 17 20 23]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
@@ -207,7 +207,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
         end
         
         function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,12);            
+            vals = zeros(1,24);            
             
             [~, ~, vals([1 4 7 10 13 16 19 22])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, ~, vals([2 5 8 11 14 17 20 23])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
