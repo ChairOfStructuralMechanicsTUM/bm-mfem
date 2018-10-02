@@ -133,7 +133,7 @@ classdef HexahedronElement3d8n < Element  %Class Hexahedron to be implemented
             c=Emodul/(2*(1+PoissonRatio));
             Emat=[a,b,b,0,0,0;b,a,b,0,0,0;b,b,a,0,0,0;0,0,0,c,0,0;0,0,0,0,c,0;0,0,0,0,0,c];
             stiffnessMatrix=zeros(24,24);
-            [w,g]=returnGaussPoint(p);
+            [w,g]=returnGaussPoint(hexahedron3d8n, p);
             
             for i=1:p
                 zeta=g(i);
