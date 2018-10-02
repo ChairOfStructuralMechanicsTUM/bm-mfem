@@ -167,70 +167,70 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
 % % %             end
         end
           
-        function massMatrix = computeLocalMassMatrix(tetrahedron3d4n)
-            roh = tetrahedron3d4n.getPropertyValue('DENSITY');
-            p = hexahedron3d8n.getPropertyValue('NUMBER_GAUSS_POINT');
-            massMatrix=zeros(24,24);
-            [w,g]=returnGaussPoint(p);
-            
-            for i=1:p
-                zeta=g(i);
-                for j=1:p
-                    eta=g(j);
-                    for k=1:p
-                        mue=g(k);
-                        [N, ~, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
-                        massMatrix=massMatrix+(w(i)*w(j)*w(k)*roh*transpose(N)*N*Jdet);
-                    end
-                end
-            end
-            
-        end
+% % %         function massMatrix = computeLocalMassMatrix(tetrahedron3d4n)
+% % %             roh = tetrahedron3d4n.getPropertyValue('DENSITY');
+% % %             p = hexahedron3d8n.getPropertyValue('NUMBER_GAUSS_POINT');
+% % %             massMatrix=zeros(24,24);
+% % %             [w,g]=returnGaussPoint(p);
+% % %             
+% % %             for i=1:p
+% % %                 zeta=g(i);
+% % %                 for j=1:p
+% % %                     eta=g(j);
+% % %                     for k=1:p
+% % %                         mue=g(k);
+% % %                         [N, ~, Jdet] = computeShapeFunction(hexahedron3d8n, zeta, eta, mue);
+% % %                         massMatrix=massMatrix+(w(i)*w(j)*w(k)*roh*transpose(N)*N*Jdet);
+% % %                     end
+% % %                 end
+% % %             end
+% % %             
+% % %         end
         
-        function dampingMatrix = computeLocalDampingMatrix(e)
-            eProperties = e.getProperties;
-            dampingMatrix = sparse(12,12);
-            
-            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
-                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
-                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
-            end
-            
-            if (eProperties.hasValue('RAYLEIGH_BETA'))
-                beta = eProperties.getValue('RAYLEIGH_BETA');
-                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
-            end
-            
-        end
+% % %         function dampingMatrix = computeLocalDampingMatrix(e)
+% % %             eProperties = e.getProperties;
+% % %             dampingMatrix = sparse(12,12);
+% % %             
+% % %             if (eProperties.hasValue('RAYLEIGH_ALPHA'))
+% % %                 alpha = eProperties.getValue('RAYLEIGH_ALPHA');
+% % %                 dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
+% % %             end
+% % %             
+% % %             if (eProperties.hasValue('RAYLEIGH_BETA'))
+% % %                 beta = eProperties.getValue('RAYLEIGH_BETA');
+% % %                 dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
+% % %             end
+% % %             
+% % %         end
         
         function dofs = getDofList(element)
-            dofs([1 4 7 10 13 16 19 22]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 5 8 11 14 17 20 23]) = element.nodeArray.getDof('DISPLACEMENT_Y');
-            dofs([3 6 9 12 15 18 21 24]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+            dofs([1 4 7 10]) = element.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 5 8 11]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([3 6 9 12]) = element.nodeArray.getDof('DISPLACEMENT_Z');
         end
         
         function vals = getValuesVector(element, step)
-            vals = zeros(1,24);
+            vals = zeros(1,12);
             
-            vals([1 4 7 10 13 16 19 22]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 5 8 11 14 17 20 23]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-            vals([3 6 9 12 15 18 21 24]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([1 4 7 10]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 5 8 11]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 6 9 12]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
         end
         
         function vals = getFirstDerivativesVector(element, step)
             vals = zeros(1,12);
             
-            [~, vals([1 4 7 10 13 16 19 22]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([2 5 8 11 14 17 20 23]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, vals([3 6 9 12 15 18 21 24]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([1 4 7 10]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 5 8 11]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3 6 9 12]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
         end
         
         function vals = getSecondDerivativesVector(element, step)
             vals = zeros(1,12);            
             
-            [~, ~, vals([1 4 7 10 13 16 19 22])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([2 5 8 11 14 17 20 23])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, ~, vals([3 6 9 12 15 18 21 24])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([1 4 7 10])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 5 8 11])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3 6 9 12])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
         end
         
         function pl = draw(obj)
@@ -256,63 +256,39 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
             x = [obj.nodeArray(1).getX + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ...
                 obj.nodeArray(2).getX + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ...
                 obj.nodeArray(3).getX + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(4).getX + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_X', step),...
                 obj.nodeArray(1).getX + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(5).getX + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(6).getX + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(7).getX + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(8).getX + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_X', step),...
-                obj.nodeArray(5).getX + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(6).getX + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_X', step), ...
+                obj.nodeArray(4).getX + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_X', step),...
                 obj.nodeArray(2).getX + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ...
                 obj.nodeArray(3).getX + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
-                obj.nodeArray(7).getX + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_X', step),...
-                obj.nodeArray(8).getX + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_X', step), ...
                 obj.nodeArray(4).getX + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_X', step)];
             
             y = [obj.nodeArray(1).getY + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ...
                 obj.nodeArray(2).getY + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ...
                 obj.nodeArray(3).getY + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(4).getY + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Y', step),...
                 obj.nodeArray(1).getY + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(5).getY + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(6).getY + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(7).getY + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_Y', step),...
-                obj.nodeArray(8).getY + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_Y', step),...
-                obj.nodeArray(5).getY + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(6).getY + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_Y', step), ...
+                obj.nodeArray(4).getY + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Y', step),...
                 obj.nodeArray(2).getY + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ...
                 obj.nodeArray(3).getY + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
-                obj.nodeArray(7).getY + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_Y', step),...
-                obj.nodeArray(8).getY + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_Y', step), ...
                 obj.nodeArray(4).getY + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Y', step)];
             
             z = [obj.nodeArray(1).getZ + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Z', step), ...
                 obj.nodeArray(2).getZ + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Z', step), ...
                 obj.nodeArray(3).getZ + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(4).getZ + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Z', step),...
                 obj.nodeArray(1).getZ + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(5).getZ + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(6).getZ + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(7).getZ + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_Z', step),...
-                obj.nodeArray(8).getZ + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_Z', step),...
-                obj.nodeArray(5).getZ + scaling * obj.nodeArray(5).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(6).getZ + scaling * obj.nodeArray(6).getDofValue('DISPLACEMENT_Z', step), ...
+                obj.nodeArray(4).getZ + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Z', step),...
                 obj.nodeArray(2).getZ + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Z', step), ...
                 obj.nodeArray(3).getZ + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Z', step), ...
-                obj.nodeArray(7).getZ + scaling * obj.nodeArray(7).getDofValue('DISPLACEMENT_Z', step),...
-                obj.nodeArray(8).getZ + scaling * obj.nodeArray(8).getDofValue('DISPLACEMENT_Z', step), ...
                 obj.nodeArray(4).getZ + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Z', step)];
                 
                 pl = line(x,y,z);
                 
         end
         
-        function update(hexahedron3d8n)
+        function update(tetrahedron3d4n)
         end
         
-        function F = computeLocalForceVector(hexahedron3d8n)
-            F = zeros(1,24);
+        function F = computeLocalForceVector(tetrahedron3d4n)
+            F = zeros(1,12);
         end
 
         
