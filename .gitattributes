@@ -1,3 +1,10 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+*.m text
+*.mdpa text
+*.msh text
+
 *.mlx -crlf -diff -merge
 *.mat -crlf -diff -merge
 *.fig -crlf -diff -merge
