@@ -1,5 +1,5 @@
 classdef PlaneStressElement3d4n < QuadrilateralElement
-    %UNTITLED Summary of this class goes here
+    %PLANESTRESSELEMENT3D4N A 4-node quadrilateral plane stress element
     %   Detailed explanation goes here
     
     properties (Access = private)
@@ -7,7 +7,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
     
     methods
         %Constructor
-        function planeStressElement3d4n = PlaneStressElement3d4n(id,nodeArray)
+        function obj = PlaneStressElement3d4n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...
@@ -24,26 +24,31 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
 
             %call the super class constructor
-            planeStressElement3d4n@QuadrilateralElement(super_args{:});
-            planeStressElement3d4n.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y"]);
+            obj@QuadrilateralElement(super_args{:});
+            obj.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y"]);
         end
     
         %Initialization
-        function initialize(planeStressElement3d4n)
-            planeStressElement3d4n.lengthX = computeLength(planeStressElement3d4n.nodeArray(1).getCoords, ...
-                planeStressElement3d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
 
-            planeStressElement3d4n.lengthY = computeLength(planeStressElement3d4n.nodeArray(1).getCoords, ...
-                planeStressElement3d4n.nodeArray(4).getCoords);
-
-            checkConvexity(planeStressElement3d4n);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
+            
+            if ~checkConvexity(obj)
+                msg = ['QuaadrilateralElement2d4n: Element ', ...
+                    num2str(obj.getId), ' is not convex.'];
+                e = MException('MATLAB:bm_mfem:elementNotConvex',msg);
+                throw(e);
+            end
         end
 
-        function responseDoF = getResponseDofArray(planeStressElement, step)
+        function responseDoF = getResponseDofArray(obj, step)
 
             responseDoF = zeros(8,1);
             for itNodes = 1:1:4
-                nodalDof = planeStressElement.nodeArray(itNodes).getDofArray;
+                nodalDof = obj.nodeArray(itNodes).getDofArray;
                 nodalDof = nodalDof.';
 
                 for itDof = 2:(-1):1
@@ -52,7 +57,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
         end
 
-        function [N_mat, N, B, J] = computeShapeFunction(planeStressElement3d4n,xi,eta)
+        function [N_mat, N, B, J] = computeShapeFunction(obj,xi,eta)
             % Shape Function and Derivatives                    
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];  
 
@@ -66,8 +71,8 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             % Coordinates of the nodes forming one element 
             ele_coords = zeros(4,2); 
             for i=1:4
-                ele_coords(i,1) = planeStressElement3d4n.nodeArray(i).getX;
-                ele_coords(i,2) = planeStressElement3d4n.nodeArray(i).getY;
+                ele_coords(i,1) = obj.nodeArray(i).getX;
+                ele_coords(i,2) = obj.nodeArray(i).getY;
             end
 
             % Jacobian 
@@ -84,11 +89,11 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
 
         end
 
-        function stiffnessMatrix = computeLocalStiffnessMatrix(planeStressElement3d4n)
-            EModul = planeStressElement3d4n.getPropertyValue('YOUNGS_MODULUS');
-            prxy = planeStressElement3d4n.getPropertyValue('POISSON_RATIO');
-            nr_gauss_points = planeStressElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
-            thickness = planeStressElement3d4n.getPropertyValue('THICKNESS');
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+            EModul = obj.getPropertyValue('YOUNGS_MODULUS');
+            prxy = obj.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            thickness = obj.getPropertyValue('THICKNESS');
 
             % Moment-Curvature Equations
             D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
@@ -99,7 +104,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             stiffnessMatrix = sparse(8,8);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                    [~, ~, B, J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
+                    [~, ~, B, J] = computeShapeFunction(obj,g(xi),g(eta));
 
                     stiffnessMatrix = stiffnessMatrix + ...
                         B' * D *B * det(J) * w(xi) * w(eta);
@@ -107,12 +112,12 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
         end
 
-        function massMatrix = computeLocalMassMatrix(planeStressElement3d4n)
+        function massMatrix = computeLocalMassMatrix(obj)
             %Formulation of the Massmatrix based on the Shape Functions
             
-            density = planeStressElement3d4n.getPropertyValue('DENSITY');
-            thickness = planeStressElement3d4n.getPropertyValue('THICKNESS');
-            nr_gauss_points = planeStressElement3d4n.getPropertyValue('NUMBER_GAUSS_POINT');
+            density = obj.getPropertyValue('DENSITY');
+            thickness = obj.getPropertyValue('THICKNESS');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             [w,g] = returnGaussPoint(nr_gauss_points);
 
             dens_mat = sparse(2,2);
@@ -122,15 +127,15 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             massMatrix = sparse(8,8);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
-                    [N_mat,~,~,J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
+                    [N_mat,~,~,J] = computeShapeFunction(obj,g(xi),g(eta));
                     
                     massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
                 end
             end
         end        
         
-        function dampingMatrix = computeLocalDampingMatrix(e)
-            eProperties = e.getProperties;
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            eProperties = obj.getProperties;
             dampingMatrix = sparse(8,8);
 
             if (eProperties.hasValue('RAYLEIGH_ALPHA'))
@@ -144,23 +149,23 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             end
         end
         
-        function pl = drawDeformed(planeStressElement3d4n, step, scaling)
+        function pl = drawDeformed(obj, step, scaling)
     
-            x = [planeStressElement3d4n.nodeArray(1).getX + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d4n.nodeArray(2).getX + scaling * planeStressElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
-                 planeStressElement3d4n.nodeArray(3).getX + scaling * planeStressElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
-                 planeStressElement3d4n.nodeArray(4).getX + scaling * planeStressElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_X', step), ...
-                 planeStressElement3d4n.nodeArray(1).getX + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
+            x = [obj.nodeArray(1).getX + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_X', step), ... 
+                 obj.nodeArray(2).getX + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_X', step), ... 
+                 obj.nodeArray(3).getX + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_X', step), ...
+                 obj.nodeArray(4).getX + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_X', step), ...
+                 obj.nodeArray(1).getX + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_X', step)];
              
-            y = [planeStressElement3d4n.nodeArray(1).getY + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d4n.nodeArray(2).getY + scaling * planeStressElement3d4n.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
-                 planeStressElement3d4n.nodeArray(3).getY + scaling * planeStressElement3d4n.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
-                 planeStressElement3d4n.nodeArray(4).getY + scaling * planeStressElement3d4n.nodeArray(4).getDofValue('DISPLACEMENT_Y', step), ...
-                 planeStressElement3d4n.nodeArray(1).getY + scaling * planeStressElement3d4n.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
+            y = [obj.nodeArray(1).getY + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Y', step), ... 
+                 obj.nodeArray(2).getY + scaling * obj.nodeArray(2).getDofValue('DISPLACEMENT_Y', step), ... 
+                 obj.nodeArray(3).getY + scaling * obj.nodeArray(3).getDofValue('DISPLACEMENT_Y', step), ...
+                 obj.nodeArray(4).getY + scaling * obj.nodeArray(4).getDofValue('DISPLACEMENT_Y', step), ...
+                 obj.nodeArray(1).getY + scaling * obj.nodeArray(1).getDofValue('DISPLACEMENT_Y', step)];
             
-            z = [planeStressElement3d4n.nodeArray(1).getZ, planeStressElement3d4n.nodeArray(2).getZ, ...
-                 planeStressElement3d4n.nodeArray(3).getZ, planeStressElement3d4n.nodeArray(4).getZ, ...
-                 planeStressElement3d4n.nodeArray(1).getZ];
+            z = [obj.nodeArray(1).getZ, obj.nodeArray(2).getZ, ...
+                 obj.nodeArray(3).getZ, obj.nodeArray(4).getZ, ...
+                 obj.nodeArray(1).getZ];
              
             pl = line(x,y,z);
         end
@@ -169,35 +174,34 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             f = zeros(1,8);
         end
         
-        function dofs = getDofList(element)
-            dofs([1 3 5 7]) = element.nodeArray.getDof('DISPLACEMENT_X'); 
-           
-            dofs([2 4 6 8]) = element.nodeArray.getDof('DISPLACEMENT_Y');
+        function dofs = getDofList(obj)
+            dofs([1 3 5 7]) = obj.nodeArray.getDof('DISPLACEMENT_X'); 
+            dofs([2 4 6 8]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
         end
         
-        function vals = getValuesVector(element, step)
+        function vals = getValuesVector(obj, step)
             vals = zeros(1,8);
             
-            vals([1 3 5 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 4 6 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([1 3 5 7]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 4 6 8]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
-        function vals = getFirstDerivativesVector(element, step)
+        function vals = getFirstDerivativesVector(obj, step)
             vals = zeros(1,8);
             
-            [~, vals([1 3 5 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([1 3 5 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([1 3 5 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([1 3 5 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
         end
         
-        function vals = getSecondDerivativesVector(element, step)
+        function vals = getSecondDerivativesVector(obj, step)
             vals = zeros(1,8);
             
-            [~, ~, vals([1 3 5 7])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([1 3 5 7])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([1 3 5 7])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([1 3 5 7])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
         end
         
         %Computation of Stresses
-        function [stressValue, element_connect] = computeElementStress(objs,nodeArray,step)
+        function [stressValue, element_connect] = computeElementStress(obj,nodeArray,step)
         %COMPUTEELEMENTSTRESS stress in the element
         %   [STRESS, EC] = computeElementStress(ELEMENTS,NODES,STEP) returns
         %   element connectivity EC and the matrix STRESS containing:
@@ -208,7 +212,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
         %       STRESS(5,:) = second principal stress
         %       STRESS(6,:) = von-Mises stress
         
-            nElements = length(objs);
+            nElements = length(obj);
             nNodes = length(nodeArray);
             
             element_connect = zeros(nElements,4);
@@ -224,18 +228,18 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             vm_stress = zeros(1,nNodes);
             
             for i = 1:nElements
-                element_connect(i,1:4) = objs(i).getNodes.getId();
+                element_connect(i,1:4) = obj(i).getNodes.getId();
                 stressPoints = [-1 -1;1 -1;1 1;-1 1];            
-                EModul = objs(i).getPropertyValue('YOUNGS_MODULUS');
-                prxy = objs(i).getPropertyValue('POISSON_RATIO');
+                EModul = obj(i).getPropertyValue('YOUNGS_MODULUS');
+                prxy = obj(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
                 D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
                 % Material Matrix D
                 D = D * EModul / (1-prxy^2);
                 
                 for j = 1:4
-                    [~, ~, B, ~] = computeShapeFunction(objs(i),stressPoints(j,1),stressPoints(j,2));
-                    displacement_e = getValuesVector(objs(i),step);
+                    [~, ~, B, ~] = computeShapeFunction(obj(i),stressPoints(j,1),stressPoints(j,2));
+                    displacement_e = getValuesVector(obj(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;
