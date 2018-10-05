@@ -1,17 +1,7 @@
-function [ w,g ] = returnGaussPoint( elementType, number )
+function [ w,g ] = returnGaussPoint( number )
 %returnGaussPoint Returns evaluation point g and weighting w depending on
-%number of GaussPoints
+%number of GaussPoints for quadrilateral and hexahedral elements
 
-% IMPORTANT REMARK: Please add the input parameter ElementType in your
-% function returnGaussPoint, e.g. Quadrilateral Element.
-
-% if-clause required as different descriptions of Gauss-Points for
-% different elements are required.
-
-
-%% QUADRILATERAL and HEXAHEDRAL elements
-if (strcmp(elementType,'HexahedronElement3d8n') | strcmp(elementType,'QuadrilateralElement') | strcmp(elementType,'QuadrilateralElement2d4n') ...
-        | strcmp(elementType,'DiscreteKirchhoffElement3d4n') | strcmp(elementType,'ReissnerMindlinElement3d4n') | strcmp(elementType,'ShellElement3d4n') |strcmp(elementType,'~') ) 
     if number == 0
         msg = 'ReturnGaussPoint: Please specify a number > 0.';
         e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
@@ -36,36 +26,12 @@ if (strcmp(elementType,'HexahedronElement3d8n') | strcmp(elementType,'Quadrilate
         e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
         throw(e);
     end
+    
+end
+
 
     
-%% TETRAHEDRAL elements
-% to proof: useable for hexahedral elements???       
-elseif (strcmp(elementType,'TetrahedronElement3d4n'))
-    if number == 0
-        msg = 'ReturnGaussPoint: Please specify a number > 0.';
-        e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
-        throw(e);
-    elseif number == 1
-        g=[1/4];
-        w=[1];
-    elseif number == 2
-        msg = 'ReturnGaussPoint: Please specify a number equal to 1 or 4.';
-        e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
-        throw(e); 
-    elseif number == 2
-        msg = 'ReturnGaussPoint: Please specify a number equal to 1 or 4.';
-        e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
-        throw(e);
-    elseif number == 4
-        g=[(5-sqrt(5))/20, (5-sqrt(5))/20, (5-sqrt(5))/20, (5+3*sqrt(5))/20];
-        w=[1/4, 1/4, 1/4, 1/4];
-    else
-        msg = 'ReturnGaussPoint: Please specify a number equal to 1 or 4.';
-        e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
-        throw(e);
-    end
     
+
     
-end
-    
-end
+

@@ -150,7 +150,7 @@ classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
             stiffnessMatrix=(1/(6*Jdet))*(transpose(Be)*(Emat*Be));
              
            
-% % %             [w,g]=returnGaussPoint(class(tetrahedron3d4n), p);
+% % %             [w,g]=returnGaussPointTetrahedron(p);
 % % %             for i=1:p
 % % %                 theta_1=g(i);
 % % %                 for j=1:p
