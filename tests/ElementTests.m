@@ -478,20 +478,19 @@ classdef ElementTests < matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             
-            node01 = Node(1,1,1,0);
-            node02 = Node(2,1,1,1);
+            node01 = Node(1,0,0,0);
+            node02 = Node(2,0,1,0);
             node03 = Node(3,0,1,1);
-            node04 = Node(4,0,0,0);
+            node04 = Node(4,1,1,0);
             
             nodeArray = [node01 node02 node03 node04];
             
             nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
             
-            ele01 = HexahedronElement3d8n(1,[node01 node02 node03 node04]);
+            ele01 = TetrahedronElement3d4n(1,[node01 node02 node03 node04]);
             
             ele01.setPropertyValue('YOUNGS_MODULUS',336);
             ele01.setPropertyValue('POISSON_RATIO',1/3);
-%             ele01.setPropertyValue('NUMBER_GAUSS_POINT',1);
             ele01.setPropertyValue('DENSITY',2699);
 
             actualSolution = ele01.computeLocalStiffnessMatrix;
