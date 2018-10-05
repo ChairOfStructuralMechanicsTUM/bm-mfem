@@ -241,6 +241,39 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
         end
         
+        function planeStressElement3d4nLargeTest(testCase)
+            %PLANESTRESSELEMENT3D4NLARGETEST 160 4-node plane stress
+            %   elements cantilevered with single load
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            io = GmshInput('tests/input_data/Quad4_4x40.msh');
+            model = io.readModel;
+            
+            model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            
+            model.getAllElements.setPropertyValue('THICKNESS', 0.5);
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT', 3);
+            model.getAllElements.setPropertyValue('DENSITY', 7850);
+            
+            idLowerLCorner = model.getModelPart('LLCorner').getNodes().getId();
+            idUpperLCorner = model.getModelPart('ULCorner').getNodes().getId();
+            addLineBC(idLowerLCorner,idUpperLCorner,model.getAllNodes);
+            
+            model.getModelPart('URCorner').getNodes().setDofLoad('DISPLACEMENT_Y',-1000);
+            
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+            
+            actualDisplacement = model.getModelPart('URCorner').getNodes().getDofValue('DISPLACEMENT_Y');
+            expectedDisplacement = -3.90385982503743e-05;
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-7)))
+        end
+        
         function externalScriptsTest(testCase)
             bridge;
             Bridge_with_inputFile;
