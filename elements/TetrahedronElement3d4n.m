@@ -1,6 +1,6 @@
-classdef TetrahedronElement3d4n < Element  %Class Tetrahedron to be implemented
-    %TETRAHEDRONELEMENT3D4N Summary of this class goes here
-    %   Detailed explanation goes here
+classdef TetrahedronElement3d4n < Element
+    %TETRAHEDRONELEMENT3D4N A linear tetrahedral element with 4 nodes
+    %   For details on the implementation see Felippa - AFEM ch. 9
     
     properties (Access = private)
     end
