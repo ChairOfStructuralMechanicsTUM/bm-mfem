@@ -1,8 +1,12 @@
 function [ w,g ] = returnGaussPoint( number )
 %returnGaussPoint Returns evaluation point g and weighting w depending on
 %number of GaussPoints
-%   Detailed explanation goes here
-if number == 1
+
+if number == 0
+    msg = 'ReturnGaussPoint: Please specify a number > 0.';
+    e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
+    throw(e);
+elseif number == 1
     g=0;
     w=2;
 elseif number == 2
@@ -17,6 +21,10 @@ elseif number == 4
 elseif number == 5
     g=[-1/3*sqrt(5+(2*sqrt(10/7))), -1/3*sqrt(5-(2*sqrt(10/7))), 0, 1/3*sqrt(5-(2*sqrt(10/7))), 1/3*sqrt(5+(2*sqrt(10/7)))];
     w=[(322-(13*sqrt(70)))/900, (322+(13*sqrt(70)))/900, 128/225, (322+(13*sqrt(70)))/900, (322-(13*sqrt(70)))/900];
+else
+    msg = 'ReturnGaussPoint: Please specify a number between 1 and 5.';
+    e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
+    throw(e);
 end
 
 end

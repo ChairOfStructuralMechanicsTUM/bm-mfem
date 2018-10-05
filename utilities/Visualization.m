@@ -21,7 +21,11 @@ classdef Visualization < handle
             v.scalingFactor = 1;
         end
         
-        function plotUndeformed(visualization)
+        function plotUndeformed(visualization, textOutput)
+            
+            if nargin ~= 2
+                textOutput = false;
+            end
             
             if ~isvalid(visualization.panel)
                 visualization.panel = axes;
@@ -37,35 +41,42 @@ classdef Visualization < handle
                 elPlot.Parent = visualization.panel;
             end
             
-            % show element numbers
-            if(all(nodes.getDimension == 3))
-                for ii = 1:length(elements)
-                    c = elements(ii).barycenter;
-                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                    text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','center','FontSize',10)
+            if textOutput
+                % show element numbers
+                if(all(nodes.getDimension == 3))
+                    for ii = 1:length(elements)
+                        c = elements(ii).barycenter;
+                        elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+                        if length(c) == 2
+                            text(c(1), c(2), elemStr,'Interpreter','latex', ...
+                                'HorizontalAlignment','center','FontSize',10)
+                        elseif length(c) == 3
+                            text(c(1), c(2), c(3), elemStr,'Interpreter','latex', ...
+                                'HorizontalAlignment','center','FontSize',10)
+                        end
+                    end
+                else
+                    for ii = 1:length(elements)
+                        c = elements(ii).barycenter;
+                        elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
+                        text(c(1), c(2), elemStr,'Interpreter','latex', ...
+                            'HorizontalAlignment','center','FontSize',10)
+                    end
                 end
-            else
-                for ii = 1:length(elements)
-                    c = elements(ii).barycenter;
-                    elemStr = strcat('\sffamily\fbox{',num2str(elements(ii).getId),'}');
-                    text(c(1), c(2), elemStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','center','FontSize',10)
-                end
-            end
-            
-            % show node numbers
-            if(all(nodes.getDimension == 3))
-                for ii = 1:length(nodes)
-                    nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
-                    text(nodes(ii).getX, nodes(ii).getY, nodes(ii).getZ, nodeStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','left','FontSize',10,'Color','blue')
-                end
-            else
-                for ii = 1:length(nodes)
-                    nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
-                    text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
-                        'HorizontalAlignment','left','FontSize',10,'Color','blue')
+
+                % show node numbers
+                if(all(nodes.getDimension == 3))
+                    for ii = 1:length(nodes)
+                        nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+                        text(nodes(ii).getX, nodes(ii).getY, nodes(ii).getZ, nodeStr,'Interpreter','latex', ...
+                            'HorizontalAlignment','left','FontSize',10,'Color','blue')
+                    end
+                else
+                    for ii = 1:length(nodes)
+                        nodeStr = strcat('\sffamily\textcircled{',num2str(nodes(ii).getId),'}');
+                        text(nodes(ii).getX, nodes(ii).getY, nodeStr,'Interpreter','latex', ...
+                            'HorizontalAlignment','left','FontSize',10,'Color','blue')
+                    end
                 end
             end
             
@@ -172,4 +183,3 @@ classdef Visualization < handle
     end
     
 end
-

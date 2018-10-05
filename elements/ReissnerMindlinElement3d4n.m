@@ -30,12 +30,12 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
         end
         
         %Initialization
-        function initialize(reissnerMindlinElement3d4n)
-            reissnerMindlinElement3d4n.lengthX = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                reissnerMindlinElement3d4n.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.lengthX = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
             
-            reissnerMindlinElement3d4n.lengthY = computeLength(reissnerMindlinElement3d4n.nodeArray(1).getCoords, ...
-                reissnerMindlinElement3d4n.nodeArray(4).getCoords);
+            obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(4).getCoords);
             
             if ~checkConvexity(obj)
                 msg = ['QuaadrilateralElement2d4n: Element ', ...

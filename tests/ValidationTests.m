@@ -12,13 +12,12 @@ classdef ValidationTests <  matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
 
-            io = ModelIO('tests/input_data/validation_bridge_input.msh');
+            io = GmshInput('validation_bridge_input.msh');
             model = io.readModel;
             
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_X');
-            model.getModelPart('fixed_support').fixDof('DISPLACEMENT_Y');
-            model.getModelPart('roller_support').fixDof('DISPLACEMENT_Y');
+            model.getModelPart('fixed_support').getNodes.fixAllDofs;
+            model.getModelPart('roller_support').getNodes.fixDof('DISPLACEMENT_Y');
             model.getAllNodes.fixDof('DISPLACEMENT_Z');
             
             addPointLoad(model.getNodes([3 5 9 11]),10,[0 -1 0]);
@@ -171,7 +170,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
             model = FemModel();
             support = model.addNewNode(3,0,0,0);
             n01 = model.addNewNode(1,10,0,0);
-            n02 = model.addNewNode(2,20,0,0);
+            model.addNewNode(2,20,0,0);
             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
             
             stiffness = 20.0;
@@ -190,35 +189,63 @@ classdef ValidationTests <  matlab.unittest.TestCase
             model.getAllNodes.fixDof('DISPLACEMENT_Z');
             support.fixDof('DISPLACEMENT_X');
             
-            addPointLoad(n01,1,[-1 0 0]);
+            addPointLoad(n01,1,[1 0 0]);
             
             exfreq = linspace(.1*sqrt(5),10*sqrt(5),1000);
             
             solver = EigensolverStrategy(model);
             solver.harmonicAnalysis(exfreq,2);
             
-            Rd11_actual = abs(model.getNode(1).getDofValue('DISPLACEMENT_X','all'));
-            Rd12_actual = abs(model.getNode(2).getDofValue('DISPLACEMENT_X','all'));
+            Rd11_actual = model.getNode(1).getDofValue('DISPLACEMENT_X','all');
+            Rd12_actual = model.getNode(2).getDofValue('DISPLACEMENT_X','all');
             
             Rd11_expected = (1/3 * stiffness) ./ (0.5 - (exfreq ./ sqrt(stiffness/mass)).^2) ...
                 + (1/1.5 * stiffness) ./ (2 - (exfreq ./ sqrt(stiffness/mass)).^2);
             Rd12_expected = (2/3 * stiffness) ./ (0.5 - (exfreq ./ sqrt(stiffness/mass)).^2) ...
                 - (2/3 * stiffness) ./ (2 - (exfreq ./ sqrt(stiffness/mass)).^2);
             
-            testCase.assertThat(Rd11_actual, IsEqualTo(abs(Rd11_expected) / stiffness^2, ...
+            testCase.assertThat(Rd11_actual, IsEqualTo(Rd11_expected / stiffness^2, ...
                 'Within', AbsoluteTolerance(1e-7)))
-            testCase.assertThat(Rd12_actual, IsEqualTo(abs(Rd12_expected) / stiffness^2, ...
+            testCase.assertThat(Rd12_actual, IsEqualTo(Rd12_expected / stiffness^2, ...
                 'Within', AbsoluteTolerance(1e-7)))
             
+        end
+        
+        function shellElement3d4nLargeTest(testCase)
+            %SHELLELEMENT3D4NLARGETEST plane shell consisting out of 100
+            %   elements under static loading at the middle node
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 10, 10, 'elementType', 'ShellElement3d4n');
+            model.getAllNodes.addDof(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+                "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
+            
+            model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
+            model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            model.getAllElements.setPropertyValue('THICKNESS', 0.005);
+            model.getAllElements.setPropertyValue('DENSITY',7860);
+            
+            support = [x0 xl y0 yl];
+            support.fixAllDofs();
+            
+            model.getNode(61).setDofLoad('DISPLACEMENT_Z',2500);
+            
+            solver = SimpleSolvingStrategy(model);
+            solver.solve();
+            
+            actualDisplacement = model.getNode(61).getDofValue('DISPLACEMENT_Z');
+            expectedDisplacement = 0.006040637455055775;
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-7)))
         end
         
         function externalScriptsTest(testCase)
             bridge;
             Bridge_with_inputFile;
-            delete femCalculations.txt
         end
         
     end
     
 end
-
