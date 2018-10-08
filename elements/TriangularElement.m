@@ -16,14 +16,11 @@ classdef TriangularElement < Element
             
             triangularElement@Element(super_args{:});
         end
- 
+
         function c = barycenter(triangularElement)
-            for i = 1 : 3
-                X = triangularElement.nodeArray(i).getX();
-                Y = triangularElement.nodeArray(i).getY();
-            end
-            c(1) = mean(X);
-            c(2) = mean(Y);
+            c(1) = mean(triangularElement.nodeArray.getX());
+            c(2) = mean(triangularElement.nodeArray.getY());
+            c(3) = mean(triangularElement.nodeArray.getZ());
         end
         
         function pl = draw(triangularElement)   
