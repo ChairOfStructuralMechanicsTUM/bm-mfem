@@ -30,7 +30,6 @@ classdef PlaneStressElement3d3n < TriangularElement
     
         %Initialization
         function initialize(obj)
-            checkConvexity(obj);
         end
 
         function responseDoF = getResponseDofArray(obj, step)
@@ -168,86 +167,18 @@ classdef PlaneStressElement3d3n < TriangularElement
             vals([1 3 5]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
             vals([2 4 6]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
-        
-        %TODO!!!
-        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray)
-
-            element_connect = zeros(length(elementArray),3);
-            stressValue = zeros(3,length(nodeArray));
-            
-            for i = 1:length(elementArray)
-
-                element_connect(i,1:3) = elementArray(i).getNodes.getId();
-                stressPoints = [1 0 0;0 1 0;0 0 1];
-                EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
-                prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
-                % Moment-Curvature Equations
-                D = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
-                % Material Matrix D
-                D = D * EModul / (1-prxy^2);
-                
-                for j = 1:3
-                    [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
-                    displacement_e = getValuesVector(elementArray(i),1);
-                    displacement_e = displacement_e';
-                    strain_e = B * displacement_e;
-                    stress_e = D * strain_e;
-                    
-                    % elementwise stress calculation
-                    sigma_xx(i,j) = stress_e(1);
-                    sigma_yy(i,j) = stress_e(2);
-                    sigma_xy(i,j) = stress_e(3);
-
-                end
-            end
-            
-            for k = 1 : length(nodeArray)
-                [I,J] = find(element_connect == k);
-                
-                sum_sigma_xx = 0;
-                sum_sigma_yy = 0;
-                sum_sigma_xy = 0;
-                
-                for l = 1: length(I)
-                    sum_sigma_xx = sum_sigma_xx + sigma_xx(I(l),J(l));
-                    sum_sigma_yy = sum_sigma_yy + sigma_yy(I(l),J(l));
-                    sum_sigma_xy = sum_sigma_xy + sigma_xy(I(l),J(l));
-                end
-                
-                smooth_sigma_xx(k) = sum_sigma_xx/length(I);
-                smooth_sigma_yy(k) = sum_sigma_yy/length(I);
-                smooth_sigma_xy(k) = sum_sigma_xy/length(I);
-                
-                vec = zeros(2,2);
-                lamda = zeros(2,2);
-
-                stress_ele = [smooth_sigma_xx(k) smooth_sigma_xy(k);
-                smooth_sigma_xy(k) smooth_sigma_yy(k)];
-                [vec,lamda] = eig(stress_ele);
-
-                prin_I(k) = lamda(1,1);
-                prin_II(k) = lamda(2,2);
-                prI_dir(k,:) = vec(:,1);
-                prII_dir(k,:) = vec(:,2);
-
-                vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
-            end
-            
-        stressValue(1,:) = smooth_sigma_xx;
-        stressValue(2,:) = smooth_sigma_yy;
-        stressValue(3,:) = smooth_sigma_xy;
-        stressValue(4,:) = prin_I;
-        stressValue(5,:) = prin_II;
-        stressValue(6,:) = vm_stress;        
-        end
     
     end
     
     methods (Static)
         function ord = drawOrder()
-            
             ord = [1,2,3,1];
-        end        
+        end
+        
+        function p = stressPoints()
+        %STRESSPOINTS returns locations where stresses are evaluated
+            p = [1 0 0;0 1 0;0 0 1];
+        end
     end
 end
 
