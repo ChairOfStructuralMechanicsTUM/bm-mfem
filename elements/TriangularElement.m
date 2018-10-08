@@ -25,14 +25,6 @@ classdef TriangularElement < Element
             c(1) = mean(X);
             c(2) = mean(Y);
         end
-        % Check Convexity of triangle
-        function checkConvexity(triangularElement)
-            try 
-                [~] = triangularElement.barycenter();
-            catch 
-                error('Element %i is not convex', triangularElement.getId());
-            end
-        end
         
         function pl = draw(triangularElement)   
             x = [triangularElement.nodeArray(1).getX, triangularElement.nodeArray(2).getX, ... 
@@ -48,10 +40,6 @@ classdef TriangularElement < Element
         end
 
         function update(triangularElement)
-        end
-        
-        function F = computeLocalForceVector(triangularElement)
-            F = zeros(1,9);
         end
     end
 end
