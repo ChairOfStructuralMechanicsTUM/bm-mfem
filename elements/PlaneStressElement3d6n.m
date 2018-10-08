@@ -49,19 +49,6 @@ classdef PlaneStressElement3d6n < TriangularElement
             end
         end
 
-        function responseDoF = getResponseDofArray(planeStressElement, step)
-
-            responseDoF = zeros(8,1);
-            for itNodes = 1:1:4
-                nodalDof = planeStressElement.nodeArray(itNodes).getDofArray;
-                nodalDof = nodalDof.';
-
-                for itDof = 2:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
-                end
-            end
-        end
-
         function [N_mat, N, B, J] = computeShapeFunction(planeStressElement3d6n,Zeta)
             
             % Triangle Coords (Substituting zeta(3) = 1-xi-eta to form independent set)

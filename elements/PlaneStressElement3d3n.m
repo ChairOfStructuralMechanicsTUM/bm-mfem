@@ -32,19 +32,6 @@ classdef PlaneStressElement3d3n < TriangularElement
         function initialize(obj)
         end
 
-        function responseDoF = getResponseDofArray(obj, step)
-
-            responseDoF = zeros(8,1);
-            for itNodes = 1:1:4
-                nodalDof = obj.nodeArray(itNodes).getDofArray;
-                nodalDof = nodalDof.';
-
-                for itDof = 2:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
-                end
-            end
-        end
-
         function [N_mat, N, B, J] = computeShapeFunction(obj,tCoord)
             
             % Shape Function and Derivatives   
