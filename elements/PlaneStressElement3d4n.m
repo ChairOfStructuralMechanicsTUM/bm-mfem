@@ -132,21 +132,6 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                     massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
                 end
             end
-        end        
-        
-        function dampingMatrix = computeLocalDampingMatrix(obj)
-            eProperties = obj.getProperties;
-            dampingMatrix = sparse(8,8);
-
-            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
-                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
-                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
-            end
-
-            if (eProperties.hasValue('RAYLEIGH_BETA'))
-                beta = eProperties.getValue('RAYLEIGH_BETA');
-                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
-            end
         end
         
         function pl = drawDeformed(obj, step, scaling)

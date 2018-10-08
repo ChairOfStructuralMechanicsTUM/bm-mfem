@@ -109,21 +109,6 @@ classdef PlaneStressElement3d3n < TriangularElement
                 massMatrix = massMatrix + N_mat' * dens_mat * N_mat * 0.5 * det(J) * w;
             end
         end
-        
-        function dampingMatrix = computeLocalDampingMatrix(obj)
-            eProperties = obj.getProperties;
-            dampingMatrix = sparse(6,6);
-
-            if (eProperties.hasValue('RAYLEIGH_ALPHA'))
-                alpha = eProperties.getValue('RAYLEIGH_ALPHA');
-                dampingMatrix = dampingMatrix + alpha * element.computeLocalMassMatrix;
-            end
-
-            if (eProperties.hasValue('RAYLEIGH_BETA'))
-                beta = eProperties.getValue('RAYLEIGH_BETA');
-                dampingMatrix = dampingMatrix + beta * element.computeLocalStiffnessMatrix;
-            end
-        end
             
         function pl = drawDeformed(obj, step, scaling)
     
