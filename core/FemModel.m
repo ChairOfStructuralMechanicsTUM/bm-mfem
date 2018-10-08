@@ -247,7 +247,8 @@ classdef FemModel < handle
                     element = QuadrilateralElement2d4n(id, nodes);
                 case 'HexahedronElement3d8n'
                     element = HexahedronElement3d8n(id, nodes);
-                    
+                case 'TetrahedronElement3d4n'
+                    element = TetrahedronElement3d4n(id, nodes);    
                 otherwise
                     error('unknown element %s',elementName)
             end %switch
@@ -263,4 +264,3 @@ classdef FemModel < handle
     end
     
 end
-
