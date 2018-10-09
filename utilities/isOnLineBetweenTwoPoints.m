@@ -3,7 +3,7 @@ function [ check ] = isOnLineBetweenTwoPoints( c1, c2, c3 )
 %   C = isOnLineBetweenTwoPoints(C1,C2,C3)
 check = false;
 
-if all(abs(cross(c1-c2,c1-c3)) < 1000*eps)
+if all(abs(cross(c1-c2,c1-c3)) < 1e-8)
     d = c2 - c1;
     [~, ind] = max(abs(d));
     if d(ind) > 0
