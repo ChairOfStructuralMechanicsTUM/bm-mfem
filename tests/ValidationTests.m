@@ -241,7 +241,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
         end
         
-        function planeStressElement3d4nLargeTest(testCase)
+        function planeStressElement2d4nLargeTest(testCase)
             %PLANESTRESSELEMENT3D4NLARGETEST 160 4-node plane stress
             %   elements cantilevered with single load
             import matlab.unittest.constraints.IsEqualTo
@@ -274,7 +274,7 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
         end
         
-        function planeStressElement3d6nLargeTest(testCase)
+        function planeStressElement2d6nLargeTest(testCase)
             %PLANESTRESSELEMENT3D6NLARGETEST 544 6-node plane stress
             %   elements cantilevered with single load
             import matlab.unittest.constraints.IsEqualTo

@@ -1,13 +1,13 @@
-classdef PlaneStressElement3d3n < TriangularElement
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+classdef PlaneStressElement2d3n < TriangularElement
+    %PLANESTRESSELEMENT2D3N A 3-node plane stress element
+    %   Details on the implementation can be found in ???
     
     properties (Access = private)
     end
     
     methods
         %Constructor
-        function obj = PlaneStressElement3d3n(id,nodeArray)
+        function obj = PlaneStressElement2d3n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...

@@ -1,5 +1,5 @@
-classdef PlaneStressElement3d6n < TriangularElement
-    %PLANESTRESSELEMENT3D6N A 6-node triangular plane stress element
+classdef PlaneStressElement2d6n < TriangularElement
+    %PLANESTRESSELEMENT2D6N A 6-node triangular plane stress element
     %   Details on the implementation can be found in ???
     %
     % Node numbering:
@@ -14,7 +14,7 @@ classdef PlaneStressElement3d6n < TriangularElement
     
     methods
         %Constructor
-        function obj = PlaneStressElement3d6n(id,nodeArray)
+        function obj = PlaneStressElement2d6n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                 "THICKNESS", "NUMBER_GAUSS_POINT", ...

@@ -1,5 +1,5 @@
-classdef PlaneStressElement3d9n < QuadrilateralElement
-    %PLANESTRESSELEMENT3D9N A 9-node quadrilateral plane stress element
+classdef PlaneStressElement2d9n < QuadrilateralElement
+    %PLANESTRESSELEMENT2D9N A 9-node quadrilateral plane stress element
     %   Details on the implementation can be found in ???
     %
     % Node numbering:
@@ -14,7 +14,7 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
     
     methods
         %Constructor
-        function obj = PlaneStressElement3d9n(id,nodeArray)
+        function obj = PlaneStressElement2d9n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...

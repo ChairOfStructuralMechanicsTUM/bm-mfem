@@ -1,13 +1,20 @@
-classdef PlaneStressElement3d4n < QuadrilateralElement
-    %PLANESTRESSELEMENT3D4N A 4-node quadrilateral plane stress element
-    %   Detailed explanation goes here
+classdef PlaneStressElement2d8n < QuadrilateralElement
+    %PLANESTRESSELEMENT2D8N A 8-node quadrilateral plain stress element
+    %   Details on the implementation can be found in ???
+    %
+    % Node numbering:
+    %   4 - 7 - 3
+    %   |       |
+    %   8       6
+    %   |       |
+    %   1 - 5 - 2
     
     properties (Access = private)
     end
     
     methods
         %Constructor
-        function obj = PlaneStressElement3d4n(id,nodeArray)
+        function obj = PlaneStressElement2d8n(id,nodeArray)
             
             requiredPropertyNames = cellstr(["YOUNGS_MODULUS", "POISSON_RATIO", ...
                                              "THICKNESS", "NUMBER_GAUSS_POINT", ...
@@ -17,7 +24,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             if nargin == 0
                 super_args = {};
             elseif nargin == 2
-                if ~(length(nodeArray) == 4 && isa(nodeArray,'Node'))
+                if ~(length(nodeArray) == 8 && isa(nodeArray,'Node'))
                     error('problem with the nodes in element %d', id);
                 end
                 super_args = {id, nodeArray, requiredPropertyNames};
@@ -35,53 +42,54 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
 
             obj.lengthY = computeLength(obj.nodeArray(1).getCoords, ...
                 obj.nodeArray(4).getCoords);
-            
-            if ~checkConvexity(obj)
-                msg = ['PlaneStressElement2d4n: Element ', ...
+
+            if ~ checkConvexity(obj)
+                msg = [class(obj), ': Element ', ...
                     num2str(obj.getId), ' is not convex.'];
                 e = MException('MATLAB:bm_mfem:elementNotConvex',msg);
                 throw(e);
             end
-        end
-
-        function responseDoF = getResponseDofArray(obj, step)
-
-            responseDoF = zeros(8,1);
-            for itNodes = 1:1:4
-                nodalDof = obj.nodeArray(itNodes).getDofArray;
-                nodalDof = nodalDof.';
-
-                for itDof = 2:(-1):1
-                    responseDoF(3*itNodes-(itDof-1),1) = nodalDof(4-itDof).getValue(step);
-                end
+            
+            %check, if node numbering is correct
+            n = obj.nodeArray;
+            if ~ (isOnLineBetweenTwoPoints(n(1).getCoords, n(2).getCoords, n(5).getCoords) ...
+                    && isOnLineBetweenTwoPoints(n(2).getCoords, n(3).getCoords, n(6).getCoords) ...
+                    && isOnLineBetweenTwoPoints(n(3).getCoords, n(4).getCoords, n(7).getCoords) ...
+                    && isOnLineBetweenTwoPoints(n(1).getCoords, n(4).getCoords, n(8).getCoords))
+                msg = [class(obj),': Invalid node numbering ', ...
+                    'in element ',num2str(obj.getId), '.'];
+                e = MException('MATLAB:bm_mfem:invalidNodeNumbering',msg);
+                throw(e);
             end
         end
 
         function [N_mat, N, B, J] = computeShapeFunction(obj,xi,eta)
             % Shape Function and Derivatives                    
-            N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];  
+            N = [-(1-xi)*(1-eta)*(1+xi+eta)/4,-(1+xi)*(1-eta)*(1-xi+eta)/4,-(1+xi)*(1+eta)*(1-xi-eta)/4,-(1-xi)*(1+eta)*(1+xi-eta)/4,...
+                    (1-xi^2)*(1-eta)/2,(1+xi)*(1-eta^2)/2,(1-xi^2)*(1+eta)/2,(1-xi)*(1-eta^2)/2];
 
-            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
-                          -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
-
-            N_mat = sparse(2,8);
+            N_Diff_Par = [(1-eta)*(2*xi+eta)/4,-(1-eta)*(eta-2*xi)/4,(1+eta)*(2*xi+eta)/4,-(1+eta)*(eta-2*xi)/4,...
+                -xi*(1-eta),(1-eta^2)/2,-xi*(1+eta),-(1-eta^2)/2;...
+                (1-xi)*(xi+2*eta)/4,(1+xi)*(2*eta-xi)/4,(1+xi)*(xi+2*eta)/4,(1-xi)*(2*eta-xi)/4,...
+                -(1-xi^2)/2,-eta*(1+xi),(1-xi^2)/2,-eta*(1-xi)];
+       
+            N_mat = sparse(2,16);
             N_mat(1,1:2:end) = N(:);
             N_mat(2,2:2:end) = N(:);
 
             % Coordinates of the nodes forming one element 
-            ele_coords = zeros(4,2); 
-            for i=1:4
+            ele_coords = zeros(8,2); 
+            for i=1:8
                 ele_coords(i,1) = obj.nodeArray(i).getX;
                 ele_coords(i,2) = obj.nodeArray(i).getY;
             end
 
             % Jacobian 
             J = N_Diff_Par * ele_coords;
-
             N_Diff = J \ N_Diff_Par;
 
             % Assembling the B Matrix
-            B = sparse(3,8);
+            B = zeros(3,16);
             B(1,1:2:end) = N_Diff(1,:);     
             B(3,2:2:end) = N_Diff(1,:);
             B(2,2:2:end) = N_Diff(2,:);
@@ -101,17 +109,17 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             D = D * EModul * thickness / (1-prxy^2);
 
             [w,g] = returnGaussPoint(nr_gauss_points);
-            stiffnessMatrix = sparse(8,8);
+            stiffnessMatrix = sparse(16,16);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
                     [~, ~, B, J] = computeShapeFunction(obj,g(xi),g(eta));
 
                     stiffnessMatrix = stiffnessMatrix + ...
-                        B' * D *B * det(J) * w(xi) * w(eta);
+                        B' * D * B * det(J) * w(xi) * w(eta);
                 end
             end
         end
-
+        
         function massMatrix = computeLocalMassMatrix(obj)
             %Formulation of the Massmatrix based on the Shape Functions
             
@@ -124,7 +132,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             dens_mat(1,1) = density*thickness; 
             dens_mat(2,2) = dens_mat(1,1); 
 
-            massMatrix = sparse(8,8);
+            massMatrix = sparse(16,16);
             for xi = 1 : nr_gauss_points
                 for eta = 1 : nr_gauss_points
                     [N_mat,~,~,J] = computeShapeFunction(obj,g(xi),g(eta));
@@ -155,46 +163,28 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             pl = line(x,y,z);
         end
         
-        function f = computeLocalForceVector(obj)
-            f = zeros(1,8);
-        end
-        
         function dofs = getDofList(obj)
-            dofs([1 3 5 7]) = obj.nodeArray.getDof('DISPLACEMENT_X'); 
-            dofs([2 4 6 8]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([1 3 5 7 9 11 13 15]) = obj.nodeArray.getDof('DISPLACEMENT_X'); 
+            dofs([2 4 6 8 10 12 14 16]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
         end
         
         function vals = getValuesVector(obj, step)
-            vals = zeros(1,8);
+            vals = zeros(1,16);
             
-            vals([1 3 5 7]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 4 6 8]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-        end
-        
-        function vals = getFirstDerivativesVector(obj, step)
-            vals = zeros(1,8);
-            
-            [~, vals([1 3 5 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([1 3 5 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-        end
-        
-        function vals = getSecondDerivativesVector(obj, step)
-            vals = zeros(1,8);
-            
-            [~, ~, vals([1 3 5 7])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([1 3 5 7])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            vals([1 3 5 7 9 11 13 15]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 4 6 8 10 12 14 16]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
     end
     
     methods (Static)
         function ord = drawOrder()
-            ord = [1,2,3,4,1];
+            ord = [1,5,2,6,3,7,4,8,1];
         end
         
         function p = stressPoints()
-        %STRESSPOINTS returns locations where stresses are evaluated
-            p = [-1 -1;1 -1;1 1;-1 1];
+            %STRESSPOINTS returns locations where stresses are evaluated
+            p = [-1 -1;1 -1;1 1;-1 1;0 -1;1 0;0 1;-1 0];
         end
     end
 end

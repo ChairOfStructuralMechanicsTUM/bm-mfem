@@ -1170,7 +1170,7 @@ Begin Nodes
 End Nodes
 
 
-Begin Elements PlaneStressElement3d6n// GUI group identifier: structure
+Begin Elements PlaneStressElement2d6n// GUI group identifier: structure
         1          0         81         55         85         67         69         83 
         2          0         32         15         27         23         21         30 
         3          0          5          1          6          2          3          4 
