@@ -274,6 +274,36 @@ classdef ValidationTests <  matlab.unittest.TestCase
                 'Within', RelativeTolerance(1e-7)))
         end
         
+        function planeStressElement3d6nLargeTest(testCase)
+            %PLANESTRESSELEMENT3D6NLARGETEST 544 6-node plane stress
+            %   elements cantilevered with single load
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.RelativeTolerance
+            
+            io = MdpaInput('tests/input_data/ecke01.mdpa');
+            m = io.readModel();
+            
+            m.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+            
+            m.getAllElements.setPropertyValue('THICKNESS', 0.5);
+            m.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2e11);
+            m.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+            m.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT', 3);
+            m.getAllElements.setPropertyValue('DENSITY', 7850);
+            
+            m.getModelPart('GENERIC_support').getNodes().fixAllDofs();
+            m.getModelPart('GENERIC_load').getNodes().setDofLoad('DISPLACEMENT_Y',-1e7);
+            
+            solver = SimpleSolvingStrategy(m);
+            solver.solve();
+            
+            actualDisplacement = m.getNode(81).getDofValue('DISPLACEMENT_Y');
+            expectedDisplacement = -0.0496445026676462;
+            
+            testCase.assertThat(actualDisplacement, IsEqualTo(expectedDisplacement, ...
+                'Within', RelativeTolerance(1e-7)))
+        end
+        
         function externalScriptsTest(testCase)
             bridge;
             Bridge_with_inputFile;
