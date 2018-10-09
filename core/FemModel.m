@@ -226,34 +226,18 @@ classdef FemModel < handle
                 nodes = obj.getNodes(nodes);
             end
             
-            switch elementName
-                case 'BarElement2d2n'
-                    element = BarElement2d2n(id, nodes);
-                case 'BarElement3d2n'
-                    element = BarElement3d2n(id, nodes);
-                case 'BeamElement3d2n'
-                    element = BeamElement3d2n(id, nodes);
-                case 'ConcentratedMassElement3d1n'
-                    element = ConcentratedMassElement3d1n(id, nodes);
-                case 'SpringDamperElement3d2n'
-                    element = SpringDamperElement3d2n(id, nodes);
-                case 'ReissnerMindlinElement3d4n'
-                    element = ReissnerMindlinElement3d4n(id, nodes);
-                case 'ShellElement3d4n'
-                    element = ShellElement3d4n(id, nodes);
-                case 'DiscreteKirchhoffElement3d4n'
-                    element = DiscreteKirchhoffElement3d4n(id, nodes);
-                case 'QuadrilateralElement2d4n'
-                    element = QuadrilateralElement2d4n(id, nodes);
-                case 'HexahedronElement3d8n'
-                    element = HexahedronElement3d8n(id, nodes);
-                case 'PlaneStressElement3d4n'
-                    element = PlaneStressElement3d4n(id, nodes);
-                case 'TetrahedronElement3d4n'
-                    element = TetrahedronElement3d4n(id, nodes);    
-                otherwise
-                    error('unknown element %s',elementName)
-            end %switch
+            % this creates elements based on their string name
+            try element = feval(elementName, id, nodes);
+                if ~isa(element,'Element')
+                    msg = [class(obj), ': Only elements can be created.'];
+                    e = MException('MATLAB:bm_mfem:invalidInput',msg);
+                    throw(e);
+                end
+            catch
+                msg = [class(obj), ': Unknown element \"', elementName, '\".'];
+                e = MException('MATLAB:bm_mfem:unknownElement',msg);
+                throw(e);
+            end
             
             if nargin == 5
                 element.setProperties(props);
