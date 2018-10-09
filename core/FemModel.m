@@ -22,7 +22,7 @@ classdef FemModel < handle
             obj.femModelParts = containers.Map;
             
             if nargin > 0
-                nodeIds = arrayfun(@(node) node.getId, nodeArray);
+                nodeIds = nodeArray.getId();
                 duplicated_nodes = findDuplicates(nodeIds);
                 if ~ isempty(duplicated_nodes)
                     error('multiple nodes with id %d exist',duplicated_nodes);
@@ -30,7 +30,7 @@ classdef FemModel < handle
                     obj.nodeArray = nodeArray;
                 end
                 
-                elementIds = arrayfun(@(element) element.getId, elementArray);
+                elementIds = elementArray.getId();
                 duplicated_elements = findDuplicates(elementIds);
                 if ~ isempty(duplicated_elements)
                     error('multiple elements with id %d exist',duplicated_elements);
