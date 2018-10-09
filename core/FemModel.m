@@ -249,7 +249,8 @@ classdef FemModel < handle
                     element = HexahedronElement3d8n(id, nodes);
                 case 'PlaneStressElement3d4n'
                     element = PlaneStressElement3d4n(id, nodes);
-                    
+                case 'TetrahedronElement3d4n'
+                    element = TetrahedronElement3d4n(id, nodes);    
                 otherwise
                     error('unknown element %s',elementName)
             end %switch
