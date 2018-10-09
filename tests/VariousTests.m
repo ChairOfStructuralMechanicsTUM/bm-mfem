@@ -46,7 +46,7 @@ classdef VariousTests <  matlab.unittest.TestCase
         %   line comments, different element types, and model parts
             import matlab.unittest.constraints.IsTrue
             
-            io = MdpaInput('tests/mdpatest.mdpa');
+            io = MdpaInput('tests/input_data/mdpatest.mdpa');
             model = io.readModel;
             
             testCase.verifyEqual(model.getNode(14).getX,2.213);
