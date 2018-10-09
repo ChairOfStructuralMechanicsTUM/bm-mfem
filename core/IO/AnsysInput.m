@@ -94,13 +94,11 @@ classdef AnsysInput < ModelIO
             data.nodesOrderByDofs=nodesC(:,1)';
             
             % Create objects "Node" and assign them to a model
-            for i = 1 : size(nodesC,1)
-                id =  nodesC(i,1);
-                x  =  nodesC(i,2);
-                y  =  nodesC(i,3);
-                z  =  nodesC(i,4);
-                model.addNewNode(id,x,y,z);
+            nodeArray = Node.empty;
+            for ii=1:size(nodesC,1)
+                nodeArray(ii) = Node(nodesC(ii,1),nodesC(ii,2),nodesC(ii,3),nodesC(ii,4));
             end
+            model.addNodes(nodeArray);
             data.numNodes = length(model.getAllNodes());
             
             % Read available element data
@@ -595,10 +593,27 @@ classdef AnsysInput < ModelIO
             %               A{3}: real values the dof is restricted to
             %               A{4}: imaginary values the dof is restricted to
             
-            fid=fopen('DataAnsys/nodeRest.txt');
-            for j = 1:13
-                fgetl(fid); % Read/discard line.
+            fid = fopen('DataAnsys/nodeRest.txt');
+            fidd=fopen('DataAnsys/nodeRest_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            
+            % Discard some lines to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
             end
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 9
+                        fgetl(fid) ;
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            fclose all;
+            
+            fid=fopen('DataAnsys/nodeRest_modified.dat') ;
             
             A = textscan(fid,'%u%s%f%f');
             
@@ -623,7 +638,7 @@ classdef AnsysInput < ModelIO
             %               A{2}: resticted dof name
             %               A{3}: real values the dof is restricted to
             %               A{4}: imaginary values the dof is restricted to
-            
+            warning('fix this')
             fid=fopen('DataAnsys/nodeLoads.txt');
             for j = 1:13
                 fgetl(fid); % Read/discard line.
