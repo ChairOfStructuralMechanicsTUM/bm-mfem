@@ -216,6 +216,20 @@ classdef FemModel < handle
             obj.initialized = false;
         end
         
+        function addNodes(obj, nodes)
+            %ADDNODES adds an array of nodes to the model
+            nodeIds = nodes.getId();
+            if ~isempty(obj.nodeArray)
+                nodeIds = [nodeIds obj.nodeArray.getId()];
+            end
+            duplicated_nodes = findDuplicates(nodeIds);
+            if ~ isempty(duplicated_nodes)
+                error('multiple nodes with id %d exist',duplicated_nodes);
+            else
+                obj.nodeArray(nodeIds) = nodes;
+            end
+        end
+        
         function element = addNewElement(obj, elementName, id, nodes, props)
         %ADDNEWELEMENT inserts a new element in the fem model with
         %   elementName, id, and an array of nodes
