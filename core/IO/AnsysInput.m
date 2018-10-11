@@ -92,6 +92,10 @@ classdef AnsysInput < ModelIO
             [~, order] = ismember(nodeEquiv.', data.nodeList(:,1));
             nodesC = data.nodeList(order,:);
             data.nodesOrderByDofs=nodesC(:,1)';
+            % Read available element data
+            [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
+            % Read surface loads
+            data.nodeSurfaceLoads = obj.readSurfaceLoads(data.nodeList, data.nodeElementList);
             
             % Create objects "Node" and assign them to a model
             nodeArray = Node.empty;
@@ -100,9 +104,6 @@ classdef AnsysInput < ModelIO
             end
             model.addNodes(nodeArray);
             data.numNodes = length(model.getAllNodes());
-            
-            % Read available element data
-            [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
             
             % Assign dofs to node
             for i = 1 :size(data.elementsOfModel,1)
@@ -145,6 +146,15 @@ classdef AnsysInput < ModelIO
             for ii=1:length(data.nodeLoads{1})
                 n = model.getNode(data.nodeLoads{1}(ii));
                 n.setDofLoad(data.nodeLoads{2}{ii}, data.nodeLoads{3}(ii));
+            end
+            
+            % Set surface loads. Works only for 3d models!
+            for ii=1:size(data.nodeSurfaceLoads,1)
+                sfl = data.nodeSurfaceLoads(ii,:);
+                n = model.getNode(data.nodeSurfaceLoads(ii,1));
+                n.setDofLoad('DISPLACEMENT_X',sfl(4)*(sfl(2)+1i*sfl(3)));
+                n.setDofLoad('DISPLACEMENT_Y',sfl(5)*(sfl(2)+1i*sfl(3)));
+                n.setDofLoad('DISPLACEMENT_Z',sfl(6)*(sfl(2)+1i*sfl(3)));
             end
             
             % Set node connectivity
@@ -205,11 +215,19 @@ classdef AnsysInput < ModelIO
             fprintf(fidl,'/output,DataAnsys/nodeLoads,txt \r\n');
             fprintf(fidl,'FLIST,ALL,\r\n');
             fprintf(fidl,'/output \r\n');
+            % Create external file with surface loads
+            fprintf(fidl,'/output,DataAnsys/nodeSurfaceLoads,txt \r\n');
+            fprintf(fidl,'SFLIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
+            % Create external file with body forces
+            fprintf(fidl,'/output,DataAnsys/nodeBodyLoads,txt \r\n');
+            fprintf(fidl,'BFLIST,ALL,\r\n');
+            fprintf(fidl,'/output \r\n');
             % Create external file with the element type
             fprintf(fidl,'/output,DataAnsys/elemTyp,txt \r\n');
             fprintf(fidl,'ETLIST,ALL,\r\n');
             fprintf(fidl,'/output \r\n');
-            % Create external file with the element type
+            % Create external file with the element nodes
             fprintf(fidl,'/output,DataAnsys/elemNodes,txt \r\n');
             fprintf(fidl,'ELIST,ALL,\r\n');
             fprintf(fidl,'/output \r\n');
@@ -354,6 +372,19 @@ classdef AnsysInput < ModelIO
                     dofs = [ux uy uz rx ry rz];
                     nnodes = 4;
                     
+                case strcmp(elementName,'SURF154')
+                    dofs = [ux uy uz];
+                    if keyopts(4) == 0
+                        nnodes = 8;
+                    elseif keyopts(4) == 1
+                        nnodes = 4;
+                    else
+                        msg = ['AnsysInput: Invalid keyopts for element type ', ...
+                            elementName];
+                        e = MException('MATLAB:bm_mfem:invalidKeyopts',msg);
+                        throw(e);
+                    end
+                    
 %                 case strcmp(elementName,'TARGE170')
 %                     dofs = [ux uy uz];
 %                     
@@ -474,15 +505,29 @@ classdef AnsysInput < ModelIO
             while ~ feof(fid)
                 if contains(tline,'ELEMENT TYPE')
                     tmp = strsplit(strtrim(tline),' ');
-                    n_etype = str2double(tmp{3});
-                    elementList{n_etype,1} = tmp{5};
-                    keyopts = zeros(1,18);
-                    for ii = 0:2
-                        tline = fgetl(fid);
-                        tmp = str2double(strsplit(strtrim(tline),' '));
-                        keyopts(ii*6+1:ii*6+6) = tmp(end-5:end);
+                    if strcmp(tmp{4},'THROUGH')
+                        tmp = str2double(tmp);
+                        tmp(isnan(tmp)) = [];
+                        for ii = tmp(1):tmp(2)
+                            elementList{ii,1} = elementList{tmp(3),1};
+                            elementList{ii,2} = elementList{tmp(3),2};
+                        end
+                    elseif strcmp(tmp{5},'THE')
+                        tmp = str2double(tmp);
+                        tmp(isnan(tmp)) = [];
+                        elementList{tmp(1),1} = elementList{tmp(2),1};
+                        elementList{tmp(1),2} = elementList{tmp(2),2};
+                    else
+                        n_etype = str2double(tmp{3});
+                        elementList{n_etype,1} = tmp{5};
+                        keyopts = zeros(1,18);
+                        for ii = 0:2
+                            tline = fgetl(fid);
+                            tmp = str2double(strsplit(strtrim(tline),' '));
+                            keyopts(ii*6+1:ii*6+6) = tmp(end-5:end);
+                        end
+                        elementList{n_etype,2} = keyopts;
                     end
-                    elementList{n_etype,2} = keyopts;
                 end
                 tline = fgetl(fid);
             end
@@ -638,17 +683,90 @@ classdef AnsysInput < ModelIO
             %               A{2}: resticted dof name
             %               A{3}: real values the dof is restricted to
             %               A{4}: imaginary values the dof is restricted to
-            warning('fix this')
-            fid=fopen('DataAnsys/nodeLoads.txt');
-            for j = 1:13
-                fgetl(fid); % Read/discard line.
+
+            fid = fopen('DataAnsys/nodeLoads.txt');
+            fidd=fopen('DataAnsys/nodeLoads_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            
+            % Discard some lines to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
             end
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 9
+                        fgetl(fid) ;
+                    end
+                else
+                    fwrite(fidd,tline) ;
+                end
+            end
+            fclose all;
+            
+            fid=fopen('DataAnsys/nodeLoads_modified.dat') ;
             
             A = textscan(fid,'%u%s%f%f');
             
             for ii = 1:length(A{2})
                 A{2}{ii} = AnsysInput.replaceANSYSDofName(A{2}{ii});
             end
+            
+        end
+        
+        function A = readSurfaceLoads(nodeCoords, elements)
+            % function A = readLoads()
+            %
+            % Function   : readLoads
+            %
+            % Description: This function gets the loads on coordinates from
+            %              ANSYS
+            %
+            % Parameters :
+            %
+            % Return     : A cell with loads.
+            %               A{1}: node numbers
+            %               A{2}: resticted dof name
+            %               A{3}: real values the dof is restricted to
+            %               A{4}: imaginary values the dof is restricted to
+
+            fid = fopen('DataAnsys/nodeSurfaceLoads.txt');
+%             fidd=fopen('DataAnsys/nodeSurfaceLoads_modified.dat','w') ;
+            if fid < 0, error('Cannot open file'); end
+            
+            A = zeros(0,6);
+            faceNodes = [];
+            
+            % Discard some lines to read the data from the txt files
+            for j = 1 : 13
+                fgetl(fid) ;
+            end
+            while ~feof(fid)
+                tline=fgets(fid);
+                if isspace(tline)
+                    for j = 1 : 10
+                        fgetl(fid) ;
+                    end
+                end
+                tmp = str2double(strsplit(strtrim(tline),' '));
+                if length(tmp) == 3
+                    A(end+1,1:3) = tmp; %#ok<AGROW>
+                    faceNodes(end+1) = tmp(1); %#ok<AGROW>
+                elseif length(tmp) == 5
+                    A(end+1,1:3) = tmp(3:5); %#ok<AGROW>
+                    if ~isempty(faceNodes)
+                        n1 = nodeCoords(faceNodes(1),2:4);
+                        n2 = nodeCoords(faceNodes(2),2:4);
+                        n3 = nodeCoords(faceNodes(3),2:4);
+                        normal = cross(n2-n1,n3-n1);
+                        A(end-4:end-1,4:6) = ones(4,1)*(normal/norm(normal));
+                    end
+                    faceNodes = tmp(3);
+%                 else
+%                     error('this should not happen')
+                end
+            end
+            fclose all;
             
         end
         
