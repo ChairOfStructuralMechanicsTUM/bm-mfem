@@ -51,7 +51,7 @@ classdef EigensolverStrategy < Solver
                 nModes, 'sm');
             
             % save eigenfrequencies in rad/s
-            obj.eigenfrequencies = sqrt(diag(spectralMatrix));
+            obj.eigenfrequencies = sparse(sqrt(diag(spectralMatrix)));
             
             % sort eigenfrequencies and mode shapes
             [obj.eigenfrequencies, order] = sort(obj.eigenfrequencies);

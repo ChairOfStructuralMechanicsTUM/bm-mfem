@@ -159,9 +159,10 @@ classdef BeamElement3d2n < LinearElement
             massMatrix(11,11) = massMatrix(5,5);
             massMatrix(12,12) = massMatrix(6,6);
             
-            tMat = sparse(element.getTransformationMatrix);   
+            tMat = element.getTransformationMatrix;
             massMatrix = tMat' * massMatrix * tMat;
-         
+            
+            disp
             
             %simple lumping
 %             lMass = 0.5 * A * L * rho;

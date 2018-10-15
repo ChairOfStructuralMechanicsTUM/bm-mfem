@@ -27,7 +27,6 @@ classdef SimpleSolvingStrategy < Solver
             [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
             [~, fred] = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
             
-%             x = linsolve(Kred, fred.');
             x = Kred\fred.';
             
             SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);

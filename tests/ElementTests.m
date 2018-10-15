@@ -373,8 +373,8 @@ classdef ElementTests < matlab.unittest.TestCase
             
             %eigenfrequencies in Hz
             actualEigenfrequencies = solver.getEigenfrequencies('Hz');
-            expectedEigenfrequencies = [1.01402840311520;3.22165476249304;3.22165476249320;...
-                5.32248978160243;10.5674305646586];
+            expectedEigenfrequencies = sparse([1.01402840311520;3.22165476249304;3.22165476249320;...
+                5.32248978160243;10.5674305646586]);
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
@@ -612,8 +612,8 @@ classdef ElementTests < matlab.unittest.TestCase
             
             % Assertion
             actualEigenfrequencies = solver.getEigenfrequencies('Hz');
-            expectedEigenfrequencies = [41.3911366690480;80.2659687320295;...
-                80.2659687320296;103.127323365447;122.970895447928];
+            expectedEigenfrequencies = sparse([41.3911366690480;80.2659687320295;...
+                80.2659687320296;103.127323365447;122.970895447928]);
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...
                 'Within', RelativeTolerance(1e-7)))
