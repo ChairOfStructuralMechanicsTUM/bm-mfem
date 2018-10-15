@@ -1,6 +1,6 @@
 function [ stressValue, prStressDir, element_connect ] = computeElementStress( elementArray, nodeArray, step )
 %COMPUTEELEMENTSTRESS stress in an array of elements
-%   [STRESS, PRSTRESSDIR, EC] = computeElementStress(ELEMENTS,NODES,STEP)
+%   [STRESS, PRSTRESSDIR, EC] = computeElementStress(ELEMENTS,NODES)
 %   returns element connectivity EC, the matrix STRESS containing:
 %       STRESS(1,:) = stress in xx
 %       STRESS(2,:) = stress in yy
@@ -12,7 +12,14 @@ function [ stressValue, prStressDir, element_connect ] = computeElementStress( e
 %       PRSTRESSDIR(1,:,:) = direction of principal stress I
 %       PRSTRESSDIR(2,:,:) = direction of principal stress II
 %
+%   [STRESS, PRSTRESSDIR, EC] = computeElementStress(ELEMENTS,NODES,STEP)
+%   returns STRESS and PRSTRESSDIR for the selected STEP.
+%
 %   This function can only be used if all ELEMENTS are of the same type.
+
+if nargin == 2
+    step = 1;
+end
 
 nElements = length(elementArray);
 nNodes = length(nodeArray);
