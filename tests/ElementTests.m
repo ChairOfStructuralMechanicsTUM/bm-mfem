@@ -730,9 +730,9 @@ classdef ElementTests < matlab.unittest.TestCase
             solver = EigensolverStrategy(model);
             solver.solve(5);
             
-            % Assertion
+                 % Assertion
             actualEigenfrequencies = solver.getEigenfrequencies('Hz');
-            expectedEigenfrequencies = [46.1882586911365;103.709269817444;...
+       expectedEigenfrequencies = [46.1882586911365;103.709269817444;...
                 103.709269817444;154.684851632199;197.188070901913];
             
             testCase.assertThat(actualEigenfrequencies, IsEqualTo(expectedEigenfrequencies, ...

@@ -56,7 +56,10 @@ classdef SimpleAssembler < Assembler
                 reducedStiffnessMatrix = stiffnessMatrix(free,free);
                 stiffnessMatrix = stiffnessMatrix(mp_dof_ids,mp_dof_ids);
             end
-        end 
+        
+            stiffnessMatrix = sparse(stiffnessMatrix);
+            reducedStiffnessMatrix = sparse(reducedStiffnessMatrix);
+        end
         
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;

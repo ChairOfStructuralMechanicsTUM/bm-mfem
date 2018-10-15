@@ -124,7 +124,7 @@ classdef BarElement2d2n < LinearElement
             sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
             stressValue = barElement.getProperties().getValue('YOUNGS_MODULUS') ...
-                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
+                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel ï¿½berprï¿½fen stets positiv
             
         end
         
