@@ -4,12 +4,19 @@ clear all;
 % EXAMPLES for FEM-Calculations with 3D Tetrahedron Elements
 % TetrahedronElement3d4n: Tetraeder with 4 nodes in 3D (linear)
 
-% SetUp of Geometry up to now only manually
+
+% CHOICE of Input-Method %
+
+method = 'manuell';
+% method = 'mdpa-input';
 
 
-% %  ========================= %
-% %% GEOMETRY BY MANUELL INPUT %
-% %  ========================= %
+if strcmp(method, 'manuell')
+
+
+%  ========================= %
+% GEOMETRY BY MANUELL INPUT %
+%  ========================= %
 
 % Assignment of Nodes
 node07 = Node(7,0,0,0);
@@ -64,51 +71,51 @@ model = FemModel(nodeArray, elementArray);
 
 
 
-
+elseif strcmp(method, 'mdpa-input')
 
 % ====================================== %
-%% GEOMETRY INPUT FROM GiD (.mdpa-input) %
+% GEOMETRY INPUT FROM GiD (.mdpa-input) %
 % ====================================== %
 
 
-% % % % MDPA_INPUT Read a large mdpa model and plot it
-% % % io=MdpaInput('Cube_Tetrahedron.mdpa'); %specify input file
-% % % model = io.readModel(); %read the model
-% % % 
-% % % 
-% % % % Assignment DOFs
-% % % model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y", "DISPLACEMENT_Z"]);
-% % % 
-% % % 
-% % % % Assignment of Material Properties
-% % % model.getAllElements.setPropertyValue('YOUNGS_MODULUS',7e8);
-% % % model.getAllElements.setPropertyValue('POISSON_RATIO',0.34);
-% % % % model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
-% % % model.getAllElements.setPropertyValue('DENSITY',2699);
-% % % 
-% % % 
-% % % % Set BCs for specified elements:
-% % % % supportedNodes = [1249, 1259, 1263, 1275, 1285, 1295, 1311, 1319, 1325, 1329, 1331, 644, 661, 684, 731, 795, 862, 955, 1037, 1112, 1194, 1251];
-% % % model.getModelPart('GENERIC_FixedNodes').getNodes().fixAllDofs();
-% % % % model.getNode(supportedNodes).fixAllDofs();
-% % % % barycenter(model.getElement(1)); %is not working for arbitrary hexahedra elements
-% % % % 
-% % % % % % % % % Set BCs for all elements in 'left_support' and 'right_support' (modelParts):
-% % % % % % % % %set boundary conditions for all elements in 'left_support' and 'right_support':
-% % % % % % % % model.getModelPart('GENERIC_left_support').getNodes().fixAllDofs();
-% % % % % % % % model.getModelPart('GENERIC_right_support').getNodes().fixAllDofs();
-% % % % 
-% % % % 
-% % % % Set load for specified elements:
-% % % % loads = model.getModelPart('GENERIC_load').getNodes();
-% % % % addPointLoad(loads,1000,[0 0 -1]);
-% % % model.getNodes([5,2]).setDofLoad('DISPLACEMENT_Z',1000);
-% % % % 
-% % % % %Important Remark: Visualization with Label is not possible.
-% % % % %ToDo: Calculate System with Hole
-% % % % %ToDo: Visualization of Stresses
+% MDPA_INPUT Read a large mdpa model and plot it
+io=MdpaInput('Cube_Tetrahedron.mdpa'); %specify input file
+model = io.readModel(); %read the model
 
 
+% Assignment DOFs
+model.getAllNodes.addDof(["DISPLACEMENT_X","DISPLACEMENT_Y", "DISPLACEMENT_Z"]);
+
+
+% Assignment of Material Properties
+model.getAllElements.setPropertyValue('YOUNGS_MODULUS',7e8);
+model.getAllElements.setPropertyValue('POISSON_RATIO',0.34);
+% model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT',2);
+model.getAllElements.setPropertyValue('DENSITY',2699);
+
+
+% Set BCs for specified elements:
+% supportedNodes = [1249, 1259, 1263, 1275, 1285, 1295, 1311, 1319, 1325, 1329, 1331, 644, 661, 684, 731, 795, 862, 955, 1037, 1112, 1194, 1251];
+model.getModelPart('GENERIC_FixedNodes').getNodes().fixAllDofs();
+% model.getNode(supportedNodes).fixAllDofs();
+% barycenter(model.getElement(1)); %is not working for arbitrary hexahedra elements
+% 
+% % % % % % Set BCs for all elements in 'left_support' and 'right_support' (modelParts):
+% % % % % %set boundary conditions for all elements in 'left_support' and 'right_support':
+% % % % % model.getModelPart('GENERIC_left_support').getNodes().fixAllDofs();
+% % % % % model.getModelPart('GENERIC_right_support').getNodes().fixAllDofs();
+% 
+% 
+% Set load for specified elements:
+% loads = model.getModelPart('GENERIC_load').getNodes();
+% addPointLoad(loads,1000,[0 0 -1]);
+model.getNodes([5,2]).setDofLoad('DISPLACEMENT_Z',1000);
+% 
+% %Important Remark: Visualization with Label is not possible.
+% %ToDo: Calculate System with Hole
+% %ToDo: Visualization of Stresses
+
+end
 
 
 % ====================================== %
