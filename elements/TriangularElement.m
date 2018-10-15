@@ -19,11 +19,13 @@ classdef TriangularElement < Element
  
         function c = barycenter(triangularElement)
             for i = 1 : 3
-                X = triangularElement.nodeArray(i).getX();
-                Y = triangularElement.nodeArray(i).getY();
+                X(i) = triangularElement.nodeArray(i).getX();
+                Y(i) = triangularElement.nodeArray(i).getY();
+                Z(i) = triangularElement.nodeArray(i).getZ();
             end
             c(1) = mean(X);
             c(2) = mean(Y);
+            c(3) = mean(Z);
         end
         % Check Convexity of triangle
         function checkConvexity(triangularElement)

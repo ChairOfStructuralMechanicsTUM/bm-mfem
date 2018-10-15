@@ -275,8 +275,8 @@ classdef VisualizationGUI < handle
             
             [stressValue, ~] = computeElementStress(elements,nodes,step);
             
-            disp_x = nodes.getDofValue('DISPLACEMENT_X',step);
-            disp_y = nodes.getDofValue('DISPLACEMENT_Y',step);
+            disp_x = nodes.getDofValue('DISPLACEMENT_X',step)';
+            disp_y = nodes.getDofValue('DISPLACEMENT_Y',step)';
             disp_absolute = sqrt(disp_x.^2+disp_y.^2);
             
             if     strcmp(fieldType,'Select Field')
@@ -316,12 +316,10 @@ classdef VisualizationGUI < handle
                 field = 0;
             end
             
-            if field ~= 0
+            if any(field)
                 
                 if length(selectedNodeIds) == 1
                     value = field(selectedNodeIds);
-                    a = num2str(selectedNodeIds);
-                    b = num2str(value);
                     msg = [fieldType ' at node ' num2str(selectedNodeIds) ': ' num2str(value)];
                     msgbox(msg,'Result')
                 else
@@ -409,9 +407,11 @@ classdef VisualizationGUI < handle
         function plotConstrain(visualization, state)
             hold on
             
-            try
-                visualization.clearConstrain;
-            end
+%             try
+            delete(findobj(gcf,'Tag','constrain'));
+%             if ~isempty(findobj(gcf,'Tag','constrain'))
+%                 visualization.clearConstrain;
+%             end
             
             nodes = visualization.model.getAllNodes;
             disp_x = nodes.getDofValue('DISPLACEMENT_X');
@@ -437,24 +437,24 @@ classdef VisualizationGUI < handle
                 dofX = nodes(ii).getDof('DISPLACEMENT_X').isFixed();
                 dofY = nodes(ii).getDof('DISPLACEMENT_Y').isFixed();
                 
-                if dofX == 1
+                if dofX == true
                     plotX = [x(ii);x(ii)-constrainScaling;x(ii)-constrainScaling;x(ii)];
                     plotY = [y(ii);y(ii)+constrainScaling;y(ii)-constrainScaling;y(ii)];
                     constrainPlot = line(plotX,plotY);
                     constrainPlot.Color = 'green';
                     constrainPlot.LineWidth = 1;
                     constrainPlot.Tag = 'constrain';
-                    visualization.constrainPlotLines(ii) = constrainPlot;
+                    visualization.constrainPlotLines(ii,1) = constrainPlot;
                 end
                     
-                if dofY == 1
+                if dofY == true
                     plotX = [x(ii);x(ii)+constrainScaling;x(ii)-constrainScaling;x(ii)];
                     plotY = [y(ii);y(ii)-constrainScaling;y(ii)-constrainScaling;y(ii)];
                     constrainPlot = line(plotX,plotY);
                     constrainPlot.Color = 'green';
                     constrainPlot.LineWidth = 1;
                     constrainPlot.Tag = 'constrain';
-                    visualization.constrainPlotLines(ii) = constrainPlot;
+                    visualization.constrainPlotLines(ii,2) = constrainPlot;
                 end
             end
             hold off
@@ -484,6 +484,16 @@ classdef VisualizationGUI < handle
         
         function clearConstrain(v)
             delete(v.constrainPlotLines);
+            drawnow;
+        end
+        
+        function a = getConstrain(v)
+            a = v.constrainPlotLines;
+            drawnow;
+        end
+        
+        function a = getLoad(v)
+            a = v.loadPlotLines;
             drawnow;
         end
         

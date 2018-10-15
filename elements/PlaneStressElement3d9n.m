@@ -187,10 +187,10 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
         end
         
         %Computation of the Internal Element Stresses
-        function [stressValue, element_nodes] = computeElementStress(elementArray,nodeArray, step)
+        function [stressValue, element_nodes] = computeElementStress(elementArray,nodeArray,step)
 
             element_nodes = zeros(length(elementArray),9);
-            stressValue = zeros(3,length(nodeArray));
+            stressValue = zeros(6,length(nodeArray));
 
             
             for i = 1:length(elementArray)
@@ -207,7 +207,7 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
                 
                 for j = 1:9
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
-                    displacement_e = getValuesVector(elementArray(i),1);
+                    displacement_e = getValuesVector(elementArray(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;
@@ -219,7 +219,7 @@ classdef PlaneStressElement3d9n < QuadrilateralElement
 
                 end
             end
-            
+            assignin('base','sigma_xx',sigma_xx)
             for k = 1 : length(nodeArray)
                 [I,J] = find(element_nodes == k);
                 

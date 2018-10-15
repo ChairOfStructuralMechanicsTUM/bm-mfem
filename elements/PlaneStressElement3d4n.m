@@ -102,7 +102,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                     [~, ~, B, J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
 
                     stiffnessMatrix = stiffnessMatrix + ...
-                        B' * D *B * det(J) * w(xi) * w(eta);
+                        B' * D * B * det(J) * w(xi) * w(eta);
                 end
             end
         end
@@ -116,7 +116,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             [w,g] = returnGaussPoint(nr_gauss_points);
 
             dens_mat = sparse(2,2);
-            dens_mat(1,1) = density*thickness; 
+            dens_mat(1,1) = density*thickness/2; 
             dens_mat(2,2) = dens_mat(1,1); 
 
             massMatrix = sparse(8,8);
@@ -124,7 +124,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 for eta = 1 : nr_gauss_points
                     [N_mat,~,~,J] = computeShapeFunction(planeStressElement3d4n,g(xi),g(eta));
                     
-                    massMatrix = massMatrix + N_mat' * dens_mat * N_mat *det(J) * w(xi) * w(eta);
+                    massMatrix = massMatrix + density * thickness * N_mat' * N_mat *det(J) * w(xi) * w(eta);
                 end
             end
         end        
@@ -202,7 +202,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
             for i = 1:length(elementArray)
 
                 element_connect(i,1:4) = elementArray(i).getNodes.getId();
-                stressPoints = [-1 -1;1 -1;1 1;-1 1];            
+                stressPoints = [-1 -1;1 -1;1 1;-1 1];
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
@@ -224,7 +224,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
 
                 end
             end
-            
+            assignin('base','sigma_xx',sigma_xx)
             for k = 1 : length(nodeArray)
                 [I,J] = find(element_connect == k);
                 
@@ -255,8 +255,7 @@ classdef PlaneStressElement3d4n < QuadrilateralElement
                 prII_dir(k,:) = vec(:,2);
 
                 vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
-            end
-            
+            end   
         stressValue(1,:) = smooth_sigma_xx;
         stressValue(2,:) = smooth_sigma_yy;
         stressValue(3,:) = smooth_sigma_xy;

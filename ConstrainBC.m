@@ -242,11 +242,15 @@ else
     endNodeId = model.getModelPart(modelPart).getId();
 end
 
-if (get(handles.checkbox6,'Value') == get(handles.checkbox6,'Max'))
-    addLineBC(startNodeId, endNodeId, nodes);
-end
-if (get(handles.checkbox7,'Value') == get(handles.checkbox7,'Max'))
-    addLineBC(startNodeId, endNodeId, nodes);
+selectedNodeIds = getNodeIdsAlongLine(startNodeId,endNodeId,nodes);
+
+for i = 1:length(selectedNodeIds)
+    if (get(handles.checkbox6,'Value') == get(handles.checkbox6,'Max'))
+        nodes(selectedNodeIds).fixDof('DISPLACEMENT_X');
+    end
+    if (get(handles.checkbox7,'Value') == get(handles.checkbox7,'Max'))
+        nodes(selectedNodeIds).fixDof('DISPLACEMENT_Y');
+    end
 end
 
 

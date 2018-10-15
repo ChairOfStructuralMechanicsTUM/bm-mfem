@@ -171,7 +171,7 @@ classdef PlaneStressElement3d3n < TriangularElement
             vals([2 4 6]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
-        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray)
+        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray,step)
 
             element_connect = zeros(length(elementArray),3);
             stressValue = zeros(3,length(nodeArray));
@@ -180,6 +180,7 @@ classdef PlaneStressElement3d3n < TriangularElement
 
                 element_connect(i,1:3) = elementArray(i).getNodes.getId();
                 stressPoints = [1 0 0;0 1 0;0 0 1];
+%                 stressPoints = [0 0 1;1 0 0;0 1 0];
                 EModul = elementArray(i).getPropertyValue('YOUNGS_MODULUS');
                 prxy = elementArray(i).getPropertyValue('POISSON_RATIO');
                 % Moment-Curvature Equations
@@ -189,7 +190,7 @@ classdef PlaneStressElement3d3n < TriangularElement
                 
                 for j = 1:3
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
-                    displacement_e = getValuesVector(elementArray(i),1);
+                    displacement_e = getValuesVector(elementArray(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;
@@ -201,7 +202,7 @@ classdef PlaneStressElement3d3n < TriangularElement
 
                 end
             end
-            
+            assignin('base','sigma_xx',sigma_xx)
             for k = 1 : length(nodeArray)
                 [I,J] = find(element_connect == k);
                 
@@ -233,7 +234,7 @@ classdef PlaneStressElement3d3n < TriangularElement
 
                 vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
             end
-            
+        assignin('base','smooth_sigma_xx',smooth_sigma_xx)   
         stressValue(1,:) = smooth_sigma_xx;
         stressValue(2,:) = smooth_sigma_yy;
         stressValue(3,:) = smooth_sigma_xy;

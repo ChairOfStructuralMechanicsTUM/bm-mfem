@@ -22,7 +22,7 @@ function varargout = PlaneStressGUI(varargin)
 
 % Edit the above text to modify the response to help PlaneStressGUI
 
-% Last Modified by GUIDE v2.5 03-Jun-2018 16:46:41
+% Last Modified by GUIDE v2.5 05-Jun-2018 15:07:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -170,14 +170,12 @@ function checkbox_nodeID_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_nodeID
-tic;
     if(get(hObject,'Value') == get(hObject,'Max'))
         handles.vis.plotNumbering('nodes','deformed');                   
     else
         handles.vis.clearNumbering;
 %         set(findobj(gcf,'tag','NodeNum'),'Visible','off');
     end
-toc
 
 % --- Executes on button press in checkbox_elemID.
 function checkbox_elemID_Callback(hObject, eventdata, handles)
@@ -363,7 +361,9 @@ else strcmp(loaded,'dynamic')
     totalSteps = endTime/dt;
     set(handles.text9,'String',totalSteps);
     set(handles.edit9,'String',1);
-    set(findall(handles.uipanel11, '-property', 'enable'), 'enable', 'off');
+    set(findall(handles.uipanel11, '-property', 'enable'), 'enable', 'on');
+    set(handles.text9,'Visible','on');
+    set(handles.text10,'Visible','on');
 end
 
 % Scale Deflection to 5 % of maximum Model Length 
@@ -567,6 +567,7 @@ model = handles.model;
 nodes = model.getAllNodes();
 nodes.setDofLoad('DISPLACEMENT_X',0);
 nodes.setDofLoad('DISPLACEMENT_Y',0);
+handles.vis.plotLoad('undeformed');
 handles.loaded = 'false';
 guidata(hObject,handles);
 
@@ -579,8 +580,15 @@ set(handles.pushbutton_solve, 'enable', 'off');
 
 model = handles.model;
 nodes = model.getAllNodes();
+handles.model.getAllNodes.unfixDof('DISPLACEMENT_Y');
 nodes.unfixDof('DISPLACEMENT_X');
-nodes.unfixDof('DISPLACEMENT_Y');
+handles.vis.plotConstrain('undeformed');
+
+% nodes.setDofValue('DISPLACEMENT_X',0);
+% nodes.setDofValue('DISPLACEMENT_Y',0);
+handles.model.getAllNodes.setDofValue('DISPLACEMENT_X',0);
+handles.model.getAllNodes.setDofValue('DISPLACEMENT_Y',0);
+
 handles.constrained = false;
 guidata(hObject,handles);
 
@@ -618,6 +626,7 @@ if scaling ~= handles.vis.getScaling
     handles.vis.plotField(fieldType);
     if (get(handles.checkbox6,'Value') == get(hObject,'Max'))
         handles.vis.plotLoad('deformed');
+        handles.vis.plotConstrain('deformed');
     end
 end
     
@@ -667,6 +676,44 @@ function pushbutton11_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+PrevNodes = handles.model.getAllNodes;
+for i = 1:length(PrevNodes)
+    dofLoad(i,1) = PrevNodes(i).getDof('DISPLACEMENT_X').getDofLoad();
+    dofLoad(i,2) = PrevNodes(i).getDof('DISPLACEMENT_Y').getDofLoad();
+    dof(i,1) = PrevNodes(i).getDof('DISPLACEMENT_X').isFixed();
+    dof(i,2) = PrevNodes(i).getDof('DISPLACEMENT_Y').isFixed();
+end
+file = get(handles.edit1,'string');
+io = ModelIO(file);
+model = io.readModel;
+model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
+handles.model = model;
+vis = VisualizationGUI(model);
+handles.vis = vis;
+
+model.getAllElements.setPropertyValue('THICKNESS', 0.5);
+model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 200000);
+model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
+model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT', 3);
+model.getAllElements.setPropertyValue('DENSITY', 10);
+
+nodes = model.getAllNodes;
+for i = 1:length(nodes)
+    nodes(i).setDofLoad('DISPLACEMENT_X',dofLoad(i,1));
+    nodes(i).setDofLoad('DISPLACEMENT_Y',dofLoad(i,2));
+    if dof(i,1) == 1
+        nodes(i).fixDof('DISPLACEMENT_X');
+    end
+    if dof(i,2) == 1
+        nodes(i).fixDof('DISPLACEMENT_Y');
+    end
+end
+handles.loaded = 'static';
+handles.constrained = true;
+% dofs = handles.model.getDofArray;
+% dofs.setValue(zeros(length(dofs),1));
+% handles.model.getAllNodes.setDofValue('DISPLACEMENT_Y',0);
 cla(handles.axes1);
 colorbar off
 handles.vis.plotUndeformed;
@@ -679,7 +726,7 @@ set(findall(handles.uibuttongroup_vis, '-property', 'enable'), 'enable', 'off');
 set(findall(handles.uipanel_properties, '-property', 'enable'), 'enable', 'on');
 set(findall(handles.uipanel_bC, '-property', 'enable'), 'enable', 'on');
 
-
+guidata(hObject,handles);
 % --- Executes on slider movement.
 function slider2_Callback(hObject, eventdata, handles)
 % hObject    handle to slider2 (see GCBO)
@@ -993,7 +1040,7 @@ else
     modelPart = startContents{get(handles.popupmenu13,'Value')};
     nodeId = model.getModelPart(modelPart).getId();
 end
-handles.vis.plotLineData(nodeId,fieldType,step); 
+handles.vis.plotLineData(nodeId,fieldType,step);
 
 % --- Executes during object creation, after setting all properties.
 function edit20_CreateFcn(hObject, eventdata, handles)
@@ -1026,4 +1073,6 @@ else
     modelPart = startContents{get(handles.popupmenu13,'Value')};
     nodeId = model.getModelPart(modelPart).getId();
 end
-handles.vis.plotLineData(nodeId,fieldType,step);    
+handles.vis.plotLineData(nodeId,fieldType,step);
+
+function pushbutton_solve_CreateFcn(hObject, eventdata, handles)

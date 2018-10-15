@@ -174,7 +174,7 @@ classdef PlaneStressElement3d6n < TriangularElement
         end
         
         % Computation of Stresses
-        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray)
+        function [stressValue, element_connect] = computeElementStress(elementArray,nodeArray,step)
 
             element_connect = zeros(length(elementArray),6);
             stressValue = zeros(3,length(nodeArray));
@@ -192,7 +192,7 @@ classdef PlaneStressElement3d6n < TriangularElement
                 
                 for j = 1:6
                     [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
-                    displacement_e = getValuesVector(elementArray(i),1);
+                    displacement_e = getValuesVector(elementArray(i),step);
                     displacement_e = displacement_e';
                     strain_e = B * displacement_e;
                     stress_e = D * strain_e;
@@ -204,7 +204,7 @@ classdef PlaneStressElement3d6n < TriangularElement
 
                 end
             end
-            
+            assignin('base','sigma_xx',sigma_xx)
             smooth_sigma_xx = zeros(1,length(nodeArray));
             smooth_sigma_yy = zeros(1,length(nodeArray));
             smooth_sigma_xy = zeros(1,length(nodeArray));
@@ -240,7 +240,7 @@ classdef PlaneStressElement3d6n < TriangularElement
 
                 vm_stress(k) = sqrt(prin_I(k).^2 + prin_II(k).^2 - prin_I(k) * prin_II(k));
             end
-            
+        assignin('base','smooth_sigma_xx',smooth_sigma_xx)  
         stressValue(1,:) = smooth_sigma_xx;
         stressValue(2,:) = smooth_sigma_yy;
         stressValue(3,:) = smooth_sigma_xy;

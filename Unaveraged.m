@@ -1,7 +1,9 @@
-%% PlaneStressElement Test with Gmsh Input File
+%% Averaged and Unaveraged Stresses
+clear;
+
 %% Import file
 
-io = ModelIO('tests/VM16_Trig6.msh');
+io = ModelIO('tests/VM16_Trig3.msh');
 model = io.readModel;
 model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y'});
 
@@ -13,7 +15,6 @@ nodes(1).fixDof('DISPLACEMENT_X');
 nodes(1).fixDof('DISPLACEMENT_Y');
 nodes(4).fixDof('DISPLACEMENT_X');
 nodes(4).fixDof('DISPLACEMENT_Y');
-% nodes(4).fixDof('DISPLACEMENT_Y');
 
 %% Line BC (Cantiliver)
 
@@ -51,41 +52,31 @@ nodes(2).setDofLoad('DISPLACEMENT_Y',150)
 %% Solving system
 solver = SimpleSolvingStrategy(model);
 solver.solve();
-% actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
-% [maxDisplacement, idx] = max(actualDisplacementY);
-% fprintf("Max Displacement: %e\n", maxDisplacement);
 
-% step = 1;
-% [stressValue, element_connect] = computeElementStress(elements,nodes,step);
-% field = stressValue(1,:)';
-% evaluation_point = model.getModelPart('LMPoint').getId();
-% stress = field(12);
-% dy = nodeArray(evaluation_point).getDofValue('DISPLACEMENT_Y');
-% fprintf("Stress: %f\n", stress);
-
-% %% Analytical Solution
-% l = 10;
-% I = 1/12;
-% w = -(q*l^4)/(76.8*E*I);
-% err = (w-dy)*100/dy;
-% fprintf("Analytical Solution for Simply Supported Beam: %f\n",w);
-% fprintf("Error: %3.2f %%\n", err);
-%% Eigenfrequencies
-% 
-% eigensolver = EigensolverStrategy(model);
-% eigensolver.solve(5);
-% eigensolver.assignModeShapes();
-% modes = eigensolver.getModalMatrix;
-% eigenfrequencies = eigensolver.getEigenfrequencies();
-% 
-% fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
 %% Plot 
 
 vis = Visualization(model);
-% vis.plotField('displacement_absolute',3);
 
-vis.plotDeformed();
+% Plot Averaged Stress
 vis.plotField('sigma_xx');
-vis.plotConstrain(1);
-vis.plotLoad(1);
-% vis.plotUndeformed();
+
+% Plot Unaveraged Stress
+figure('Name','Unaveraged')
+hold on
+axis equal
+
+for i = 1:length(elements)
+    
+X = elements(i).getNodes.getX();
+Y = elements(i).getNodes.getY();
+ord = elements(i).drawOrder();
+field = sigma_xx(i,:);
+
+fill(X(ord),Y(ord),field(ord))
+
+end
+
+hold off
+colormap parula(9)
+colorbar
+

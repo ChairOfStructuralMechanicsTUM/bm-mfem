@@ -4,7 +4,7 @@ clear all;
 clc;
 %% Initialization
 
-number_Elements = 10;
+number_Elements = 20;
 length_x = 1;
 
 fprintf("%i x %i Elements\n", number_Elements,number_Elements);
@@ -31,7 +31,7 @@ elementArray = ele(:)';
 
 ii = 1; 
 for i=1:length(node)
-    if node(i).getX == 0 && node(i).getY == 0 || node(i).getX == length_x && node(i).getY == 0
+    if node(i).getX == 0 %&& node(i).getY == 0 || node(i).getX == length_x && node(i).getY == 0
         node(i).fixDof('DISPLACEMENT_X');
         node(i).fixDof('DISPLACEMENT_Y');
         ii= ii+1;
@@ -60,24 +60,28 @@ addConstLineLoad(IdUpperLCorner,IdUpperRCorner,nodeArray,10,[0 -1 0]);
 
 %% Solving system
 model = FemModel(nodeArray,elementArray);
-solver = SimpleSolvingStrategy(model);
-solver.solve();
-actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
-
-lower_midpoint = number_Elements/2 + 1;
-fprintf("Displacement at Node %i : %f\n", lower_midpoint, node(lower_midpoint).getDofValue('DISPLACEMENT_Y'));
+% solver = SimpleSolvingStrategy(model);
+% solver.solve();
+% actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
+% 
+% lower_midpoint = number_Elements/2 + 1;
+% fprintf("Displacement at Node %i : %f\n", lower_midpoint, node(lower_midpoint).getDofValue('DISPLACEMENT_Y'));
 %% Eigenfrequencies
 
-% eigensolver = EigensolverStrategy(model);
-% eigensolver.solve(5);
-% eigenfrequencies = sort(eigensolver.getEigenfrequencies());
-% fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
+eigensolver = EigensolverStrategy(model);
+eigensolver.solve(5);
+eigenfrequencies = sort(eigensolver.getEigenfrequencies());
+fprintf("Eigenfrequencies: %f\n" , eigenfrequencies);
+
+eigensolver = EigensolverStrategy(model);
+eigensolver.solve(5);
+modes = eigensolver.getModalMatrix;
 
 %% Plot 
 
 vis = Visualization(model); 
-vis.plotUndeformed();
-vis.plotDeformed();
-
+% vis.plotUndeformed();
+% vis.plotDeformed();
+vis.plotField('modes');
 
 
