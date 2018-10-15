@@ -71,7 +71,7 @@ classdef AnsysInput < ModelIO
             end
             
             model = FemModel;
-            data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
+            obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
             obj.readErrorLog(obj.printOutput);
             
             if obj.printOutput
@@ -126,6 +126,11 @@ classdef AnsysInput < ModelIO
             
             % Create the dummy element
             e = model.addNewElement('DummyElement',1,model.getAllNodes);
+            
+            % Read matrices
+            data.Mansys = HBread('DataAnsys/HBMmass.txt');
+            data.Kansys = HBread('DataAnsys/HBMstiff.txt');
+            data.Cansys = HBread('DataAnsys/HBMdamp.txt');
             
             % Set the matrices
             systemSize = size(data.Mansys,1);
@@ -190,7 +195,7 @@ classdef AnsysInput < ModelIO
     
     methods (Static)
         
-        function data = runAnsys(ansysExecutable,folder,file,extension)
+        function runAnsys(ansysExecutable,folder,file,extension)
             % make directory for files
             if ~exist('DataAnsys','dir'); mkdir('DataAnsys'); end
             
@@ -270,11 +275,6 @@ classdef AnsysInput < ModelIO
             
             % Run ANSYS
             eval(['!"' ansysExecutable '" -b  -i DataAnsys/modelFile.txt -o DataAnsys/result.out'])
-            
-            % Read matrices
-            data.Mansys = HBread('DataAnsys/HBMmass.txt');
-            data.Kansys = HBread('DataAnsys/HBMstiff.txt');
-            data.Cansys = HBread('DataAnsys/HBMdamp.txt');
             
             % Delete files
             try
