@@ -72,6 +72,7 @@ classdef AnsysInput < ModelIO
             
             model = FemModel;
             data=obj.runAnsys(obj.ansysExecutable,folder,fileName,extension);
+            obj.readErrorLog(obj.printOutput);
             
             if obj.printOutput
                 disp('... done')
@@ -95,7 +96,7 @@ classdef AnsysInput < ModelIO
             % Read available element data
             [data.elementsOfModel,data.nodeElementList,data.nodeConnectivity] = AnsysInput.readElements();
             % Read surface loads
-            data.nodeSurfaceLoads = obj.readSurfaceLoads(data.nodeList, data.nodeElementList);
+            data.nodeSurfaceLoads = obj.readSurfaceLoads(data.nodeList);
             
             % Create objects "Node" and assign them to a model
             nodeArray = Node.empty;
@@ -281,7 +282,6 @@ classdef AnsysInput < ModelIO
                 delete('*.esav');
                 delete('*.full');
                 delete('*.mlv');
-                delete('*.err');
                 delete('*.db');
                 delete('*.log');
                 delete('*.BCS');
@@ -714,24 +714,24 @@ classdef AnsysInput < ModelIO
             
         end
         
-        function A = readSurfaceLoads(nodeCoords, elements)
-            % function A = readLoads()
+        function A = readSurfaceLoads(nodeCoords)
+            % function A = readSurfaceLoads()
             %
-            % Function   : readLoads
+            % Function   : readSurfaceLoads
             %
-            % Description: This function gets the loads on coordinates from
+            % Description: This function gets the loads on surfaces from
             %              ANSYS
             %
             % Parameters :
             %
-            % Return     : A cell with loads.
-            %               A{1}: node numbers
-            %               A{2}: resticted dof name
-            %               A{3}: real values the dof is restricted to
-            %               A{4}: imaginary values the dof is restricted to
+            % Return     : An array with surface loads:
+            %              A[:,1]: node numbers
+            %              A[:,2]: real part of load
+            %              A[:,3]: imaginary part of load
+            %              A[:,4:6]: normal of the surface the load is
+            %              acting on
 
             fid = fopen('DataAnsys/nodeSurfaceLoads.txt');
-%             fidd=fopen('DataAnsys/nodeSurfaceLoads_modified.dat','w') ;
             if fid < 0, error('Cannot open file'); end
             
             A = zeros(0,6);
@@ -762,12 +762,37 @@ classdef AnsysInput < ModelIO
                         A(end-4:end-1,4:6) = ones(4,1)*(normal/norm(normal));
                     end
                     faceNodes = tmp(3);
-%                 else
-%                     error('this should not happen')
                 end
             end
             fclose all;
             
+        end
+        
+        function readErrorLog(printWarnings)
+            fid = fopen('file.err');
+            while ~feof(fid)
+                tline=fgetl(fid);
+                if contains(tline,'WARNING') && printWarnings
+                    tline=fgetl(fid);
+                    msg = "";
+                    while ~all(isspace(tline))
+                        msg = msg + string(tline);
+                        tline=fgetl(fid);
+                    end
+                    warning(char(msg))
+                elseif contains(tline,'ERROR')
+                    tline=fgetl(fid);
+                    msg = "";
+                    while ~all(isspace(tline))
+                        msg = msg + string(tline);
+                        tline=fgetl(fid);
+                    end
+                    err = MException('MATLAB:bm_mfem:ansysError',char(msg));
+                    throw(err);
+                end
+            end
+            fclose all;
+            delete('file.err');
         end
         
         function name = replaceANSYSDofName(ansysName)
