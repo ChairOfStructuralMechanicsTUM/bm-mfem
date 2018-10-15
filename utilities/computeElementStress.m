@@ -50,9 +50,9 @@ for i = 1:nElements
     
     for j = 1:nElementalNodes
         if size(stressPoints,2) == 2 %quadrilateral elements
-            [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,1),stressPoints(j,2));
+            [~, ~, B, ~] = elementArray(i).computeShapeFunction(stressPoints(j,1),stressPoints(j,2));
         elseif size(stressPoints,2) == 3 %triangular elements
-            [~, ~, B, ~] = computeShapeFunction(elementArray(i),stressPoints(j,:));
+            [~, ~, B, ~] = elementArray(i).computeShapeFunction(stressPoints(j,:));
         else
             msg = ['ComputeElementStress: Invalid number of stress evaluation', ...
                 ' points.'];
@@ -91,11 +91,8 @@ for k = 1 : nNodes
     
     stress_ele = [smooth_sigma_xx(k) smooth_sigma_xy(k);
         smooth_sigma_xy(k) smooth_sigma_yy(k)];
-%     [~,lambda] = eig(stress_ele);
-    %for principal stress directions:
+    
     [vec, lambda] = eig(stress_ele);
-%     prI_dir(k,:) = vec(:,1);
-%     prII_dir(k,:) = vec(:,2);
     prStressDir(1,k,:) = vec(:,1);
     prStressDir(2,k,:) = vec(:,2);
     
@@ -111,9 +108,6 @@ stressValue(3,:) = smooth_sigma_xy;
 stressValue(4,:) = prin_I;
 stressValue(5,:) = prin_II;
 stressValue(6,:) = vm_stress;
-
-% prStressDir(1,:,:) = prI_dir;
-% prStressDir(2,:,:) = prII_dir;
 
 end
 
