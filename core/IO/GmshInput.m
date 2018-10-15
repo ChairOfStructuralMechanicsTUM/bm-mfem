@@ -30,13 +30,13 @@ classdef GmshInput < ModelIO
         end
         
         function setElementTypeLine2n(obj, typeName)
-           obj.line2n = typeName; 
+            obj.line2n = typeName;
         end
         
         function printElementTypes(obj)
-           fprintf('Currently defined element types:\n')
-           fprintf('Line2n: %s\n',obj.line2n)
-           fprintf('Triangle3n: %s\n',obj.triangle3n)
+            fprintf('Currently defined element types:\n')
+            fprintf('Line2n: %s\n',obj.line2n)
+            fprintf('Triangle3n: %s\n',obj.triangle3n)
         end
         
         % member functions
@@ -54,7 +54,7 @@ classdef GmshInput < ModelIO
             tline = fgetl(fid);
             
             while ischar(tline)
-                if strcmp(tline,'$Nodes')                    
+                if strcmp(tline,'$Nodes')
                     % skip to the first line with nodes
                     tline = fgetl(fid);
                     if (length(str2num(tline)) == 1)
@@ -140,14 +140,41 @@ classdef GmshInput < ModelIO
                                 
                                 
                             case 2 % 3-node triangle
+                                cElement = PlaneStressElement2d3n(elementData(1),...
+                                    [nodes(elementData(end-2)) nodes(elementData(end-1)) ...
+                                    nodes(elementData(end))]);
                                 
                             case 3 %4-node quadrangle
+                                cElement = PlaneStressElement2d4n(elementData(1),...
+                                    [nodes(elementData(end-3)) nodes(elementData(end-2)) ...
+                                    nodes(elementData(end-1)) nodes(elementData(end))]);
+                                
+                            case 9 %6-node second order triangle
+                                cElement = PlaneStressElement2d6n(elementData(1),...
+                                    [nodes(elementData(end-5)) nodes(elementData(end-4)) ...
+                                    nodes(elementData(end-3)) nodes(elementData(end-2)) ...
+                                    nodes(elementData(end-1)) nodes(elementData(end))]);
+                                
+                            case 10 %9-node second order quadrangle
+                                cElement = PlaneStressElement2d9n(elementData(1),...
+                                    [nodes(elementData(end-8)) nodes(elementData(end-7))...
+                                    nodes(elementData(end-6)) nodes(elementData(end-5)) ...
+                                    nodes(elementData(end-4)) nodes(elementData(end-3)) ...
+                                    nodes(elementData(end-2)) nodes(elementData(end-1)) ...
+                                    nodes(elementData(end))]);
                                 
                             case 15 %1-node point
                                 % here, cElement points to a node; gmsh
                                 % distinguishes between nodes and 1-d point
                                 % elements, we don't
                                 cElement = nodes(elementData(end));
+                                
+                            case 16 %8-node second order quadrangle
+                                cElement = PlaneStressElement2d8n(elementData(1),...
+                                    [nodes(elementData(end-7)) nodes(elementData(end-6))...
+                                    nodes(elementData(end-5)) nodes(elementData(end-4)) ...
+                                    nodes(elementData(end-3)) nodes(elementData(end-2)) ...
+                                    nodes(elementData(end-1)) nodes(elementData(end))]);
                                 
                         end %switch
                         
@@ -161,12 +188,10 @@ classdef GmshInput < ModelIO
                             
                             if elementType == 15 % don't add nodes to the array
                                 nModelPart.addNode(cElement);
-%                                 nModelPart.nodes = [modelParts(modelPartName).nodes cElement];
                                 modelParts(modelPartName) = nModelPart;
                             else
                                 elementArray = [elementArray cElement];
                                 nModelPart.addElement(cElement);
-%                                 nModelPart.elements = [nModelPart.elements cElement];
                                 modelParts(modelPartName) = nModelPart;
                             end
                             
@@ -208,8 +233,8 @@ classdef GmshInput < ModelIO
                         
                         obj.modelPartNames(nModelPartName) = modelPartName;
                         modelParts(modelPartName) = FemModelPart(modelPartName,[],[]);
-%                         modelParts(modelPartName) = struct('nodes',[],...
-%                             'elements',[]);
+                        %                         modelParts(modelPartName) = struct('nodes',[],...
+                        %                             'elements',[]);
                         tline = fgetl(fid);
                     end
                     

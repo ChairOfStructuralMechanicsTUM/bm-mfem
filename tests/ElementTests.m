@@ -473,6 +473,46 @@ classdef ElementTests < matlab.unittest.TestCase
                 'Within',AbsoluteTolerance(1e-7)))
         end
         
+        
+        function testTetrahedronElement3d8n (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            node01 = Node(1,0,0,0);
+            node02 = Node(2,0,1,0);
+            node03 = Node(3,0,1,1);
+            node04 = Node(4,1,1,0);
+            
+            nodeArray = [node01 node02 node03 node04];
+            
+            nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            ele01 = TetrahedronElement3d4n(1,[node01 node02 node03 node04]);
+            
+            ele01.setPropertyValue('YOUNGS_MODULUS',336);
+            ele01.setPropertyValue('POISSON_RATIO',1/3);
+            ele01.setPropertyValue('DENSITY',2699);
+
+            actualSolution = ele01.computeLocalStiffnessMatrix;
+            
+            expectedSolution = [ 21,  0,  0,-21, 21,  0,  0,  0,  0,  0,-21,  0;
+                                  0, 84,  0, 42,-84, 42,  0,  0,-42,-42,  0,  0;
+                                  0,  0, 21,  0, 21,-21,  0,-21,  0,  0,  0,  0;
+                                -21, 42,  0,126,-63, 63,-21,  0,-42,-84, 21,-21;
+                                 21,-84, 21,-63,126,-63,  0,-21, 42, 42,-21,  0;
+                                  0, 42,-21, 63,-63,126,-21, 21,-84,-42,  0,-21;
+                                  0,  0,  0,-21,  0,-21, 21,  0,  0,  0,  0, 21;
+                                  0,  0,-21,  0,-21, 21,  0, 21,  0,  0,  0,  0;
+                                  0,-42,  0,-42, 42,-84,  0,  0, 84, 42,  0,  0;
+                                  0,-42,  0,-84, 42,-42,  0,  0, 42, 84,  0,  0;
+                                -21,  0,  0, 21,-21,  0,  0,  0,  0,  0, 21,  0;
+                                  0,  0,  0,-21,  0,-21, 21,  0,  0,  0,  0, 21];
+            
+            testCase.assertThat(actualSolution, IsEqualTo(expectedSolution, ...
+                'Within',AbsoluteTolerance(1e-7)))
+        end
+        
+        
         function testShellElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance

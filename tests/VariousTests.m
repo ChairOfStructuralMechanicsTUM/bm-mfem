@@ -46,7 +46,7 @@ classdef VariousTests <  matlab.unittest.TestCase
         %   line comments, different element types, and model parts
             import matlab.unittest.constraints.IsTrue
             
-            io = MdpaInput('tests/mdpatest.mdpa');
+            io = MdpaInput('tests/input_data/mdpatest.mdpa');
             model = io.readModel;
             
             testCase.verifyEqual(model.getNode(14).getX,2.213);
@@ -101,6 +101,15 @@ classdef VariousTests <  matlab.unittest.TestCase
                 'MATLAB:bm_mfem:nodeNotFound');
             testCase.verifyError(@() mp1.getElementById(1), ...
                 'MATLAB:bm_mfem:elementNotFound');
+        end
+        
+        function testIsOnLineBetweenTwoPoints(testCase)
+            c1 = [0 -1 0];
+            c2 = [2 6 0];
+            
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[2/7 0 0]),true);
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[-2/7 -2 0]),false);
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[1 1 1]),false);
         end
     end
     
