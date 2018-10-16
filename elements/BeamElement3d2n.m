@@ -95,7 +95,7 @@ classdef BeamElement3d2n < LinearElement
            stiffnessMatrix(10,4) = - stiffnessMatrix(4,4);
            stiffnessMatrix(4,10) = - stiffnessMatrix(4,4);
            
-           tMat = element.getTransformationMatrix;
+           tMat = sparse(element.getTransformationMatrix);
            stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
         end
         

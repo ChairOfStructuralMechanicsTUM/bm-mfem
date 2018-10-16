@@ -72,7 +72,7 @@ classdef ShellElement3d4n < QuadrilateralElement
             
             % Shape Function and Derivatives
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
-            N_mat = zeros(6,24);
+            N_mat = sparse(6,24);
             N_mat(1,1:6:end) = N(:);
             N_mat(2,2:6:end) = N(:);
             N_mat(3,3:6:end) = N(:);
@@ -105,9 +105,11 @@ classdef ShellElement3d4n < QuadrilateralElement
             
             % Inverse Jacobian
             inv_J = inv(J);
-            inv_J_TR = [inv_J, zeros(2,2); zeros(2,2), inv_J]; 
+            inv_J_TR = sparse([1 1 2 2 3 3 4 4],[1 2 1 2 3 4 3 4],...
+                            [inv_J(1,1) inv_J(1,2) inv_J(2,1) inv_J(2,2) inv_J(1,1) inv_J(1,2) inv_J(2,1) inv_J(2,2)],4,4);
             
-            MN_Diff_Par = zeros(4,16);
+            
+            MN_Diff_Par = sparse(4,16);
             MN_Diff_Par(1,:) = [obj.dM_dx(1)*obj.Nx(1,eta) 0 ...
                 obj.dM_dx(1) * -1*obj.Nx(2,eta) 0 ...
                 obj.dM_dx(2) * obj.Nx(1,eta) 0 ...
@@ -160,17 +162,13 @@ classdef ShellElement3d4n < QuadrilateralElement
             Tr(15,12) = (ele_coords(4,2) - ele_coords(1,2))/2;
             Tr(16,12) = (ele_coords(3,1) - ele_coords(4,1))/2; 
            
-            A = sparse(3,4); 
-            A(1,1) = 1; 
-            A(2,4) = 1; 
-            A(3,2) = 1; 
-            A(3,3) = 1;
+            A = sparse([1 2 3 3],[1 4 2 3],[1 1 1 1],3,4);
             
             % Computing the B_Membrane Matrix with a drilling dof
             B_mem = A * inv_J_TR * MN_Diff_Par * Tr; 
 
             % Assembling the Discrete Kirchhoff Shape Function Matrix
-            Psi_Diff_Par = zeros(4,12); 
+            Psi_Diff_Par = sparse(4,12); 
 
             Psi_Diff_Par(1,1) = 0.75 * ((( 2 * xi * (1 - eta) * (ele_coords(1,1) - ele_coords(2,1))) / ( (ele_coords(1,1) - ele_coords(2,1))^2 + (ele_coords(1,2) - ele_coords(2,2))^2)) ...
                                     - (((1 - eta^2) * (ele_coords(4,1) - ele_coords(1,1))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2  )));
@@ -346,18 +344,17 @@ classdef ShellElement3d4n < QuadrilateralElement
             thickness = obj.getPropertyValue('THICKNESS');
             
             % Plane Stress Matrix
-            D_mem = (EModul/(1-prxy^2)) * ...
-                [1  prxy  0; prxy  1  0 ; 0  0  (1-prxy)/2];
+            D_mem = sparse([1 1 2 2 3],[1 2 1 2 3],[1 prxy prxy 1 (1-prxy)/2],3,3);
+            D_mem = D_mem * (EModul/(1-prxy^2));
             
             % Material Bending Matrix D_b
-            D_b = [1    prxy    0; ...
-                prxy     1   0; ...
-                0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
+            D_b = sparse([1 1 2 2 3],[1 2 1 2 3],[1 prxy prxy 1 (1-prxy)/2],3,3);
+            D_b = D_b * (EModul * thickness^3) / (12*(1-prxy^2));
             
             [w,g] = returnGaussPoint(nr_gauss_points);
             
-            stiffnessMatrixMemb = zeros(12,12);
-            stiffnessMatrixBend = zeros(12,12);
+            stiffnessMatrixMemb = sparse(12,12);
+            stiffnessMatrixBend = sparse(12,12);
             stiffnessMatrix = sparse(24,24);
             
             for xi = 1 : nr_gauss_points
@@ -424,7 +421,7 @@ classdef ShellElement3d4n < QuadrilateralElement
         end
                 
         function f=computeLocalForceVector(obj)
-            f = zeros(1,24); 
+            f = sparse(1,24); 
         end
         
         function dofs = getDofList(obj)
@@ -437,7 +434,7 @@ classdef ShellElement3d4n < QuadrilateralElement
         end
         
         function vals = getValuesVector(obj, step)
-            vals = zeros(1,24);
+            vals = sparse(1,24);
             vals([1  7 13 19]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
             vals([2  8 14 20]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
             vals([3  9 15 21]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
@@ -447,7 +444,7 @@ classdef ShellElement3d4n < QuadrilateralElement
         end
         
         function vals = getFirstDerivativesVector(obj, step)
-            vals = zeros(1,24);
+            vals = sparse(1,24);
             [~, vals([1  7 13 19]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, vals([2  8 14 20]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
             [~, vals([3  9 15 21]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
@@ -457,7 +454,7 @@ classdef ShellElement3d4n < QuadrilateralElement
         end
         
         function vals = getSecondDerivativesVector(obj, step)
-            vals = zeros(1,24);
+            vals = sparse(1,24);
             [~, ~, vals([1  7 13 19])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, ~, vals([2  8 14 20])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
             [~, ~, vals([3  9 15 21])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);

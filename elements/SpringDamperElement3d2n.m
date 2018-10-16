@@ -45,35 +45,44 @@ classdef SpringDamperElement3d2n < LinearElement
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(element)
-           stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
-           stiffnessMatrix = zeros(6);
-           stiffnessMatrix(1,1) = stiffness;
-           stiffnessMatrix(1,4) = - stiffness;
-           stiffnessMatrix(4,4) = stiffness;
-           stiffnessMatrix(4,1) = - stiffness;
-           
-           tMat = element.getTransformationMatrix;
-           stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
+               stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
+%            stiffnessMatrix = zeros(6);
+%            stiffnessMatrix(1,1) = stiffness;
+%            stiffnessMatrix(1,4) = - stiffness;
+%            stiffnessMatrix(4,4) = stiffness;
+%            stiffnessMatrix(4,1) = - stiffness;
+%            
+%            tMat = element.getTransformationMatrix;
+%            stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
+            stiffnessMatrix = sparse([1 1 4 4],[1 4 4 1],[stiffness -stiffness stiffness -stiffness],6,6);
+            tMat = sparse(element.getTransformationMatrix);
+            stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
+
         end
         
         function massMatrix = computeLocalMassMatrix(element)
-            massMatrix = zeros(6);
+            massMatrix = sparse(6,6);
         end
         
         function dampingMatrix = computeLocalDampingMatrix(element)
            damping = element.getPropertyValue('ELEMENTAL_DAMPING');
-           dampingMatrix = zeros(6);
-           dampingMatrix(1,1) = damping;
-           dampingMatrix(1,4) = - damping;
-           dampingMatrix(4,4) = damping;
-           dampingMatrix(4,1) = - damping;
-           
-           tMat = element.getTransformationMatrix;
-           dampingMatrix = tMat' * dampingMatrix * tMat;           
+%            dampingMatrix = zeros(6);
+%            dampingMatrix(1,1) = damping;
+%            dampingMatrix(1,4) = - damping;
+%            dampingMatrix(4,4) = damping;
+%            dampingMatrix(4,1) = - damping;
+%            
+%            tMat = element.getTransformationMatrix;
+%            dampingMatrix = tMat' * dampingMatrix * tMat;  
+            
+
+            dampingMatrix = sparse([1 1 4 4],[1 4 4 1],[damping -damping damping -damping],6,6);
+            tMat = sparse(element.getTransformationMatrix);
+            dampingMatrix = tMat' * dampingMatrix * tMat;  
         end
         
         function forceVector = computeLocalForceVector(element)
-           forceVector = zeros(1,6);
+           forceVector = sparse(1,6);
 %            stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
 %            nodes = element.getNodes;
 %            

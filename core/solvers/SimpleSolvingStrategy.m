@@ -10,7 +10,7 @@ classdef SimpleSolvingStrategy < Solver
     
     
     methods
-        
+      
         %constructor
         function simpleSolver = SimpleSolvingStrategy(femModel)
             if (nargin > 0)
