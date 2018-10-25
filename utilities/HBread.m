@@ -37,7 +37,9 @@ end
 col_ind(end) = [];
 row_ind = ROWIND;
 
-A = sparse(row_ind, col_ind,VALUES, nrow, ncol);
+A = sparse(row_ind, col_ind, VALUES, nrow, ncol);
+
+fclose(fid);
 
 end
 
