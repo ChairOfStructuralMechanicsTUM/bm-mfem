@@ -61,7 +61,7 @@ classdef NewmarkSolvingStrategy < Solver
             accOld = applyVectorBoundaryConditions(accOld, fixedDofIds)';
             
             if solver.alpha == 0
-                rhs = force' ...
+                rhs = force ...
                     - solver.dampingMatrix * (velOld + ((1 - solver.gamma) .* solver.dt) * accOld) ...
                     - solver.stiffnessMatrix * (dispOld + solver.dt .* velOld + ((0.5 - solver.beta) * power(solver.dt,2)) .* accOld);
                 
@@ -72,11 +72,11 @@ classdef NewmarkSolvingStrategy < Solver
                 
             else
                 c = solver.newmarkCoefficients;
-                rhs = force' ...
+                rhs = force ...
                     + solver.massMatrix * ((1 - solver.alpha) .* (dispOld .* c(1) + velOld .* c(3) + accOld .* c(4)) - solver.alpha .* accOld) ...
                     + solver.dampingMatrix * (dispOld .* c(2) + velOld .* c(5) + accOld .* c(6));
                 
-                dispNew = solver.lhs\ rhs;
+                dispNew = solver.lhs \ rhs;
                 accNew = (dispNew - dispOld) .* c(1) - velOld .* c(3) - accOld .* c(4);
                 velNew = velOld + (solver.dt * (1 - solver.gamma)) .* accOld + accNew .* (solver.dt * solver.gamma);
             end
@@ -113,7 +113,7 @@ classdef NewmarkSolvingStrategy < Solver
             vel0 = applyVectorBoundaryConditions(vel, fixedDofIds)';
             
 %             acc0 = (solver.massMatrix) \ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
-            acc0 = solver.massMatrix\ (force0' - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
+            acc0 = solver.massMatrix \ (force0 - solver.stiffnessMatrix * disp0 - solver.dampingMatrix * vel0);
             solver.assembler.setSecondDerivativeValuesToDofs(solver.femModel, acc0);
             solver.isInitialized = true;
             

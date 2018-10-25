@@ -62,7 +62,7 @@ classdef SimpleAssembler < Assembler %#ok<*SPRIX>
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
-            forceVector = sparse(1,nDofs);
+            forceVector = sparse(nDofs,1);
             [~, fixedDofs] = femModel.getDofConstraints();
             
             % get the external load on the dofs

@@ -73,7 +73,7 @@ classdef MORStrategy < Solver
                 case 'krylov-galerkin-proj'
                     for ii = 1:length(sampling)
                         K_dyn = stiffnessMatrix - (sampling(ii))^2 * massMatrix;
-                        b = K_dyn \ force';
+                        b = K_dyn \ force;
                         Ab = K_dyn \ (massMatrix * b);
                         AAb = K_dyn\ (massMatrix * Ab);
                         basis(:,(ii-1)*3+1:(ii-1)*3+3) = [b,Ab,AAb];
@@ -81,7 +81,7 @@ classdef MORStrategy < Solver
                     [s.basisR, ~] = qr(basis, 0);
                     s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
                     s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
-                    s.forceR = s.basisR.' * force';
+                    s.forceR = s.basisR.' * force;
                     
                 case 'derivative-based-galerkin-proj'
                     ddS = -2 * massMatrix; %system matrix second derivative
@@ -89,7 +89,7 @@ classdef MORStrategy < Solver
                         sp = sampling(ii);
                         S = -sp^2 * massMatrix + stiffnessMatrix; %system matrix
                         dS = -2 * sp * massMatrix; %system matrix first derivative
-                        u = S \ force';
+                        u = S \ force;
                         dudw = S \ (-dS * u);
                         dduddw = S \ (-2*dS*dudw - ddS*u);
                         basis(:,(ii-1)*3+1:(ii-1)*3+3) = [u,dudw,dduddw];
@@ -97,7 +97,7 @@ classdef MORStrategy < Solver
                     [s.basisR, ~] = qr(basis, 0);
                     s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
                     s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
-                    s.forceR = s.basisR.' * force';
+                    s.forceR = s.basisR.' * force;
                     
                 case 'POD'
                     %generate snapshots in frequency domain
@@ -106,7 +106,7 @@ classdef MORStrategy < Solver
                     u_snap = zeros(length(force), length(sampling));
                     for ii = 1:length(sampling) 
                         sp = sampling(ii);
-                        u_snap(:,ii) = (-sp^2 * massMatrix + stiffnessMatrix) \ force';
+                        u_snap(:,ii) = (-sp^2 * massMatrix + stiffnessMatrix) \ force;
                     end
                     
                     %compute eigenvectors
@@ -122,7 +122,7 @@ classdef MORStrategy < Solver
                     s.basisR = u_snap * basis;
                     s.massMatrixR = s.basisR.' * massMatrix * s.basisR;
                     s.stiffnessMatrixR = s.basisR.' * stiffnessMatrix * s.basisR;
-                    s.forceR = s.basisR.' * force';
+                    s.forceR = s.basisR.' * force;
                     
                 otherwise
                     error('Error (MORStrategy.initialize): unknown MOR method!')
