@@ -8,7 +8,7 @@ classdef SpringDamperElement3d2n < LinearElement
     
     methods
         % constructor
-        function springDamperElement = SpringDamperElement3d2n(id, nodeArray)
+        function obj = SpringDamperElement3d2n(id, nodeArray)
             
             requiredPropertyNames = cellstr(["ELEMENTAL_STIFFNESS", "ELEMENTAL_DAMPING"]);
             
@@ -22,66 +22,38 @@ classdef SpringDamperElement3d2n < LinearElement
             end
             
             % call the super class constructor
-            springDamperElement@LinearElement(super_args{:});
-            springDamperElement.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
+            obj@LinearElement(super_args{:});
+            obj.dofNames = cellstr(['DISPLACEMENT_X'; 'DISPLACEMENT_Y'; 'DISPLACEMENT_Z']);
                         
         end
         
-        function initialize(element)
-            element.localSystem = element.computeLocalSystem();
-            element.length0 = computeLength(element.nodeArray(1).getCoords, ...
-                    element.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.localSystem = obj.computeLocalSystem();
+            obj.length0 = computeLength(obj.nodeArray(1).getCoords, ...
+                    obj.nodeArray(2).getCoords);
         end
         
-        function stiffnessMatrix = OLDcomputeLocalStiffnessMatrix(springDamperElement)
-           stiffness = springDamperElement.getPropertyValue('ELEMENTAL_STIFFNESS');
-           stiffnessMatrix = zeros(6);
-           for ii = 1:size(stiffnessMatrix,1)/2
-               stiffnessMatrix(ii, ii) = stiffness(ii);
-               stiffnessMatrix(ii+3, ii+3) = stiffness(ii);
-               stiffnessMatrix(ii, ii+3) = -stiffness(ii);
-               stiffnessMatrix(ii+3, ii) = -stiffness(ii);
-           end
-        end
-        
-        function stiffnessMatrix = computeLocalStiffnessMatrix(element)
-               stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
-%            stiffnessMatrix = zeros(6);
-%            stiffnessMatrix(1,1) = stiffness;
-%            stiffnessMatrix(1,4) = - stiffness;
-%            stiffnessMatrix(4,4) = stiffness;
-%            stiffnessMatrix(4,1) = - stiffness;
-%            
-%            tMat = element.getTransformationMatrix;
-%            stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+            stiffness = obj.getPropertyValue('ELEMENTAL_STIFFNESS');
+            
             stiffnessMatrix = sparse([1 1 4 4],[1 4 4 1],[stiffness -stiffness stiffness -stiffness],6,6);
-            tMat = sparse(element.getTransformationMatrix);
+            tMat = obj.getTransformationMatrix;
             stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
-
         end
         
-        function massMatrix = computeLocalMassMatrix(element)
+        function massMatrix = computeLocalMassMatrix(obj)
             massMatrix = sparse(6,6);
         end
         
-        function dampingMatrix = computeLocalDampingMatrix(element)
-           damping = element.getPropertyValue('ELEMENTAL_DAMPING');
-%            dampingMatrix = zeros(6);
-%            dampingMatrix(1,1) = damping;
-%            dampingMatrix(1,4) = - damping;
-%            dampingMatrix(4,4) = damping;
-%            dampingMatrix(4,1) = - damping;
-%            
-%            tMat = element.getTransformationMatrix;
-%            dampingMatrix = tMat' * dampingMatrix * tMat;  
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            damping = obj.getPropertyValue('ELEMENTAL_DAMPING');
             
-
             dampingMatrix = sparse([1 1 4 4],[1 4 4 1],[damping -damping damping -damping],6,6);
-            tMat = sparse(element.getTransformationMatrix);
-            dampingMatrix = tMat' * dampingMatrix * tMat;  
+            tMat = obj.getTransformationMatrix;
+            dampingMatrix = tMat' * dampingMatrix * tMat;
         end
         
-        function forceVector = computeLocalForceVector(element)
+        function forceVector = computeLocalForceVector(obj)
            forceVector = sparse(1,6);
 %            stiffness = element.getPropertyValue('ELEMENTAL_STIFFNESS');
 %            nodes = element.getNodes;
@@ -101,63 +73,40 @@ classdef SpringDamperElement3d2n < LinearElement
 %            forceVector = forceVector';
         end
         
-        function dofs = getDofList(element)
-            dofs([1 4]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 5]) = element.nodeArray.getDof('DISPLACEMENT_Y');
-            dofs([3 6]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        function dofs = getDofList(obj)
+            dofs([1 4]) = obj.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 5]) = obj.nodeArray.getDof('DISPLACEMENT_Y');
+            dofs([3 6]) = obj.nodeArray.getDof('DISPLACEMENT_Z');
         end
         
-        function vals = getValuesVector(element, step)
+        function vals = getValuesVector(obj, step)
             vals = zeros(1,6);
             
-            vals([1 4]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 5]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-            vals([3 6]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([1 4]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 5]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 6]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
         end
         
-        function vals = getFirstDerivativesVector(element, step)
+        function vals = getFirstDerivativesVector(obj, step)
             vals = zeros(1,6);
             
-            [~, vals([1 4]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([2 5]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, vals([3 6]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([1 4]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 5]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3 6]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
         end
         
-        function vals = getSecondDerivativesVector(element, step)
+        function vals = getSecondDerivativesVector(obj, step)
             vals = zeros(1,6);
 
-            [~, ~, vals([1 4])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([2 5])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, ~, vals([3 6])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([1 4])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 5])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3 6])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
         end
         
-        function update(springDamperElement)
-            springDamperElement.length0 = computeLength(springDamperElement.nodeArray(1).getCoords, ...
-                    springDamperElement.nodeArray(2).getCoords);
+        function update(obj)
+            obj.length0 = computeLength(obj.nodeArray(1).getCoords, ...
+                    obj.nodeArray(2).getCoords);
         end
-        
-    end
-    
-    methods (Access = private)
-       
-%         function tMat = getTransformationMatrix(ele)
-%             dirX = ele.nodeArray(2).getCoords - ele.nodeArray(1).getCoords;
-%             dirX = dirX ./ norm(dirX);
-%             
-%             dirY = cross([0 0 1], dirX);
-%             dirY = dirY ./ norm(dirY);
-%             dirZ = cross(dirX, dirY);
-%             dirZ = dirZ ./ norm(dirZ);
-%             
-%             T=zeros(3);         % the scalar product is applied implicitly here
-%             T(1,:) = dirX;
-%             T(2,:) = dirY;
-%             T(3,:) = dirZ;
-%            
-%             tMat = zeros(6);
-%             tMat(1:3,1:3) = T;
-%             tMat(4:6,4:6) = T;
-%         end
         
     end
     
