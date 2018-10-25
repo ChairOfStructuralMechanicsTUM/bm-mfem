@@ -114,21 +114,28 @@ classdef FemModel < handle
         end
         
         % setter functions
-        function mp = addNewModelPart(obj, name, nodeIds, elementIds)
+        function mp = addNewModelPart(obj, name, nodes, elements)
         %ADDNEWMODELPART add a new model part
-        %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to the 
-        %   FemModel containing nodes with nodeIds and/or elements with
+        %   ADDNEWMODELPART(name, nodes, elements) adds a modelpart to the
+        %   FemModel containing nodes and/or elements.
+        %
+        %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to
+        %   the FemModel containing nodes with nodeIds and/or elements with
         %   elementIds.
         %
         %   ANNEWMODELPART(name) adds an empty model part
-        %    
+        %
         %   see also FEMMODELPART
             if nargin == 2
                 obj.femModelParts(name) = FemModelPart(name, [], [], obj);
             elseif nargin == 4
-                nodes = obj.getNodes(nodeIds);
-                elements = obj.getElements(elementIds);
-
+                if ~isa(nodes,'Node')
+                    nodes = obj.getNodes(nodes);
+                end
+                if ~isa(elements,'Element')
+                    elements = obj.getElements(elements);
+                end
+                
                 obj.femModelParts(name) = FemModelPart(name, ...
                     nodes, elements, obj);
             else
@@ -207,6 +214,20 @@ classdef FemModel < handle
             end
             
             obj.initialized = false;
+        end
+        
+        function addNodes(obj, nodes)
+            %ADDNODES adds an array of nodes to the model
+            nodeIds = nodes.getId();
+            if ~isempty(obj.nodeArray)
+                nodeIds = [nodeIds obj.nodeArray.getId()];
+            end
+            duplicated_nodes = findDuplicates(nodeIds);
+            if ~ isempty(duplicated_nodes)
+                error('multiple nodes with id %d exist',duplicated_nodes);
+            else
+                obj.nodeArray(nodeIds) = nodes;
+            end
         end
         
         function element = addNewElement(obj, elementName, id, nodes, props)
