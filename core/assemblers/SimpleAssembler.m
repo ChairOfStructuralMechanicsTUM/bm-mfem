@@ -1,4 +1,4 @@
-classdef SimpleAssembler < Assembler
+classdef SimpleAssembler < Assembler %#ok<*SPRIX>
     %SIMPLEASSEMBLER Simple elimination-based assembler
     %   Detailed explanation goes here
     

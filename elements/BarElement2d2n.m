@@ -157,4 +157,3 @@ classdef BarElement2d2n < LinearElement
     end
     
 end
-

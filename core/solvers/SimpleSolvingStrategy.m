@@ -49,4 +49,3 @@ classdef SimpleSolvingStrategy < Solver
         
     end
 end
-
