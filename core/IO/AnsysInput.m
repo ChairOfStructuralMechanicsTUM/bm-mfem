@@ -778,6 +778,7 @@ classdef AnsysInput < ModelIO
                     while ~all(isspace(tline))
                         msg = msg + string(tline);
                         tline=fgetl(fid);
+                        if feof(fid); break; end
                     end
                     warning(char(msg))
                 elseif contains(tline,'ERROR')
@@ -786,8 +787,11 @@ classdef AnsysInput < ModelIO
                     while ~all(isspace(tline))
                         msg = msg + string(tline);
                         tline=fgetl(fid);
+                        if feof(fid); break; end
                     end
                     err = MException('MATLAB:bm_mfem:ansysError',char(msg));
+                    fclose all;
+                    delete('file.err');
                     throw(err);
                 end
             end
