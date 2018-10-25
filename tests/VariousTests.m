@@ -87,6 +87,15 @@ classdef VariousTests <  matlab.unittest.TestCase
             testCase.verifyError(@() mp1.getElementById(1), ...
                 'MATLAB:bm_mfem:elementNotFound');
         end
+        
+        function testIsOnLineBetweenTwoPoints(testCase)
+            c1 = [0 -1 0];
+            c2 = [2 6 0];
+            
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[2/7 0 0]),true);
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[-2/7 -2 0]),false);
+            testCase.verifyEqual(isOnLineBetweenTwoPoints(c1,c2,[1 1 1]),false);
+        end
     end
     
 end

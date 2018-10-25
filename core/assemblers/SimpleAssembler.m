@@ -1,4 +1,4 @@
-classdef SimpleAssembler < Assembler
+classdef SimpleAssembler < Assembler %#ok<*SPRIX>
     %SIMPLEASSEMBLER Simple elimination-based assembler
     %   Detailed explanation goes here
     
@@ -30,12 +30,11 @@ classdef SimpleAssembler < Assembler
             end
             
             ndofs = length(femModel.getDofArray);
-            stiffnessMatrix = zeros(ndofs);
+            stiffnessMatrix = sparse(ndofs,ndofs);
             
             for itEle = 1:length(elements)
                elementalStiffnessMatrix = elements(itEle).computeLocalStiffnessMatrix;
                elementalDofIds = elements(itEle).getDofList().getId;
-%                elementalDofIds = elements(itEle).getDofList();
                stiffnessMatrix(elementalDofIds, elementalDofIds) = ...
                    stiffnessMatrix(elementalDofIds, elementalDofIds) + elementalStiffnessMatrix;
             end
@@ -57,18 +56,19 @@ classdef SimpleAssembler < Assembler
                 reducedStiffnessMatrix = stiffnessMatrix(free,free);
                 stiffnessMatrix = stiffnessMatrix(mp_dof_ids,mp_dof_ids);
             end
-        end 
+        
+        end
         
         function [forceVector, reducedForceVector] = applyExternalForces(femModel)
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
-            forceVector = zeros(1,nDofs);
+            forceVector = sparse(1,nDofs);
             [~, fixedDofs] = femModel.getDofConstraints();
             
             % get the external load on the dofs
             for itDof = 1:nDofs
                 if ( ~ dofs(itDof).isFixed)
-                    forceVector(dofs(itDof).getId) = dofs(itDof).getDofLoad;
+                    forceVector(itDof) = dofs(itDof).getDofLoad;
                 end
             end
             
@@ -81,9 +81,7 @@ classdef SimpleAssembler < Assembler
 %             end
             
             reducedForceVector = forceVector;
-            if ~isempty(fixedDofs)
-                reducedForceVector(fixedDofs.getId()) = [];
-            end
+            reducedForceVector(fixedDofs.getId()) = [];
             
         end
         
@@ -116,7 +114,7 @@ classdef SimpleAssembler < Assembler
             end
             
             freeDofs.appendValue(values);
-            fixedDofs.appendValue(zeros(1,length(fixedDofs)));
+            fixedDofs.appendValue(sparse(1,length(fixedDofs)));
         end
         
         function appendFirstDerivativeValuesToDofs(femModel, values)
@@ -126,7 +124,7 @@ classdef SimpleAssembler < Assembler
             end
             
             freeDofs.appendFirstDerivativeValue(values);
-            fixedDofs.appendFirstDerivativeValue(zeros(length(fixedDofs),1));
+            fixedDofs.appendFirstDerivativeValue(sparse(length(fixedDofs),1));
         end
         
         function setSecondDerivativeValuesToDofs(femModel, values)
@@ -136,7 +134,7 @@ classdef SimpleAssembler < Assembler
             end
             
             freeDofs.setSecondDerivativeValue(values);
-            fixedDofs.setSecondDerivativeValue(zeros(length(fixedDofs),1));
+            fixedDofs.setSecondDerivativeValue(sparse(length(fixedDofs),1));
         end
         
         function appendSecondDerivativeValuesToDofs(femModel, values)
@@ -146,7 +144,7 @@ classdef SimpleAssembler < Assembler
             end
             
             freeDofs.appendSecondDerivativeValue(values);
-            fixedDofs.appendSecondDerivativeValue(zeros(length(fixedDofs),1));
+            fixedDofs.appendSecondDerivativeValue(sparse(length(fixedDofs),1));
         end
         
         function appendValuesToNodes(femModel, valueName, values)
@@ -157,7 +155,7 @@ classdef SimpleAssembler < Assembler
             
             %expand the given values to a full vector with length of all
             %system dofs
-            valuesFull = zeros(length(femModel.getDofArray),1);
+            valuesFull = sparse(length(femModel.getDofArray),1);
             valuesFull(freeDofs.getId()) = values;
             
             nodes = femModel.getAllNodes();
@@ -208,7 +206,7 @@ classdef SimpleAssembler < Assembler
             end
             
             ndofs = length(femModel.getDofArray);
-            massMatrix = zeros(ndofs);
+            massMatrix = sparse(ndofs,ndofs);
             
             for itEle = 1:length(elements)
                elementalMassMatrix = elements(itEle).computeLocalMassMatrix;
@@ -226,7 +224,7 @@ classdef SimpleAssembler < Assembler
         function dampingMatrix = assembleGlobalDampingMatrix(femModel)
             elements = femModel.getAllElements;
             ndofs = length(femModel.getDofArray);
-            dampingMatrix = zeros(ndofs);
+            dampingMatrix = sparse(ndofs,ndofs);
             
             for itEle = 1:length(elements)
                elementalDampingMatrix = elements(itEle).computeLocalDampingMatrix;
@@ -238,7 +236,7 @@ classdef SimpleAssembler < Assembler
         
         function vals = assemble3dDofVector(femModel, dofName)
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             for itDof = 1:length(dofs)
                 dof = dofs(itDof);
                 itDofName = dof.getValueType();
@@ -254,7 +252,7 @@ classdef SimpleAssembler < Assembler
             %ASSEMBLE3DVALUEVECTOR returns a vector with all values from
             %VALUENAME corresponding to the global dofs
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             nodes = femModel.getAllNodes;
             for itNode = 1:length(nodes)
                 node = nodes(itNode);
@@ -270,7 +268,7 @@ classdef SimpleAssembler < Assembler
             %the elements w.r.t. global dof ids
             dofs = femModel.getDofArray;
             nDofs = length(dofs);
-            vals = zeros(1,nDofs);
+            vals = sparse(1,nDofs);
             for itDof = 1:nDofs
                 dof = dofs(itDof);
                 vals(dof.getId()) = dof.getValue(step);
@@ -281,7 +279,7 @@ classdef SimpleAssembler < Assembler
             %ASSEMBLEVALUESVECTOR returns a vector with all dof values of
             %the elements w.r.t. global dof ids
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             
             for itDof = 1:length(dofs)
                dof = dofs(itDof);
@@ -296,7 +294,7 @@ classdef SimpleAssembler < Assembler
             % corresponding to the first derivative of the elements w.r.t.
             % global dof ids
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             for itDof = 1:length(dofs)
                dof = dofs(itDof);
                if strcmp(valueName, dof.getValueType)
@@ -310,7 +308,7 @@ classdef SimpleAssembler < Assembler
             % corresponding to the first derivative of the elements w.r.t.
             % global dof ids
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             for itDof = 1:length(dofs)
                dof = dofs(itDof);
                if strcmp(valueName, dof.getValueType)
@@ -324,7 +322,7 @@ classdef SimpleAssembler < Assembler
             % corresponding to the first derivative of the elements w.r.t.
             % global dof ids
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             elements = femModel.getAllElements;
             for itEle = 1:length(elements)
                 element = elements(itEle);
@@ -339,7 +337,7 @@ classdef SimpleAssembler < Assembler
             % corresponding to the second derivative of the elements w.r.t.
             % global dof ids
             dofs = femModel.getDofArray;
-            vals = zeros(1,length(dofs));
+            vals = sparse(1,length(dofs));
             elements = femModel.getAllElements;
             for itEle = 1:length(elements)
                 element = elements(itEle);

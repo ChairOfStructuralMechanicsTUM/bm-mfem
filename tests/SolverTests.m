@@ -65,7 +65,7 @@ classdef SolverTests <  matlab.unittest.TestCase
             s.harmonicAnalysis(2*pi*logspace(1,4,100),10);
             
             disp = abs(m.getNode(11).getDofValue('DISPLACEMENT_Z','all'));
-            load('tests/test_data.mat','damped_harmonic_disp');
+            load('tests/input_data/test_data.mat','damped_harmonic_disp');
             
             testCase.assertThat(disp, IsEqualTo(damped_harmonic_disp, ...
                 'Within', AbsoluteTolerance(1e-5)))
@@ -138,7 +138,7 @@ classdef SolverTests <  matlab.unittest.TestCase
             PODsolver.initialize(coarse_sampling);
             PODsolver.solve(fine_sampling);
             disp = abs(POD_model.getNode(12).getDofValue('DISPLACEMENT_X','all'));
-            load('tests/test_data.mat','POD_disp');
+            load('tests/input_data/test_data.mat','POD_disp');
             
             testCase.assertThat(disp, IsEqualTo(POD_disp, ...
                     'Within', AbsoluteTolerance(1e-5)))

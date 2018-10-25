@@ -15,10 +15,10 @@ classdef ElementTests < matlab.unittest.TestCase
             ele01.setPropertyValue('YOUNGS_MODULUS',1000);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
-            expectedSolution = [36 48 -36 -48; ...
+            expectedSolution = sparse([36 48 -36 -48; ...
                 48 64 -48 -64; ...
                 -36 -48 36 48; ...
-                -48 -64 48 64];
+                -48 -64 48 64]);
             testCase.verifyEqual(actualSolution, expectedSolution)
         end
         
@@ -30,12 +30,12 @@ classdef ElementTests < matlab.unittest.TestCase
             ele01.setPropertyValue('YOUNGS_MODULUS',343);
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
-            expectedSolution = [40 60 120 -40 -60 -120; ...
+            expectedSolution = sparse([40 60 120 -40 -60 -120; ...
                 60 90 180 -60 -90 -180; ...
                 120 180 360 -120 -180 -360; ...
                 -40 -60 -120 40 60 120; ...
                 -60 -90 -180 60 90 180; ...
-                -120 -180 -360 120 180 360];
+                -120 -180 -360 120 180 360]);
             testCase.verifyEqual(actualSolution, expectedSolution)
         end
         
@@ -142,70 +142,70 @@ classdef ElementTests < matlab.unittest.TestCase
             warning('on','all')
         end
         
-%         function testBeamElement3d2nDynamic(testCase)
-%             import matlab.unittest.constraints.IsEqualTo
-%             import matlab.unittest.constraints.RelativeTolerance
-%             model = FemModel();
-%             
-%             %nodes
-%             n01 = model.addNewNode(1,0,0,0);
-%             for id = 1:4
-%                 model.addNewNode(1+id,id,0,0);
-%             end
-%             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z', ...
-%                 'ROTATION_X', 'ROTATION_Y', 'ROTATION_Z'});
-%             
-%             %elements
-%             for id = 1:4
-%                 model.addNewElement('BeamElement3d2n', id, [id id+1]);
-%             end
-%             model.getAllElements.setPropertyValue('IY',1000);
-%             model.getAllElements.setPropertyValue('IZ',100);
-%             model.getAllElements.setPropertyValue('IT',100);
-%             model.getAllElements.setPropertyValue('YOUNGS_MODULUS',3000);
-%             model.getAllElements.setPropertyValue('SHEAR_MODULUS',3000);
-%             model.getAllElements.setPropertyValue('CROSS_SECTION',3000);
-%             
-%             %boundary conditions
-%             n01.fixAllDofs();
-%             addPointLoad(model.getNode(5),10,[0 0 -1]);
-%             
-%             dt = .05;
-%             time = 0;
-%             endTime = 1.5;
-%             ls = linspace(time,endTime,endTime/dt+1);
-%             % disp = zeros(1,endTime/dt+1);
-%             solver = NewmarkSolvingStrategy(model, dt);
-%             % disp = 0;
-%             while time < endTime
-%                 solver.solve();
-%                 time = time + dt;
-%                 %     v.plotDeformed();
-%                 %     pause(0.1)
-%                 %     plot(model.getAllNodes.getDofValue('DISPLACEMENT_Z','end'))
-%                 
-%                 %     disp(model.getProperties.getValue('STEP')) = n05.getDofValue('DISPLACEMENT_Z','end');
-%                 
-%             end
-%             plot(ls,endnode.getDofValue('DISPLACEMENT_Y','all'))
-%             solver = SimpleSolvingStrategy(model);
-%             solver.solve();
-%             
-%             actualDisplacementX = model.getAllNodes.getDofValue('DISPLACEMENT_X');
-%             actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
-%             actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
-%             
-%             expectedDisplacementX = zeros(5,1);
-%             expectedDisplacementY = zeros(5,1);
-%             expectedDisplacementZ = [0;-6.11111111111115e-06;-2.22222222222223e-05;-4.50000000000002e-05;-7.11111111111115e-05];
-%             
-%             testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
-%                 'Within', RelativeTolerance(1e-7)))
-%             testCase.assertThat(actualDisplacementY, IsEqualTo(expectedDisplacementY, ...
-%                 'Within', RelativeTolerance(1e-7)))
-%             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
-%                 'Within', RelativeTolerance(1e-7)))
-%         end
+        %         function testBeamElement3d2nDynamic(testCase)
+        %             import matlab.unittest.constraints.IsEqualTo
+        %             import matlab.unittest.constraints.RelativeTolerance
+        %             model = FemModel();
+        %
+        %             %nodes
+        %             n01 = model.addNewNode(1,0,0,0);
+        %             for id = 1:4
+        %                 model.addNewNode(1+id,id,0,0);
+        %             end
+        %             model.getAllNodes.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z', ...
+        %                 'ROTATION_X', 'ROTATION_Y', 'ROTATION_Z'});
+        %
+        %             %elements
+        %             for id = 1:4
+        %                 model.addNewElement('BeamElement3d2n', id, [id id+1]);
+        %             end
+        %             model.getAllElements.setPropertyValue('IY',1000);
+        %             model.getAllElements.setPropertyValue('IZ',100);
+        %             model.getAllElements.setPropertyValue('IT',100);
+        %             model.getAllElements.setPropertyValue('YOUNGS_MODULUS',3000);
+        %             model.getAllElements.setPropertyValue('SHEAR_MODULUS',3000);
+        %             model.getAllElements.setPropertyValue('CROSS_SECTION',3000);
+        %
+        %             %boundary conditions
+        %             n01.fixAllDofs();
+        %             addPointLoad(model.getNode(5),10,[0 0 -1]);
+        %
+        %             dt = .05;
+        %             time = 0;
+        %             endTime = 1.5;
+        %             ls = linspace(time,endTime,endTime/dt+1);
+        %             % disp = zeros(1,endTime/dt+1);
+        %             solver = NewmarkSolvingStrategy(model, dt);
+        %             % disp = 0;
+        %             while time < endTime
+        %                 solver.solve();
+        %                 time = time + dt;
+        %                 %     v.plotDeformed();
+        %                 %     pause(0.1)
+        %                 %     plot(model.getAllNodes.getDofValue('DISPLACEMENT_Z','end'))
+        %
+        %                 %     disp(model.getProperties.getValue('STEP')) = n05.getDofValue('DISPLACEMENT_Z','end');
+        %
+        %             end
+        %             plot(ls,endnode.getDofValue('DISPLACEMENT_Y','all'))
+        %             solver = SimpleSolvingStrategy(model);
+        %             solver.solve();
+        %
+        %             actualDisplacementX = model.getAllNodes.getDofValue('DISPLACEMENT_X');
+        %             actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
+        %             actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
+        %
+        %             expectedDisplacementX = zeros(5,1);
+        %             expectedDisplacementY = zeros(5,1);
+        %             expectedDisplacementZ = [0;-6.11111111111115e-06;-2.22222222222223e-05;-4.50000000000002e-05;-7.11111111111115e-05];
+        %
+        %             testCase.assertThat(actualDisplacementX, IsEqualTo(expectedDisplacementX, ...
+        %                 'Within', RelativeTolerance(1e-7)))
+        %             testCase.assertThat(actualDisplacementY, IsEqualTo(expectedDisplacementY, ...
+        %                 'Within', RelativeTolerance(1e-7)))
+        %             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
+        %                 'Within', RelativeTolerance(1e-7)))
+        %         end
         
         function testBeamElement3d2nEigen(testCase)
             warning('off','all')
@@ -247,7 +247,7 @@ classdef ElementTests < matlab.unittest.TestCase
             %eigenfrequencies in Hz
             actualEigenfrequenciesCantilever = solver.getEigenfrequencies ./ (2*pi);
             expectedEigenfrequenciesCantilever = [0.915242085421142;5.73511288165053;16.0584347115302;31.4797553897702;52.0975276397135];
-
+            
             testCase.assertThat(actualEigenfrequenciesCantilever, IsEqualTo(expectedEigenfrequenciesCantilever, ...
                 'Within', AbsoluteTolerance(1e-5)))
             
@@ -257,14 +257,14 @@ classdef ElementTests < matlab.unittest.TestCase
         function testReissnerMindlinElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
-
+            
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'ReissnerMindlinElement3d4n');
             model.getAllNodes.addDof(["DISPLACEMENT_Z", "ROTATION_X", "ROTATION_Y"]);
             model.getNode(13).setDofLoad('DISPLACEMENT_Z', -0.25);
             support = [x0 xl y0 yl];
             support.fixAllDofs();
-
+            
             % Properties
             model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 10920);
             model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
@@ -276,23 +276,23 @@ classdef ElementTests < matlab.unittest.TestCase
             % Solver
             solver = SimpleSolvingStrategy(model);
             solver.solve();
-
+            
             actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
             actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
             actualRotationY = model.getAllNodes.getDofValue('ROTATION_Y');
             
             expectedDisplacementZ = [0;0;0;0;0;0;-0.000422362795098927;-0.000613870097726914;...
-                        -0.000422362795098927;0;0;-0.000613870097726913;-0.00168945118039571;...
-                        -0.000613870097726913;0;0;-0.000422362795098926;-0.000613870097726913;...
-                        -0.000422362795098927;0;0;0;0;0;0];
+                -0.000422362795098927;0;0;-0.000613870097726913;-0.00168945118039571;...
+                -0.000613870097726913;0;0;-0.000422362795098926;-0.000613870097726913;...
+                -0.000422362795098927;0;0;0;0;0;0];
             expectedRotationX = [0;0;0;0;0;0;0.00254235733839925;4.40124127619258e-18; ...
-                        -0.00254235733839923;0;0;0.00473720688683214;1.18261027682316e-17;...
-                        -0.00473720688683216;0;0;0.00254235733839923;1.73756544264676e-18;...
-                        -0.00254235733839923;0;0;0;0;0;0];
+                -0.00254235733839923;0;0;0.00473720688683214;1.18261027682316e-17;...
+                -0.00473720688683216;0;0;0.00254235733839923;1.73756544264676e-18;...
+                -0.00254235733839923;0;0;0;0;0;0];
             expectedRotationY = [0;0;0;0;0;0;0.00254235733839925;0.00473720688683215;...
-                        0.00254235733839921;0;0;-1.09535396625964e-17;1.06625639192173e-18;...
-                        9.26364511108020e-19;0;0;-0.00254235733839922;-0.00473720688683216;...
-                        -0.00254235733839923;0;0;0;0;0;0];
+                0.00254235733839921;0;0;-1.09535396625964e-17;1.06625639192173e-18;...
+                9.26364511108020e-19;0;0;-0.00254235733839922;-0.00473720688683216;...
+                -0.00254235733839923;0;0;0;0;0;0];
             
             testCase.assertThat(actualDisplacementZ, IsEqualTo(expectedDisplacementZ, ...
                 'Within', AbsoluteTolerance(1e-12)))
@@ -330,7 +330,7 @@ classdef ElementTests < matlab.unittest.TestCase
             
             while time < endTime
                 solver.solve();
-                time = time + dt;                
+                time = time + dt;
             end
             
             actualDisplacementZ = model.getNode(13).getDofValue('DISPLACEMENT_Z','all');
@@ -350,7 +350,7 @@ classdef ElementTests < matlab.unittest.TestCase
         function testReissnerMindlinElement3d4nEigen (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
-        
+            
             
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'ReissnerMindlinElement3d4n');
@@ -365,9 +365,9 @@ classdef ElementTests < matlab.unittest.TestCase
             model.getAllElements.setPropertyValue('DENSITY', 1);
             model.getAllElements.setPropertyValue('NUMBER_GAUSS_POINT', 4);
             model.getAllElements.setPropertyValue('SHEAR_CORRECTION_FACTOR', 5/6);
-
             
-            % Solver            
+            
+            % Solver
             solver = EigensolverStrategy(model);
             solver.solve(5);
             
@@ -405,14 +405,14 @@ classdef ElementTests < matlab.unittest.TestCase
             
             actualSolution = ele01.computeLocalStiffnessMatrix;
             
-            expectedSolution = [42 18 -6 0 -21 -18 -15 0; ...
+            expectedSolution = sparse([42 18 -6 0 -21 -18 -15 0; ...
                 18 78 0 30 -18 -39 0 -69; ...
                 -6 0 42 -18 -15 0 -21 18; ...
                 0 30 -18 78 0 -69 18 -39; ...
                 -21 -18 -15 0 42 18 -6 0; ...
                 -18 -39 0 -69 18 78 0 30; ...
                 -15 0 -21 18 -6 0 42 -18; ...
-                0 -69 18 -39 0 30 -18 78];
+                0 -69 18 -39 0 30 -18 78]);
             testCase.assertThat(actualSolution, IsEqualTo(expectedSolution, ...
                 'Within', AbsoluteTolerance(1e-7)))
             
@@ -441,7 +441,7 @@ classdef ElementTests < matlab.unittest.TestCase
             ele01.setPropertyValue('POISSON_RATIO',1/3);
             ele01.setPropertyValue('NUMBER_GAUSS_POINT',3);
             ele01.setPropertyValue('DENSITY',7860);
-
+            
             actualSolution = ele01.computeLocalStiffnessMatrix;
             
             expectedSolution = [16,6,6,-8,2,2,-6,-6,1,4,-2,3,4,3,-2,-6,1,-6,-4,-3,-3,0,-1,-1;
@@ -473,10 +473,48 @@ classdef ElementTests < matlab.unittest.TestCase
                 'Within',AbsoluteTolerance(1e-7)))
         end
         
+        function testTetrahedronElement3d8n (testCase)
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            
+            node01 = Node(1,0,0,0);
+            node02 = Node(2,0,1,0);
+            node03 = Node(3,0,1,1);
+            node04 = Node(4,1,1,0);
+            
+            nodeArray = [node01 node02 node03 node04];
+            
+            nodeArray.addDof({'DISPLACEMENT_X', 'DISPLACEMENT_Y', 'DISPLACEMENT_Z'});
+            
+            ele01 = TetrahedronElement3d4n(1,[node01 node02 node03 node04]);
+            
+            ele01.setPropertyValue('YOUNGS_MODULUS',336);
+            ele01.setPropertyValue('POISSON_RATIO',1/3);
+            ele01.setPropertyValue('DENSITY',2699);
+            
+            actualSolution = ele01.computeLocalStiffnessMatrix;
+            
+            expectedSolution = [ 21,  0,  0,-21, 21,  0,  0,  0,  0,  0,-21,  0;
+                0, 84,  0, 42,-84, 42,  0,  0,-42,-42,  0,  0;
+                0,  0, 21,  0, 21,-21,  0,-21,  0,  0,  0,  0;
+                -21, 42,  0,126,-63, 63,-21,  0,-42,-84, 21,-21;
+                21,-84, 21,-63,126,-63,  0,-21, 42, 42,-21,  0;
+                0, 42,-21, 63,-63,126,-21, 21,-84,-42,  0,-21;
+                0,  0,  0,-21,  0,-21, 21,  0,  0,  0,  0, 21;
+                0,  0,-21,  0,-21, 21,  0, 21,  0,  0,  0,  0;
+                0,-42,  0,-42, 42,-84,  0,  0, 84, 42,  0,  0;
+                0,-42,  0,-84, 42,-42,  0,  0, 42, 84,  0,  0;
+                -21,  0,  0, 21,-21,  0,  0,  0,  0,  0, 21,  0;
+                0,  0,  0,-21,  0,-21, 21,  0,  0,  0,  0, 21];
+            
+            testCase.assertThat(actualSolution, IsEqualTo(expectedSolution, ...
+                'Within',AbsoluteTolerance(1e-7)))
+        end
+        
         function testShellElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
-
+            
             % Model
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'ShellElement3d4n');
@@ -485,7 +523,7 @@ classdef ElementTests < matlab.unittest.TestCase
             addPointLoad(model.getNode(13), 2500, [1 1 2]);
             support = [x0 xl y0 yl];
             support.fixAllDofs();
-
+            
             % Properties
             model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
             model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
@@ -495,7 +533,7 @@ classdef ElementTests < matlab.unittest.TestCase
             % Solver
             solver = SimpleSolvingStrategy(model);
             solver.solve();
-
+            
             % Assertion
             actualDisplacementX = model.getAllNodes.getDofValue('DISPLACEMENT_X');
             actualDisplacementY = model.getAllNodes.getDofValue('DISPLACEMENT_Y');
@@ -622,7 +660,7 @@ classdef ElementTests < matlab.unittest.TestCase
         function testDKQElement3d4nStatic (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
-
+            
             % Model
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'DiscreteKirchhoffElement3d4n');
@@ -631,7 +669,7 @@ classdef ElementTests < matlab.unittest.TestCase
             model.getNode(13).setDofLoad('DISPLACEMENT_Z', 2500);
             support = [x0 xl y0 yl];
             support.fixAllDofs();
-
+            
             % Properties
             model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
             model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
@@ -641,7 +679,7 @@ classdef ElementTests < matlab.unittest.TestCase
             % Solver
             solver = SimpleSolvingStrategy(model);
             solver.solve();
-
+            
             % Assertion
             actualDisplacementZ = model.getAllNodes.getDofValue('DISPLACEMENT_Z');
             actualRotationX = model.getAllNodes.getDofValue('ROTATION_X');
@@ -671,7 +709,7 @@ classdef ElementTests < matlab.unittest.TestCase
         function testDKQElement3d4nDynamic (testCase)
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.RelativeTolerance
-
+            
             % Model
             [model, x0, xl, y0, yl] = createRectangularPlate(1, 1, 4, 4, ...
                 'elementType', 'DiscreteKirchhoffElement3d4n');
@@ -680,7 +718,7 @@ classdef ElementTests < matlab.unittest.TestCase
             model.getNode(13).setDofLoad('DISPLACEMENT_Z', 2500);
             support = [x0 xl y0 yl];
             support.fixAllDofs();
-
+            
             % Properties
             model.getAllElements.setPropertyValue('YOUNGS_MODULUS', 2.1e11);
             model.getAllElements.setPropertyValue('POISSON_RATIO', 0.3);
@@ -740,4 +778,3 @@ classdef ElementTests < matlab.unittest.TestCase
         end
     end
 end
-

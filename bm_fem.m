@@ -14,9 +14,9 @@ addpath('elements');
 if (exist('external_libs','dir') == 7)
     addpath(genpath('external_libs'));
 end
-addpath('examples');
-addpath('tests');
-addpath('utilities');
+addpath(genpath('examples'));
+addpath(genpath('tests'));
+addpath(genpath('utilities'));
 
 % check, if all neccessary toolboxes are installed
 requiredToolboxes = {'MATLAB','Mapping Toolbox'};

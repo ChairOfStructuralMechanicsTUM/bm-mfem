@@ -1,12 +1,8 @@
 function [ w,g ] = returnGaussPoint( number )
 %returnGaussPoint Returns evaluation point g and weighting w depending on
-%number of GaussPoints
+%number of GaussPoints for quadrilateral and hexahedral elements
 
-if number == 0
-    msg = 'ReturnGaussPoint: Please specify a number > 0.';
-    e = MException('MATLAB:bm_mfem:invalidNumberOfGaussPoints',msg);
-    throw(e);
-elseif number == 1
+if number == 1
     g=0;
     w=2;
 elseif number == 2
@@ -28,3 +24,10 @@ else
 end
 
 end
+
+
+    
+    
+
+    
+

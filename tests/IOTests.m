@@ -9,10 +9,10 @@ classdef IOTests <  matlab.unittest.TestCase
         
         function mdpaInputTest(testCase)
         %MDPAINPUTTEST tests the input from a mdpa file using properties,
-        %   line comments, different element types, and model parts
+        %  line comments, different element types, and model parts
             import matlab.unittest.constraints.IsTrue
             
-            io = MdpaInput('tests/mdpatest.mdpa');
+            io = MdpaInput('tests/input_data/mdpatest.mdpa');
             model = io.readModel;
             
             testCase.verifyEqual(model.getNode(14).getX,2.213);
@@ -76,7 +76,7 @@ classdef IOTests <  matlab.unittest.TestCase
             end
 
             actualDisplacement = model.getNode(10).getDofValue('DISPLACEMENT_Y','all');
-            load('tests/test_data.mat','ansys_input_dynamic');
+            load('tests/input_data/test_data.mat','ansys_input_dynamic');
 
             testCase.assertThat(actualDisplacement, IsEqualTo(ansys_input_dynamic, ...
                 'Within', RelativeTolerance(1e-4)))

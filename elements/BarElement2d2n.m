@@ -92,10 +92,10 @@ classdef BarElement2d2n < LinearElement
             dist = barElement.nodeArray(2).getCoords - barElement.nodeArray(1).getCoords;
             x21 = dist(1);
             y21 = dist(2);
-            stiffnessMatrix = [x21*x21 x21*y21 -x21*x21 -x21*y21; ...
+            stiffnessMatrix = sparse([x21*x21 x21*y21 -x21*x21 -x21*y21; ...
                 x21*y21 y21*y21 -x21*y21 -y21*y21; ...
                 -x21*x21 -x21*y21 x21*x21 x21*y21; ...
-                -x21*y21 -y21*y21 x21*y21 y21*y21];
+                -x21*y21 -y21*y21 x21*y21 y21*y21]);
             factor = (barElement.getProperties().getValue('YOUNGS_MODULUS') ...
                 * barElement.getProperties().getValue('CROSS_SECTION')) ...
                 / (barElement.length^3);
@@ -103,7 +103,7 @@ classdef BarElement2d2n < LinearElement
         end
         
         function forceVector = computeLocalForceVector(barElement)
-            forceVector = zeros(1,6);
+            forceVector = sparse(1,6);
         end
         
         function massMatrix = computeLocalMassMatrix(element)
@@ -113,8 +113,8 @@ classdef BarElement2d2n < LinearElement
             density = element.getProperties().getValue('DENSITY');
             length = element.length;
             area = element.getProperties().getValue('CROSS_SECTION');
-            mass = density * length * area;
-            massMatrix = mass * diag([.5 .5 .5 .5]);
+            mass = 0.5 * density * length * area;
+            massMatrix = sparse([1 2 3 4],[1 2 3 4],[mass mass mass mass],4,4);
         end
         
         % Computation of the Element Stress
@@ -124,7 +124,7 @@ classdef BarElement2d2n < LinearElement
             sin = dist(2)/barElement.length;
             nodalDisplacement = getResponseDofArray(barElement);
             stressValue = barElement.getProperties().getValue('YOUNGS_MODULUS') ...
-                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel überprüfen stets positiv
+                /barElement.length* [-cos  -sin  cos  sin]*nodalDisplacement; %Winkel ï¿½berprï¿½fen stets positiv
             
         end
         
@@ -134,21 +134,21 @@ classdef BarElement2d2n < LinearElement
         end
         
         function vals = getValuesVector(element, step)
-            vals = zeros(1,4);
+            vals = sparse(1,4);
             
             vals([1 3]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
             vals([2 4]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
         end
         
         function vals = getFirstDerivativesVector(element, step)
-            vals = zeros(1,3);
+            vals = sparse(1,3);
             
             [~, vals([1 3]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, vals([2 4]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
         end
         
         function vals = getSecondDerivativesVector(element, step)
-            vals = zeros(1,3);
+            vals = sparse(1,3);
 
             [~, ~, vals([1 3])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
             [~, ~, vals([2 4])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
@@ -157,4 +157,3 @@ classdef BarElement2d2n < LinearElement
     end
     
 end
-

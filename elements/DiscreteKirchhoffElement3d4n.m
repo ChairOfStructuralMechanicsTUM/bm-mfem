@@ -54,13 +54,13 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
         function [N, N_mat, J] = computeShapeFunction(obj, xi, eta)
             % Shape Function and Derivatives
             N = [(1-xi)*(1-eta)/4    (1+xi)*(1-eta)/4    (1+xi)*(1+eta)/4    (1-xi)*(1+eta)/4];
-            N_mat = zeros(3,12);
+            N_mat = sparse(3,12);
             N_mat(1,1:3:end) = N(:);
             N_mat(2,2:3:end) = N(:);
             N_mat(3,3:3:end) = N(:);
 
-            N_Diff_Par = [-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
-                -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4];
+            N_Diff_Par = sparse([-(1-eta)/4    (1-eta)/4   (1+eta)/4   -(1+eta)/4
+                                  -(1-xi)/4     -(1+xi)/4   (1+xi)/4    (1-xi)/4]);
             
             % Coordinates of the nodes forming one element
             ele_coords = zeros(4,2);
@@ -84,10 +84,10 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
             
             % Inverse Jacobian
             inv_J = inv(J);
-            inv_J_TR = [inv_J, zeros(2,2); zeros(2,2), inv_J]; 
+            inv_J_TR = sparse([1 1 2 2 3 3 4 4],[1 2 1 2 3 4 3 4],...
+                            [inv_J(1,1) inv_J(1,2) inv_J(2,1) inv_J(2,2) inv_J(1,1) inv_J(1,2) inv_J(2,1) inv_J(2,2)],4,4);
             
-            
-            Psi_Diff_Par = zeros(4,12); 
+            Psi_Diff_Par = sparse(4,12); 
             Psi_Diff_Par(1,1) = 0.75 * ((( 2 * xi * (1 - eta) * (ele_coords(1,1) - ele_coords(2,1))) / ( (ele_coords(1,1) - ele_coords(2,1))^2 + (ele_coords(1,2) - ele_coords(2,2))^2)) ...
                                     - (((1 - eta^2) * (ele_coords(4,1) - ele_coords(1,1))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2  )));
 
@@ -248,11 +248,7 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
             Psi_Diff_Par(4,12) = 0.375 * (((2 * eta * (1 - xi) * (ele_coords(4,1) - ele_coords(1,1)) * (ele_coords(4,2) - ele_coords(1,2))) / ((ele_coords(1,1) - ele_coords(4,1))^2 + (ele_coords(1,2) - ele_coords(4,2))^2)) ...
                                         - (((1 - xi^2) * (ele_coords(3,1) - ele_coords(4,1)) * (ele_coords(3,2) - ele_coords(4,2))) / ((ele_coords(3,1) - ele_coords(4,1))^2 + (ele_coords(3,2) - ele_coords(4,2))^2)));
                                     
-            A = sparse(3,4); 
-            A(1,1) = 1; 
-            A(2,4) = 1; 
-            A(3,2) = 1; 
-            A(3,3) = 1;
+            A = sparse([1 2 3 3],[1 4 2 3],[1 1 1 1],3,4);
             
             % Computing the B_Bending Matrix
             B_b = A * inv_J_TR * Psi_Diff_Par; 
@@ -265,8 +261,8 @@ classdef DiscreteKirchhoffElement3d4n < QuadrilateralElement
             thickness = obj.getPropertyValue('THICKNESS');
             
             % Material Bending Matrix D_b
-            D_b = [1    prxy    0; prxy     1   0; ...
-                0    0   (1-prxy)/2] * (EModul * thickness^3) / (12*(1-prxy^2));
+            D_b = sparse([1 1 2 2 3],[1 2 1 2 3],[1 prxy prxy 1 (1-prxy)/2],3,3);
+            D_b = D_b * (EModul * thickness^3) / (12*(1-prxy^2));
             
             [w,g] = returnGaussPoint(nr_gauss_points);
             stiffnessMatrix = sparse(12,12);

@@ -93,7 +93,8 @@ classdef (Abstract) LinearElement < Element
             tMat = zeros(nDofs);
             for ii = 1:3:nDofs
                tMat(ii:ii+2,ii:ii+2) = lsystem;
-            end 
+            end
+            tMat = sparse(tMat);
         end
         
         function cp = copyElement(obj)

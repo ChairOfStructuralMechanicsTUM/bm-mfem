@@ -108,6 +108,65 @@ classdef Visualization < handle
             
         end
         
+        function plotField(visualization,fieldType, step)
+            if nargin == 2
+                step = 'end';
+            end
+
+            if ~isvalid(visualization.panel)
+                visualization.panel = axes;
+                visualization.panel.DataAspectRatio = [1 1 1]; % fix aspect ratio
+            end
+            hold on
+            
+            
+            elements = visualization.model.getAllElements;
+            nodes = visualization.model.getAllNodes;
+            nElements = length(elements);
+            [stressValue, ~, element_connect] = computeElementStress(elements,nodes,step);
+            coords = zeros(length(nodes),3);
+
+            for i = 1:length(nodes)
+                coords(i,1) = nodes(i).getX();
+                coords(i,2) = nodes(i).getY();
+                coords(i,3) = nodes(i).getZ();
+            end
+            
+            if     strcmp(fieldType,'sigma_xx')
+                    field = stressValue(1,:);
+                    
+            elseif strcmp(fieldType,'sigma_yy')
+                    field = stressValue(2,:);
+                    
+            elseif strcmp(fieldType,'sigma_xy')
+                    field = stressValue(3,:);
+                    
+            elseif strcmp(fieldType,'prin_I')
+                    field = stressValue(4,:);
+                    
+            elseif strcmp(fieldType,'prin_II')
+                    field = stressValue(5,:);
+            
+            elseif strcmp(fieldType,'vm_stress')
+                    field = stressValue(6,:);
+            end
+            
+            for ii = 1:nElements
+                
+                ord = elements(ii).drawOrder();
+                
+                xpt = coords(element_connect(ii,ord),1);
+                ypt = coords(element_connect(ii,ord),2);
+                zpt = coords(element_connect(ii,ord),3);
+                fpt = field(element_connect(ii,ord));
+
+                fill3(xpt,ypt,zpt,fpt);
+
+            end
+                
+            colorbar
+        end
+        
         function close(visualization)
            close(ancestor(visualization.panel,'Figure'))
         end
@@ -124,4 +183,3 @@ classdef Visualization < handle
     end
     
 end
-

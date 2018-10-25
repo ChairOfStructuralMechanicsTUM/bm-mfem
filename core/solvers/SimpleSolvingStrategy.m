@@ -10,7 +10,7 @@ classdef SimpleSolvingStrategy < Solver
     
     
     methods
-        
+      
         %constructor
         function simpleSolver = SimpleSolvingStrategy(femModel)
             if (nargin > 0)
@@ -27,7 +27,7 @@ classdef SimpleSolvingStrategy < Solver
             [~, Kred] = SimpleAssembler.assembleGlobalStiffnessMatrix(simpleSolver.femModel);
             [~, fred] = SimpleAssembler.applyExternalForces(simpleSolver.femModel);
             
-            x = linsolve(Kred, fred.');
+            x = Kred\fred.';
             
             SimpleAssembler.assignResultsToDofs(simpleSolver.femModel, x);
         end
@@ -49,4 +49,3 @@ classdef SimpleSolvingStrategy < Solver
         
     end
 end
-

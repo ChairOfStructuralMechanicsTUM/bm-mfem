@@ -22,7 +22,7 @@ classdef FemModel < handle
             obj.femModelParts = containers.Map;
             
             if nargin > 0
-                nodeIds = nodeArray.getId();
+                nodeIds = arrayfun(@(node) node.getId, nodeArray);
                 duplicated_nodes = findDuplicates(nodeIds);
                 if ~ isempty(duplicated_nodes)
                     error('multiple nodes with id %d exist',duplicated_nodes);
@@ -30,7 +30,7 @@ classdef FemModel < handle
                     obj.nodeArray = nodeArray;
                 end
                 
-                elementIds = elementArray.getId();
+                elementIds = arrayfun(@(element) element.getId, elementArray);
                 duplicated_elements = findDuplicates(elementIds);
                 if ~ isempty(duplicated_elements)
                     error('multiple elements with id %d exist',duplicated_elements);
@@ -116,7 +116,7 @@ classdef FemModel < handle
         % setter functions
         function mp = addNewModelPart(obj, name, nodes, elements)
         %ADDNEWMODELPART add a new model part
-        %   ADDNEWMODELPART(name, nodes, elements) adds a modelpart to the 
+        %   ADDNEWMODELPART(name, nodes, elements) adds a modelpart to the
         %   FemModel containing nodes and/or elements.
         %
         %   ADDNEWMODELPART(name, nodeIds, elementIds) adds a modelpart to
@@ -124,7 +124,7 @@ classdef FemModel < handle
         %   elementIds.
         %
         %   ANNEWMODELPART(name) adds an empty model part
-        %    
+        %
         %   see also FEMMODELPART
             if nargin == 2
                 obj.femModelParts(name) = FemModelPart(name, [], [], obj);
@@ -247,33 +247,18 @@ classdef FemModel < handle
                 nodes = obj.getNodes(nodes);
             end
             
-            switch elementName
-                case 'BarElement2d2n'
-                    element = BarElement2d2n(id, nodes);
-                case 'BarElement3d2n'
-                    element = BarElement3d2n(id, nodes);
-                case 'BeamElement3d2n'
-                    element = BeamElement3d2n(id, nodes);
-                case 'ConcentratedMassElement3d1n'
-                    element = ConcentratedMassElement3d1n(id, nodes);
-                case 'DummyElement'
-                    element = DummyElement(id, nodes);
-                case 'SpringDamperElement3d2n'
-                    element = SpringDamperElement3d2n(id, nodes);
-                case 'ReissnerMindlinElement3d4n'
-                    element = ReissnerMindlinElement3d4n(id, nodes);
-                case 'ShellElement3d4n'
-                    element = ShellElement3d4n(id, nodes);
-                case 'DiscreteKirchhoffElement3d4n'
-                    element = DiscreteKirchhoffElement3d4n(id, nodes);
-                case 'QuadrilateralElement2d4n'
-                    element = QuadrilateralElement2d4n(id, nodes);
-                case 'HexahedronElement3d8n'
-                    element = HexahedronElement3d8n(id, nodes);
-                    
-                otherwise
-                    error('unknown element %s',elementName)
-            end %switch
+            % this creates elements based on their string name
+            try element = feval(elementName, id, nodes);
+                if ~isa(element,'Element')
+                    msg = [class(obj), ': Only elements can be created.'];
+                    e = MException('MATLAB:bm_mfem:invalidInput',msg);
+                    throw(e);
+                end
+            catch
+                msg = [class(obj), ': Unknown element \"', elementName, '\".'];
+                e = MException('MATLAB:bm_mfem:unknownElement',msg);
+                throw(e);
+            end
             
             if nargin == 5
                 element.setProperties(props);
@@ -286,4 +271,3 @@ classdef FemModel < handle
     end
     
 end
-
