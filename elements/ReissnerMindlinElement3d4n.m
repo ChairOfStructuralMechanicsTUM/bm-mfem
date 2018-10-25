@@ -107,11 +107,14 @@ classdef ReissnerMindlinElement3d4n < QuadrilateralElement
             % Calculate Shear Modulus
             GModul = EModul/(2*(1+prxy));
             % Moment-Curvature Equations
-            D_b = [1    prxy    0; prxy     1   0; 0    0   (1-prxy)/2];
+            D_b = sparse([1 1 2 2 3],[1 2 1 2 3],[1 prxy prxy 1 (1-prxy)/2],3,3);
+            
             % Material Bending Matrix D_b
             D_b = D_b * (EModul * thickness^3) / (12*(1-prxy^2));
             % Material Shear Matrix D_s
-            D_s = eye(2) * alpha_shear * GModul * thickness; 
+            D_s_val = alpha_shear * GModul * thickness; 
+            D_s =  sparse([1 2],[1 2],[D_s_val D_s_val],2,2);
+            
             
             [w,g] = returnGaussPoint(nr_gauss_points);
             stiffnessMatrix = sparse(12,12);

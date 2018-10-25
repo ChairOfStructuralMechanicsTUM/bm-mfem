@@ -74,42 +74,44 @@ classdef QuadrilateralElement2d4n < QuadrilateralElement
             Bx=B(1,1:4);
             By=B(2,1:4);
             
-            Be=[Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
-                0,By(1),0,By(2),0,By(3),0,By(4);
-                By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)];
+            Be=sparse([Bx(1),0,Bx(2),0,Bx(3),0,Bx(4),0;
+                    0,By(1),0,By(2),0,By(3),0,By(4);
+                    By(1),Bx(1),By(2),Bx(2),By(3),Bx(3),By(4),Bx(4)]);
         end
         
         function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
             EModul = obj.getPropertyValue('YOUNGS_MODULUS');
-            PoissonRatio = obj.getPropertyValue('POISSON_RATIO');
-            p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            prxy = obj.getPropertyValue('POISSON_RATIO');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
             % Calculate Materialmatrix
-            Emat = EModul/(1-PoissonRatio^2)*[1 PoissonRatio 0; PoissonRatio 1 0; 0 0 (1 - PoissonRatio)/2];
-            stiffnessMatrix=zeros(8,8);
-            [w,g]=returnGaussPoint(p);
+            E_mat = sparse([1 1 2 2 3],[1 2 1 2 3],[1 prxy prxy 1 (1-prxy)/2],3,3);
+            Emat = E_mat * EModul/(1-prxy^2);
             
-            for i=1:p
+            stiffnessMatrix=sparse(8,8);
+            [w,g]=returnGaussPoint(nr_gauss_points);
+            
+            for i=1:nr_gauss_points
                 xi=g(i);
-                for j=1:p
+                for j=1:nr_gauss_points
                     eta=g(j);
                     [~, ~, B, J] = computeShapeFunction(obj, xi, eta);
-                    stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*det(J)*transpose(B)*(Emat*B));
+                    stiffnessMatrix=stiffnessMatrix+(w(i)*w(j)*det(J)*B'*(Emat*B));
                 end
             end
         end
         
         function massMatrix = computeLocalMassMatrix(obj)
-            roh = obj.getPropertyValue('DENSITY');
-            p = obj.getPropertyValue('NUMBER_GAUSS_POINT');
-            massMatrix=zeros(8,8);
-            [w,g]=returnGaussPoint(p);
+            density = obj.getPropertyValue('DENSITY');
+            nr_gauss_points = obj.getPropertyValue('NUMBER_GAUSS_POINT');
+            massMatrix=sparse(8,8);
+            [w,g]=returnGaussPoint(nr_gauss_points);
             
-            for i=1:p
+            for i=1:nr_gauss_points
                 xi=g(i);
-                for j=1:p
+                for j=1:nr_gauss_points
                     eta=g(j);
                     [N_mat, ~, ~, J] = computeShapeFunction(obj,xi,eta);
-                    massMatrix=massMatrix + (w(i)*w(j)*roh*transpose(N_mat)*N_mat*det(J));
+                    massMatrix=massMatrix + N_mat' * density * N_mat * det(J) * w(i) * w(j);
                 end
             end
         end

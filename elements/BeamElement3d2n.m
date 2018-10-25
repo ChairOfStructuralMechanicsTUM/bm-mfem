@@ -8,7 +8,7 @@ classdef BeamElement3d2n < LinearElement
     
     methods
         % constructor
-        function beamElement = BeamElement3d2n(id, nodeArray)
+        function obj = BeamElement3d2n(id, nodeArray)
             
             requiredPropertyNames = cellstr(["IY", "IZ", "IT", ...
                 "YOUNGS_MODULUS", "POISSON_RATIO", "CROSS_SECTION", ...
@@ -24,26 +24,26 @@ classdef BeamElement3d2n < LinearElement
             end
             
             % call the super class constructor
-            beamElement@LinearElement(super_args{:});
-            beamElement.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
+            obj@LinearElement(super_args{:});
+            obj.dofNames = cellstr(["DISPLACEMENT_X", "DISPLACEMENT_Y", "DISPLACEMENT_Z", ...
                 "ROTATION_X", "ROTATION_Y", "ROTATION_Z"]);
         end
         
-        function initialize(element)
-            element.localSystem = element.computeLocalSystem();
-            element.length0 = computeLength(element.nodeArray(1).getCoords, ...
-                element.nodeArray(2).getCoords);
+        function initialize(obj)
+            obj.localSystem = obj.computeLocalSystem();
+            obj.length0 = computeLength(obj.nodeArray(1).getCoords, ...
+                obj.nodeArray(2).getCoords);
         end
         
-        function stiffnessMatrix = computeLocalStiffnessMatrix(element)
-           E = element.getPropertyValue('YOUNGS_MODULUS');
-           nu = element.getPropertyValue('POISSON_RATIO');
+        function stiffnessMatrix = computeLocalStiffnessMatrix(obj)
+           E = obj.getPropertyValue('YOUNGS_MODULUS');
+           nu = obj.getPropertyValue('POISSON_RATIO');
            G = E / (2 * (1-nu) );
-           A = element.getPropertyValue('CROSS_SECTION');
-           Iy = element.getPropertyValue('IY');
-           Iz = element.getPropertyValue('IZ');
-           It = element.getPropertyValue('IT');
-           L = element.length0;
+           A = obj.getPropertyValue('CROSS_SECTION');
+           Iy = obj.getPropertyValue('IY');
+           Iz = obj.getPropertyValue('IZ');
+           It = obj.getPropertyValue('IT');
+           L = obj.length0;
            L2 = L*L;
            L3 = L2*L;
            
@@ -95,19 +95,19 @@ classdef BeamElement3d2n < LinearElement
            stiffnessMatrix(10,4) = - stiffnessMatrix(4,4);
            stiffnessMatrix(4,10) = - stiffnessMatrix(4,4);
            
-           tMat = element.getTransformationMatrix;
+           tMat = obj.getTransformationMatrix;
            stiffnessMatrix = tMat' * stiffnessMatrix * tMat;
         end
         
-        function massMatrix = computeLocalMassMatrix(element)
-            A = element.getPropertyValue('CROSS_SECTION');
-            L = element.length0;
+        function massMatrix = computeLocalMassMatrix(obj)
+            A = obj.getPropertyValue('CROSS_SECTION');
+            L = obj.length0;
             L2 = L*L;
-            rho = element.getPropertyValue('DENSITY');
+            rho = obj.getPropertyValue('DENSITY');
             m = A * L * rho;
-            Iy = element.getPropertyValue('IY');
-            Iz = element.getPropertyValue('IZ');
-            It = element.getPropertyValue('IT');
+            Iy = obj.getPropertyValue('IY');
+            Iz = obj.getPropertyValue('IZ');
+            It = obj.getPropertyValue('IT');
             
             massMatrix = sparse(12,12);
             massMatrix(1,1) = m/3;
@@ -159,7 +159,7 @@ classdef BeamElement3d2n < LinearElement
             massMatrix(11,11) = massMatrix(5,5);
             massMatrix(12,12) = massMatrix(6,6);
             
-            tMat = element.getTransformationMatrix;
+            tMat = obj.getTransformationMatrix;
             massMatrix = tMat' * massMatrix * tMat;
             
             %simple lumping
@@ -182,78 +182,74 @@ classdef BeamElement3d2n < LinearElement
 %             massMatrix = tMat' * massMatrix * tMat;
         end
         
-        function dampingMatrix = computeLocalDampingMatrix(element)
-            eProperties = element.getProperties;
+        function dampingMatrix = computeLocalDampingMatrix(obj)
+            eProperties = obj.getProperties;
             if (eProperties.hasValue('RAYLEIGH_ALPHA')) ...
                     && (eProperties.hasValue('RAYLEIGH_BETA'))
-                dampingMatrix = eProperties.getValue('RAYLEIGH_ALPHA') * element.computeLocalMassMatrix ...
-                    + eProperties.getValue('RAYLEIGH_BETA') * element.computeLocalStiffnessMatrix;
+                dampingMatrix = eProperties.getValue('RAYLEIGH_ALPHA') * obj.computeLocalMassMatrix ...
+                    + eProperties.getValue('RAYLEIGH_BETA') * obj.computeLocalStiffnessMatrix;
             else
                 dampingMatrix = sparse(12,12);
             end          
         end
         
-        function forceVector = computeLocalForceVector(element)
+        function forceVector = computeLocalForceVector(obj)
            forceVector = sparse(1,12);
 %            disp = element.getValuesVector('end');
 %            forceVector = element.computeLocalStiffnessMatrix() * disp';
 %            forceVector = forceVector';
         end
         
-        function dofs = getDofList(element)
-            dofs([1 7]) = element.nodeArray.getDof('DISPLACEMENT_X');
-            dofs([2 8]) = element.nodeArray.getDof('DISPLACEMENT_Y'); 
-            dofs([3 9]) = element.nodeArray.getDof('DISPLACEMENT_Z');
+        function dofs = getDofList(obj)
+            dofs([1 7]) = obj.nodeArray.getDof('DISPLACEMENT_X');
+            dofs([2 8]) = obj.nodeArray.getDof('DISPLACEMENT_Y'); 
+            dofs([3 9]) = obj.nodeArray.getDof('DISPLACEMENT_Z');
             
-            dofs([4 10]) = element.nodeArray.getDof('ROTATION_X');
-            dofs([5 11]) = element.nodeArray.getDof('ROTATION_Y'); 
-            dofs([6 12]) = element.nodeArray.getDof('ROTATION_Z');
+            dofs([4 10]) = obj.nodeArray.getDof('ROTATION_X');
+            dofs([5 11]) = obj.nodeArray.getDof('ROTATION_Y'); 
+            dofs([6 12]) = obj.nodeArray.getDof('ROTATION_Z');
         end
         
-        function vals = getValuesVector(element, step)
+        function vals = getValuesVector(obj, step)
             vals = zeros(1,12);
             
-            vals([1 7]) = element.nodeArray.getDofValue('DISPLACEMENT_X',step);
-            vals([2 8]) = element.nodeArray.getDofValue('DISPLACEMENT_Y',step);
-            vals([3 9]) = element.nodeArray.getDofValue('DISPLACEMENT_Z',step);
+            vals([1 7]) = obj.nodeArray.getDofValue('DISPLACEMENT_X',step);
+            vals([2 8]) = obj.nodeArray.getDofValue('DISPLACEMENT_Y',step);
+            vals([3 9]) = obj.nodeArray.getDofValue('DISPLACEMENT_Z',step);
             
-            vals([4 10]) = element.nodeArray.getDofValue('ROTATION_X',step);
-            vals([5 11]) = element.nodeArray.getDofValue('ROTATION_Y',step);
-            vals([6 12]) = element.nodeArray.getDofValue('ROTATION_Z',step);
+            vals([4 10]) = obj.nodeArray.getDofValue('ROTATION_X',step);
+            vals([5 11]) = obj.nodeArray.getDofValue('ROTATION_Y',step);
+            vals([6 12]) = obj.nodeArray.getDofValue('ROTATION_Z',step);
         end
         
-        function vals = getFirstDerivativesVector(element, step)
+        function vals = getFirstDerivativesVector(obj, step)
             vals = zeros(1,12);
             
-            [~, vals([1 7]), ~] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, vals([2 8]), ~] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, vals([3 9]), ~] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, vals([1 7]), ~] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, vals([2 8]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, vals([3 9]), ~] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
             
-            [~, vals([4 10]), ~] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, vals([5 11]), ~] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
-            [~, vals([6 12]), ~] = element.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+            [~, vals([4 10]), ~] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, vals([5 11]), ~] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, vals([6 12]), ~] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
         end
         
-        function vals = getSecondDerivativesVector(element, step)
+        function vals = getSecondDerivativesVector(obj, step)
             vals = zeros(1,12);            
             
-            [~, ~, vals([1 7])] = element.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
-            [~, ~, vals([2 8])] = element.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
-            [~, ~, vals([3 9])] = element.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
+            [~, ~, vals([1 7])] = obj.nodeArray.getDof('DISPLACEMENT_X').getAllValues(step);
+            [~, ~, vals([2 8])] = obj.nodeArray.getDof('DISPLACEMENT_Y').getAllValues(step);
+            [~, ~, vals([3 9])] = obj.nodeArray.getDof('DISPLACEMENT_Z').getAllValues(step);
             
-            [~, ~, vals([4 10])] = element.nodeArray.getDof('ROTATION_X').getAllValues(step);
-            [~, ~, vals([5 11])] = element.nodeArray.getDof('ROTATION_Y').getAllValues(step);
-            [~, ~, vals([6 12])] = element.nodeArray.getDof('ROTATION_Z').getAllValues(step);
+            [~, ~, vals([4 10])] = obj.nodeArray.getDof('ROTATION_X').getAllValues(step);
+            [~, ~, vals([5 11])] = obj.nodeArray.getDof('ROTATION_Y').getAllValues(step);
+            [~, ~, vals([6 12])] = obj.nodeArray.getDof('ROTATION_Z').getAllValues(step);
         end
         
-        function update(springDamperElement)
-            springDamperElement.length0 = computeLength(springDamperElement.nodeArray(1).getCoords, ...
-                    springDamperElement.nodeArray(2).getCoords);
+        function update(obj)
+            obj.length0 = computeLength(obj.nodeArray(1).getCoords, ...
+                    obj.nodeArray(2).getCoords);
         end
-        
-    end
-    
-    methods (Access = private)
         
     end
     
